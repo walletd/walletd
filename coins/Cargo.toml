@@ -1,0 +1,34 @@
+[package]
+name = "walletd_coins"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "walletd_coins"
+path = "src/lib.rs"
+
+
+[dependencies]
+
+reqwest = { version = "0.11", features = ["json"] }
+bitcoincore-rpc = "0.16.0"
+bitcoincore-rpc-json = "0.16.0"
+tiny-bip39 = "0.8.2"
+web3 = "0.17.0"
+env_logger = "0.9"
+futures = "0.3" 
+tokio = { version = "1", features = ["full"] }
+mini-redis = "0.4"
+solana-client = "1.14.7"
+rand = { version = "0.7" }
+crc = { version = "1.8.1" }
+curve25519-dalek = { version = "2.1.0" }
+bitvec = { version = "0.17.4" }
+sha2 = { version = "0.8", default-features = false }
+hex = { version = "0.4.2" }
+hmac = { version = "0.7.0" }
+pbkdf2 = { version = "0.3.0", features=["parallel"], default-features = false }
+debug_print = {version = "1.0.0"}
+libsecp256k1 = { version = "0.3.5", default-features = false, features = ["hmac"] }
+base58 = { version = "0.1" }
+ripemd160 = { version = "0.8", default-features = false }

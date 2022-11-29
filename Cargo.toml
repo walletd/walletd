@@ -1,0 +1,19 @@
+[package]
+name = "walletd"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "walletd"
+path = "src/lib.rs"
+
+[dependencies]
+walletd_mnemonics = {path = "./mnemonics"}
+walletd_bip39 = {path = "./mnemonics/bip39"}
+walletd_monero_mnemonic = {path = "./mnemonics/monero_mnemonic"}
+walletd_coins = {path = "./coins"}
+walletd_bitcoin = {path = "./coins/bitcoin"}
+walletd_ethereum = {path = "./coins/ethereum"}
+walletd_monero = {path = "./coins/monero"}
+walletd_solana = {path = "./coins/solana"}
+walletd_hd_keys = {path = "./hd_keys"}
