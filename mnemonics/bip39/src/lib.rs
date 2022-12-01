@@ -8,19 +8,15 @@
 //! ## Quickstart
 //!
 //! ```rust
-//! use bip39::{Mnemonic, MnemonicType, Language};
+//! use bip_39::{Mnemonic, MnemonicType, Language};
 //!
 //! /// create a new randomly generated mnemonic phrase
-//! let mnemonic = Mnemonic::new(Language::English, MnemonicType::Words12);
-//!
-//! /// get the phrase
-//!  println!("{}", mnemonic.to_string());
-//!
+//! let mnemonic = Mnemonic::new(Language::English, MnemonicType::Words12, None);
 //! /// get the wallet seed
-//! let seed = mnemonic.to_seed().unwrap();
+//! let seed = mnemonic.get_seed();
 //!
 //! // get the HD wallet seed as raw bytes
-//! let restored_mnemonic = Mnemonic::from_phrase(Language::English, "outer ride neither foil glue number place usage ball shed dry point").unwrap();
+//! let restored_mnemonic = Mnemonic::from_phrase(Language::English, "outer ride neither foil glue number place usage ball shed dry point", None).unwrap();
 //! println!("{}", restored_mnemonic.to_string());
 //! ```
 //!

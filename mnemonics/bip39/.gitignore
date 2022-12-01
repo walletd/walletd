@@ -1,2 +1,4 @@
 /target
-Cargo.lock
+/wallets
+/test-ledger
+/.DS_Store
