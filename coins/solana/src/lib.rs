@@ -31,8 +31,21 @@ impl CryptoWallet for SolanaWallet {
             ..Default::default()
         })
     }
+
     fn create_wallet() -> Result<Self, String> {
         let created_wallet = SolanaWallet::new()?;
         Ok(created_wallet)
     }
+}
+
+pub struct BlockchainClient {
+    blockchain_client: Option<RpcClient>,
+}
+
+impl BlockchainClient {
+  pub fn new(url: &str) -> Result<Self, String> {
+    Ok(Self {
+      blockchain_client: Some(RpcClient::new(url)),
+    })
+  }
 }

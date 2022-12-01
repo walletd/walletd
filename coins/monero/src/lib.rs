@@ -79,3 +79,15 @@ impl MoneroWallet {
         Ok(())
     }
 }
+
+pub struct BlockchainClient {
+  blockchain_client: Option<reqwest::Client>,
+}
+
+impl BlockchainClient {
+pub fn new(url: &str) -> Result<Self, String> {
+  Ok(Self {
+    blockchain_client: Some(reqwest::Client::new()),
+  })
+}
+}
