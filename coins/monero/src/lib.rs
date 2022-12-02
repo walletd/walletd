@@ -50,7 +50,6 @@ pub struct MoneroWallet {
     private_view_key: String,
     public_spend_key: String,
     public_view_key: String,
-    blockchain_client: Option<reqwest::Client>,
 }
 
 impl CryptoWallet for MoneroWallet {
@@ -212,13 +211,13 @@ impl MoneroWallet {
 }
 
 pub struct BlockchainClient {
-  blockchain_client: Option<reqwest::Client>,
+  blockchain_client: reqwest::Client,
 }
 
 impl BlockchainClient {
 pub fn new(url: &str) -> Result<Self, String> {
   Ok(Self {
-    blockchain_client: Some(reqwest::Client::new()),
+    blockchain_client: reqwest::Client::new(),
   })
 }
 }

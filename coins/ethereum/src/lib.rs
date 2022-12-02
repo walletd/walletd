@@ -136,7 +136,7 @@ impl Display for EthereumWallet {
 }
 
 pub struct BlockchainClient {
-  blockchain_client: Option<Web3<Http>>,
+  blockchain_client: Web3<Http>,
 }
 
 impl BlockchainClient {
@@ -145,7 +145,7 @@ pub fn new(url: &str) -> Result<Self, String> {
   let web3 = web3::Web3::new(transport);
 
   Ok(Self {
-    blockchain_client: Some(web3),
+    blockchain_client: web3,
   })
 }
 }

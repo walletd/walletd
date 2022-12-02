@@ -36,6 +36,7 @@ pub struct SolanaWallet {
     keypair: [u8; 64],
     network: NetworkType,
     blockchain_client: Option<RpcClient>,
+    seed_hex: Option<String>,
 }
 
 impl SolanaWallet {
@@ -67,13 +68,13 @@ impl Display for SolanaWallet {
 
 
 pub struct BlockchainClient {
-    blockchain_client: Option<RpcClient>,
+    blockchain_client: RpcClient,
 }
 
 impl BlockchainClient {
   pub fn new(url: &str) -> Result<Self, String> {
     Ok(Self {
-      blockchain_client: Some(RpcClient::new(url)),
+      blockchain_client: RpcClient::new(url),
     })
   }
 }
