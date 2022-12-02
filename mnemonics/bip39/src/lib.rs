@@ -15,7 +15,7 @@
 //!
 //! /// create a new randomly generated mnemonic phrase
 //! let passphrase: &str = "mypassphrase";
-//! let mnemonic = walletd_bip39::Mnemonic::new(English, MnemonicType::Words12, None);
+//! let mnemonic = walletd_bip39::Mnemonic::new(English, MnemonicType::Words12, Some(passphrase));
 //! /// get the wallet seed
 //! let seed = mnemonic.get_seed();
 //!
