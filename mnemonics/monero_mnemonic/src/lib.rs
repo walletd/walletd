@@ -6,19 +6,21 @@
 //! ## Quickstart
 //!
 //! ```rust
-//! use monero_mnemonic::{Mnemonic, Language};
+//! use walletd_monero_mnemonic::Language::English;
+//! use walletd_monero_mnemonic::Mnemonic;
+//! use walletd_monero_mnemonic::MnemonicType;
+//! use walletd_monero_mnemonic::MnemonicHandler;
 //!
 //! /// create a new randomly generated mnemonic phrase
-//! let mnemonic = Mnemonic::new(Language::English);
-//!
-//! /// get the phrase
-//!  println!("{}", mnemonic.to_string());
-//!
+//! let passphrase: &str = "mypassphrase";
+//! let mnemonic = walletd_monero_mnemonic::Mnemonic::new(English, MnemonicType::Words13, Some(passphrase));
 //! /// get the wallet seed
+//! let seed = mnemonic.get_seed();
 //!
 //! // get the HD wallet seed as raw bytes
-//! let restored_mnemonic = Mnemonic::from_phrase(Language::English, "toffee tedious awakened vampire corrode deepest washing goggles rowboat technical hesitate building toffee").unwrap();
-//! println!("{}", restored_mnemonic.to_string());
+//! let mnemonic_phrase = &"outer ride neither foil glue number place usage ball shed dry point";
+//! let passphrase: Option<&str> = Some("mypassphrase");
+//! let restored_mnemonic = <walletd_monero_mnemonic::Mnemonic as MnemonicHandler>::from_phrase(English, mnemonic_phrase, passphrase);
 //! ```
 pub mod language;
 pub mod mnemonic;
