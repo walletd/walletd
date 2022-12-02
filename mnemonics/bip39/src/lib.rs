@@ -8,16 +8,21 @@
 //! ## Quickstart
 //!
 //! ```rust
-//! use bip_39::{Mnemonic, MnemonicType, Language};
+//! use walletd_bip39::Language::English;
+//! use walletd_bip39::Mnemonic;
+//! use walletd_bip39::MnemonicType;
+//! use crate::walletd_bip39::MnemonicHandler;
 //!
 //! /// create a new randomly generated mnemonic phrase
-//! let mnemonic = Mnemonic::new(Language::English, MnemonicType::Words12, None);
+//! let passphrase: &str = "mypassphrase";
+//! let mnemonic = walletd_bip39::Mnemonic::new(English, MnemonicType::Words12, None);
 //! /// get the wallet seed
 //! let seed = mnemonic.get_seed();
 //!
 //! // get the HD wallet seed as raw bytes
-//! let restored_mnemonic = Mnemonic::from_phrase(Language::English, "outer ride neither foil glue number place usage ball shed dry point", None).unwrap();
-//! println!("{}", restored_mnemonic.to_string());
+//! let mnemonic_phrase = &"outer ride neither foil glue number place usage ball shed dry point";
+//! let passphrase: Option<&str> = Some("mypassphrase");
+//! let restored_mnemonic = <walletd_bip39::Mnemonic as MnemonicHandler>::from_phrase(English, mnemonic_phrase, passphrase);
 //! ```
 //!
 pub mod language;
