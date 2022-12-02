@@ -24,7 +24,6 @@
 //! let passphrase: Option<&str> = Some("mypassphrase");
 //! let restored_mnemonic = <walletd_bip39::Mnemonic as MnemonicHandler>::from_phrase(English, mnemonic_phrase, passphrase);
 //! ```
-//!
 pub mod language;
 pub mod mnemonic;
 pub mod mnemonic_type;
