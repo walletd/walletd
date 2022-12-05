@@ -1,3 +1,4 @@
+
 #[derive(Default, PartialEq, Copy, Clone)]
 pub enum CryptoCoin {
 // value is the coin type value in accordance with SLIP-0044: https://github.com/satoshilabs/slips/blob/master/slip-0044.md
@@ -21,12 +22,6 @@ impl CryptoCoin {
             _ => Err("Current valid options are BTC, ETH, SOL, or XMR".to_string()),
         }
     }
-}
-
-
-pub trait CryptoWallet: Sized {
-    fn new() -> Result<Self, String>;
-    fn create_wallet() -> Result<Self, String>;
 }
 
 pub trait CryptoTypeData {

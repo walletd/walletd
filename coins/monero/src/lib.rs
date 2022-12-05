@@ -1,7 +1,10 @@
 extern crate reqwest;
 
-use walletd_coins::{CryptoCoin, CryptoTypeData, CryptoWallet};
+use walletd_coins::{CryptoCoin, CryptoTypeData};
+use walletd_cryptowallet::{CryptoWallet};
 use walletd_monero_mnemonic::{Language, Mnemonic, MnemonicType, MnemonicHandler};
+use walletd_hd_keys::{BIP32, NetworkType};
+
 use reqwest::header::{ACCEPT, CONTENT_TYPE};
 use std::collections::HashMap;
 
@@ -23,34 +26,31 @@ pub enum MoneroFormat {
 pub struct MoneroWallet {
     crypto_type: CryptoCoin,
     address_format: MoneroFormat,
-    language: Language,
-    network: String,
+    network: NetworkType,
     public_address: String,
-    seed_hex: Option<String>,
-    private_spend_key: String,
-    private_view_key: String,
-    public_spend_key: String,
-    public_view_key: String,
+    private_key: String,
+    public_key: String,
     blockchain_client: Option<reqwest::Client>,
 }
 
 impl CryptoWallet for MoneroWallet {
-    fn new() -> Result<Self, String> {
-        let mnemonic = Mnemonic::new(Language::English, MnemonicType::Words25, None);
-        let seed = mnemonic.get_seed()?;
-        println!("Mnemonic Info: \n{}", mnemonic);
+    fn new_from_hd_keys(hd_keys: BIP32) -> Result<Self, String> {
         Ok(Self {
-            seed_hex: Some(seed),
-            ..Default::default()
+            crypto_type: CryptoCoin::XMR,
+            address_format: MoneroFormat::Standard,
+            public_address: Self::public_address_from_public_key(&hd_keys.extended_public_key.unwrap().to_vec(), &hd_keys.network),
+            private_key: hd_keys.get_private_key().unwrap(),
+            public_key: hd_keys.get_public_key().unwrap(),
+            blockchain_client: None,
+            network: hd_keys.network,
         })
-    }
-    fn create_wallet() -> Result<Self, String> {
-        let created_wallet = MoneroWallet::new().unwrap();
-        Ok(created_wallet)
     }
 }
 
 impl MoneroWallet {
+    pub fn public_address_from_public_key(public_key: &Vec<u8>, network_type: &NetworkType) -> String {
+        "Temp".to_string()
+    }
     #[tokio::main]
     pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let resp = reqwest::get("https://httpbin.org/ip")

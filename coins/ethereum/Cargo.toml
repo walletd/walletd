@@ -9,8 +9,12 @@ path = "src/lib.rs"
 
 [dependencies]
 
-walletd_coins = {path = "../"}
 walletd_bip39 = {path = "../../mnemonics/bip39"}
+walletd_coins = {path = "../"}
+walletd_cryptowallet = {path = "../../cryptowallet"}
+walletd_hd_keys = {path = "../../hd_keys"}
 
+hex = "0.4.3"
+keccak-hash = "0.10.0"
 tokio = { version = "1", features = ["full"] }
-web3 = "0.17.0"
+web3 = "0.18.0"

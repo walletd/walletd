@@ -1,9 +1,10 @@
 use base58::{FromBase58, ToBase58};
 use hmac::{Hmac, Mac};
-use secp256k1::{PublicKey, SecretKey};
+use libsecp256k1::{PublicKey, SecretKey};
 use sha2::{Digest, Sha256, Sha512};
 type HmacSha512 = Hmac<Sha512>;
-use ripemd160::Ripemd160;
+use ripemd::Ripemd160;
+use walletd_coins::CryptoCoin;
 use std::fmt;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -12,6 +13,16 @@ pub enum DerivPathComponent {
     IndexHardened(u32),
     IndexNotHardened(u32),
 }
+
+#[derive(Default, PartialEq, Eq)]
+pub enum DerivType {
+    #[default]
+    BIP32,
+    BIP44, 
+    BIP49,
+    BIP84,
+}
+
 #[derive(Default, PartialEq, Eq)]
 pub enum NetworkType {
     #[default]
@@ -40,22 +51,22 @@ pub struct BIP32 {
     pub extended_public_key: Option<[u8; 33]>,
     pub child_index: u32,
     pub network: NetworkType,
+    pub derivation_type: DerivType,
 }
 
 impl BIP32 {
     pub fn new_master_node(seed: &[u8]) -> Result<Self, String> {
-        let mut mac = HmacSha512::new_varkey(b"Bitcoin seed").unwrap(); // the "Bitcoin seed" string is specified in the bip32 protocol
-        mac.input(seed);
-        let hmac = mac.result().code();
+        let mut mac: HmacSha512 = HmacSha512::new_from_slice(b"Bitcoin seed").unwrap(); // the "Bitcoin seed" string is specified in the bip32 protocol
+        mac.update(seed);
+        let hmac = mac.finalize().into_bytes();
 
         let mut extended_private_key = [0u8; 32];
         extended_private_key.copy_from_slice(&hmac[0..32]);
         let mut chain_code = [0u8; 32];
         chain_code.copy_from_slice(&hmac[32..]);
 
-        let extended_public_key = secp256k1::PublicKey::from_secret_key(
-            &secp256k1::SecretKey::parse_slice(&extended_private_key).unwrap(),
-        );
+        let extended_public_key = PublicKey::from_secret_key(
+            &SecretKey::parse_slice(&extended_private_key).unwrap());
 
         let mut bip32_master_node = BIP32 {
             chain_code,
@@ -150,6 +161,24 @@ impl BIP32 {
     ) -> Result<Self, String> {
         let deriv_path_str_list: Vec<&str> = derivation_path.split("/").collect();
         let deriv_path_info = Self::deriv_path_str_to_info(&derivation_path)?;
+        let mut deriv_type = DerivType::BIP32;
+        if deriv_path_info.len() > 1 {
+            match &deriv_path_info[1] {
+                DerivPathComponent::IndexHardened(num) => {
+                    let purpose = *num -  (1 << 31);
+                    if purpose == 44 {
+                        deriv_type = DerivType::BIP44;
+                    }
+                    else if purpose == 49 {
+                        deriv_type = DerivType::BIP49;
+                    }
+                    else if purpose == 84 {
+                        deriv_type = DerivType::BIP84;
+                    }
+                }
+                _ => {}
+            }   
+        }
 
         let mut deriv_path = "m".to_string();
         let mut private_key = SecretKey::parse(&master_node.extended_private_key.unwrap()).unwrap();
@@ -163,20 +192,20 @@ impl BIP32 {
             let parent_public_key =
                 &PublicKey::from_secret_key(&private_key).serialize_compressed()[..];
 
-            let mut mac = HmacSha512::new_varkey(&chain_code).unwrap();
+            let mut mac = HmacSha512::new_from_slice(&chain_code).unwrap();
 
             match item {
                 DerivPathComponent::IndexNotHardened(num) => {
                     child_index = *num;
-                    mac.input(&parent_public_key);
-                    mac.input(&num.to_be_bytes());
+                    mac.update(&parent_public_key);
+                    mac.update(&num.to_be_bytes());
                 }
                 DerivPathComponent::IndexHardened(num) => {
                     child_index = *num;
-                    mac.input(&[0u8]);
+                    mac.update(&[0u8]);
 
-                    mac.input(&parent_private_key.serialize());
-                    mac.input(&num.to_be_bytes());
+                    mac.update(&parent_private_key.serialize());
+                    mac.update(&num.to_be_bytes());
                 }
                 _ => {
                     return Err(
@@ -186,7 +215,7 @@ impl BIP32 {
                 }
             }
 
-            let hmac = mac.result().code();
+            let hmac = mac.finalize().into_bytes();
 
             private_key = SecretKey::parse_slice(&hmac[0..32]).unwrap();
             private_key.tweak_add_assign(&parent_private_key).unwrap();
@@ -206,79 +235,139 @@ impl BIP32 {
             chain_code,
             extended_private_key: Some(private_key.serialize()),
             extended_public_key: Some(
-                secp256k1::PublicKey::from_secret_key(
-                    &secp256k1::SecretKey::parse_slice(&private_key.serialize()).unwrap(),
+                libsecp256k1::PublicKey::from_secret_key(
+                    &libsecp256k1::SecretKey::parse_slice(&private_key.serialize()).unwrap(),
                 )
                 .serialize_compressed(),
             ),
             depth,
             parent_fingerprint,
             derivation_path: deriv_path,
+            derivation_type: deriv_type,
             child_index,
             ..Default::default()
         };
         Ok(derived_bip32)
     }
+    
+    pub fn derive_first_address(master_node: &BIP32, coin: &CryptoCoin) -> Result<BIP32, String> {
+        let bip44_deriv_path = format!("{}{}{}", "m/0'/", coin.coin_type(), "'/0");
+        BIP32::derived_from_master_with_specified_path(
+            &master_node,
+            bip44_deriv_path)
+    }
+    pub fn serialization_extended_private_key(&self, prefix: [u8; 4]) -> Result<String, String> {
+        if let Some(extended_private_key) = self.extended_private_key {
+            let mut result = [0u8; 82];
+            result[0..4].copy_from_slice(&prefix);
+            result[4] = self.depth;
+            result[5..9].copy_from_slice(&self.parent_fingerprint);
+            result[9..13].copy_from_slice(&self.child_index.to_be_bytes());
+            result[13..45].copy_from_slice(&self.chain_code);
+            result[45] = 0;
+            result[46..78].copy_from_slice(&extended_private_key);
+            let sum =
+                &(Sha256::digest(Sha256::digest(&result[0..78]).as_slice()).to_vec())[0..4];
+            result[78..82].copy_from_slice(&sum);
+            return Ok(result.to_base58())
+        }
+        else {
+            return Err("Cannot serialize extended private key because the extended private key value was not specified.".to_string())
+        }
+    }
+
+    pub fn serialization_extended_public_key(&self, prefix: [u8; 4]) -> Result<String, String> {
+        if let Some(extended_public_key) = self.extended_public_key {
+            let mut result = [0u8; 82];
+            result[0..4].copy_from_slice(&prefix);
+            result[4] = self.depth;
+            result[5..9].copy_from_slice(&self.parent_fingerprint);
+            result[9..13].copy_from_slice(&self.child_index.to_be_bytes());
+            result[13..45].copy_from_slice(&self.chain_code);
+            result[45..78].copy_from_slice(&extended_public_key);
+            let sum: &[u8] =
+                &(Sha256::digest(Sha256::digest(&result[0..78]).as_slice()).to_vec())[0..4];
+            result[78..82].copy_from_slice(sum);
+            return Ok(result.to_base58())
+        }
+        else {
+            return Err("Cannot serialize extended private key because the extended private key value was not specified.".to_string())
+        }
+    }
+
+    pub fn get_prefix_for_private_key_serialization(&self) -> Result<[u8;  4], String> {
+        if self.network == NetworkType::MainNet && (self.derivation_type == DerivType::BIP32) || (self.derivation_type == DerivType::BIP44) {
+            return Ok([0x04, 0x88, 0xAD, 0xE4])
+        }
+        else if self.network == NetworkType::TestNet && (self.derivation_type == DerivType::BIP32) || (self.derivation_type == DerivType::BIP44) {
+            return Ok([0x04, 0x35, 0x83, 0x94])
+        }
+        else if self.network == NetworkType::MainNet && self.derivation_type == DerivType::BIP49 {
+            return Ok([0x04, 0x9D, 0x78, 0x78])
+        }
+        else if self.network == NetworkType::TestNet && self.derivation_type == DerivType::BIP49 {
+            return Ok([0x04, 0x4A, 0x4E, 0x28])
+        }
+        else if self.network == NetworkType::MainNet && self.derivation_type == DerivType::BIP84 {
+            return Ok([0x04, 0xB2, 0x43, 0x0C])
+        }
+        else if self.network == NetworkType::TestNet && self.derivation_type == DerivType::BIP84 {
+            return Ok([0x04, 0x5F, 0x18, 0xBC])
+        }
+        else {
+            return Err("Prefix is not set up for this yet".to_string())
+        }
+    }
+
+    pub fn get_prefix_for_public_key_serialization(&self) -> Result<[u8;  4], String> {
+        if self.network == NetworkType::MainNet && (self.derivation_type == DerivType::BIP32) || (self.derivation_type == DerivType::BIP44) {
+            return Ok([0x04, 0x88, 0xB2, 0x1E])
+        }
+        else if self.network == NetworkType::TestNet && (self.derivation_type == DerivType::BIP32) || (self.derivation_type == DerivType::BIP44) {
+            return Ok([0x04, 0x35, 0x87, 0xCF])
+        }
+        else if self.network == NetworkType::MainNet && self.derivation_type == DerivType::BIP49 {
+            return Ok([0x04, 0x9D, 0x7C, 0xB2])
+        }
+        else if self.network == NetworkType::TestNet && self.derivation_type == DerivType::BIP49 {
+            return Ok([0x04, 0x4A, 0x52, 0x62])
+        }
+        else if self.network == NetworkType::MainNet && self.derivation_type == DerivType::BIP84 {
+            return Ok([0x04, 0xB2, 0x47, 0x46])
+        }
+        else if self.network == NetworkType::TestNet && self.derivation_type == DerivType::BIP84 {
+            return Ok([0x04, 0x5F, 0x1C, 0xF6])
+        }
+        else {
+            return Err("Prefix is not set up for this yet".to_string())
+        }
+    }
+
+
 }
+
 
 impl fmt::Display for BIP32 {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         writeln!(fmt, " BIP32 Derivation Path: {}", self.derivation_path)?;
         writeln!(fmt, " Network: {}", self.network)?;
         writeln!(fmt, " Depth: {}", self.depth)?;
-
-        if let Some(extended_private_key) = self.extended_private_key {
-            let mut result_priv = [0u8; 82];
-            if self.network == NetworkType::MainNet {
-                result_priv[0..4].copy_from_slice(&vec![0x04, 0x88, 0xAD, 0xE4]);
-            } else if self.network == NetworkType::TestNet {
-                result_priv[0..4].copy_from_slice(&vec![0x04, 0x35, 0x83, 0x94]);
-            } else {
-                panic!("Network Type has to be categorized to Mainnet or Testnet to format the BIP32 extended keys");
-            }
-            result_priv[4] = self.depth;
-            result_priv[5..9].copy_from_slice(&self.parent_fingerprint);
-            result_priv[9..13].copy_from_slice(&self.child_index.to_be_bytes());
-            result_priv[13..45].copy_from_slice(&self.chain_code);
-            result_priv[45] = 0;
-            result_priv[46..78].copy_from_slice(&extended_private_key);
-            let sum =
-                &(Sha256::digest(Sha256::digest(&result_priv[0..78]).as_slice()).to_vec())[0..4];
-            result_priv[78..82].copy_from_slice(&sum);
-
-            writeln!(
-                fmt,
-                " BIP32 Extended Private Key: {:?}",
-                result_priv.to_base58()
+        let priv_prefix = self.get_prefix_for_private_key_serialization().unwrap();
+        let result_priv = self.serialization_extended_private_key(priv_prefix).unwrap();
+        writeln!(
+            fmt,
+            " BIP32 Extended Private Key: {}",
+            result_priv
             )?;
+        writeln!(fmt, " Private Key: {}", self.get_private_key().unwrap())?;
+        let pub_prefix = self.get_prefix_for_public_key_serialization().unwrap();
+        let result_pub = self.serialization_extended_public_key(pub_prefix).unwrap();
+        writeln!(
+            fmt, 
+            " BIP32 Extended Public Key: {}",
+            result_pub)?;
+        writeln!(fmt, " Public Key: {}", self.get_public_key().unwrap())?;
 
-            writeln!(fmt, " Private Key: {}", self.get_private_key().unwrap());
-        }
-
-        if let Some(extended_public_key) = self.extended_public_key {
-            let mut result_pub = [0u8; 82];
-            if self.network == NetworkType::MainNet {
-                result_pub[0..4].copy_from_slice(&vec![0x04, 0x88, 0xB2, 0x1E]);
-            } else if self.network == NetworkType::TestNet {
-                result_pub[0..4].copy_from_slice(&vec![0x04, 0x35, 0x87, 0xCF]);
-            } else {
-                panic!("Network Type has to be categorized to Mainnet or Testnet to format the BIP32 extended keys");
-            }
-            result_pub[4] = self.depth;
-            result_pub[5..9].copy_from_slice(&self.parent_fingerprint);
-            result_pub[9..13].copy_from_slice(&self.child_index.to_be_bytes());
-            result_pub[13..45].copy_from_slice(&self.chain_code);
-            result_pub[45..78].copy_from_slice(&extended_public_key);
-            let sum: &[u8] =
-                &(Sha256::digest(Sha256::digest(&result_pub[0..78]).as_slice()).to_vec())[0..4];
-            result_pub[78..82].copy_from_slice(sum);
-            writeln!(
-                fmt,
-                " BIP32 Extended Public Key: {:?}",
-                result_pub.to_base58()
-            )?;
-            writeln!(fmt, " Public Key: {}", self.get_public_key().unwrap());
-        }
         Ok(())
     }
 }

@@ -7,5 +7,4 @@ edition = "2021"
 name = "walletd_coins"
 path = "src/lib.rs"
 
-
 [dependencies]

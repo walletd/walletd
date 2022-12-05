@@ -9,7 +9,9 @@ path = "src/lib.rs"
 
 [dependencies]
 
-walletd_coins = {path = "../"}
 walletd_bip39 = {path = "../../mnemonics/bip39"}
+walletd_coins = {path = "../"}
+walletd_cryptowallet = {path = "../../cryptowallet"}
+walletd_hd_keys = {path = "../../hd_keys"}
 
 solana-client = "1.14.7"
