@@ -8,6 +8,8 @@ use libsecp256k1::{PublicKey, SecretKey};
 use bitcoincore_rpc::bitcoin::{Block, BlockHash, Txid, Transaction};
 use bitcoincore_rpc::bitcoincore_rpc_json::GetBlockchainInfoResult;
 use bitcoincore_rpc::{Auth, Client, RpcApi};
+use serde_json::{Value, json};
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256, Sha512};
 use walletd_bip39::{Language, Mnemonic, MnemonicHandler, MnemonicType};
 use walletd_coins::{CryptoCoin, CryptoTypeData, CryptoWallet};
@@ -258,4 +260,161 @@ impl BlockchainClient {
     // pub fn get_tx_out(&self, txid: &Txid, vout: u32) -> Result<GetTxOutResult, String> {
     //   Ok(self.blockchain_client.get_tx_out(txid, vout, None).unwrap())
     // }
+}
+
+pub struct Blockstream {
+    pub client: reqwest::Client,
+}
+
+pub const BLOCKSTREAM_URL: &str = "https://blockstream.info/api";
+impl Blockstream {
+    pub fn new(url: &str) -> Result<Self, String> {
+        Ok(Self {
+            client: reqwest::Client::new(),
+        })
+    }
+
+    // fetch the block height
+    pub fn block_count(&self) -> Result<u64, String> {
+      let body = reqwest::blocking::get(format!("{}/blocks/tip/height",BLOCKSTREAM_URL)).expect("Error getting block count").text();
+        println!("body = {:?}", body);
+        let block_count: u64 = body.unwrap().parse().unwrap();
+      Ok(block_count)
+    }
+
+    // fetch fee estimates from blockstream
+    pub fn fee_estimates(&self) -> Result<Value, String> {
+      let body = reqwest::blocking::get(format!("{}/fee-estimates",BLOCKSTREAM_URL)).expect("Error getting fee estimates").text();
+        println!("body = {:?}", body);
+        //let data = r#"{"21":2.582,"1008":1.0,"12":14.197999999999999,"13":10.038,"10":21.026,"5":21.113999999999997,"9":21.026,"2":28.343999999999998,"14":2.885,"17":2.582,"20":2.582,"3":28.343999999999998,"22":2.582,"23":2.582,"24":2.582,"8":21.026,"1":28.343999999999998,"7":21.026,"11":14.197999999999999,"16":2.582,"25":2.582,"15":2.582,"19":2.582,"144":1.0,"504":1.0,"4":25.835,"18":2.582,"6":21.026}"#;
+        let fee_estimates = json!(&body.unwrap());
+      Ok(fee_estimates)
+    }
+
+    // fetch transactions from blockstream
+    pub fn transactions(&self, address: &str) -> Result<Value, String> {
+      let body = reqwest::blocking::get(format!("{}/address/{}/txs",BLOCKSTREAM_URL,address)).expect("Error getting transactions").text();
+        println!("body = {:?}", body);
+        let transactions = json!(&body.unwrap());
+      Ok(transactions)
+    }
+
+    // fetch mempool transactions from blockstream
+    pub fn mempool_transactions(&self, address: &str) -> Result<Value, String> {
+      let body = reqwest::blocking::get(format!("{}/address/{}/txs/mempool",BLOCKSTREAM_URL,address)).expect("Error getting transactions").text();
+        println!("body = {:?}", body);
+        let transactions = json!(&body.unwrap());
+      Ok(transactions)
+    }
+
+    // fetch utxo from blockstream
+    pub fn utxo(&self, address: &str) -> Result<Value, String> {
+      let body = reqwest::blocking::get(format!("{}/address/{}/utxo",BLOCKSTREAM_URL,address)).expect("Error getting utxo").text();
+        println!("body = {:?}", body);
+        let utxo = json!(&body.unwrap());
+      Ok(utxo)
+    }
+
+    // Fetch transaction info
+    pub fn transaction(&self, txid: &str) -> Result<BTransaction, String> {
+      let body = reqwest::blocking::get(format!("{}/tx/{}",BLOCKSTREAM_URL,txid)).expect("Error getting transaction").text();
+      let data = r#"{
+        "txid":"6249b166d78529e435628245034df9e4c81d9b34b4d12c5600527c96b6e0d8ce",
+        "version":1,
+        "locktime":0,
+        "vin":[
+          {
+            "txid":"4894c96e044bd6c278f927a220c42048602e4d8bfa888f5c35610b1c4643140d",
+            "vout":1,
+            "prevout":{
+              "scriptpubkey":"a914f7861160df5cce001291293dfba24923816fc7e987",
+              "scriptpubkey_asm":"OP_HASH160 OP_PUSHBYTES_20 f7861160df5cce001291293dfba24923816fc7e9 OP_EQUAL",
+              "scriptpubkey_type":"p2sh",
+              "scriptpubkey_address":"3QFoS8FPLCiVzzra4TPqVCq5ntpswP9Ey3",
+              "value":48713312
+            },
+            "scriptsig":"160014630cf4b24dbd691fef2bb3fa50605484632f611e",
+            "scriptsig_asm":"OP_PUSHBYTES_22 0014630cf4b24dbd691fef2bb3fa50605484632f611e",
+            "witness":[
+              "304402201e23c13611331720f5dfe2455b2d3c3b259d84cadc5e3de6e792a750978efeb8022006d3acad3c1c5b7e6227c80b71fee635f9303fd164b378c98a9fb3063105ff9201",
+              "025e7a3239de2b1dbde8d8ff5c0c620ac47bfd32e761f509c13424fe8481dbb98e"
+            ],
+            "is_coinbase":false,
+            "sequence":4294967295,
+            "inner_redeemscript_asm":"OP_0 OP_PUSHBYTES_20 630cf4b24dbd691fef2bb3fa50605484632f611e"
+          }
+        ],
+        "vout":[
+          {
+            "scriptpubkey":"a914b3efe280e64077202c171cc3fefb4bb02adc7d0687",
+            "scriptpubkey_asm":"OP_HASH160 OP_PUSHBYTES_20 b3efe280e64077202c171cc3fefb4bb02adc7d06 OP_EQUAL",
+            "scriptpubkey_type":"p2sh",
+            "scriptpubkey_address":"3J6SFNJSHq9k6k2Cwzdy6RMC1z3ubR1ot1",
+            "value":15632000
+          },
+          {
+            "scriptpubkey":"a91445a3f3cc49da0b67c969771b0b8ef76c45aaff2787",
+            "scriptpubkey_asm":"OP_HASH160 OP_PUSHBYTES_20 45a3f3cc49da0b67c969771b0b8ef76c45aaff27 OP_EQUAL",
+            "scriptpubkey_type":"p2sh",
+            "scriptpubkey_address":"383ExPThK2M5yZEtHXU1YcqehVBDxHKuWJ",
+            "value":33065280
+          }
+        ],
+        "size":247,
+        "weight":661,
+        "fee":16032,
+        "status":{
+          "confirmed":true,
+          "block_height":663393,
+          "block_hash":"0000000000000000000efbc1d707a0b95bc281c908ecf1f149d2d93ca8d6a175",
+          "block_time":1609181106
+        }
+      }"#;
+        println!("body = {:?}", body);
+        let transaction: BTransaction = serde_json::from_str(&body.unwrap())?;
+      Ok(transaction)
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+struct BTransaction {
+    txid: String,
+    version: u8,
+    locktime: u32,
+    vin: Vec<Input>,
+    vout: Vec<Output>,
+    size: u32,
+    weight: u32,
+    fee: u32,
+    status: Status,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Output {
+  scriptpubkey: String,
+  scriptpubkey_asm: String,
+  scriptpubkey_type: String,
+  scriptpubkey_address: String,
+  value: u32,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Input {
+  txid: String,
+  vout: u8,
+  prevout: Output,
+  scriptsig: String,
+  scriptsig_asm: String,
+  witness: Vec<String>,
+  is_coinbase: bool,
+  sequence: u32,
+  inner_redeemscript_asm: String,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Status {
+  confirmed: bool,
+  block_height: u32,
+  block_hash: String,
+  block_time: u32,
 }
