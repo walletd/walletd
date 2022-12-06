@@ -1,7 +1,6 @@
 extern crate bitcoincore_rpc;
 extern crate reqwest;
-use walletd_coins::CryptoCoin;
-use walletd_cryptowallet::CryptoWallet;
+use walletd_coins::{CryptoCoin, CryptoWallet};
 use walletd_bip39::{Language, Mnemonic, MnemonicType, MnemonicHandler};
 use walletd_hd_keys::{BIP32, NetworkType};
 use bitcoincore_rpc::bitcoin::BlockHash;
@@ -10,6 +9,8 @@ use sha2::{Digest, Sha256, Sha512};
 use base58::{FromBase58, ToBase58};
 use bech32::ToBase32;
 use ripemd::Ripemd160;
+use core::{fmt, fmt::Display, str::FromStr};
+use libsecp256k1::{PublicKey, SecretKey};
 
 pub const USER: &str = "test";
 pub const PASS: &str = "test";
@@ -26,6 +27,16 @@ pub enum BitcoinFormat {
     #[default]
     Bech32,
 }
+impl BitcoinFormat {
+    pub fn to_string(&self) -> String {
+        match self {
+            BitcoinFormat::P2PKH => "P2PKH".to_string(),
+            BitcoinFormat::P2WSH => "P2WSH".to_string(),
+            BitcoinFormat::P2SH_P2WPKH => "P2SH_P2WPKH".to_string(),
+            BitcoinFormat::Bech32 => "Bech32".to_string(), 
+        }
+    }
+}
 
 #[derive(Default)]
 pub struct BitcoinWallet {
@@ -39,25 +50,41 @@ pub struct BitcoinWallet {
 }
 
 impl CryptoWallet for BitcoinWallet {
-    fn new_from_hd_keys(hd_keys: BIP32) -> Result<Self, String> {
+    type HDKeyInfo = BIP32;
+    type MnemonicStyle = Mnemonic;
+    fn new_from_hd_keys(hd_keys: &BIP32) -> Result<Self, String> {
         Ok(Self {
             crypto_type: CryptoCoin::BTC,
             address_format: BitcoinFormat::Bech32,
             public_address: Self::public_address_bech32_from_public_key(&hd_keys.extended_public_key.unwrap().to_vec(), &hd_keys.network),
-            private_key: hd_keys.get_private_key().unwrap(),
-            public_key: hd_keys.get_public_key().unwrap(),
+            private_key: hd_keys.get_private_key_wif().unwrap(),
+            public_key: hd_keys.get_public_key_hex().unwrap(),
             blockchain_client: None,
             network: hd_keys.network,
         })
     }
-    
+    fn new_from_mnemonic(mnemonic: Self::MnemonicStyle) -> Result<Self, String> {
+        let seed = mnemonic.get_seed_bytes()?;
+        let public_key = PublicKey::from_secret_key(
+            &libsecp256k1::SecretKey::parse_slice(&seed).unwrap()).serialize_compressed();
+        let network = NetworkType::MainNet;
+
+        Ok(Self {
+            crypto_type: CryptoCoin::BTC,
+            address_format: BitcoinFormat::Bech32,
+            private_key: Self::to_private_key_wif(seed, 0x80)?,
+            public_address: Self::public_address_bech32_from_public_key(&public_key.to_vec(), &network),
+            public_key: Self::to_public_key_hex(&public_key)?,
+            blockchain_client: None,
+            network,
+        })
+    }
     fn get_public_address(&self) -> String {
         self.public_address.clone()
     }
 }
 
 impl BitcoinWallet {
-
     // Reference for address formats: https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#p2wpkh-nested-in-bip16-p2sh
 
     /// The P2PKH is the Legacy address format for Bitcoin
@@ -72,10 +99,6 @@ impl BitcoinWallet {
                 &(Sha256::digest(Sha256::digest(&address[0..21]).as_slice()).to_vec())[0..4];
         address[21..25].copy_from_slice(checksum);
         address.to_base58()
-    }
-
-    pub fn public_address_p2sh_p2wpkh_from_public_key(public_key: &Vec<u8>, network_type: NetworkType) -> String {
-       return "NOT DONE".to_string()
     }
 
     pub fn public_address_bech32_from_public_key(public_key: &Vec<u8>, network_type: &NetworkType) -> String {
@@ -123,6 +146,18 @@ impl BitcoinWallet {
     pub fn rpc_unload_wallet(&self, wallet_path: &str) -> Result<(), String> {
         let unloaded = self.blockchain_client.as_ref().expect("Error rpc unload wallet").unload_wallet(Some(wallet_path)).unwrap();
         Ok(unloaded)
+    }
+}
+
+impl Display for BitcoinWallet {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "Bitcoin Wallet")?;
+        writeln!(f, " Network: {}", self.network)?;
+        writeln!(f, " Private Key: {}", self.private_key)?;
+        writeln!(f, " Public Key: {}", self.public_key)?;
+        writeln!(f, " Address Format: {}", self.address_format.to_string())?;
+        writeln!(f, " Public Address: {}", self. public_address)?;
+        Ok(())
     }
 }
 

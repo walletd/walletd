@@ -1,13 +1,15 @@
 
 use hex::encode;
-use keccak_hash::{H256, keccak256};
 use web3::transports::Http;
 use web3::Web3;
+use tiny_keccak::{Hasher, Keccak};
+use libsecp256k1::{PublicKey, SecretKey};
 
-use walletd_coins::CryptoCoin;
+use walletd_coins::{CryptoCoin,CryptoWallet};
 use walletd_bip39::{Language, Mnemonic, MnemonicType, MnemonicHandler};
 use walletd_hd_keys::{BIP32, NetworkType};
-use walletd_cryptowallet::CryptoWallet;
+
+use core::{fmt, fmt::Display, str::FromStr};
 
 // run ganache-cli
 pub const URL: &str = "http://localhost:8545";
@@ -15,7 +17,17 @@ pub const URL: &str = "http://localhost:8545";
 #[derive(Default)]
 pub enum EthereumFormat {
     #[default]
-    Standard,
+    Checksummed,
+    NonChecksummed,
+}
+
+impl EthereumFormat {
+    pub fn to_string(&self) -> String {
+        match self {
+            EthereumFormat::Checksummed => "Checksummed".to_string(),
+            EthereumFormat::NonChecksummed => "NonChecksummed".to_string(),
+        }
+    }
 }
 
 #[derive(Default)]
@@ -30,38 +42,83 @@ pub struct EthereumWallet {
 }
 
 impl CryptoWallet for EthereumWallet {
-    fn new_from_hd_keys(hd_keys: BIP32) -> Result<Self, String> {
+    type MnemonicStyle = Mnemonic;
+    type HDKeyInfo  = BIP32;
+
+    fn new_from_hd_keys(hd_keys: &BIP32) -> Result<Self, String> {
         Ok(Self {
             crypto_type: CryptoCoin::ETH,
-            address_format: EthereumFormat::Standard,
-            public_address: Self::public_address_from_public_key(&hd_keys.extended_public_key.unwrap().to_vec()),
-            private_key: hd_keys.get_private_key().unwrap(),
-            public_key: hd_keys.get_public_key().unwrap(),
+            address_format: EthereumFormat::Checksummed,
+            public_address: Self::public_address_checksummed_from_public_key(&hd_keys.extended_public_key.unwrap().to_vec()),
+            private_key: hd_keys.get_private_key_0x().unwrap(),
+            public_key: hd_keys.get_public_key_0x().unwrap(),
             blockchain_client: None,
             network: hd_keys.network,
         })
     }
+
+    fn new_from_mnemonic(mnemonic: Self::MnemonicStyle) -> Result<Self, String> {
+        let seed = mnemonic.get_seed_bytes()?;
+        let public_key = PublicKey::from_secret_key(
+            &libsecp256k1::SecretKey::parse_slice(&seed).unwrap()).serialize_compressed();
+        let network = NetworkType::MainNet;
+        Ok(Self {
+            crypto_type: CryptoCoin::ETH,
+            address_format: EthereumFormat::Checksummed,
+            private_key: Self::to_0x_hex_format(&seed)?,
+            public_key: Self::to_0x_hex_format(&public_key)?,
+            public_address: Self::public_address_checksummed_from_public_key(&public_key.to_vec()),
+            blockchain_client: None,
+            network,
+        })
+    }
+    
     fn get_public_address(&self) -> String {
         self.public_address.clone()
     }
 }
 
 impl EthereumWallet {
-    pub fn public_address_from_public_key(public_key: &Vec<u8>) -> String {
-        let hash1: keccak_hash::H256 = keccak_hash::keccak(&public_key[1..]);
-        let address = hex::encode(&hash1.as_bytes()[12..]).to_lowercase();
-        let hash2 = hex::encode(&keccak_hash::keccak(hex::decode(&address).unwrap()));
-        let mut checksum_address = "0x".to_string();
-        for c in 0..40 {
-            let ch = match &hash2[c..=c] {
-                "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" => address[c..=c].to_lowercase(),
-                _ => address[c..=c].to_uppercase(),
-            };
-            checksum_address.push_str(&ch);
-        }
-        checksum_address
+    pub fn public_address_checksummed_from_public_key(public_key: &Vec<u8>) -> String {
+        let public_key_full = PublicKey::parse_slice(&public_key, Some(libsecp256k1::PublicKeyFormat::Compressed)).unwrap();
+        let mut output = [0u8; 32];
+        let mut hasher = Keccak::v256();
+        hasher.update(&public_key_full.serialize()[1..]);
+        hasher.finalize(&mut output);
+        let address = hex::encode(&output[12..]).to_lowercase();
 
+        let mut checksum_address = String::new();
+        let mut digest_out2 = [0u8; 32];
+        let mut hasher2 = Keccak::v256();
+        let address_bytes = address.as_bytes();
+        hasher2.update(&address_bytes);
+        hasher2.finalize(&mut digest_out2);
+        let keccak_digest_hex = hex::encode(digest_out2);
+
+        for (i, address_char) in address.chars().enumerate() {
+            let keccak_char= &keccak_digest_hex[i..i+1];
+            if u8::from_str_radix(&keccak_char[..], 16).unwrap() >= 8 {
+                checksum_address.push(address_char.to_ascii_uppercase());
+            }
+            else {
+                checksum_address.push(address_char);
+            }
+        }
+        checksum_address = format!("{}{}", "0x", checksum_address);
+        checksum_address
     }
+
+    pub fn public_address_nonchecksummed_from_public_key(public_key: &Vec<u8>) -> String {
+        let public_key_full = PublicKey::parse_slice(&public_key, Some(libsecp256k1::PublicKeyFormat::Compressed)).unwrap();
+        let mut output = [0u8; 32];
+        let mut hasher = Keccak::v256();
+        hasher.update(&public_key_full.serialize()[1..]);
+        hasher.finalize(&mut output);
+        let mut address = hex::encode(&output[12..]).to_lowercase();
+        address = format!("{}{}", "0x", address);
+        address
+    }
+
     #[tokio::main]
     pub async fn main() -> web3::Result<()> {
         let transport = web3::transports::Http::new(URL)?;
@@ -78,6 +135,18 @@ impl EthereumWallet {
             println!("Balance of {:?}: {}", account, balance);
         }
 
+        Ok(())
+    }
+}
+
+impl Display for EthereumWallet {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "Ethereum Wallet")?;
+        writeln!(f, " Network: {}", self.network)?;
+        writeln!(f, " Private Key: {}", self.private_key)?;
+        writeln!(f, " Public Key: {}", self.public_key)?;
+        writeln!(f, " Address Format: {}", self.address_format.to_string())?;
+        writeln!(f, " Public Address: {}", self. public_address)?;
         Ok(())
     }
 }

@@ -11,10 +11,11 @@ path = "src/lib.rs"
 
 walletd_bip39 = {path = "../../mnemonics/bip39"}
 walletd_coins = {path = "../"}
-walletd_cryptowallet = {path = "../../cryptowallet"}
 walletd_hd_keys = {path = "../../hd_keys"}
 
 hex = "0.4.3"
+libsecp256k1 = { version = "0.7.1" }
 keccak-hash = "0.10.0"
+tiny-keccak = { version = "2.0.2" }
 tokio = { version = "1", features = ["full"] }
 web3 = "0.18.0"

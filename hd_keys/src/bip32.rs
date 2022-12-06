@@ -23,7 +23,7 @@ pub enum DerivType {
     BIP84,
 }
 
-#[derive(Default, PartialEq, Eq)]
+#[derive(Default, PartialEq, Eq, Copy, Clone)]
 pub enum NetworkType {
     #[default]
     MainNet,
@@ -79,8 +79,8 @@ impl BIP32 {
         };
         Ok(bip32_master_node)
     }
-   
-    pub fn get_private_key(&self) -> Result<String, String> {
+
+    pub fn get_private_key_wif(&self) -> Result<String, String> {
         if let Some(extended_private_key) = &self.extended_private_key {
             // using wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
             let mut private_key: Vec<u8> = Vec::new();
@@ -100,9 +100,29 @@ impl BIP32 {
         }
     }
     
-    pub fn get_public_key(&self) -> Result<String, String> {
+    pub fn get_public_key_hex(&self) -> Result<String, String> {
         if let Some(extended_public_key) = &self.extended_public_key {
             return Ok(hex::encode(extended_public_key))
+        }
+        else {
+            return Err("Extended Public Key was not set so Public Key was not able to be obtained".to_string())
+        }
+
+    }
+
+    pub fn get_public_key_0x(&self) -> Result<String, String> {
+        if let Some(extended_public_key) = &self.extended_public_key {
+            return Ok(format!("0x{}",hex::encode(extended_public_key)))
+        }
+        else {
+            return Err("Extended Public Key was not set so Public Key was not able to be obtained".to_string())
+        }
+
+    }
+
+    pub fn get_private_key_0x(&self) -> Result<String, String> {
+        if let Some(extended_private_key) = &self.extended_private_key {
+            return Ok(format!("0x{}",hex::encode(extended_private_key)))
         }
         else {
             return Err("Extended Public Key was not set so Public Key was not able to be obtained".to_string())
@@ -359,14 +379,14 @@ impl fmt::Display for BIP32 {
             " BIP32 Extended Private Key: {}",
             result_priv
             )?;
-        writeln!(fmt, " Private Key: {}", self.get_private_key().unwrap())?;
+        writeln!(fmt, " Private Key: {}", self.get_private_key_wif().unwrap())?;
         let pub_prefix = self.get_prefix_for_public_key_serialization().unwrap();
         let result_pub = self.serialization_extended_public_key(pub_prefix).unwrap();
         writeln!(
             fmt, 
             " BIP32 Extended Public Key: {}",
             result_pub)?;
-        writeln!(fmt, " Public Key: {}", self.get_public_key().unwrap())?;
+        writeln!(fmt, " Public Key: {}", self.get_public_key_hex().unwrap())?;
 
         Ok(())
     }

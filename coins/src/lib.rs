@@ -1,3 +1,6 @@
+use base58::{FromBase58, ToBase58};
+use sha2::{Digest, Sha256, Sha512};
+use hex;
 
 #[derive(Default, PartialEq, Copy, Clone)]
 pub enum CryptoCoin {
@@ -21,6 +24,33 @@ impl CryptoCoin {
             "xmr" | "monero" => Ok(CryptoCoin::XMR),
             _ => Err("Current valid options are BTC, ETH, SOL, or XMR".to_string()),
         }
+    }
+}
+
+pub trait CryptoWallet: Sized {
+    type MnemonicStyle;
+    type HDKeyInfo;
+    fn new_from_hd_keys(hd_keys: &Self::HDKeyInfo) -> Result<Self, String>; 
+    fn new_from_mnemonic(mnemonic: Self::MnemonicStyle) -> Result<Self, String>;
+    fn get_public_address(&self) -> String;
+    fn to_private_key_wif(seed: &[u8], network_prefix: u8) -> Result<String, String>{
+            // using wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
+            let mut private_key: Vec<u8> = Vec::new();
+            private_key.push(network_prefix);
+            private_key.append(&mut seed.to_vec());
+            // assuming public key is compressed
+            private_key.push(0x01);
+            let mut checksum = Sha256::digest(&Sha256::digest(&private_key.as_slice()).to_vec())[0..4].to_vec();
+            private_key.append(&mut checksum);
+            Ok(private_key.to_base58())
+    }
+
+    fn to_public_key_hex(public_key: &[u8]) -> Result<String, String> {
+            Ok(hex::encode(public_key))
+    }
+
+    fn to_0x_hex_format(key: &[u8]) -> Result<String, String> {
+        Ok(format!("0x{}", hex::encode(key)))
     }
 }
 

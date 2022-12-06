@@ -12,7 +12,6 @@ walletd_mnemonics = {path = "./mnemonics"}
 walletd_bip39 = {path = "./mnemonics/bip39"}
 walletd_monero_mnemonic = {path = "./mnemonics/monero_mnemonic"}
 walletd_coins = {path = "./coins"}
-walletd_cryptowallet = {path = "./cryptowallet"}
 walletd_bitcoin = {path = "./coins/bitcoin"}
 walletd_ethereum = {path = "./coins/ethereum"}
 walletd_monero = {path = "./coins/monero"}

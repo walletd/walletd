@@ -9,4 +9,5 @@ pub trait MnemonicHandler {
     fn bytes_to_words(entropy_bytes: &Vec<u8>, wordlist_info: &Self::WordListHandler) -> Result<String, String>;
     fn words_to_bytes(language: Self::LanguageHandler, mnemonic_phrase: &String) -> Result<Vec<u8>, String>;
     fn get_seed(&self) -> Result<String, String>; 
+    fn get_seed_bytes(&self) -> Result<&[u8], String>; 
 }

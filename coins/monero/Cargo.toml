@@ -10,11 +10,15 @@ path = "src/lib.rs"
 [dependencies]
 
 walletd_coins = {path = "../"}
-walletd_cryptowallet = {path = "../../cryptowallet"}
 walletd_monero_mnemonic = {path = "../../mnemonics/monero_mnemonic"}
 walletd_hd_keys = {path = "../../hd_keys"}
 
-
+base58-monero = { version = "1.0.0" }
+curve25519-dalek = { version = "3.2.1" }
+hex = { version = "0.4.2" }
+hmac = { version = "0.12.1" }
+libsecp256k1 = { version = "0.7.1" }
 tiny-keccak = { version = "2.0.2" }
 tokio = { version = "1", features = ["full"] }
 reqwest = { version = "0.11", features = ["json"] }
+sha2 = { version = "0.10.6", default-features = false }
