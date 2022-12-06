@@ -79,7 +79,6 @@ impl BitcoinWallet {
     }
 
     pub fn public_address_bech32_from_public_key(public_key: &Vec<u8>, network_type: &NetworkType) -> String {
-        println!("public_key original: {:?}", public_key);
         let mut data = Ripemd160::digest(&Sha256::digest(public_key).as_slice()).to_vec().to_base32();
         data.insert(0, bech32::u5::try_from_u8(0).unwrap());
         match network_type {
