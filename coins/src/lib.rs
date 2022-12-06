@@ -24,10 +24,6 @@ impl CryptoCoin {
     }
 }
 
-pub trait CryptoTypeData {
-    fn print_public_address(&self) -> ();
-}
-
 pub trait BlockChainConnector {
     type BlockchainClient;
 

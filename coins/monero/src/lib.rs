@@ -1,6 +1,6 @@
 extern crate reqwest;
 
-use walletd_coins::{CryptoCoin, CryptoTypeData};
+use walletd_coins::CryptoCoin;
 use walletd_cryptowallet::{CryptoWallet};
 use walletd_monero_mnemonic::{Language, Mnemonic, MnemonicType, MnemonicHandler};
 use walletd_hd_keys::{BIP32, NetworkType};
@@ -44,6 +44,9 @@ impl CryptoWallet for MoneroWallet {
             blockchain_client: None,
             network: hd_keys.network,
         })
+    }
+    fn get_public_address(&self) -> String {
+        self.public_address.clone()
     }
 }
 

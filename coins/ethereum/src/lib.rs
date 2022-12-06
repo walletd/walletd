@@ -4,7 +4,7 @@ use keccak_hash::{H256, keccak256};
 use web3::transports::Http;
 use web3::Web3;
 
-use walletd_coins::{CryptoCoin, CryptoTypeData};
+use walletd_coins::CryptoCoin;
 use walletd_bip39::{Language, Mnemonic, MnemonicType, MnemonicHandler};
 use walletd_hd_keys::{BIP32, NetworkType};
 use walletd_cryptowallet::CryptoWallet;
@@ -40,6 +40,9 @@ impl CryptoWallet for EthereumWallet {
             blockchain_client: None,
             network: hd_keys.network,
         })
+    }
+    fn get_public_address(&self) -> String {
+        self.public_address.clone()
     }
 }
 
