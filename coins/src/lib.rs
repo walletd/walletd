@@ -31,8 +31,7 @@ pub trait CryptoWallet: Sized {
     type MnemonicStyle;
     type HDKeyInfo;
     fn new_from_hd_keys(hd_keys: &Self::HDKeyInfo) -> Result<Self, String>; 
-    fn new_from_mnemonic(mnemonic: Self::MnemonicStyle) -> Result<Self, String>;
-    fn get_public_address(&self) -> String;
+    fn public_address(&self) -> &String;
     fn to_private_key_wif(seed: &[u8], network_prefix: u8) -> Result<String, String>{
             // using wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
             let mut private_key: Vec<u8> = Vec::new();
@@ -51,6 +50,10 @@ pub trait CryptoWallet: Sized {
 
     fn to_0x_hex_format(key: &[u8]) -> Result<String, String> {
         Ok(format!("0x{}", hex::encode(key)))
+    }
+
+    fn to_bytes_format(key: &[u8]) -> Result<String, String> {
+        Ok(format!("{:?}", key))
     }
 }
 

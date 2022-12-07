@@ -85,7 +85,29 @@ impl CryptoWallet for MoneroWallet {
         })
     }
 
-    fn new_from_mnemonic(mnemonic: Self::MnemonicStyle) -> Result<Self, String> {
+    
+
+    fn public_address(&self) -> &String {
+        &self.public_address
+    }
+}
+
+impl Display for MoneroWallet {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "Monero Wallet")?;
+        writeln!(f, " Network: {}", self.network)?;
+        writeln!(f, " Private Spend Key: {}", self.private_spend_key)?;
+        writeln!(f, " Private View Key: {}", self.private_view_key)?;
+        writeln!(f, " Public Spend Key: {}", self.public_spend_key)?;
+        writeln!(f, " Public View Key: {}", self.public_view_key)?;
+        writeln!(f, " Address Format: {}", self.address_format.to_string())?;
+        writeln!(f, " Public Address: {}", self. public_address)?;
+        Ok(())
+    }
+}
+
+impl MoneroWallet {
+    fn new_from_mnemonic(mnemonic: Mnemonic) -> Result<Self, String> {
         let seed = mnemonic.get_seed_bytes()?;
         let public_key = PublicKey::from_secret_key(
             &libsecp256k1::SecretKey::parse_slice(&seed).unwrap()).serialize_compressed();
@@ -109,27 +131,6 @@ impl CryptoWallet for MoneroWallet {
 
         })
     }
-    
-    fn get_public_address(&self) -> String {
-        self.public_address.clone()
-    }
-}
-
-impl Display for MoneroWallet {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(f, "Monero Wallet")?;
-        writeln!(f, " Network: {}", self.network)?;
-        writeln!(f, " Private Spend Key: {}", self.private_spend_key)?;
-        writeln!(f, " Private View Key: {}", self.private_view_key)?;
-        writeln!(f, " Public Spend Key: {}", self.public_spend_key)?;
-        writeln!(f, " Public View Key: {}", self.public_view_key)?;
-        writeln!(f, " Address Format: {}", self.address_format.to_string())?;
-        writeln!(f, " Public Address: {}", self. public_address)?;
-        Ok(())
-    }
-}
-
-impl MoneroWallet {
     pub fn public_standard_address_from_public_keys(public_spend_key: &String, public_view_key: &String, network_type: &NetworkType) -> String {
         let mut data: Vec<u8> = Vec::new();
         match network_type {

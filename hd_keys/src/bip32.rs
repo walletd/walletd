@@ -6,43 +6,12 @@ type HmacSha512 = Hmac<Sha512>;
 use ripemd::Ripemd160;
 use walletd_coins::CryptoCoin;
 use std::fmt;
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum DerivPathComponent {
-    Master,
-    IndexHardened(u32),
-    IndexNotHardened(u32),
-}
-
-#[derive(Default, PartialEq, Eq)]
-pub enum DerivType {
-    #[default]
-    BIP32,
-    BIP44, 
-    BIP49,
-    BIP84,
-}
-
-#[derive(Default, PartialEq, Eq, Copy, Clone)]
-pub enum NetworkType {
-    #[default]
-    MainNet,
-    TestNet,
-}
-
-impl fmt::Display for NetworkType {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            NetworkType::MainNet => fmt.write_str("mainnet")?,
-            NetworkType::TestNet => fmt.write_str("testnet")?,
-        };
-        Ok(())
-    }
-}
+use crate::{NetworkType, DerivType, DerivPathComponent};
 
 /// Can represent a master node, wallets/accounts, wallet chains, or accounts
 #[derive(Default)]
 pub struct BIP32 {
+    pub master_seed: Vec<u8>,
     pub derivation_path: String,
     pub chain_code: [u8; 32],
     pub depth: u8,
@@ -69,6 +38,7 @@ impl BIP32 {
             &SecretKey::parse_slice(&extended_private_key).unwrap());
 
         let mut bip32_master_node = BIP32 {
+            master_seed: seed.to_vec(),
             chain_code,
             extended_private_key: Some(extended_private_key),
             extended_public_key: Some(extended_public_key.serialize_compressed()),
@@ -265,6 +235,7 @@ impl BIP32 {
             derivation_path: deriv_path,
             derivation_type: deriv_type,
             child_index,
+            master_seed: master_node.master_seed.clone(),
             ..Default::default()
         };
         Ok(derived_bip32)

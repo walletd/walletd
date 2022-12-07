@@ -1,11 +1,13 @@
-extern crate solana_client;
+
 use solana_client::rpc_client::RpcClient;
 use hex; 
 use core::{fmt, fmt::Display, str::FromStr};
+use base58::{FromBase58, ToBase58};
+use ed25519_dalek_bip32::{SecretKey, PublicKey, ExtendedSecretKey, DerivationPath};
 
 const URL: &str = "https://api.devnet.solana.com";
 
-use libsecp256k1::{PublicKey, SecretKey};
+
 use walletd_coins::{CryptoCoin, CryptoWallet};
 use walletd_bip39::{Language, Mnemonic, MnemonicType, MnemonicHandler};
 use walletd_hd_keys::{BIP32, NetworkType};
@@ -25,57 +27,27 @@ impl SolanaFormat {
     }
 }
 
-#[derive(Default)]
 pub struct SolanaWallet {
     crypto_type: CryptoCoin,
     address_format: SolanaFormat,
     public_address: String,
     private_key: String,
     public_key: String, 
+    keypair: [u8; 64],
     network: NetworkType,
     blockchain_client: Option<RpcClient>,
 }
 
-impl CryptoWallet for SolanaWallet {
-    type MnemonicStyle = Mnemonic;
-    type HDKeyInfo = BIP32;
-
-    fn new_from_hd_keys(hd_keys: &BIP32) -> Result<Self, String> {
-        Ok(Self {
-            crypto_type: CryptoCoin::SOL,
-            address_format: SolanaFormat::Standard,
-            public_address: Self::public_address_from_public_key(&hd_keys.extended_public_key.unwrap().to_vec()),
-            private_key: hd_keys.get_private_key_0x().unwrap(),
-            public_key: hd_keys.get_public_key_0x().unwrap(),
-            blockchain_client: None,
-            network: hd_keys.network,
-        })
-    }
-
-    fn new_from_mnemonic(mnemonic: Mnemonic) -> Result<Self, String>{
-        let seed = mnemonic.get_seed_bytes()?;
-        let public_key = PublicKey::from_secret_key(
-            &libsecp256k1::SecretKey::parse_slice(&seed).unwrap()).serialize_compressed();
-        let network = NetworkType::MainNet;
-        Ok(Self {
-            crypto_type: CryptoCoin::SOL,
-            address_format: SolanaFormat::Standard,
-            public_address: Self::public_address_from_public_key(&public_key.to_vec()),
-            private_key: Self::to_0x_hex_format(seed)?,
-            public_key: Self::to_0x_hex_format(&public_key)?,
-            blockchain_client: None,
-            network,
-        })
-    }
-    fn get_public_address(&self) -> String {
-        self.public_address.clone()
-    }
-}    
-
-
 impl SolanaWallet {
     pub fn public_address_from_public_key(public_key: &Vec<u8>) -> String {
-        hex::encode(public_key)
+        public_key.to_base58()
+    }
+
+    pub fn keypair_base58(private_key: &[u8; 32], public_key: &[u8; 33]) -> String {
+        let mut keypair = [0u8; 64];
+        keypair[0..32].copy_from_slice(&private_key.as_slice()[0..32]);
+        keypair[32..64].copy_from_slice(&public_key.as_slice()[1..33]);
+        keypair.to_base58()
     }
 
    

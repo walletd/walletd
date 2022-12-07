@@ -17,26 +17,26 @@ pub const PASS: &str = "test";
 
 #[derive(Default)]
 pub enum BitcoinFormat {
-    /// Pay-to-Pubkey Hash, e.g. 1NoZQSmjYHUZMbqLerwmT4xfe8A6mAo8TT
     P2PKH,
-    /// Pay-to-Witness-Script Hash, e.g. 347N1Thc213QqfYCz3PZkjoJpNv5b14kBd
-    P2WSH,
-    /// SegWit Pay-to-Witness-Public-Key Hash, e.g. 34AgLJhwXrvmkZS1o5TrcdeevMt22Nar53
-    P2SH_P2WPKH,
-    /// Bech32, e.g. bc1pw508d6qejxtdg4y5r3zarvary0c5xw7kw508d6qejxtdg4y5r3zarvary0c5xw7k7grplx
+    P2SH,
     #[default]
     Bech32,
 }
 impl BitcoinFormat {
     pub fn to_string(&self) -> String {
         match self {
-            BitcoinFormat::P2PKH => "P2PKH".to_string(),
-            BitcoinFormat::P2WSH => "P2WSH".to_string(),
-            BitcoinFormat::P2SH_P2WPKH => "P2SH_P2WPKH".to_string(),
-            BitcoinFormat::Bech32 => "Bech32".to_string(), 
+            BitcoinFormat::P2PKH => "Legacy (P2PKH) Address".to_string(),
+            BitcoinFormat::P2SH => "SegWit Address (P2SH Script Function)".to_string(),
+            BitcoinFormat::Bech32 => "Native SegWit Address (P2WPKH) Bech32".to_string(), 
         }
     }
 }
+
+pub struct BitcoinAddress {
+    address: String,
+    format: BitcoinFormat,
+}
+
 
 #[derive(Default)]
 pub struct BitcoinWallet {
@@ -63,60 +63,67 @@ impl CryptoWallet for BitcoinWallet {
             network: hd_keys.network,
         })
     }
-    fn new_from_mnemonic(mnemonic: Self::MnemonicStyle) -> Result<Self, String> {
-        let seed = mnemonic.get_seed_bytes()?;
-        let public_key = PublicKey::from_secret_key(
-            &libsecp256k1::SecretKey::parse_slice(&seed).unwrap()).serialize_compressed();
-        let network = NetworkType::MainNet;
 
-        Ok(Self {
-            crypto_type: CryptoCoin::BTC,
-            address_format: BitcoinFormat::Bech32,
-            private_key: Self::to_private_key_wif(seed, 0x80)?,
-            public_address: Self::public_address_bech32_from_public_key(&public_key.to_vec(), &network),
-            public_key: Self::to_public_key_hex(&public_key)?,
-            blockchain_client: None,
-            network,
-        })
-    }
-    fn get_public_address(&self) -> String {
-        self.public_address.clone()
+    fn public_address(&self) -> &String {
+        &self.public_address
     }
 }
 
 impl BitcoinWallet {
-    // Reference for address formats: https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#p2wpkh-nested-in-bip16-p2sh
 
-    /// The P2PKH is the Legacy address format for Bitcoin
-    pub fn public_address_p2pkh_from_public_key(public_key: &Vec<u8>) -> String {
-        //p2pkh format
-        let mut address = [0u8; 25];
-        
+    fn public_address_p2pkh_from_public_key(public_key: &Vec<u8>) -> String {
+        let mut address = [0u8; 25];        
         address[0] = 0x00;
         address[1..21].copy_from_slice(&BIP32::hash160(&public_key));
-
         let checksum =
                 &(Sha256::digest(Sha256::digest(&address[0..21]).as_slice()).to_vec())[0..4];
         address[21..25].copy_from_slice(checksum);
+        return address.to_base58()
+    }
+
+    fn public_address_p2sh_from_public_key(public_key: &Vec<u8>, network_type: &NetworkType) -> String {
+        let redeem_script = Self::create_redeem_script(public_key);
+        let mut address = [0u8; 25];
+        // prefix
+        match network_type {
+            NetworkType::MainNet => {
+                address[0] = 0x05;
+            }
+            NetworkType::TestNet => {
+                address[0] = 0xC4;
+            }
+        }
+        address[1..21].copy_from_slice(&BIP32::hash160(&Self::create_redeem_script(public_key)));
+        let mut checksum = Sha256::digest(&Sha256::digest(&address[0..21]).to_vec())[0..4].to_vec();
+        address[21..25].copy_from_slice(checksum.as_slice());
         address.to_base58()
     }
 
-    pub fn public_address_bech32_from_public_key(public_key: &Vec<u8>, network_type: &NetworkType) -> String {
+    fn public_address_bech32_from_public_key(public_key: &Vec<u8>, network_type: &NetworkType) -> String {
         let mut data = Ripemd160::digest(&Sha256::digest(public_key).as_slice()).to_vec().to_base32();
-        data.insert(0, bech32::u5::try_from_u8(0).unwrap());
+        data.insert(0, bech32::u5::try_from_u8(0).unwrap()); // version 0
         match network_type {
             NetworkType::MainNet => {
                 let prefix = "bc";
                 let address = bech32::encode(prefix, &data, bech32::Variant::Bech32).unwrap();
-                address
+                return address
             }
             NetworkType::TestNet => {
                 let prefix = "tb";
                 let address = bech32::encode(prefix, &data, bech32::Variant::Bech32).unwrap();
-                address
+                return address
             }
         }
     }
+      /// Returns a redeem script for a given Bitcoin public key.
+      fn create_redeem_script(public_key: &Vec<u8>) -> [u8; 22] {
+        let mut redeem = [0u8; 22];
+        redeem[1] = 0x14;
+        redeem[2..].copy_from_slice(&BIP32::hash160(&public_key));
+        redeem
+    }
+
+    
     pub fn rpc_create_wallet(
         client: &Client,
         wallet_path: &str,

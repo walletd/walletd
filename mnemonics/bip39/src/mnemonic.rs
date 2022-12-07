@@ -81,6 +81,8 @@ impl MnemonicHandler for Mnemonic {
 
     fn from_phrase(language: Language, mnemonic_phrase: &str, passphrase: Option<&str>) -> Result<Mnemonic, String> {
         let phrase: Vec<&str> = mnemonic_phrase.split(" ").collect();
+        println!("phrase: {:?}", phrase);
+
         let word_count = phrase.len();
 
         if word_count % 3 != 0 {
@@ -96,6 +98,7 @@ impl MnemonicHandler for Mnemonic {
         }
         
         let seed_hex = Self::to_seed(language, &mnemonic_phrase.to_string(), passphrase)?;
+        println!("seed_hex {}", seed_hex);
 
         Ok(Mnemonic {
             phrase: mnemonic_phrase.to_string(),

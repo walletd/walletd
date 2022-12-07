@@ -57,24 +57,8 @@ impl CryptoWallet for EthereumWallet {
         })
     }
 
-    fn new_from_mnemonic(mnemonic: Self::MnemonicStyle) -> Result<Self, String> {
-        let seed = mnemonic.get_seed_bytes()?;
-        let public_key = PublicKey::from_secret_key(
-            &libsecp256k1::SecretKey::parse_slice(&seed).unwrap()).serialize_compressed();
-        let network = NetworkType::MainNet;
-        Ok(Self {
-            crypto_type: CryptoCoin::ETH,
-            address_format: EthereumFormat::Checksummed,
-            private_key: Self::to_0x_hex_format(&seed)?,
-            public_key: Self::to_0x_hex_format(&public_key)?,
-            public_address: Self::public_address_checksummed_from_public_key(&public_key.to_vec()),
-            blockchain_client: None,
-            network,
-        })
-    }
-    
-    fn get_public_address(&self) -> String {
-        self.public_address.clone()
+    fn public_address(&self) -> &String {
+        &self.public_address
     }
 }
 
