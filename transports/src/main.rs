@@ -89,32 +89,59 @@ use std::collections::HashMap;
 
 // syntactic sugar for implementing futures
 // fn eth_get_net_version() -> impl Future<Output = ()> {
-pub async fn eth_get_net_version(eth_client: &EthClient) -> Result<(String)> {
+pub async fn eth_get_net_version(eth_client: &EthClient) -> Result<(String)> {    
+    let mut map = HashMap::new();
+    map.insert("jsonrpc", "2.0");
+    map.insert("id", "0");
+    map.insert("method", &eth_client.method);
+    let client = reqwest::Client::new();
+    let response = client
+        .post(&eth_client.endpoint_url)
+        .header(CONTENT_TYPE, "application/json")
+        .header(ACCEPT, "application/json")
+        .json(&map)
+        .send()
+        .await?
+        .text()
+        .await?;
 
-    println!("We're in eth_get_net");
-        let mut map = HashMap::new();
-        map.insert("jsonrpc", "2.0");
-        map.insert("id", "0");
-        map.insert("method", "net_listening");
-        let client = reqwest::Client::new();
-        let response = client
-            .post(&eth_client.endpoint_url)
-            .header(CONTENT_TYPE, "application/json")
-            .header(ACCEPT, "application/json")
-            .json(&map)
-            .send()
-            .await?
-            .text()
-            .await?;
-
-        println!("{:#?}", client);
-        println!("{:#?}", response);
-        Ok((response))
+    println!("{:#?}", client);
+    println!("{:#?}", response);
+    Ok((response))
 }
+
+// pub async fn eth_get_remote_data(eth_client: &EthClient) -> Result<String> {
+//     let result_string: Result<String> = eth_get_net_version(eth_client: &EthClient);
+//     //result_string.unwrap();
+//     Ok(result_string)
+// }
 
 #[derive(Default, Debug)]
 pub struct EthClient {
     endpoint_url: String,
+    method: String,
+    transport_type: TransportType
+}
+
+pub async fn eth_get_gas_price(eth_client: &EthClient) -> Result<String> {
+    let mut map = HashMap::new();
+    map.insert("jsonrpc", "2.0");
+    map.insert("id", "0");
+    map.insert("method", &eth_client.method);
+    let client = reqwest::Client::new();
+    let response = client
+        .post(&eth_client.endpoint_url)
+        .header(CONTENT_TYPE, "application/json")
+        .header(ACCEPT, "application/json")
+        .json(&map)
+        .send()
+        .await?
+        .text()
+        .await?;
+
+    println!("{:#?}", client);
+    println!("{:#?}", response);
+    Ok((response))
 }
 
 // async fn poll_transport() {
@@ -125,12 +152,76 @@ pub struct EthClient {
 // a runtime that allows async / await without having to implement futures ourselves
 #[tokio::main]
 async fn main() {
-    let eth_client = EthClient { endpoint_url: String::from("https://127.0.0.1:8545") };
+    let eth_client = EthClient { 
+        endpoint_url: String::from("http://127.0.0.1:8545"),
+        method: String::from("net_listening"),
+        transport_type: TransportType::HTTP
+    };
     let result: Result<(String)> = eth_get_net_version(&eth_client).await;
+    // let result: Result<String> = eth_get_remote_data(&eth_client).await;
     println!("{:#?}", result);
     println!("Test");
+    let second_eth_client = EthClient { 
+        endpoint_url: String::from("http://127.0.0.1:8545"),
+        method: String::from("eth_gasPrice"),
+        transport_type: TransportType::HTTP
+    };
+    let result: Result<(String)> = eth_get_gas_price(&second_eth_client).await;
+    println!("{:#?}", result);
+    println!("Test");
+
+    let result: Result<String> = eth_get_accounts(&second_eth_client).await;
+    println!("{:#?}", result);
+    println!("Test");
+
+    let result: Result<String> = eth_get_balances(&second_eth_client).await;
+    println!("{:#?}", result);
+    println!("Test");
+
+    // let result: Result<String> = eth_get_addresses(&second_eth_client).await;
+    // println!("{:#?}", result);
+    // println!("Test");
 }
 
+pub async fn eth_get_accounts(eth_client: &EthClient) -> Result<String> {
+    let mut map = HashMap::new();
+    map.insert("jsonrpc", "2.0");
+    map.insert("id", "0");
+    map.insert("method", "eth_accounts");
+    let client = reqwest::Client::new();
+    let response = client
+        .post(&eth_client.endpoint_url)
+        .header(CONTENT_TYPE, "application/json")
+        .header(ACCEPT, "application/json")
+        .json(&map)
+        .send()
+        .await?
+        .text()
+        .await?;
+
+        Ok(response)
+}
+
+
+pub async fn eth_get_balances(eth_client: &EthClient) -> Result<String> {
+    let mut map = HashMap::new();
+    map.insert("jsonrpc", "2.0");
+    map.insert("id", "0");
+    map.insert("method", "eth_getBalance");
+    map.insert("params", "[\"0xd028d24f16a8893bd078259d413372ac01580769\", \"latest\"]");
+    let client = reqwest::Client::new();
+    let response = client
+        .post(&eth_client.endpoint_url)
+        .header(CONTENT_TYPE, "application/json")
+        .header(ACCEPT, "application/json")
+        .json(&map)
+        .send()
+        .await?
+        .text()
+        .await?;
+
+        Ok(response)
+}
 
 // pub async fn eth_get_net_version() -> Result<reqwest::blocking::Response, std::io::Error> {
 //     let client = Client::new();
@@ -157,9 +248,9 @@ async fn main() {
 // }
 
 #[derive(Default, Debug, PartialEq)]
-enum TransportType {
-    //HTTP,
+pub enum TransportType {
     #[default]
+    HTTP,
     HTTPS,
     //WS,
     //WSS,
