@@ -12,7 +12,7 @@ use serde_json::{Value, json};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256, Sha512};
 use walletd_bip39::{Language, Mnemonic, MnemonicHandler, MnemonicType};
-use walletd_coins::{CryptoCoin, CryptoTypeData, CryptoWallet};
+use walletd_coins::{CryptoCoin, CryptoWallet};
 use walletd_hd_keys::{BIP32,NetworkType};
 
 pub const USER: &str = "test";
@@ -50,14 +50,8 @@ pub struct BitcoinWallet {
     public_key: String,
     blockchain_client: Option<Client>,
     network: NetworkType,
-    seed_hex: Option<String>,
 }
 
-impl CryptoTypeData for BitcoinWallet {
-    fn print_public_address(&self) -> () {
-        println!("Public address: {}", self.public_address);
-    }
-}
 
 impl CryptoWallet for BitcoinWallet {
     type HDKeyInfo = BIP32;
@@ -371,13 +365,13 @@ impl Blockstream {
         }
       }"#;
         println!("body = {:?}", body);
-        let transaction: BTransaction = serde_json::from_str(&body.unwrap())?;
+        let transaction: BTransaction = serde_json::from_str(&body.unwrap()).unwrap();
       Ok(transaction)
     }
 }
 
 #[derive(Serialize, Deserialize)]
-struct BTransaction {
+pub struct BTransaction {
     txid: String,
     version: u8,
     locktime: u32,

@@ -50,6 +50,7 @@ pub struct MoneroWallet {
     private_view_key: String,
     public_spend_key: String,
     public_view_key: String,
+
 }
 
 impl CryptoWallet for MoneroWallet {
@@ -79,7 +80,6 @@ impl CryptoWallet for MoneroWallet {
             public_spend_key,
             public_view_key,
             public_address,
-            blockchain_client: None,
             network: hd_keys.network,
         })
     }
@@ -125,7 +125,6 @@ impl MoneroWallet {
             public_spend_key,
             public_view_key,
             public_address,
-            blockchain_client: None,
             network: network,
 
         })
