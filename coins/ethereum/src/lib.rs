@@ -140,12 +140,12 @@ pub struct BlockchainClient {
 }
 
 impl BlockchainClient {
-pub fn new(url: &str) -> Result<Self, String> {
-  let transport = web3::transports::Http::new(url).unwrap();
-  let web3 = web3::Web3::new(transport);
+    pub fn new(url: &str) -> Result<Self, String> {
+    let transport = web3::transports::Http::new(url).unwrap();
+    let web3 = web3::Web3::new(transport);
 
-  Ok(Self {
-    blockchain_client: web3,
-  })
-}
+    Ok(Self {
+        blockchain_client: web3,
+    })
+    }
 }

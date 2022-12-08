@@ -1,20 +1,20 @@
 extern crate reqwest;
 
 use walletd_coins::{CryptoCoin,CryptoWallet};
-use walletd_monero_mnemonic::{Language, Mnemonic, WordList, MnemonicType, MnemonicHandler};
+use walletd_monero_mnemonic::{Language, Mnemonic, WordList, MnemonicHandler};
 use walletd_hd_keys::{BIP32, NetworkType};
 
 use curve25519_dalek::scalar::Scalar;
 use reqwest::header::{ACCEPT, CONTENT_TYPE};
 use std::collections::HashMap;
 use hmac::{Hmac, Mac};
-use sha2::{Digest, Sha256, Sha512};
+use sha2::Sha512;
 type HmacSha512 = Hmac<Sha512>;
 use tiny_keccak::{Hasher, Keccak};
 use curve25519_dalek::{constants::ED25519_BASEPOINT_TABLE, edwards::EdwardsBasepointTable};
 use base58_monero as base58;
-use core::{fmt, fmt::Display, str::FromStr};
-use libsecp256k1::{PublicKey, SecretKey};
+use core::{fmt, fmt::Display};
+use libsecp256k1::{PublicKey};
 
 // example running monero private testnet, https://github.com/moneroexamples/private-testnet
 const URL: &str = "http://localhost:28081/json_rpc";

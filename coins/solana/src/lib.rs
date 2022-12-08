@@ -7,7 +7,6 @@ use ed25519_dalek_bip32::{SecretKey, PublicKey, ExtendedSecretKey, DerivationPat
 
 const URL: &str = "https://api.devnet.solana.com";
 
-
 use walletd_coins::{CryptoCoin, CryptoWallet};
 use walletd_bip39::{Language, Mnemonic, MnemonicType, MnemonicHandler};
 use walletd_hd_keys::{BIP32, NetworkType};
@@ -49,9 +48,7 @@ impl SolanaWallet {
         keypair[0..32].copy_from_slice(&private_key.as_slice()[0..32]);
         keypair[32..64].copy_from_slice(&public_key.as_slice()[1..33]);
         keypair.to_base58()
-    }
-
-   
+    }   
 }
 
 impl Display for SolanaWallet {
@@ -65,7 +62,6 @@ impl Display for SolanaWallet {
         Ok(())
     }
 }
-
 
 pub struct BlockchainClient {
     blockchain_client: RpcClient,

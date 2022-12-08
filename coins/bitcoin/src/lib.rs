@@ -1,17 +1,16 @@
 extern crate bitcoincore_rpc;
 extern crate reqwest;
-use base58::{FromBase58, ToBase58};
+use base58::ToBase58;
 use bech32::ToBase32;
 use ripemd::Ripemd160;
-use core::{fmt, fmt::Display, str::FromStr};
-use libsecp256k1::{PublicKey, SecretKey};
+use core::{fmt, fmt::Display};
 use bitcoincore_rpc::bitcoin::{Block, BlockHash, Txid, Transaction};
 use bitcoincore_rpc::bitcoincore_rpc_json::GetBlockchainInfoResult;
 use bitcoincore_rpc::{Auth, Client, RpcApi};
 use serde_json::{Value, json};
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256, Sha512};
-use walletd_bip39::{Language, Mnemonic, MnemonicHandler, MnemonicType};
+use sha2::{Digest, Sha256};
+use walletd_bip39::Mnemonic;
 use walletd_coins::{CryptoCoin, CryptoWallet};
 use walletd_hd_keys::{BIP32,NetworkType};
 
