@@ -107,7 +107,7 @@ impl Display for MoneroWallet {
 
 impl MoneroWallet {
     fn new_from_mnemonic(mnemonic: Mnemonic) -> Result<Self, String> {
-        let seed = mnemonic.get_seed_bytes()?;
+        let seed = mnemonic.seed_bytes()?;
         let public_key = PublicKey::from_secret_key(
             &libsecp256k1::SecretKey::parse_slice(&seed).unwrap()).serialize_compressed();
         let network = NetworkType::MainNet;

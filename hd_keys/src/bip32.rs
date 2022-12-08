@@ -24,6 +24,7 @@ pub struct BIP32 {
 }
 
 impl BIP32 {
+    /// Create new master BIP32 node based on a seed
     pub fn new_master_node(seed: &[u8]) -> Result<Self, String> {
         let mut mac: HmacSha512 = HmacSha512::new_from_slice(b"Bitcoin seed").unwrap(); // the "Bitcoin seed" string is specified in the bip32 protocol
         mac.update(seed);

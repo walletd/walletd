@@ -59,6 +59,7 @@ impl MnemonicHandler for Mnemonic {
     type MnemonicTypeSpec = MnemonicType;
     type WordListHandler = WordList;
 
+    /// Generates a new mnemonic given the language, length of mnemonic, and optional passphrase
     fn new(language: Language, mnemonic_type: MnemonicType, passphrase: Option<&str>) -> Mnemonic {
         let wordlist = WordList::new(language);
 
@@ -78,7 +79,8 @@ impl MnemonicHandler for Mnemonic {
             seed: hex::decode(seed_hex).unwrap().to_vec(),       
         }
     }
-
+    
+    /// Creates a mnemonic object given a mnemonic_phrase, language and an optional passphrase
     fn from_phrase(language: Language, mnemonic_phrase: &str, passphrase: Option<&str>) -> Result<Mnemonic, String> {
         let phrase: Vec<&str> = mnemonic_phrase.split(" ").collect();
         println!("phrase: {:?}", phrase);
@@ -107,6 +109,7 @@ impl MnemonicHandler for Mnemonic {
         })
     }
 
+    /// Converting entropy bytes to the mnemonic words, given a wordlist
     fn bytes_to_words(entropy_bytes: &Vec<u8>, wordlist_info: &WordList) -> Result<String, String> {
         if entropy_bytes.len() % 4 != 0 {
             return Err("Entropy must be a multiple of 4 bytes (32 bits) in length".to_string());
@@ -155,6 +158,7 @@ impl MnemonicHandler for Mnemonic {
         Ok(phrase.join(" "))
     }
 
+    /// Converts the words of a mnemonic phrase to the bytes representation
     fn words_to_bytes(language: Language, mnemonic_phrase: &String) -> Result<Vec<u8>, String> {
         let wordlist = WordList::new(language);
         let phrase: Vec<&str> = mnemonic_phrase.split(" ").collect();
@@ -182,12 +186,14 @@ impl MnemonicHandler for Mnemonic {
         }
     }
 
-    fn get_seed(&self) -> Result<String, String> {
+    /// Returns the seed as in a hexadecimal representation
+    fn seed_hex(&self) -> Result<String, String> {
         let seed = hex::encode(self.seed.as_slice());
         Ok(seed)
     }
 
-    fn get_seed_bytes(&self) -> Result<&[u8], String> {
+    /// Returns the seed as bytes
+    fn seed_bytes(&self) -> Result<&[u8], String> {
         Ok(&self.seed.as_slice())
     }
 }

@@ -12,6 +12,8 @@ pub enum DerivType {
     BIP84,
 }
 impl DerivType {
+
+    /// Returns the purppose string representation associated with each derivation type
     pub fn purpose(&self) -> &str {
         match self {
             DerivType::BIP32 => "0'",
@@ -20,11 +22,13 @@ impl DerivType {
             DerivType::BIP84 => "84'",
         }
     }
-
+    /// Derives the default first account with the specified derivation path scheme
     pub fn derive_first_account(&self, master_node: &BIP32, coin: &CryptoCoin) -> Result<BIP32, String> {
         let derived_account_path = format!("{}{}{}{}", "m/", &self.purpose(), coin.coin_type(), "'/0'");
         BIP32::derived_from_master_with_specified_path(&master_node, derived_account_path)
     }
+
+    // Derives the default first address with the specified derivation path scheme
     pub fn derive_first_address(&self, master_node: &BIP32, coin: &CryptoCoin) -> Result<BIP32, String> {
         let derived_first_account = &self.derive_first_account(master_node, coin)?;
         println!("First Derived Account HD Key Info: \n{}", derived_first_account);

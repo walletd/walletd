@@ -17,6 +17,7 @@ impl Default for MnemonicType {
 }
 
 impl MnemonicType {
+    /// Creates the MnemonicType based on the word count
     pub fn for_word_count(size: usize) -> Result<MnemonicType, String> {
         let mnemonic_type = match size {
             12 => MnemonicType::Words12,
@@ -30,6 +31,7 @@ impl MnemonicType {
         Ok(mnemonic_type)
     }
 
+    /// Creates the MnemonicType based on the length of the entropy in bits
     pub fn for_key_size(size: usize) -> Result<MnemonicType, String> {
         let mnemonic_type = match size {
             128 => MnemonicType::Words12,
@@ -43,12 +45,14 @@ impl MnemonicType {
         Ok(mnemonic_type)
     }
 
+    /// Creates the MnemonicType based on the number of words in the mnemonic phrase
     pub fn for_phrase(phrase: &str) -> Result<MnemonicType, String> {
         let word_count = phrase.split(" ").count();
 
         Self::for_word_count(word_count)
     }
 
+    /// Returns the number of entropy bits associated with the MnemonicType
     pub fn entropy_bits(&self) -> usize {
         (*self as usize) >> ENTROPY_OFFSET
     }

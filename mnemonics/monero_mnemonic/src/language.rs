@@ -24,6 +24,8 @@ pub struct WordList {
 }
 
 impl WordList {
+
+    /// Creates a new wordlist for a specified language
     pub fn new(language: Language) -> WordList {
         match language {
             Language::English => {
@@ -125,6 +127,7 @@ impl WordList {
         }
     }
 
+    /// Get the index of the word in the wordlist
     pub fn get_index(&self, word: &str) -> Result<usize, String> {
         match self.inner.iter().position(|element| element == &word) {
             Some(index) => Ok(index),
@@ -132,6 +135,7 @@ impl WordList {
         }
     }
 
+    /// Create a version of the wordlist with each word trimmed 
     pub fn create_trimmed_word_map(wordlist: &str, unique_prefix_len: usize) -> Vec<&str> {
         let wordlist2: Vec<&str> = wordlist.split_whitespace().collect();
         wordlist2
@@ -140,6 +144,7 @@ impl WordList {
             .collect()
     }
 
+    /// Trim one word
     pub fn to_trimmed(word: &str, unique_prefix_len: usize) -> String {
         match word.chars().count() > unique_prefix_len {
             true => word.chars().take(unique_prefix_len).collect(),
@@ -147,6 +152,7 @@ impl WordList {
         }
     }
 
+    /// Get the index of the trimmed word
     pub fn get_trimmed_word_index(
         word: &str,
         trimmed_word_map: &HashMap<String, usize>,
@@ -165,6 +171,7 @@ impl WordList {
         }
     }
 
+    /// Calculate the checksum word
     pub fn checksum_word(&self, phrase: &Vec<&str>) -> String {
         let phrase_trimmed = phrase
             .iter()
