@@ -39,7 +39,6 @@ pub struct BitcoinAddress {
     format: BitcoinFormat,
 }
 
-
 #[derive(Default)]
 pub struct BitcoinWallet {
     crypto_type: CryptoCoin,
@@ -49,7 +48,6 @@ pub struct BitcoinWallet {
     public_key: String,
     network: NetworkType,
 }
-
 
 impl CryptoWallet for BitcoinWallet {
     type HDKeyInfo = BIP32;
@@ -136,6 +134,7 @@ impl BitcoinWallet {
             .unwrap();
         Ok(created_wallet)
     }
+    /* Commenting out old code used for initial demo
     pub fn rpc_load_wallet(
         &self,
         wallet_path: &str,
@@ -188,6 +187,7 @@ impl BitcoinWallet {
     //     let unloaded = self.blockchain_client.as_ref().expect("Error rpc unload wallet").unload_wallet(Some(wallet_path)).unwrap();
     //     Ok(unloaded)
     // }
+    */
 }
 
 impl Display for BitcoinWallet {
