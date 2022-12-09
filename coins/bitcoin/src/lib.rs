@@ -47,7 +47,6 @@ pub struct BitcoinWallet {
     public_address: String,
     private_key: String,
     public_key: String,
-    blockchain_client: Option<Client>,
     network: NetworkType,
 }
 
@@ -62,7 +61,6 @@ impl CryptoWallet for BitcoinWallet {
             public_address: Self::public_address_bech32_from_public_key(&hd_keys.extended_public_key.unwrap().to_vec(), &hd_keys.network),
             private_key: hd_keys.get_private_key_wif().unwrap(),
             public_key: hd_keys.get_public_key_hex().unwrap(),
-            blockchain_client: None,
             network: hd_keys.network,
         })
     }
