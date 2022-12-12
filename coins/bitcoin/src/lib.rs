@@ -52,11 +52,20 @@ pub struct BitcoinWallet {
 impl CryptoWallet for BitcoinWallet {
     type HDKeyInfo = BIP32;
     type MnemonicStyle = Mnemonic;
-    fn new_from_hd_keys(hd_keys: &BIP32) -> Result<Self, String> {
+    type AddressFormat = BitcoinFormat;
+    fn new_from_hd_keys(hd_keys: &BIP32, address_format: BitcoinFormat) -> Result<Self, String> {
+        let public_key_bytes = &hd_keys.extended_public_key.unwrap().to_vec();
+        let mut public_address: String;
+        match address_format {
+            BitcoinFormat::P2PKH => public_address = Self::public_address_p2pkh_from_public_key(public_key_bytes),
+            BitcoinFormat::P2SH => public_address = Self::public_address_p2sh_from_public_key(public_key_bytes, &hd_keys.network),
+            BitcoinFormat::Bech32 => public_address = Self::public_address_bech32_from_public_key(public_key_bytes, &hd_keys.network), 
+        }
+
         Ok(Self {
             crypto_type: CryptoCoin::BTC,
-            address_format: BitcoinFormat::Bech32,
-            public_address: Self::public_address_bech32_from_public_key(&hd_keys.extended_public_key.unwrap().to_vec(), &hd_keys.network),
+            address_format,
+            public_address,
             private_key: hd_keys.get_private_key_wif().unwrap(),
             public_key: hd_keys.get_public_key_hex().unwrap(),
             network: hd_keys.network,
@@ -70,7 +79,7 @@ impl CryptoWallet for BitcoinWallet {
 
 impl BitcoinWallet {
 
-    pub fn public_address_p2pkh_from_public_key(public_key: Vec<u8>) -> String {
+    pub fn public_address_p2pkh_from_public_key(public_key: &Vec<u8>) -> String {
         //p2pkh format
         let mut address = [0u8; 25];
 

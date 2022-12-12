@@ -56,8 +56,9 @@ pub struct MoneroWallet {
 impl CryptoWallet for MoneroWallet {
     type MnemonicStyle = Mnemonic;
     type HDKeyInfo = BIP32;
+    type AddressFormat = MoneroFormat;
 
-    fn new_from_hd_keys(hd_keys: &BIP32) -> Result<Self, String> {
+    fn new_from_hd_keys(hd_keys: &BIP32, address_format: Self::AddressFormat) -> Result<Self, String> {
         // uses BIP85 specification, https://github.com/bitcoin/bips/blob/master/bip-0085.mediawiki
         let mut entropy = HmacSha512::new_from_slice(b"bip-entropy-from-k").unwrap();
         entropy.update(&hd_keys.extended_private_key.unwrap());
@@ -70,6 +71,11 @@ impl CryptoWallet for MoneroWallet {
         let private_view_key = Self::private_view_key_from_private_spend_key(&private_spend_key);
         let public_spend_key = Self::public_spend_key_from_private_spend_key(&private_spend_key);
         let public_view_key = Self::public_view_key_from_private_view_key(&private_view_key);
+        let mut public_address: String;
+        match address_format {
+            MoneroFormat::Standard => public_address = Self::public_standard_address_from_public_keys(&public_spend_key, &public_view_key, &hd_keys.network),
+            _ => return Err("Monero address functionality not currently set up for this address type".to_string()),
+        }
         let public_address = Self::public_standard_address_from_public_keys(&public_spend_key, &public_view_key, &hd_keys.network);
 
         Ok(Self {

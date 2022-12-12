@@ -44,12 +44,19 @@ pub struct EthereumWallet {
 impl CryptoWallet for EthereumWallet {
     type MnemonicStyle = Mnemonic;
     type HDKeyInfo  = BIP32;
+    type AddressFormat = EthereumFormat;
 
-    fn new_from_hd_keys(hd_keys: &BIP32) -> Result<Self, String> {
+    fn new_from_hd_keys(hd_keys: &BIP32, address_format: EthereumFormat) -> Result<Self, String> {
+        let public_key_bytes = &hd_keys.extended_public_key.unwrap().to_vec();
+        let mut public_address: String;
+        match address_format {
+            EthereumFormat::Checksummed => public_address = Self::public_address_checksummed_from_public_key(public_key_bytes),
+            EthereumFormat::NonChecksummed => public_address = Self::public_address_nonchecksummed_from_public_key(public_key_bytes), 
+        }
         Ok(Self {
             crypto_type: CryptoCoin::ETH,
-            address_format: EthereumFormat::Checksummed,
-            public_address: Self::public_address_checksummed_from_public_key(&hd_keys.extended_public_key.unwrap().to_vec()),
+            address_format,
+            public_address,
             private_key: hd_keys.get_private_key_0x().unwrap(),
             public_key: hd_keys.get_public_key_0x().unwrap(),
             blockchain_client: None,
