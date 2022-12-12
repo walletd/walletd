@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use walletd_bip39::Mnemonic;
 use walletd_coins::{CryptoCoin, CryptoWallet};
-use walletd_hd_keys::{BIP32,NetworkType};
+use walletd_hd_keys::{BIP32,NetworkType, DerivType};
 
 pub const USER: &str = "test";
 pub const PASS: &str = "test";
@@ -39,6 +39,56 @@ pub struct BitcoinAddress {
     format: BitcoinFormat,
 }
 
+pub struct AssociatedWallets {
+    pub wallets: Vec<BitcoinWallet>,
+    pub derived_info: Vec<BIP32>,
+}
+
+impl AssociatedWallets {
+    pub fn new_discover_associated_wallets(bip32_master: &BIP32, deriv_type: &DerivType) -> Result<Self, String> {
+        let mut associated_wallets: Vec<BitcoinWallet> = Vec::new();
+        let mut derived_info: Vec<BIP32> = Vec::new();
+        let coin_type = CryptoCoin::BTC;
+        let gap_limit = 20;
+        let mut current_gap = 0;
+        let mut search_next_account = true;
+        let mut account_index = 0; // hardened
+        let mut address_index = 0; // not hardened
+
+        while (search_next_account) {
+            search_next_account = false;
+            while current_gap < gap_limit {
+                let mut derived = deriv_type.derive_specify_account_address_indices(&bip32_master, &coin_type, account_index, address_index)?;
+                let mut wallet = BitcoinWallet::new_from_hd_keys(&derived, BitcoinFormat::Bech32)?;
+                let mut exists = BitcoinWallet::check_if_past_transactions_exist(wallet.public_address())?;
+                
+                if exists {
+                    search_next_account = true;
+                    associated_wallets.push(wallet);
+                    derived_info.push(derived);
+                }
+                else {
+                    current_gap += 1;
+                }
+                address_index += 1;
+            }
+            account_index += 1;
+            address_index = 0;
+            current_gap = 0;
+        }   
+        
+        Ok (Self {
+            wallets: associated_wallets,
+            derived_info,
+
+        })
+    }
+    
+    pub fn add_asociated_wallet(&mut self, wallet: BitcoinWallet) {
+        self.wallets.push(wallet);
+    }
+
+}
 #[derive(Default)]
 pub struct BitcoinWallet {
     crypto_type: CryptoCoin,
@@ -78,6 +128,19 @@ impl CryptoWallet for BitcoinWallet {
 }
 
 impl BitcoinWallet {
+    
+    pub fn check_if_past_transactions_exist(public_address: &String) -> Result<bool, String> {
+        let client = Blockstream::new(BLOCKSTREAM_URL).unwrap();
+        let transactions = client.transactions(public_address.as_str())?;
+        let transactions_str = transactions.as_str();
+    
+        if transactions_str.unwrap() == "[]" {
+            return Ok(false)
+        }
+        else {
+            return Ok(true)
+        }    
+    }
 
     pub fn public_address_p2pkh_from_public_key(public_key: &Vec<u8>) -> String {
         //p2pkh format
@@ -294,7 +357,7 @@ impl Blockstream {
     // fetch transactions from blockstream
     pub fn transactions(&self, address: &str) -> Result<Value, String> {
       let body = reqwest::blocking::get(format!("{}/address/{}/txs",BLOCKSTREAM_URL,address)).expect("Error getting transactions").text();
-        println!("body = {:?}", body);
+        //println!("body = {:?}", body);
         let transactions = json!(&body.unwrap());
       Ok(transactions)
     }

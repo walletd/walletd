@@ -248,6 +248,7 @@ impl BIP32 {
             &master_node,
             bip44_deriv_path)
     }
+
     pub fn serialization_extended_private_key(&self, prefix: [u8; 4]) -> Result<String, String> {
         if let Some(extended_private_key) = self.extended_private_key {
             let mut result = [0u8; 82];
