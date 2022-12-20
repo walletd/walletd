@@ -1,0 +1,22 @@
+[package]
+name = "walletd_bip39"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "walletd_bip39"
+path = "src/lib.rs"
+
+[dependencies]
+mnemonic_model = {path = "../model"}
+
+bitvec = { version = "0.17.4" }
+curve25519-dalek = { version = "2.1.0" }
+hmac = { version = "0.7.0" }
+libsecp256k1 = { version = "0.3.5", default-features = false, features = ["hmac"] }
+rand = { version = "0.7" }
+sha2 = { version = "0.8", default-features = false }
+hex = { version = "0.4.2" }
+pbkdf2 = { version = "0.3.0", features=["parallel"], default-features = false }
