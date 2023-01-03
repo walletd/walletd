@@ -9,9 +9,8 @@ static KOREAN: &'static str = include_str!("langs/korean.txt");
 static SPANISH: &'static str = include_str!("langs/spanish.txt");
 static PORTUGUESE: &'static str = include_str!("langs/portuguese.txt");
 
-use std::str::FromStr;
 use std::fmt;
-
+use std::str::FromStr;
 
 #[derive(Debug)]
 pub struct WordList {
@@ -62,6 +61,13 @@ impl WordList {
     }
 }
 
+/// The choice of language for a mnemonic phrase not only determines the words used,
+/// but also has an impact on the binary value of each word when the ['Mnemonic'][Mnemonic] is converted into a ['Seed'][Seed].
+///
+/// English is the only officially supported language, the rest are provided for convenience.
+///
+/// [Mnemonic]: ./mnemonic/struct.Mnemonic.html
+/// [Seed]: ./seed/struct.Seed.html
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Language {
     English,
@@ -77,27 +83,27 @@ pub enum Language {
 }
 
 impl FromStr for Language {
-
-  type Err = ();
-
-  fn from_str(input: &str) -> Result<Language, Self::Err> {
-      match input {
-          "english"  => Ok(Language::English),
-          "chinese_simplified"  => Ok(Language::ChineseSimplified),
-          "chinese_traditional"  => Ok(Language::ChineseTraditional),
-          "czech" => Ok(Language::Czech),
-          "french" => Ok(Language::French),
-          "italian" => Ok(Language::Italian),
-          "japanese" => Ok(Language::Japanese),
-          "korean" => Ok(Language::Korean),
-          "portuguese" => Ok(Language::Portuguese),
-          "spanish" => Ok(Language::Spanish),
-          _      => Err(()),
-      }
-  }
+    type Err = ();
+    /// Converts a string to a Language.
+    fn from_str(input: &str) -> Result<Language, Self::Err> {
+        match input {
+            "English" => Ok(Language::English),
+            "Chinese Simplified" => Ok(Language::ChineseSimplified),
+            "Chinese Traditional" => Ok(Language::ChineseTraditional),
+            "Czech" => Ok(Language::Czech),
+            "French" => Ok(Language::French),
+            "Italian" => Ok(Language::Italian),
+            "Japanese" => Ok(Language::Japanese),
+            "Korean" => Ok(Language::Korean),
+            "Portuguese" => Ok(Language::Portuguese),
+            "Spanish" => Ok(Language::Spanish),
+            _ => Err(()),
+        }
+    }
 }
 
 impl fmt::Display for Language {
+    /// Converts a Language to a string.
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Language::English => fmt.write_str("English")?,
@@ -116,12 +122,14 @@ impl fmt::Display for Language {
 }
 
 impl Default for Language {
+    /// Returns the default language, English.
     fn default() -> Language {
         Language::English
     }
 }
 
 impl Language {
+    /// Returns a new Language with default language set.
     pub fn new() -> Self {
         Self::default()
     }
@@ -129,14 +137,138 @@ impl Language {
 
 #[cfg(test)]
 mod tests {
-  use super::*;
+    use super::*;
 
-  #[test]
-  fn test_wordlist() {
-    let wordlist = WordList::new(Language::English);
-    assert_eq!(wordlist.inner.len(), 2048);
-    assert_eq!(wordlist.get_index("abandon").unwrap(), 0);
-    assert_eq!(wordlist.get_index("zoo").unwrap(), 2047);
-    assert!(wordlist.get_index("invalid").is_err());
-  }
+    #[test]
+    fn test_from_str_language() {
+        assert_eq!(Language::English, Language::from_str("English").unwrap());
+        assert_eq!(
+            Language::ChineseSimplified,
+            Language::from_str("Chinese Simplified").unwrap()
+        );
+        assert_eq!(
+            Language::ChineseTraditional,
+            Language::from_str("Chinese Traditional").unwrap()
+        );
+        assert_eq!(Language::Czech, Language::from_str("Czech").unwrap());
+        assert_eq!(Language::French, Language::from_str("French").unwrap());
+        assert_eq!(Language::Italian, Language::from_str("Italian").unwrap());
+        assert_eq!(Language::Japanese, Language::from_str("Japanese").unwrap());
+        assert_eq!(Language::Korean, Language::from_str("Korean").unwrap());
+        assert_eq!(
+            Language::Portuguese,
+            Language::from_str("Portuguese").unwrap()
+        );
+        assert_eq!(Language::Spanish, Language::from_str("Spanish").unwrap());
+    }
+
+    #[test]
+    fn test_print_language() {
+        assert_eq!(format!("{}", Language::English), "English");
+        assert_eq!(
+            format!("{}", Language::ChineseSimplified),
+            "Chinese Simplified"
+        );
+        assert_eq!(
+            format!("{}", Language::ChineseTraditional),
+            "Chinese Traditional"
+        );
+        assert_eq!(format!("{}", Language::Czech), "Czech");
+        assert_eq!(format!("{}", Language::French), "French");
+        assert_eq!(format!("{}", Language::Italian), "Italian");
+        assert_eq!(format!("{}", Language::Japanese), "Japanese");
+        assert_eq!(format!("{}", Language::Korean), "Korean");
+        assert_eq!(format!("{}", Language::Portuguese), "Portuguese");
+        assert_eq!(format!("{}", Language::Spanish), "Spanish");
+    }
+
+    #[test]
+    fn test_chinese_simplified_wordlist() {
+        let wordlist = WordList::new(Language::ChineseSimplified);
+        assert_eq!(wordlist.inner.len(), 2048);
+        assert_eq!(wordlist.get_index("的").unwrap(), 0);
+        assert_eq!(wordlist.get_index("歇").unwrap(), 2047);
+        // assert!(wordlist.get_index("效").is_err()); // cant find a character thats not in the list
+    }
+
+    #[test]
+    fn test_chinese_traditional_wordlist() {
+        let wordlist = WordList::new(Language::ChineseTraditional);
+        assert_eq!(wordlist.inner.len(), 2048);
+        assert_eq!(wordlist.get_index("的").unwrap(), 0);
+        assert_eq!(wordlist.get_index("歇").unwrap(), 2047);
+        // assert!(wordlist.get_index("效").is_err()); // cant find a character thats not in the list
+    }
+
+    #[test]
+    fn test_czech_wordlist() {
+        let wordlist = WordList::new(Language::Czech);
+        assert_eq!(wordlist.inner.len(), 2048);
+        assert_eq!(wordlist.get_index("abdikace").unwrap(), 0);
+        assert_eq!(wordlist.get_index("zvyk").unwrap(), 2047);
+        assert!(wordlist.get_index("neplatný").is_err());
+    }
+
+    #[test]
+    fn test_english_wordlist() {
+        let wordlist = WordList::new(Language::English);
+        assert_eq!(wordlist.inner.len(), 2048);
+        assert_eq!(wordlist.get_index("abandon").unwrap(), 0);
+        assert_eq!(wordlist.get_index("zoo").unwrap(), 2047);
+        assert!(wordlist.get_index("invalid").is_err());
+    }
+
+    #[test]
+    fn test_french_wordlist() {
+        let wordlist = WordList::new(Language::French);
+        assert_eq!(wordlist.inner.len(), 2048);
+        assert_eq!(wordlist.get_index("abaisser").unwrap(), 0);
+        assert_eq!(wordlist.get_index("zoologie").unwrap(), 2047);
+        assert!(wordlist.get_index("invalide").is_err());
+    }
+
+    #[test]
+    fn test_italian_wordlist() {
+        let wordlist = WordList::new(Language::Italian);
+        assert_eq!(wordlist.inner.len(), 2048);
+        assert_eq!(wordlist.get_index("abaco").unwrap(), 0);
+        assert_eq!(wordlist.get_index("zuppa").unwrap(), 2047);
+        assert!(wordlist.get_index("valido").is_err());
+    }
+
+    #[test]
+    fn test_japanese_wordlist() {
+        let wordlist = WordList::new(Language::Japanese);
+        assert_eq!(wordlist.inner.len(), 2048);
+        assert_eq!(wordlist.get_index("あいこくしん").unwrap(), 0);
+        assert_eq!(wordlist.get_index("われる").unwrap(), 2047);
+        assert!(wordlist.get_index("無効").is_err());
+    }
+
+    #[test]
+    fn test_korean_wordlist() {
+        let wordlist = WordList::new(Language::Korean);
+        assert_eq!(wordlist.inner.len(), 2048);
+        assert_eq!(wordlist.get_index("가격").unwrap(), 0);
+        assert_eq!(wordlist.get_index("힘껏").unwrap(), 2047);
+        assert!(wordlist.get_index("유효하지 않은").is_err());
+    }
+
+    #[test]
+    fn test_portuguese_wordlist() {
+        let wordlist = WordList::new(Language::Portuguese);
+        assert_eq!(wordlist.inner.len(), 2048);
+        assert_eq!(wordlist.get_index("abacate").unwrap(), 0);
+        assert_eq!(wordlist.get_index("zumbido").unwrap(), 2047);
+        assert!(wordlist.get_index("inválido").is_err());
+    }
+
+    #[test]
+    fn test_spanish_wordlist() {
+        let wordlist = WordList::new(Language::Spanish);
+        assert_eq!(wordlist.inner.len(), 2048);
+        assert_eq!(wordlist.get_index("ábaco").unwrap(), 0);
+        assert_eq!(wordlist.get_index("zurdo").unwrap(), 2047);
+        assert!(wordlist.get_index("inválido").is_err());
+    }
 }

@@ -10,7 +10,7 @@ name = "walletd_bip39"
 path = "src/lib.rs"
 
 [dependencies]
-mnemonic_model = {path = "../model"}
+walletd_mnemonic_model = {path = "../model"}
 
 bitvec = { version = "0.17.4" }
 curve25519-dalek = { version = "2.1.0" }

@@ -1,0 +1,11 @@
+[package]
+name = "walletd_mnemonic_model"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "walletd_mnemonic_model"
+path = "src/lib.rs"
+
+[dependencies]
+hex = { version = "0.4.2" }
