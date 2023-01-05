@@ -24,6 +24,7 @@ pub struct BIP32 {
 }
 
 impl BIP32 {
+    /// Create new master BIP32 node based on a seed
     pub fn new_master_node(seed: &[u8]) -> Result<Self, String> {
         let mut mac: HmacSha512 = HmacSha512::new_from_slice(b"Bitcoin seed").unwrap(); // the "Bitcoin seed" string is specified in the bip32 protocol
         mac.update(seed);
@@ -247,6 +248,7 @@ impl BIP32 {
             &master_node,
             bip44_deriv_path)
     }
+
     pub fn serialization_extended_private_key(&self, prefix: [u8; 4]) -> Result<String, String> {
         if let Some(extended_private_key) = self.extended_private_key {
             let mut result = [0u8; 82];

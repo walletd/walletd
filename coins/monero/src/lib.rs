@@ -1,20 +1,20 @@
 extern crate reqwest;
 
 use walletd_coins::{CryptoCoin,CryptoWallet};
-use walletd_monero_mnemonic::{Language, Mnemonic, WordList, MnemonicType, MnemonicHandler};
+use walletd_monero_mnemonic::{Language, Mnemonic, WordList, MnemonicHandler};
 use walletd_hd_keys::{BIP32, NetworkType};
 
 use curve25519_dalek::scalar::Scalar;
 use reqwest::header::{ACCEPT, CONTENT_TYPE};
 use std::collections::HashMap;
 use hmac::{Hmac, Mac};
-use sha2::{Digest, Sha256, Sha512};
+use sha2::Sha512;
 type HmacSha512 = Hmac<Sha512>;
 use tiny_keccak::{Hasher, Keccak};
 use curve25519_dalek::{constants::ED25519_BASEPOINT_TABLE, edwards::EdwardsBasepointTable};
 use base58_monero as base58;
-use core::{fmt, fmt::Display, str::FromStr};
-use libsecp256k1::{PublicKey, SecretKey};
+use core::{fmt, fmt::Display};
+use libsecp256k1::{PublicKey};
 
 // example running monero private testnet, https://github.com/moneroexamples/private-testnet
 const URL: &str = "http://localhost:28081/json_rpc";
@@ -50,14 +50,15 @@ pub struct MoneroWallet {
     private_view_key: String,
     public_spend_key: String,
     public_view_key: String,
-    blockchain_client: Option<reqwest::Client>,
+
 }
 
 impl CryptoWallet for MoneroWallet {
     type MnemonicStyle = Mnemonic;
     type HDKeyInfo = BIP32;
+    type AddressFormat = MoneroFormat;
 
-    fn new_from_hd_keys(hd_keys: &BIP32) -> Result<Self, String> {
+    fn new_from_hd_keys(hd_keys: &BIP32, address_format: Self::AddressFormat) -> Result<Self, String> {
         // uses BIP85 specification, https://github.com/bitcoin/bips/blob/master/bip-0085.mediawiki
         let mut entropy = HmacSha512::new_from_slice(b"bip-entropy-from-k").unwrap();
         entropy.update(&hd_keys.extended_private_key.unwrap());
@@ -70,6 +71,11 @@ impl CryptoWallet for MoneroWallet {
         let private_view_key = Self::private_view_key_from_private_spend_key(&private_spend_key);
         let public_spend_key = Self::public_spend_key_from_private_spend_key(&private_spend_key);
         let public_view_key = Self::public_view_key_from_private_view_key(&private_view_key);
+        let mut public_address: String;
+        match address_format {
+            MoneroFormat::Standard => public_address = Self::public_standard_address_from_public_keys(&public_spend_key, &public_view_key, &hd_keys.network),
+            _ => return Err("Monero address functionality not currently set up for this address type".to_string()),
+        }
         let public_address = Self::public_standard_address_from_public_keys(&public_spend_key, &public_view_key, &hd_keys.network);
 
         Ok(Self {
@@ -80,7 +86,6 @@ impl CryptoWallet for MoneroWallet {
             public_spend_key,
             public_view_key,
             public_address,
-            blockchain_client: None,
             network: hd_keys.network,
         })
     }
@@ -108,7 +113,7 @@ impl Display for MoneroWallet {
 
 impl MoneroWallet {
     fn new_from_mnemonic(mnemonic: Mnemonic) -> Result<Self, String> {
-        let seed = mnemonic.get_seed_bytes()?;
+        let seed = mnemonic.seed_bytes()?;
         let public_key = PublicKey::from_secret_key(
             &libsecp256k1::SecretKey::parse_slice(&seed).unwrap()).serialize_compressed();
         let network = NetworkType::MainNet;
@@ -126,7 +131,6 @@ impl MoneroWallet {
             public_spend_key,
             public_view_key,
             public_address,
-            blockchain_client: None,
             network: network,
 
         })
@@ -212,13 +216,13 @@ impl MoneroWallet {
 }
 
 pub struct BlockchainClient {
-  blockchain_client: Option<reqwest::Client>,
+  blockchain_client: reqwest::Client,
 }
 
 impl BlockchainClient {
 pub fn new(url: &str) -> Result<Self, String> {
   Ok(Self {
-    blockchain_client: Some(reqwest::Client::new()),
+    blockchain_client: reqwest::Client::new(),
   })
 }
 }

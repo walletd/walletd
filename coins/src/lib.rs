@@ -30,7 +30,8 @@ impl CryptoCoin {
 pub trait CryptoWallet: Sized {
     type MnemonicStyle;
     type HDKeyInfo;
-    fn new_from_hd_keys(hd_keys: &Self::HDKeyInfo) -> Result<Self, String>; 
+    type AddressFormat;
+    fn new_from_hd_keys(hd_keys: &Self::HDKeyInfo, address_format: Self::AddressFormat) -> Result<Self, String>; 
     fn public_address(&self) -> &String;
     fn to_private_key_wif(seed: &[u8], network_prefix: u8) -> Result<String, String>{
             // using wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format

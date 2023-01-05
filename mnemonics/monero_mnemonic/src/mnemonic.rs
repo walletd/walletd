@@ -167,12 +167,12 @@ impl MnemonicHandler for Mnemonic {
         }
     }
     
-    fn get_seed(&self) -> Result<String, String> {
+    fn seed_hex(&self) -> Result<String, String> {
         let seed = hex::encode(self.seed.as_slice());
         Ok(seed)
     }
 
-    fn get_seed_bytes(&self) -> Result<&[u8], String> {
+    fn seed_bytes(&self) -> Result<&[u8], String> {
         Ok(&self.seed.as_slice())
     }
 }
