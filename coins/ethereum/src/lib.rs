@@ -1,4 +1,6 @@
-
+// Mainnet Infura: https://celo-mainnet.infura.io/v3/933b67502c4340a7bf3e873f0de62073
+// Ropsten Infura: https://ropsten.infura.io/v3/933b67502c4340a7bf3e873f0de62073
+// Localhost Ganache: http://localhost:8545 by default
 use hex::encode;
 use web3::transports::Http;
 use web3::Web3;
