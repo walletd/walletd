@@ -8,12 +8,12 @@ name = "walletd"
 path = "src/lib.rs"
 
 [dependencies]
-walletd_mnemonics = {path = "./mnemonics"}
+anyhow = "1.0.68"
 walletd_bip39 = {path = "./mnemonics/bip39"}
-walletd_monero_mnemonic = {path = "./mnemonics/monero_mnemonic"}
+walletd_monero_mnemonic = {path = "./mnemonics/monero"}
 walletd_coins = {path = "./coins"}
 walletd_bitcoin = {path = "./coins/bitcoin"}
 walletd_ethereum = {path = "./coins/ethereum"}
 walletd_monero = {path = "./coins/monero"}
 walletd_solana = {path = "./coins/solana"}
-walletd_hd_keys = {path = "./hd_keys"}
+walletd_hd_keypairs = {path = "./hd_keypairs"}

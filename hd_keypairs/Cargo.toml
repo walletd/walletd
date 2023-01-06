@@ -1,19 +1,20 @@
 [package]
-name = "walletd_hd_keys"
+name = "walletd_hd_keypairs"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "walletd_hd_keys"
+name = "walletd_hd_keypairs"
 path = "src/lib.rs"
 
 [dependencies]
 
 walletd_coins = {path = "../coins"}
 
+anyhow = "1.0.68"
 base58 = { version = "0.2.0" }
-hmac = { version = "0.12.1" }
-libsecp256k1 = { version = "0.7.1" }
-ripemd= { version = "0.1.3", default-features = false }
 hex = { version = "0.4.2" }
+hmac = { version = "0.12.1" }
+ripemd= { version = "0.1.3", default-features = false }
+secp256k1 = {version = "0.25.0", features = ["rand-std"]}
 sha2 = { version = "0.10.6", default-features = false }
