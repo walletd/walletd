@@ -9,12 +9,15 @@ static KOREAN: &'static str = include_str!("langs/korean.txt");
 static SPANISH: &'static str = include_str!("langs/spanish.txt");
 static PORTUGUESE: &'static str = include_str!("langs/portuguese.txt");
 
+use anyhow::anyhow;
 use std::fmt;
 use std::str::FromStr;
 
+use walletd_mnemonic_model::LanguageHandler;
+
 #[derive(Debug)]
 pub struct WordList {
-    pub inner: Vec<&'static str>,
+    inner: Vec<&'static str>,
 }
 
 impl WordList {
@@ -53,11 +56,40 @@ impl WordList {
         }
     }
 
-    pub fn get_index(&self, word: &str) -> Result<usize, String> {
+    pub fn get_index(&self, word: &str) -> Result<usize, anyhow::Error> {
         match self.inner.iter().position(|element| element == &word) {
             Some(index) => Ok(index),
-            None => Err("Invalid word".to_string()),
+            None => Err(anyhow!("Invalid word")),
         }
+    }
+
+    /// If all words in the phrase are present in a language's wordlist, the language of the phrase is detected
+    pub fn detect_language_for_phrase(phrase: Vec<&str>) -> Result<Language, anyhow::Error> {
+        let all_languages = enum_iterator::all::<Language>().collect::<Vec<_>>();
+        for language in all_languages {
+            let wordlist = WordList::new(language);
+            let mut matched_language = true;
+            for word in &phrase {
+                match wordlist.get_index(word) {
+                    Ok(_) => continue,
+                    Err(_) => {
+                        matched_language = false;
+                        break;
+                    }
+                }
+            }
+
+            if matched_language {
+                return Ok(language);
+            }
+        }
+        Err(anyhow!(
+            "Could not find a language match for the given phrase"
+        ))
+    }
+
+    pub fn inner(&self) -> Vec<&'static str> {
+        self.inner.clone()
     }
 }
 
@@ -68,7 +100,7 @@ impl WordList {
 ///
 /// [Mnemonic]: ./mnemonic/struct.Mnemonic.html
 /// [Seed]: ./seed/struct.Seed.html
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, enum_iterator::Sequence)]
 pub enum Language {
     English,
     ChineseSimplified,
@@ -83,7 +115,7 @@ pub enum Language {
 }
 
 impl FromStr for Language {
-    type Err = ();
+    type Err = anyhow::Error;
     /// Converts a string to a Language.
     fn from_str(input: &str) -> Result<Language, Self::Err> {
         match input {
@@ -97,7 +129,7 @@ impl FromStr for Language {
             "Korean" => Ok(Language::Korean),
             "Portuguese" => Ok(Language::Portuguese),
             "Spanish" => Ok(Language::Spanish),
-            _ => Err(()),
+            _ => Err(anyhow!("Could not match str {} to a language", input))?,
         }
     }
 }
@@ -128,9 +160,11 @@ impl Default for Language {
     }
 }
 
-impl Language {
+impl LanguageHandler for Language {
+    type Language = Language;
+
     /// Returns a new Language with default language set.
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self::default()
     }
 }

@@ -11,16 +11,19 @@ static PORTUGUESE: &'static str = include_str!("langs/portuguese.txt");
 static RUSSIAN: &'static str = include_str!("langs/russian.txt");
 static SPANISH: &'static str = include_str!("langs/spanish.txt");
 
+use anyhow::anyhow;
 use crc::{crc32, Hasher32};
 use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
 
+use walletd_mnemonic_model::LanguageHandler;
+
 #[derive(Debug)]
 pub struct WordList {
-    pub inner: Vec<&'static str>,
-    pub prefix_length: usize,
-    pub trimmed_word_map: HashMap<String, usize>,
+    inner: Vec<&'static str>,
+    prefix_length: usize,
+    trimmed_word_map: HashMap<String, usize>,
 }
 
 impl WordList {
@@ -126,17 +129,33 @@ impl WordList {
         }
     }
 
-    // Get the trimmed word map
-    pub fn trimmed_word_map(&self) -> HashMap<String, usize> {
-        self.trimmed_word_map.clone()
+    /// If all words in the phrase are present in a language's wordlist, the language of the phrase is detected
+    pub fn detect_language_for_phrase(phrase: Vec<&str>) -> Result<Language, anyhow::Error> {
+        let all_languages = enum_iterator::all::<Language>().collect::<Vec<_>>();
+        for language in all_languages {
+            let wordlist = WordList::new(language);
+            let mut matched_language = true;
+            for word in &phrase {
+                match WordList::get_trimmed_word_index(
+                    word,
+                    &wordlist.trimmed_word_map,
+                    wordlist.prefix_length,
+                ) {
+                    Ok(_) => continue,
+                    Err(_) => {
+                        matched_language = false;
+                        break;
+                    }
+                }
+            }
+            if matched_language {
+                return Ok(language);
+            }
+        }
+        Err(anyhow!(
+            "Could not find a language match for the given phrase"
+        ))
     }
-    /// Get the index of the word in the wordlist
-    // pub fn get_index(&self, word: &str) -> Result<usize, String> {
-    //     match self.inner.iter().position(|element| element == &word) {
-    //         Some(index) => Ok(index),
-    //         None => Err("Invalid word".to_string()),
-    //     }
-    // }
 
     /// Create a version of the wordlist with each word trimmed
     pub fn create_trimmed_word_list(
@@ -164,12 +183,12 @@ impl WordList {
         word: &str,
         trimmed_word_map: &HashMap<String, usize>,
         unique_prefix_len: usize,
-    ) -> Result<usize, String> {
+    ) -> Result<usize, anyhow::Error> {
         let trimmed_word = Self::to_trimmed(word, unique_prefix_len);
         let index = trimmed_word_map.get(&trimmed_word);
         match index {
             None => {
-                return Err(format!(
+                return Err(anyhow!(
                     "Could not find trimmed word in word list. Attempted to find index of {}",
                     trimmed_word
                 ))
@@ -191,6 +210,20 @@ impl WordList {
             .clone()
             .to_string()
     }
+
+    /// Get inner data
+    pub fn inner(&self) -> Vec<&'static str> {
+        self.inner.clone()
+    }
+
+    /// Get the prefix_length
+    pub fn prefix_length(&self) -> usize {
+        self.prefix_length
+    }
+
+    pub fn trimmed_word_map(&self) -> HashMap<String, usize> {
+        self.trimmed_word_map.clone()
+    }
 }
 
 /// The choice of language for a mnemonic phrase not only determines the words used,
@@ -200,7 +233,7 @@ impl WordList {
 ///
 /// [Mnemonic]: ./mnemonic/struct.Mnemonic.html
 /// [Seed]: ./seed/struct.Seed.html
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, enum_iterator::Sequence)]
 pub enum Language {
     English,
     ChineseSimplified,
@@ -223,15 +256,17 @@ impl Default for Language {
     }
 }
 
-impl Language {
+impl LanguageHandler for Language {
+    type Language = Language;
+
     /// Returns a new Language with default language set.
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self::default()
     }
 }
 
 impl FromStr for Language {
-    type Err = ();
+    type Err = anyhow::Error;
     /// Converts a string to a Language.
     fn from_str(input: &str) -> Result<Language, Self::Err> {
         match input {
@@ -247,7 +282,7 @@ impl FromStr for Language {
             "Portuguese" => Ok(Language::Portuguese),
             "Russian" => Ok(Language::Russian),
             "Spanish" => Ok(Language::Spanish),
-            _ => Err(()),
+            _ => Err(anyhow!("Could not match str {} to a language", input)),
         }
     }
 }

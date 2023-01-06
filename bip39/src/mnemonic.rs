@@ -1,6 +1,7 @@
 use crate::mnemonic_type::ENTROPY_OFFSET;
 use crate::MnemonicType;
 use crate::{Language, WordList};
+use anyhow::anyhow;
 use bitvec::prelude::*;
 use core::{ops::Div, str};
 use curve25519_dalek::scalar::Scalar;
@@ -53,11 +54,11 @@ impl fmt::Display for Mnemonic {
 }
 
 impl Mnemonic {
-    fn to_seed(
+    fn create_seed(
         language: Language,
         mnemonic_phrase: &String,
         provided_passphrase: Option<&str>,
-    ) -> Result<String, String> {
+    ) -> Result<String, anyhow::Error> {
         let mut passphrase = "".to_string();
         if let Some(pass) = provided_passphrase {
             passphrase = pass.to_string();
@@ -98,8 +99,8 @@ impl MnemonicHandler for Mnemonic {
 
         let mnemonic_phrase = Self::bytes_to_words(&entropy_bytes, &wordlist)
             .expect("Failed to generate mnemonic phrase");
-        let seed_hex =
-            Self::to_seed(language, &mnemonic_phrase, passphrase).expect("Failed to generate seed");
+        let seed_hex = Self::create_seed(language, &mnemonic_phrase, passphrase)
+            .expect("Failed to generate seed");
 
         let seed = Seed::new(hex::decode(seed_hex).expect("Failed to decode hex to bytes"));
 
@@ -111,15 +112,20 @@ impl MnemonicHandler for Mnemonic {
         }
     }
 
+    /// Provides the Seed object
+    fn to_seed(&self) -> Seed {
+        self.seed.clone()
+    }
+
     /// Creates a mnemonic object given a mnemonic_phrase, language and an optional passphrase
     fn from_phrase(
         language: Language,
         mnemonic_phrase: &str,
         passphrase: Option<&str>,
-    ) -> Result<Mnemonic, String> {
+    ) -> Result<Mnemonic, anyhow::Error> {
         let mnemonic_type = MnemonicType::from_phrase(mnemonic_phrase)?;
 
-        let seed_hex = Self::to_seed(language, &mnemonic_phrase.to_string(), passphrase)?;
+        let seed_hex = Self::create_seed(language, &mnemonic_phrase.to_string(), passphrase)?;
 
         let seed = Seed::new(hex::decode(seed_hex).expect("Failed to decode hex to bytes"));
 
@@ -131,22 +137,49 @@ impl MnemonicHandler for Mnemonic {
         })
     }
 
-    /// Provides the Seed object
-    fn to_seed(&self) -> Seed {
-        self.seed.clone()
+    /// Mnemonic from phrase while detecting the language (language is not specified by the user but can discern the language from the phrase given)
+    fn from_phrase_detect_language(
+        mnemonic_phrase: &str,
+        passphrase: Option<&str>,
+    ) -> Result<Mnemonic, anyhow::Error> {
+        let phrase: Vec<&str> = mnemonic_phrase.split_whitespace().collect();
+        let language = WordList::detect_language_for_phrase(phrase)?;
+        Mnemonic::from_phrase(language, mnemonic_phrase, passphrase)
+    }
+
+    /// Gets the phrase
+    fn phrase(&self) -> String {
+        self.phrase.clone()
+    }
+
+    /// Gets the lang field data
+    fn language(&self) -> Language {
+        self.lang
+    }
+
+    /// Gets the mnemonic_type data
+    fn mnemonic_type(&self) -> MnemonicType {
+        self.mnemonic_type
     }
 }
 
 impl Mnemonic {
     /// Converting entropy bytes to the mnemonic words, given a wordlist
-    fn bytes_to_words(entropy_bytes: &Vec<u8>, wordlist_info: &WordList) -> Result<String, String> {
+    fn bytes_to_words(
+        entropy_bytes: &Vec<u8>,
+        wordlist_info: &WordList,
+    ) -> Result<String, anyhow::Error> {
         if entropy_bytes.len() % 4 != 0 {
-            return Err("Entropy must be a multiple of 4 bytes (32 bits) in length".to_string());
+            return Err(anyhow!(
+                "Entropy must be a multiple of 4 bytes (32 bits) in length"
+            ));
         }
         if (entropy_bytes.len() < 128 / ENTROPY_OFFSET)
             || (entropy_bytes.len() > 256 / ENTROPY_OFFSET)
         {
-            return Err("Entropy must be between 128 and 256 bits in length".to_string());
+            return Err(anyhow!(
+                "Entropy must be between 128 and 256 bits in length"
+            ));
         }
 
         // Take the sh256 hash of the entropy
@@ -169,7 +202,7 @@ impl Mnemonic {
         encoding.append(&mut checksum.to_vec());
 
         // Compute the phrase in 11 bit chunks which encode an index into the word list
-        let wordlist = &wordlist_info.inner;
+        let wordlist = &wordlist_info.inner();
 
         let phrase = encoding
             .chunks(11)
@@ -188,7 +221,10 @@ impl Mnemonic {
     }
 
     /// Converts the words of a mnemonic phrase to the bytes representation
-    fn words_to_bytes(language: Language, mnemonic_phrase: &String) -> Result<Vec<u8>, String> {
+    fn words_to_bytes(
+        language: Language,
+        mnemonic_phrase: &String,
+    ) -> Result<Vec<u8>, anyhow::Error> {
         let wordlist = WordList::new(language);
         let phrase: Vec<&str> = mnemonic_phrase.split(" ").collect();
         let word_count = phrase.len();
@@ -211,7 +247,9 @@ impl Mnemonic {
         let entropy_bytes = entropy[..entropy_bits].as_slice().to_vec();
         match *mnemonic_phrase == Self::bytes_to_words(&entropy_bytes, &wordlist)? {
             true => Ok(entropy_bytes),
-            false => Err("Invalid mnemonic phrase, the checksum word does not match".to_string()),
+            false => Err(anyhow!(
+                "Invalid mnemonic phrase, the checksum word does not match"
+            )),
         }
     }
 }
@@ -258,17 +296,17 @@ mod tests {
     fn test_from_phrase() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
         let mnemonic = Mnemonic::from_phrase(Language::English, phrase, None).unwrap();
-        assert_eq!(mnemonic.phrase, phrase);
-        assert_eq!(mnemonic.lang, Language::English);
-        // assert_eq!(
-        //     mnemonic.seed,
-        //     Seed::new(vec![
-        //         162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
-        //         249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
-        //         30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
-        //         57, 122, 195, 32, 33, 178, 30, 10, 204, 238
-        //     ])
-        // );
+        assert_eq!(mnemonic.phrase(), phrase);
+        assert_eq!(mnemonic.language(), Language::English);
+        assert_eq!(
+            mnemonic.to_seed(),
+            Seed::new(vec![
+                162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
+                249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
+                30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
+                57, 122, 195, 32, 33, 178, 30, 10, 204, 238
+            ])
+        );
         assert_eq!(mnemonic.to_seed().to_string(), "a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee");
     }
 

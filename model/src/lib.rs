@@ -1,3 +1,6 @@
+pub mod seed;
+pub use self::seed::Seed;
+
 /// The MnemonicHandler trait is used to provide a common interface for the different Mnemonic libraries
 pub trait MnemonicHandler {
     /// The Mnemonic struct associated with the handler
@@ -18,12 +21,28 @@ pub trait MnemonicHandler {
         language: Self::LanguageHandler,
         mnemonic_phrase: &str,
         passphrase: Option<&str>,
-    ) -> Result<Self::MnemonicStyle, String>;
+    ) -> Result<Self::MnemonicStyle, anyhow::Error>;
     /// Get the ['Seed'][Seed] from the mnemonic phrase
     /// [Seed]: ./seed/struct.Seed.html
     fn to_seed(&self) -> Seed;
+    // Imports a mnemonic phrase, detecting the language to inform the Mnemonic struct
+    fn from_phrase_detect_language(
+        mnemonic_phrase: &str,
+        passphrase: Option<&str>,
+    ) -> Result<Self::MnemonicStyle, anyhow::Error>;
+
+    // Gets the language
+    fn language(&self) -> Self::LanguageHandler;
+
+    // Gets the phrase
+    fn phrase(&self) -> String;
+
+    // Gets the mnemonic type
+    fn mnemonic_type(&self) -> Self::MnemonicTypeSpec;
 }
 
-pub mod seed;
-
-pub use self::seed::Seed;
+/// The LanguageHandler trait is used to provide a common interface for the different Language implementations in different Mnemonic libraries
+pub trait LanguageHandler {
+    type Language;
+    fn new() -> Self::Language;
+}

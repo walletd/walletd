@@ -8,7 +8,9 @@ edition = "2021"
 [dependencies]
 walletd_mnemonic_model = {path = "../model"}
 
+anyhow = "1.0.68"
 crc = { version = "1.8.1" }
 curve25519-dalek = { version = "2.1.0" }
+enum-iterator = "1.2.0"
 rand = { version = "0.7" }
 hex = { version = "0.4.2" }

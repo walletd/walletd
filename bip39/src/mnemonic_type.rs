@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use std::fmt;
 
 pub const ENTROPY_OFFSET: usize = 8;
@@ -68,14 +69,14 @@ impl MnemonicType {
     ///
     /// let mnemonic_type = MnemonicType::from_word_count(12).unwrap();
     /// ```
-    pub fn from_word_count(size: usize) -> Result<MnemonicType, String> {
+    pub fn from_word_count(size: usize) -> Result<MnemonicType, anyhow::Error> {
         let mnemonic_type = match size {
             12 => MnemonicType::Words12,
             15 => MnemonicType::Words15,
             18 => MnemonicType::Words18,
             21 => MnemonicType::Words21,
             24 => MnemonicType::Words24,
-            _ => Err("invalid number of words in phrase")?,
+            _ => Err(anyhow!("invalid number of words in phrase"))?,
         };
 
         Ok(mnemonic_type)
@@ -91,14 +92,14 @@ impl MnemonicType {
     ///
     /// let mnemonic_type = MnemonicType::from_key_size(128).unwrap();
     /// ```
-    pub fn from_key_size(size: usize) -> Result<MnemonicType, String> {
+    pub fn from_key_size(size: usize) -> Result<MnemonicType, anyhow::Error> {
         let mnemonic_type = match size {
             128 => MnemonicType::Words12,
             160 => MnemonicType::Words15,
             192 => MnemonicType::Words18,
             224 => MnemonicType::Words21,
             256 => MnemonicType::Words24,
-            _ => Err("invalid number of words in phrase")?,
+            _ => Err(anyhow!("invalid number of words in phrase"))?,
         };
 
         Ok(mnemonic_type)
@@ -123,7 +124,7 @@ impl MnemonicType {
     /// ```
     ///
     /// [MnemonicType::entropy_bits()]: ./enum.MnemonicType.html#method.entropy_bits
-    pub fn from_phrase(phrase: &str) -> Result<MnemonicType, String> {
+    pub fn from_phrase(phrase: &str) -> Result<MnemonicType, anyhow::Error> {
         let word_count = phrase.split(" ").count();
 
         Self::from_word_count(word_count)

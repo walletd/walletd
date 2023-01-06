@@ -1,5 +1,6 @@
 use crate::mnemonic_type::BITS_IN_BYTES;
 use crate::{Language, MnemonicType, WordList};
+use anyhow::anyhow;
 use core::str;
 use curve25519_dalek::scalar::Scalar;
 use rand::{thread_rng, Rng};
@@ -63,8 +64,9 @@ impl MnemonicHandler for Mnemonic {
         let bytes_length = mnemonic_type.entropy_bits() / BITS_IN_BYTES;
         let entropy_bytes = random_bytes[..bytes_length].to_vec();
 
-        let mnemonic_phrase =
-            Self::bytes_to_words(&entropy_bytes, &wordlist).expect("Failed conversion to words");
+        let mnemonic_phrase = Self::bytes_to_words(&entropy_bytes, &wordlist)
+            .expect("entropy bytes should have a length greater than 0 and divisible by 4");
+
         let seed = Seed::new(entropy_bytes);
 
         Mnemonic {
@@ -80,7 +82,7 @@ impl MnemonicHandler for Mnemonic {
         language: Language,
         mnemonic_phrase: &str,
         _passphrase: Option<&str>,
-    ) -> Result<Mnemonic, String> {
+    ) -> Result<Mnemonic, anyhow::Error> {
         let mnemonic_type = MnemonicType::from_phrase(mnemonic_phrase)?;
 
         let seed = Seed::new(Self::words_to_bytes(
@@ -101,15 +103,43 @@ impl MnemonicHandler for Mnemonic {
     fn to_seed(&self) -> Seed {
         self.seed.clone()
     }
+
+    /// Mnemonic from phrase while detecting the language (language is not specified by the user but can discern the language from the phrase given)
+    fn from_phrase_detect_language(
+        mnemonic_phrase: &str,
+        passphrase: Option<&str>,
+    ) -> Result<Mnemonic, anyhow::Error> {
+        let phrase: Vec<&str> = mnemonic_phrase.split_whitespace().collect();
+        let language = WordList::detect_language_for_phrase(phrase)?;
+        Mnemonic::from_phrase(language, mnemonic_phrase, passphrase)
+    }
+
+    /// Gets the phrase
+    fn phrase(&self) -> String {
+        self.phrase.clone()
+    }
+
+    /// Gets the lang field data
+    fn language(&self) -> Language {
+        self.lang
+    }
+
+    /// Gets the mnemonic_type data
+    fn mnemonic_type(&self) -> MnemonicType {
+        self.mnemonic_type
+    }
 }
 
 impl Mnemonic {
-    fn bytes_to_words(entropy_bytes: &Vec<u8>, wordlist_info: &WordList) -> Result<String, String> {
-        let wordlist = &wordlist_info.inner;
+    fn bytes_to_words(
+        entropy_bytes: &Vec<u8>,
+        wordlist_info: &WordList,
+    ) -> Result<String, anyhow::Error> {
+        let wordlist = &wordlist_info.inner();
         if entropy_bytes.len() % 4 != 0 || entropy_bytes.len() == 0 {
-            return Err(
-                "Length of secret_bytes must be greater than 0 and divisible by 4".to_string(),
-            );
+            return Err(anyhow!(
+                "Length of secret_bytes must be greater than 0 and divisible by 4"
+            ));
         }
 
         let list_len = wordlist.len() as u32;
@@ -148,12 +178,12 @@ impl Mnemonic {
         language: Language,
         mnemonic_phrase: &str,
         mnemonic_type: MnemonicType,
-    ) -> Result<Vec<u8>, String> {
+    ) -> Result<Vec<u8>, anyhow::Error> {
         let wordlist = WordList::new(language);
         let mut phrase: Vec<&str> = mnemonic_phrase.split(" ").collect();
         let trimmed_word_map = wordlist.trimmed_word_map();
-        let prefix_len = wordlist.prefix_length;
-        let list_len = wordlist.inner.len();
+        let prefix_len = wordlist.prefix_length();
+        let list_len = wordlist.inner().len();
 
         // The last word in the phrase is the checksum word
         let checksum = phrase.pop().expect("The mnemonic phrase is missing words");
@@ -167,7 +197,7 @@ impl Mnemonic {
             let x = w1 + n * (((n - w1) + w2) % n) + n * n * (((n - w2) + w3) % n);
 
             if x % n != w1 {
-                return Err("Invalid mnemonic phrase, cannot be decoded".to_string());
+                return Err(anyhow!("Invalid mnemonic phrase, cannot be decoded"));
             }
             buffer.extend_from_slice(&u32::to_le_bytes(x as u32));
         }
@@ -176,9 +206,10 @@ impl Mnemonic {
         let expected = WordList::to_trimmed(&expected_checksum, prefix_len);
         let found = WordList::to_trimmed(&checksum, prefix_len);
         if expected != found {
-            return Err(format!(
+            return Err(anyhow!(
                 "The mnemonic phrase has an invalid checksum word, expected {}, found {}",
-                expected, found
+                expected,
+                found
             ));
         }
 
