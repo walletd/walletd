@@ -1,0 +1,17 @@
+[package]
+name = "walletd_hd_key"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "walletd_hd_key"
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = "1.0.68"
+base58 = { version = "0.2.0" }
+hex = { version = "0.4.2" }
+hmac = { version = "0.12.1" }
+ripemd= { version = "0.1.3", default-features = false }
+secp256k1 = {version = "0.25.0", features = ["rand-std"]}
+sha2 = { version = "0.10.6", default-features = false }
