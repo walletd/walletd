@@ -1,18 +1,35 @@
-use ::secp256k1::{PublicKey, Secp256k1, SecretKey};
 use anyhow::anyhow;
 use async_trait::async_trait;
 use core::{fmt, fmt::Display};
+use secp256k1::{PublicKey, Secp256k1, SecretKey};
 use std::any::Any;
+use std::str::FromStr;
 use tiny_keccak::{Hasher, Keccak};
-use web3::transports::Http;
-use web3::Web3;
-
 use walletd_bip39::Seed;
-use walletd_coins::{CryptoCoin, CryptoWallet, CryptoWalletGeneral};
-use walletd_hd_keypairs::{HDKeyPair, NetworkType};
+use walletd_coins::{BlockchainConnector, CryptoCoin, CryptoWallet, CryptoWalletGeneral};
+use walletd_hd_keys::{HDKeyPair, NetworkType};
+use web3::api::Eth;
+use web3::transports::Http;
+use web3::{
+    ethabi::ethereum_types::U256,
+    types::{Address, TransactionParameters},
+};
+
+mod ethereum_amount;
+pub use ethereum_amount::EthereumAmount;
 
 // run ganache-cli
 pub const URL: &str = "http://localhost:8545";
+
+// run ganache-cli to use localhost
+pub const LOCALHOST_URL: &str = "http://localhost:8545";
+pub const INFURA_MAINNET_ENDPOINT: &str =
+    "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
+pub const INFURA_ROPSTEN_ENDPOINT: &str =
+    "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
+pub const INFURA_GOERLI_ENDPOINT: &str =
+    "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
+pub const GOERLI_TEST_ADDRESS: &str = "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
 
 #[derive(Default, Debug)]
 pub enum EthereumFormat {
@@ -40,24 +57,18 @@ pub struct EthereumWallet {
     network: NetworkType,
 }
 
-pub struct EthereumAmount {
-    pub wei: u32,
-}
-
-impl EthereumAmount {
-    pub fn ETH(&self) -> f64 {
-        (self.wei as f64) / (i32::pow(10, 18) as f64) // 1 ETH = 10^-18 wei
-    }
-}
-
 #[async_trait]
 impl CryptoWallet for EthereumWallet {
     type MnemonicSeed = Seed;
     type HDKeyInfo = HDKeyPair;
     type AddressFormat = EthereumFormat;
     type CryptoAmount = EthereumAmount;
-    type BlockchainClient = web3::transports::Http;
+    type BlockchainClient = BlockchainClient;
     type NetworkType = NetworkType;
+
+    fn crypto_type(&self) -> CryptoCoin {
+        CryptoCoin::ETH
+    }
 
     fn new_from_hd_keys(
         hd_keys: &HDKeyPair,
@@ -87,7 +98,7 @@ impl CryptoWallet for EthereumWallet {
         })
     }
 
-    fn new_from_non_hd_mnemonic_seed(
+    fn new_from_mnemonic_seed(
         mnemonic_seed: &Seed,
         network_type: NetworkType,
         address_format: EthereumFormat,
@@ -126,34 +137,66 @@ impl CryptoWallet for EthereumWallet {
         self.public_address.clone()
     }
 
-    async fn confirmed_balance(
+    async fn balance(
         &self,
         blockchain_client: &Self::BlockchainClient,
     ) -> Result<Self::CryptoAmount, anyhow::Error> {
-        Err(anyhow!(
-            "Current balance not currently implemented for Ethereum"
-        ))
+        let address = web3::types::H160::from_str(&self.public_address())?;
+        blockchain_client.balance(address).await
     }
+
     async fn transfer(
         &self,
-        client: &Self::BlockchainClient,
+        blockchain_client: &Self::BlockchainClient,
         send_amount: &Self::CryptoAmount,
-        public_address: &str,
+        to_address: &str,
     ) -> Result<(), anyhow::Error> {
-        Err(anyhow!(
-            "Transfer functionality not currently implemented for Ethereum"
-        ))
+        let to = Address::from_str(to_address)?;
+        let amount = U256::from_dec_str("1000000")?; // hack hard code
+
+
+        // Build tx object
+        let tx_object = TransactionParameters {
+            to: Some(to),
+            value: amount,
+            ..Default::default()
+        };
+
+        let private_key = self.private_key();
+        // Chop off the 0x prefix
+        let private_key_slice = &private_key[2..];
+        let key = SecretKey::from_str(private_key_slice)?;
+
+        // sign the tx
+        let signed = blockchain_client
+            .client
+            .accounts()
+            .sign_transaction(tx_object, &key)
+            .await?;
+        
+
+        let result = blockchain_client
+            .eth
+            .send_raw_transaction(signed.raw_transaction)
+            .await?;
+            
+        println!("Tx succeeded: Hash: {:#?}, EtherScan address: https://goerli.etherscan.io/tx/{:#?}", &result, &result);
+        Ok(())
     }
 }
 
 impl EthereumWallet {
+    fn private_key(&self) -> String {
+        self.private_key.clone()
+    }
+
     pub fn public_address_checksummed_from_public_key(
         public_key: &Vec<u8>,
     ) -> Result<String, anyhow::Error> {
         let public_key_full = PublicKey::from_slice(&public_key)?;
         let mut output = [0u8; 32];
         let mut hasher = Keccak::v256();
-        hasher.update(&public_key_full.serialize()[1..]);
+        hasher.update(&public_key_full.serialize_uncompressed()[1..]);
         hasher.finalize(&mut output);
         let address = hex::encode(&output[12..]).to_lowercase();
 
@@ -183,30 +226,11 @@ impl EthereumWallet {
         let public_key_full = PublicKey::from_slice(&public_key)?;
         let mut output = [0u8; 32];
         let mut hasher = Keccak::v256();
-        hasher.update(&public_key_full.serialize()[1..]);
+        hasher.update(&public_key_full.serialize_uncompressed()[1..]);
         hasher.finalize(&mut output);
         let mut address = hex::encode(&output[12..]).to_lowercase();
         address = format!("{}{}", "0x", address);
         Ok(address)
-    }
-
-    #[tokio::main]
-    pub async fn main() -> Result<(), anyhow::Error> {
-        let transport = web3::transports::Http::new(URL)?;
-        let web3 = web3::Web3::new(transport);
-
-        println!("Calling accounts.");
-        let mut accounts = web3.eth().accounts().await?;
-        println!("Accounts: {:?}", accounts);
-        accounts.push("00a329c0648769a73afac7f9381e08fb43dbea72".parse()?);
-
-        println!("Calling balance.");
-        for account in accounts {
-            let balance = web3.eth().balance(account, None).await?;
-            println!("Balance of {:?}: {}", account, balance);
-        }
-
-        Ok(())
     }
 }
 
@@ -232,16 +256,29 @@ impl CryptoWalletGeneral for EthereumWallet {
 }
 
 pub struct BlockchainClient {
-    blockchain_client: Web3<Http>,
+    client: web3::Web3<Http>,
+    eth: Eth<Http>,
+}
+
+impl BlockchainConnector for BlockchainClient {
+    fn new(url: &str) -> Result<Self, anyhow::Error> {
+        let transport = web3::transports::Http::new(url)?;
+        let web3 = web3::Web3::new(transport);
+        let web3_eth = web3.eth();
+
+        Ok(Self {
+            client: web3,
+            eth: web3_eth,
+        })
+    }
 }
 
 impl BlockchainClient {
-    pub fn new(url: &str) -> Result<Self, anyhow::Error> {
-        let transport = web3::transports::Http::new(url)?;
-        let web3 = web3::Web3::new(transport);
-
-        Ok(Self {
-            blockchain_client: web3,
-        })
+    pub async fn balance(
+        &self,
+        address: web3::types::H160,
+    ) -> Result<EthereumAmount, anyhow::Error> {
+        let balance = self.eth.balance(address, None).await?;
+        Ok(EthereumAmount { wei: balance })
     }
 }

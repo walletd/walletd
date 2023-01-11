@@ -16,99 +16,10 @@ use std::str::FromStr;
 
 use walletd_bip39::Seed;
 use walletd_coins::{CryptoCoin, CryptoWallet, CryptoWalletGeneral};
-use walletd_hd_keypairs::{HDKeyPair, NetworkType};
+use walletd_hd_keys::{HDKeyPair, NetworkType};
 
 use crate::blockstream::{BTransaction, Blockstream, Input, InputType, Output, UTXO};
-use std::ops;
-
-#[derive(Default, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-pub struct BitcoinAmount {
-    pub satoshi: u64,
-}
-
-impl ops::Add<Self> for BitcoinAmount {
-    type Output = Self;
-
-    fn add(self, rhs: Self) -> Self {
-        Self {
-            satoshi: self.satoshi + rhs.satoshi,
-        }
-    }
-}
-
-impl ops::AddAssign for BitcoinAmount {
-    fn add_assign(&mut self, other: Self) {
-        *self = Self {
-            satoshi: self.satoshi + other.satoshi,
-        }
-    }
-}
-
-impl ops::Sub for BitcoinAmount {
-    type Output = Self;
-
-    fn sub(self, rhs: Self) -> Self {
-        Self {
-            satoshi: self.satoshi - rhs.satoshi,
-        }
-    }
-}
-
-impl ops::Mul for BitcoinAmount {
-    type Output = Self;
-
-    fn mul(self, rhs: Self) -> Self::Output {
-        Self {
-            satoshi: self.satoshi * rhs.satoshi,
-        }
-    }
-}
-
-impl ops::Mul<f64> for BitcoinAmount {
-    type Output = Self;
-    fn mul(self, rhs: f64) -> Self::Output {
-        Self {
-            satoshi: ((self.satoshi as f64) * rhs) as u64,
-        }
-    }
-}
-
-impl ops::Div for BitcoinAmount {
-    type Output = Self;
-
-    fn div(self, rhs: Self) -> Self::Output {
-        Self {
-            satoshi: self.satoshi / rhs.satoshi,
-        }
-    }
-}
-
-impl BitcoinAmount {
-    pub fn new_from_btc(btc_amount: f64) -> Self {
-        let satoshi = (btc_amount * 100_000_000.0) as u64; // 100 million satoshis per bitcoin
-        Self { satoshi }
-    }
-
-    pub fn btc(&self) -> f64 {
-        self.satoshi as f64 / 100_000_000.0 // 100 million satoshis per bitcoin
-    }
-
-    pub fn satoshi(&self) -> u64 {
-        self.satoshi
-    }
-}
-
-impl Display for BitcoinAmount {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(
-            f,
-            "Bitcoin Amount: {} BTC, {} satoshi",
-            self.btc(),
-            self.satoshi()
-        )?;
-        Ok(())
-    }
-}
+use crate::BitcoinAmount;
 
 #[derive(Debug, Clone)]
 pub struct BitcoinWallet {
@@ -128,6 +39,10 @@ impl CryptoWallet for BitcoinWallet {
     type CryptoAmount = BitcoinAmount;
     type BlockchainClient = Blockstream;
     type NetworkType = Network;
+
+    fn crypto_type(&self) -> CryptoCoin {
+        CryptoCoin::BTC
+    }
 
     fn new_from_hd_keys(
         hd_keys: &HDKeyPair,
@@ -172,7 +87,7 @@ impl CryptoWallet for BitcoinWallet {
         })
     }
 
-    fn new_from_non_hd_mnemonic_seed(
+    fn new_from_mnemonic_seed(
         mnemonic_seed: &Seed,
         network: Network,
         address_type: AddressType,
@@ -229,7 +144,7 @@ impl CryptoWallet for BitcoinWallet {
         self.public_address.clone()
     }
 
-    async fn confirmed_balance(
+    async fn balance(
         &self,
         blockchain_client: &Blockstream,
     ) -> Result<BitcoinAmount, anyhow::Error> {
@@ -760,6 +675,7 @@ impl CryptoWalletGeneral for BitcoinWallet {
     fn crypto_type(&self) -> CryptoCoin {
         self.crypto_type
     }
+
     fn as_any(&self) -> &dyn Any {
         self
     }

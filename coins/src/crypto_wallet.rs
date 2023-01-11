@@ -20,12 +20,15 @@ pub trait CryptoWallet: Sized {
         hd_keys: &Self::HDKeyInfo,
         address_format: Self::AddressFormat,
     ) -> Result<Self, anyhow::Error>;
-    fn new_from_non_hd_mnemonic_seed(
+
+    fn new_from_mnemonic_seed(
         mnemonic_seed: &Self::MnemonicSeed,
         network: Self::NetworkType,
         address_format: Self::AddressFormat,
     ) -> Result<Self, anyhow::Error>;
+
     fn public_address(&self) -> String;
+
     fn to_private_key_wif(seed: &[u8], network_prefix: u8) -> Result<String, anyhow::Error> {
         // using wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
         let mut private_key: Vec<u8> = Vec::new();
@@ -51,7 +54,7 @@ pub trait CryptoWallet: Sized {
         Ok(format!("{:?}", key))
     }
 
-    async fn confirmed_balance(
+    async fn balance(
         &self,
         blockchain_client: &Self::BlockchainClient,
     ) -> Result<Self::CryptoAmount, anyhow::Error>;
@@ -62,9 +65,12 @@ pub trait CryptoWallet: Sized {
         send_amount: &Self::CryptoAmount,
         public_address: &str,
     ) -> Result<(), anyhow::Error>;
+
+    fn crypto_type(&self) -> CryptoCoin;
 }
 
 /// No associated types
+
 pub trait CryptoWalletGeneral: fmt::Display {
     fn crypto_type(&self) -> CryptoCoin;
     fn as_any(&self) -> &dyn Any;

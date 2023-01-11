@@ -6,12 +6,14 @@ pub use ::walletd_bip39::{
 pub use ::walletd_monero_mnemonic::{
     Language as MoneroLanguage, Mnemonic as MoneroMnemonic, MnemonicType as MoneroMnemonicType,
 };
+use anyhow::anyhow;
 pub use walletd_bitcoin;
 pub use walletd_coins;
-pub use walletd_coins::{CryptoWallet, CryptoWalletGeneral};
+pub use walletd_coins::{BlockchainConnector, CryptoCoin, CryptoWallet, CryptoWalletGeneral};
 pub use walletd_ethereum;
-pub use walletd_hd_keypairs;
-pub use walletd_hd_keypairs::HDKeyPair;
+pub use walletd_hd_keys;
+use walletd_hd_keys::NetworkType;
+pub use walletd_hd_keys::{DerivType, HDKeyPair};
 pub use walletd_monero;
 pub use walletd_monero_mnemonic;
 pub use walletd_solana;
@@ -30,6 +32,7 @@ pub struct KeyPair {
     pub passphrase: Option<String>,
     pub associated_wallets: Vec<Box<dyn CryptoWalletGeneral>>,
     pub associated_derived_info: Vec<HDKeyPair>,
+    pub network_type: NetworkType,
 }
 
 impl KeyPair {
@@ -38,6 +41,7 @@ impl KeyPair {
         mnemonic_phrase: String,
         style: MnemonicKeyPairType,
         passphrase_str: Option<&str>,
+        network_type: NetworkType,
     ) -> Self {
         let passphrase;
         match passphrase_str {
@@ -51,6 +55,7 @@ impl KeyPair {
             passphrase,
             associated_wallets: Vec::new(),
             associated_derived_info: Vec::new(),
+            network_type,
         }
     }
 }
@@ -69,5 +74,120 @@ impl KeyPair {
             None => passphrase_str = None,
         }
         passphrase_str
+    }
+}
+
+pub struct AssociatedWallets {
+    pub wallets: Vec<Box<dyn CryptoWalletGeneral>>,
+    pub derived_info: Vec<HDKeyPair>,
+    pub any_transaction_history: bool,
+}
+
+impl AssociatedWallets {
+    /// Discovers wallets with in sequential order based on derivation path, stopping discover when gap limit (n consecutive wallets without transaction history) has been met
+    /// Only considers change index = 0 (the receiving/external chain) when considering the gap limit but if there is transaction history with change index = 1 it is added
+    pub async fn new_discover_associated_wallets(
+        crypto_coin: CryptoCoin,
+        bip32_master: &HDKeyPair,
+        deriv_type: &DerivType,
+        network_type: &NetworkType,
+        gap_limit_specified: Option<usize>,
+    ) -> Result<Self, anyhow::Error> {
+        match crypto_coin {
+            CryptoCoin::BTC => {
+                let blockchain_client;
+                match network_type {
+                    NetworkType::TestNet => {blockchain_client = walletd_bitcoin::Blockstream::new(walletd_bitcoin::BLOCKSTREAM_TESTNET_URL)?;},
+                    NetworkType::MainNet => {blockchain_client = walletd_bitcoin::Blockstream::new(walletd_bitcoin::BLOCKSTREAM_URL)?;},
+                }
+                Self::new_search_blockchain_for_associated_wallets(blockchain_client, crypto_coin, bip32_master, deriv_type, network_type, gap_limit_specified).await
+             }
+            // Haven't implemented for others yet including ethereum 
+            _ => return Err(anyhow!("Blockchain connection default not currently set up for {} so cannot scan for associated wallets", crypto_coin)),
+        }
+    }
+
+    /// Helper function for new_discover_associated_wallets_sequential_with_gap_limit by search along a particular blockchain
+    /// Discovers wallets with in sequential order based on derivation path, stopping discover when gap limit (n consecutive wallets without transaction history) has been met
+    /// Only considers change index = 0 (the receiving/external chain) when considering the gap limit but if there is transaction history with change index = 1 it is added
+    pub async fn new_search_blockchain_for_associated_wallets(
+        blockchain_client: impl BlockchainConnector + std::marker::Sync,
+        crypto_coin: CryptoCoin,
+        bip32_master: &HDKeyPair,
+        deriv_type: &DerivType,
+        network_type: &NetworkType,
+        gap_limit_specified: Option<usize>,
+    ) -> Result<Self, anyhow::Error> {
+        let mut associated_wallets: Vec<Box<dyn CryptoWalletGeneral>> = Vec::new();
+        let mut derived_info: Vec<HDKeyPair> = Vec::new();
+        let mut any_transaction_history = false;
+        let coin_type = CryptoCoin::BTC;
+        let mut gap_limit = 20; // default gap limit
+        if let Some(limit) = gap_limit_specified {
+            gap_limit = limit
+        }
+        let mut current_gap = 0;
+        let mut search_next_account = true;
+        let mut account_index = 0; // hardened
+        let mut address_index = 0; // not hardened
+
+        while search_next_account {
+            search_next_account = false;
+            //println!("account_index: {}", account_index);
+            while current_gap < gap_limit {
+                for change_index in 0..2 {
+                    let derived = deriv_type.derive_specify_change_account_address_indices(
+                        &bip32_master,
+                        &coin_type,
+                        change_index,
+                        account_index,
+                        address_index,
+                    )?;
+                    let exists: bool;
+                    match crypto_coin {
+                        CryptoCoin::BTC => {
+                            let wallet = walletd_bitcoin::BitcoinWallet::new_from_hd_keys(
+                                &derived,
+                                walletd_bitcoin::AddressType::P2wpkh,
+                            )?;
+                            exists = blockchain_client
+                                .check_if_past_transactions_exist(&wallet.public_address())
+                                .await?;
+                            if exists {
+                                any_transaction_history = true;
+                            }
+                            if exists || change_index == 0 {
+                                associated_wallets.push(Box::new(wallet));
+                                derived_info.push(derived);
+                                println!("account_index: {}, address_index: {}, previous transaction history: {}", account_index, address_index, exists);
+                            }
+                        }
+                        // couldn't figure out how to check for past transaction history for ethereum and others, not implemented yet
+                        _ => {
+                            return Err(anyhow!(
+                                "Currently not handling scanning for associated wallets for {}",
+                                crypto_coin
+                            ))
+                        }
+                    }
+
+                    if exists {
+                        search_next_account = true;
+                    } else if change_index == 0 {
+                        current_gap += 1;
+                    }
+                }
+                address_index += 1;
+            }
+            account_index += 1;
+            address_index = 0;
+            current_gap = 0;
+        }
+
+        Ok(Self {
+            wallets: associated_wallets,
+            derived_info,
+            any_transaction_history,
+        })
     }
 }

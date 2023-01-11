@@ -1,8 +1,10 @@
 use anyhow::anyhow;
+use async_trait::async_trait;
 use bitcoin::{Address, AddressType};
 use bitcoin_hashes::{sha256d, Hash};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use walletd_coins::BlockchainConnector;
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct BTransaction {
@@ -647,33 +649,40 @@ impl UTXO {
 #[derive(Clone, Default, Debug)]
 pub struct Blockstream {
     pub client: reqwest::Client,
+    pub url: String,
 }
 
+pub const BLOCKSTREAM_TESTNET_URL: &str = "https://blockstream.info/testnet/api";
 pub const BLOCKSTREAM_URL: &str = "https://blockstream.info/api";
-impl Blockstream {
-    pub fn new(url: &str) -> Result<Self, anyhow::Error> {
+
+#[async_trait]
+impl BlockchainConnector for Blockstream {
+    fn new(url: &str) -> Result<Self, anyhow::Error> {
         Ok(Self {
             client: reqwest::Client::new(),
+            url: url.to_string(),
         })
     }
 
-    pub async fn check_if_past_transactions_exist(
+    async fn check_if_past_transactions_exist(
         &self,
-        public_address: &String,
+        public_address: &str,
     ) -> Result<bool, anyhow::Error> {
-        let transactions = self.transactions(public_address.as_str()).await?;
+        let transactions = self.transactions(public_address).await?;
         if transactions.len() == 0 {
-            println!("No past transactions exist at address: {}", public_address);
+            //println!("No past transactions exist at address: {}", public_address);
             return Ok(false);
         } else {
-            println!("Past transactions exist at address: {}", public_address);
+            //println!("Past transactions exist at address: {}", public_address);
             return Ok(true);
         }
     }
+}
 
+impl Blockstream {
     // fetch the block height
     pub fn block_count(&self) -> Result<u64, anyhow::Error> {
-        let body = reqwest::blocking::get(format!("{}/blocks/tip/height", BLOCKSTREAM_URL))
+        let body = reqwest::blocking::get(format!("{}/blocks/tip/height", self.url))
             .expect("Error getting block count")
             .text()?;
         println!("body = {:?}", body);
@@ -683,7 +692,7 @@ impl Blockstream {
 
     // fetch fee estimates from blockstream
     pub async fn fee_estimates(&self) -> Result<Value, anyhow::Error> {
-        let body = reqwest::get(format!("{}/fee-estimates", BLOCKSTREAM_URL))
+        let body = reqwest::get(format!("{}/fee-estimates", self.url))
             .await?
             .text()
             .await?;
@@ -693,7 +702,7 @@ impl Blockstream {
 
     // fetch transactions from blockstream
     pub async fn transactions(&self, address: &str) -> Result<Vec<BTransaction>, anyhow::Error> {
-        let body = reqwest::get(format!("{}/address/{}/txs", BLOCKSTREAM_URL, address))
+        let body = reqwest::get(format!("{}/address/{}/txs", self.url, address))
             .await?
             .text()
             .await?;
@@ -704,12 +713,9 @@ impl Blockstream {
 
     // fetch mempool transactions from blockstream
     pub fn mempool_transactions(&self, address: &str) -> Result<Value, anyhow::Error> {
-        let body = reqwest::blocking::get(format!(
-            "{}/address/{}/txs/mempool",
-            BLOCKSTREAM_URL, address
-        ))
-        .expect("Error getting transactions")
-        .text();
+        let body = reqwest::blocking::get(format!("{}/address/{}/txs/mempool", self.url, address))
+            .expect("Error getting transactions")
+            .text();
         println!("body = {:?}", body);
         let transactions = json!(&body?);
         Ok(transactions)
@@ -717,7 +723,7 @@ impl Blockstream {
 
     /// Fetch UTXOs from blockstream
     pub async fn utxo(&self, address: &str) -> Result<Vec<UTXO>, anyhow::Error> {
-        let body = reqwest::get(format!("{}/address/{}/utxo", BLOCKSTREAM_URL, address))
+        let body = reqwest::get(format!("{}/address/{}/utxo", self.url, address))
             .await?
             .text()
             .await?;
@@ -728,7 +734,7 @@ impl Blockstream {
     }
 
     pub async fn get_raw_transaction_hex(&self, txid: &str) -> Result<String, anyhow::Error> {
-        let body = reqwest::get(format!("{}/tx/{}/raw", BLOCKSTREAM_URL, txid))
+        let body = reqwest::get(format!("{}/tx/{}/raw", self.url, txid))
             .await?
             .text()
             .await?;
@@ -738,7 +744,7 @@ impl Blockstream {
 
     /// Fetch transaction info
     pub async fn transaction(&self, txid: &str) -> Result<BTransaction, anyhow::Error> {
-        let body = reqwest::get(format!("{}/tx/{}", BLOCKSTREAM_URL, txid))
+        let body = reqwest::get(format!("{}/tx/{}", self.url, txid))
             .await?
             .text()
             .await?;
@@ -806,7 +812,7 @@ impl Blockstream {
     ) -> Result<String, anyhow::Error> {
         let trans_resp = self
             .client
-            .post(format!("{}/tx", BLOCKSTREAM_URL))
+            .post(format!("{}/tx", self.url))
             .body(raw_transaction_hex)
             .send()
             .await

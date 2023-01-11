@@ -1,7 +1,7 @@
 extern crate reqwest;
 
-use walletd_coins::{CryptoCoin, CryptoWallet, CryptoWalletGeneral};
-use walletd_hd_keypairs::{HDKeyPair, NetworkType};
+use walletd_coins::{CryptoAmount, CryptoCoin, CryptoWallet, CryptoWalletGeneral};
+use walletd_hd_keys::{HDKeyPair, NetworkType};
 use walletd_monero_mnemonic::{Mnemonic, MnemonicHandler, Seed};
 
 use anyhow::anyhow;
@@ -74,6 +74,10 @@ impl CryptoWallet for MoneroWallet {
     type BlockchainClient = reqwest::Client;
     type NetworkType = NetworkType;
 
+    fn crypto_type(&self) -> CryptoCoin {
+        CryptoCoin::XMR
+    }
+
     fn new_from_hd_keys(
         hd_keys: &HDKeyPair,
         address_format: Self::AddressFormat,
@@ -123,7 +127,7 @@ impl CryptoWallet for MoneroWallet {
         })
     }
 
-    fn new_from_non_hd_mnemonic_seed(
+    fn new_from_mnemonic_seed(
         mnemonic_seed: &Seed,
         network: NetworkType,
         address_format: MoneroFormat,
@@ -167,7 +171,7 @@ impl CryptoWallet for MoneroWallet {
         self.public_address.clone()
     }
 
-    async fn confirmed_balance(
+    async fn balance(
         &self,
         _blockchain_client: &Self::BlockchainClient,
     ) -> Result<Self::CryptoAmount, anyhow::Error> {

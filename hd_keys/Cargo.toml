@@ -1,10 +1,10 @@
 [package]
-name = "walletd_hd_keypairs"
+name = "walletd_hd_keys"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "walletd_hd_keypairs"
+name = "walletd_hd_keys"
 path = "src/lib.rs"
 
 [dependencies]

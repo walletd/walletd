@@ -11,7 +11,7 @@ path = "src/lib.rs"
 
 walletd_coins = {path = "../"}
 walletd_bip39 = {path = "../../mnemonics/bip39"}
-walletd_hd_keypairs = {path = "../../hd_keypairs"}
+walletd_hd_keys = {path = "../../hd_keys"}
 
 anyhow = "1.0.68"
 async-trait = "0.1.60"

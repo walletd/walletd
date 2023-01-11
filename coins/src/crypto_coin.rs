@@ -12,7 +12,22 @@ pub enum CryptoCoin {
 }
 
 impl CryptoCoin {
-    pub fn coin_type(&self) -> usize {
+    // Creates a new CryptoCoin based on the coin type value in accordance with SLIP-0044, assumes mainnet, throws error to be handled if testnet or unsupported type
+    pub fn new(value: usize) -> Result<Self, anyhow::Error> {
+        match value {
+            0 => Ok(CryptoCoin::BTC),
+            60 => Ok(CryptoCoin::ETH),
+            128 => Ok(CryptoCoin::XMR),
+            501 => Ok(CryptoCoin::SOL),
+            1 => Err(anyhow!("This value is for any testnet")),
+            _ => Err(anyhow!(
+                "Currently not supporting a CryptoCoin with a coin type value of {}",
+                value
+            )),
+        }
+    }
+
+    pub fn coin_type_mainnet(&self) -> usize {
         *self as usize
     }
 

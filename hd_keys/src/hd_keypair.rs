@@ -32,7 +32,7 @@ pub struct HDKeyPair {
 
 impl HDKeyPair {
     /// Create new master BIP32 node based on a seed
-    pub fn new_master_node(seed: &[u8]) -> Result<Self, anyhow::Error> {
+    pub fn new_master_node(seed: &[u8], network_type: NetworkType) -> Result<Self, anyhow::Error> {
         let mut mac: HmacSha512 = HmacSha512::new_from_slice(b"Bitcoin seed")?; // the "Bitcoin seed" string is specified in the bip32 protocol
         mac.update(seed);
         let hmac = mac.finalize().into_bytes();
@@ -55,6 +55,7 @@ impl HDKeyPair {
             depth: 0,
             parent_fingerprint: [0u8; 4],
             derivation_path: "m".into(),
+            network: network_type,
             ..Default::default()
         };
         Ok(bip32_master_node)
@@ -140,7 +141,9 @@ impl HDKeyPair {
                 deriv_path_info.push(DerivPathComponent::Master);
             } else if item.contains("'") {
                 match item.replace("'", "").parse::<u32>() {
-                    Ok(n) => deriv_path_info.push(DerivPathComponent::IndexHardened(n + (1 << 31))),
+                    Ok(n) => deriv_path_info.push(DerivPathComponent::IndexHardened(
+                        DerivPathComponent::hardened_full_index(n),
+                    )),
                     Err(e) => {
                         return Err(anyhow!(
                             "Could not convert derivation path component {} to a hardened index.",
@@ -177,7 +180,7 @@ impl HDKeyPair {
         if deriv_path_info.len() > 1 {
             match &deriv_path_info[1] {
                 DerivPathComponent::IndexHardened(num) => {
-                    let purpose = *num - (1 << 31);
+                    let purpose = DerivPathComponent::hardened_shortform_index(*num);
                     if purpose == 44 {
                         deriv_type = DerivType::BIP44;
                     } else if purpose == 49 {
@@ -260,17 +263,10 @@ impl HDKeyPair {
             derivation_type: deriv_type,
             child_index,
             master_seed: master_node.master_seed.clone(),
+            network: master_node.network,
             ..Default::default()
         };
         Ok(derived_bip32)
-    }
-
-    pub fn derive_first_address(
-        master_node: &HDKeyPair,
-        coin: &CryptoCoin,
-    ) -> Result<HDKeyPair, anyhow::Error> {
-        let bip44_deriv_path = format!("{}{}{}", "m/0'/", coin.coin_type(), "'/0");
-        HDKeyPair::derived_from_master_with_specified_path(&master_node, bip44_deriv_path)
     }
 
     pub fn serialization_extended_private_key(
