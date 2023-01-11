@@ -319,17 +319,22 @@ impl HDKey {
             || (self.derivation_type == DeriveType::BIP44)
         {
             return Ok([0x04, 0x88, 0xAD, 0xE4]);
-        } else if self.network == NetworkType::TestNet && (self.derivation_type == DeriveType::BIP32)
+        } else if self.network == NetworkType::TestNet
+            && (self.derivation_type == DeriveType::BIP32)
             || (self.derivation_type == DeriveType::BIP44)
         {
             return Ok([0x04, 0x35, 0x83, 0x94]);
-        } else if self.network == NetworkType::MainNet && self.derivation_type == DeriveType::BIP49 {
+        } else if self.network == NetworkType::MainNet && self.derivation_type == DeriveType::BIP49
+        {
             return Ok([0x04, 0x9D, 0x78, 0x78]);
-        } else if self.network == NetworkType::TestNet && self.derivation_type == DeriveType::BIP49 {
+        } else if self.network == NetworkType::TestNet && self.derivation_type == DeriveType::BIP49
+        {
             return Ok([0x04, 0x4A, 0x4E, 0x28]);
-        } else if self.network == NetworkType::MainNet && self.derivation_type == DeriveType::BIP84 {
+        } else if self.network == NetworkType::MainNet && self.derivation_type == DeriveType::BIP84
+        {
             return Ok([0x04, 0xB2, 0x43, 0x0C]);
-        } else if self.network == NetworkType::TestNet && self.derivation_type == DeriveType::BIP84 {
+        } else if self.network == NetworkType::TestNet && self.derivation_type == DeriveType::BIP84
+        {
             return Ok([0x04, 0x5F, 0x18, 0xBC]);
         } else {
             return Err(anyhow!("Prefix is not set up for this yet"));
@@ -341,17 +346,22 @@ impl HDKey {
             || (self.derivation_type == DeriveType::BIP44)
         {
             return Ok([0x04, 0x88, 0xB2, 0x1E]);
-        } else if self.network == NetworkType::TestNet && (self.derivation_type == DeriveType::BIP32)
+        } else if self.network == NetworkType::TestNet
+            && (self.derivation_type == DeriveType::BIP32)
             || (self.derivation_type == DeriveType::BIP44)
         {
             return Ok([0x04, 0x35, 0x87, 0xCF]);
-        } else if self.network == NetworkType::MainNet && self.derivation_type == DeriveType::BIP49 {
+        } else if self.network == NetworkType::MainNet && self.derivation_type == DeriveType::BIP49
+        {
             return Ok([0x04, 0x9D, 0x7C, 0xB2]);
-        } else if self.network == NetworkType::TestNet && self.derivation_type == DeriveType::BIP49 {
+        } else if self.network == NetworkType::TestNet && self.derivation_type == DeriveType::BIP49
+        {
             return Ok([0x04, 0x4A, 0x52, 0x62]);
-        } else if self.network == NetworkType::MainNet && self.derivation_type == DeriveType::BIP84 {
+        } else if self.network == NetworkType::MainNet && self.derivation_type == DeriveType::BIP84
+        {
             return Ok([0x04, 0xB2, 0x47, 0x46]);
-        } else if self.network == NetworkType::TestNet && self.derivation_type == DeriveType::BIP84 {
+        } else if self.network == NetworkType::TestNet && self.derivation_type == DeriveType::BIP84
+        {
             return Ok([0x04, 0x5F, 0x1C, 0xF6]);
         } else {
             return Err(anyhow!("Prefix is not set up for this yet"));
@@ -523,11 +533,8 @@ mod tests {
         ])
         .unwrap();
         assert_eq!(
-            HDKey::derived_from_master_with_specified_path(
-                &keys,
-                "m/44'/60'/0'/0/0".to_string()
-            )
-            .unwrap(),
+            HDKey::derived_from_master_with_specified_path(&keys, "m/44'/60'/0'/0/0".to_string())
+                .unwrap(),
             HDKey {
                 master_seed: [
                     162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
