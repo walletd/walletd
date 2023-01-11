@@ -26,7 +26,7 @@ pub trait MnemonicHandler {
     /// [Seed]: ./seed/struct.Seed.html
     fn to_seed(&self) -> Seed;
     // Imports a mnemonic phrase, detecting the language to inform the Mnemonic struct
-    fn from_phrase_detect_language(
+    fn detect_language(
         mnemonic_phrase: &str,
         passphrase: Option<&str>,
     ) -> Result<Self::MnemonicStyle, anyhow::Error>;

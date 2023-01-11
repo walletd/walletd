@@ -130,7 +130,7 @@ impl WordList {
     }
 
     /// If all words in the phrase are present in a language's wordlist, the language of the phrase is detected
-    pub fn detect_language_for_phrase(phrase: Vec<&str>) -> Result<Language, anyhow::Error> {
+    pub fn detect_language(phrase: Vec<&str>) -> Result<Language, anyhow::Error> {
         let all_languages = enum_iterator::all::<Language>().collect::<Vec<_>>();
         for language in all_languages {
             let wordlist = WordList::new(language);
@@ -354,6 +354,12 @@ mod tests {
         assert_eq!(format!("{}", Language::Portuguese), "Portuguese");
         assert_eq!(format!("{}", Language::Russian), "Russian");
         assert_eq!(format!("{}", Language::Spanish), "Spanish");
+    }
+
+    #[test]
+    fn test_detect_language() {
+      let phrase = vec!["buzzer", "eject", "zeal", "algebra", "adept", "arrow", "shipped", "mobile", "reorder", "light", "plus", "rover", "fawns", "fight", "aphid", "powder", "tufts", "niche", "plotting", "acumen", "equip", "civilian", "camp", "dialect algebra"];
+      assert_eq!(WordList::detect_language(phrase).unwrap(), Language::English);
     }
 
     #[test]

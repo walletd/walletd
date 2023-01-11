@@ -138,12 +138,12 @@ impl MnemonicHandler for Mnemonic {
     }
 
     /// Mnemonic from phrase while detecting the language (language is not specified by the user but can discern the language from the phrase given)
-    fn from_phrase_detect_language(
+    fn detect_language(
         mnemonic_phrase: &str,
         passphrase: Option<&str>,
     ) -> Result<Mnemonic, anyhow::Error> {
         let phrase: Vec<&str> = mnemonic_phrase.split_whitespace().collect();
-        let language = WordList::detect_language_for_phrase(phrase)?;
+        let language = WordList::detect_language(phrase)?;
         Mnemonic::from_phrase(language, mnemonic_phrase, passphrase)
     }
 
@@ -296,6 +296,24 @@ mod tests {
     fn test_from_phrase() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
         let mnemonic = Mnemonic::from_phrase(Language::English, phrase, None).unwrap();
+        assert_eq!(mnemonic.phrase(), phrase);
+        assert_eq!(mnemonic.language(), Language::English);
+        assert_eq!(
+            mnemonic.to_seed(),
+            Seed::new(vec![
+                162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
+                249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
+                30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
+                57, 122, 195, 32, 33, 178, 30, 10, 204, 238
+            ])
+        );
+        assert_eq!(mnemonic.to_seed().to_string(), "a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee");
+    }
+
+    #[test]
+    fn test_detect_language() {
+        let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
+        let mnemonic = Mnemonic::detect_language(phrase, None).unwrap();
         assert_eq!(mnemonic.phrase(), phrase);
         assert_eq!(mnemonic.language(), Language::English);
         assert_eq!(
