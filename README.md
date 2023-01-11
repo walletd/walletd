@@ -1,7 +1,7 @@
 [![codecov](https://codecov.io/gh/walletd/mnemonic/branch/main/graph/badge.svg?token=BA4YTBMLEP)](https://codecov.io/gh/walletd/mnemonic)
-# walletd Mnemonics
+# walletd mnemonic
 
-`mnemonics` is a hierarchical deterministic (HD) key generator.
+`mnemonic` is a hierarchical deterministic (HD) key generator.
 
 More information about this crate can be found in the [crate documentation][docs].
 
@@ -32,23 +32,23 @@ This crate uses `#![forbid(unsafe_code)]` to ensure everything is implemented in
 
 ## Minimum supported Rust version
 
-mnemonics's MSRV is 1.60.
+mnemonic's MSRV is 1.60.
 
 ## Examples
 
-The [examples] folder contains various examples of how to use `mnemonics`. The
+The [examples] folder contains various examples of how to use `mnemonic`. The
 [docs] also provide lots of code snippets and examples.
 
 ## Getting Help
 
-In the `mnemonics`'s repo we also have a [number of examples][examples] showing how
+In the `mnemonic`'s repo we also have a [number of examples][examples] showing how
 to put everything together. You're also welcome to open a [discussion] with your question.
 
 ## Contributing
 
 :balloon: Thanks for your help improving the project! We are so happy to have
 you! We have a [contributing guide][contributing] to help you get involved in the
-`mnemonics` project.
+`mnemonic` project.
 
 ## License
 
@@ -58,14 +58,14 @@ or the [MIT license][license-mit], at your option. Files in the project may not 
 ### Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in `mnemonics` by you, shall be licensed as MIT, without any
+for inclusion in `mnemonic` by you, shall be licensed as MIT, without any
 additional terms or conditions.
 
 [readme-example]: https://github.com/walletd/mnemonic/tree/main/examples/readme
 [examples]: https://github.com/walletd/mnemonic/tree/main/examples
-[docs]: https://docs.rs/walletd_mnemonics
-[contributing]: https://github.com/walletd/mnemonics/blob/main/CONTRIBUTING.md
-[discussion]: https://github.com/walletd/mnemonics/discussions/new?category=q-a
-[ecosystem]: https://github.com/walletd/mnemonics/blob/main/ECOSYSTEM.md
-[license-mit]: https://github.com/walletd/mnemonics/blob/main/LICENSE-MIT
-[license-apache]: https://github.com/walletd/mnemonics/blob/main/LICENSE-APACHE
+[docs]: https://docs.rs/walletd_mnemonic
+[contributing]: https://github.com/walletd/mnemonic/blob/main/CONTRIBUTING.md
+[discussion]: https://github.com/walletd/mnemonic/discussions/new?category=q-a
+[ecosystem]: https://github.com/walletd/mnemonic/blob/main/ECOSYSTEM.md
+[license-mit]: https://github.com/walletd/mnemonic/blob/main/LICENSE-MIT
+[license-apache]: https://github.com/walletd/mnemonic/blob/main/LICENSE-APACHE
