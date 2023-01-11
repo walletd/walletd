@@ -1,15 +1,17 @@
 # walletd hd_key
 
-`hd_key` is a hierarchical deterministic (HD) key generator.
+`hd_key` is a Rust implementation of the BIP-32 standard's hierarchical deterministic (HD) key generation. 
 
 More information about this crate can be found in the [crate documentation][docs].
 
 ## High level features
 
-- BIP32.
-- BIP44.
-- BIP49.
-- BIP84.
+This library supports key generation using the following BIPs (Bitcoin Improvement Proposal).
+
+- [BIP32][bip32] - Hierarchical Deterministic Wallets
+- [BIP44][bip44] - Multi-Account Hierarchy for Deterministic Wallets
+- [BIP49][bip49] - Derivation scheme for P2WPKH-nested-in-P2SH based accounts
+- [BIP84][bip84] - Derivation scheme for P2WPKH based accounts
 
 ## Usage example
 
@@ -66,3 +68,7 @@ additional terms or conditions.
 [ecosystem]: https://github.com/walletd/hd_key/blob/main/ECOSYSTEM.md
 [license-mit]: https://github.com/walletd/hd_key/blob/main/LICENSE-MIT
 [license-apache]: https://github.com/walletd/hd_key/blob/main/LICENSE-APACHE
+[bip32]: https://en.bitcoin.it/wiki/BIP_0032
+[bip44]: https://en.bitcoin.it/wiki/BIP_0044
+[bip49]: https://en.bitcoin.it/wiki/BIP_0049
+[bip84]: https://en.bitcoin.it/wiki/BIP_0084
