@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 pub mod hd_key;
 pub mod slip44;
 use anyhow::anyhow;
