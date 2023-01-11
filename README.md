@@ -1,3 +1,4 @@
+[![codecov](https://codecov.io/gh/walletd/mnemonic/branch/main/graph/badge.svg?token=BA4YTBMLEP)](https://codecov.io/gh/walletd/mnemonic)
 # walletd Mnemonics
 
 `mnemonics` is a hierarchical deterministic (HD) key generator.
