@@ -15,6 +15,7 @@ pub enum DeriveType {
     BIP49,
     BIP84,
 }
+
 impl DeriveType {
     /// Returns the purppose string representation associated with each derivation type
     pub fn purpose(&self) -> &str {
