@@ -13,6 +13,7 @@ walletd_bip39 = {path = "../../mnemonics/bip39"}
 walletd_coins = {path = "../"}
 walletd_hd_keys = {path = "../../hd_keys"}
 
+anyhow = "1.0.68"
 base58 = { version = "0.2.0" }
 ed25519-dalek-bip32 = "0.2.0"
 hex = { version = "0.4.2" }
