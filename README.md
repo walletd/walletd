@@ -12,7 +12,7 @@ More information about this crate can be found in the [crate documentation][docs
 - BIP44.
 - BIP49.
 - BIP84.
-- Monero seeds 14 word (mymonero style) or 25 words.
+- Monero seeds 13 word (mymonero style) or 25 words.
 
 ## Usage example
 
