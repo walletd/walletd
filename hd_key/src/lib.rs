@@ -33,7 +33,7 @@ impl DeriveType {
         coin: &SlipCoin,
     ) -> Result<HDKey, anyhow::Error> {
         let derived_account_path = format!("m/{}/{}'/0'", &self.purpose(), coin);
-        HDKey::derived_from_master_with_specified_path(&master_node, derived_account_path)
+        HDKey::from_master(&master_node, derived_account_path)
     }
 
     // Derives the default first address with the specified derivation path scheme
@@ -48,7 +48,7 @@ impl DeriveType {
             derived_first_account
         );
         let deriv_path = format!("m/{}/{}'/0'/0/0", &self.purpose(), coin);
-        HDKey::derived_from_master_with_specified_path(&master_node, deriv_path)
+        HDKey::from_master(&master_node, deriv_path)
     }
 
     pub fn derive_specify_account_address_indices(
@@ -65,7 +65,7 @@ impl DeriveType {
             account_index,
             address_index
         );
-        HDKey::derived_from_master_with_specified_path(&master_node, derived_path)
+        HDKey::from_master(&master_node, derived_path)
     }
 
     pub fn derive_specify_change_account_address_indices(
@@ -84,7 +84,7 @@ impl DeriveType {
             change_index,
             address_index
         );
-        HDKey::derived_from_master_with_specified_path(&master_node, derived_path)
+        HDKey::from_master(&master_node, derived_path)
     }
 
     pub fn derive_change_internal_chain_specify_account_address_indices(
@@ -101,12 +101,12 @@ impl DeriveType {
             account_index,
             address_index
         );
-        HDKey::derived_from_master_with_specified_path(&master_node, derived_path)
+        HDKey::from_master(&master_node, derived_path)
     }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum DerivPathComponent {
+pub enum DerivePathComponent {
     Master,
     IndexHardened(u32),
     IndexNotHardened(u32),

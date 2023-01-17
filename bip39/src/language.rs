@@ -215,11 +215,17 @@ mod tests {
         assert_eq!(format!("{}", Language::Portuguese), "Portuguese");
         assert_eq!(format!("{}", Language::Spanish), "Spanish");
     }
-    
+
     #[test]
     fn test_detect_language() {
-      let phrase = vec!["outer", "ride", "neither", "foil", "glue", "number", "place", "usage", "ball", "shed", "dry", "point"];
-      assert_eq!(WordList::detect_language(phrase).unwrap(), Language::English);
+        let phrase = vec![
+            "outer", "ride", "neither", "foil", "glue", "number", "place", "usage", "ball", "shed",
+            "dry", "point",
+        ];
+        assert_eq!(
+            WordList::detect_language(phrase).unwrap(),
+            Language::English
+        );
     }
 
     #[test]

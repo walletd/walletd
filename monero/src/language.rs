@@ -358,8 +358,36 @@ mod tests {
 
     #[test]
     fn test_detect_language() {
-      let phrase = vec!["buzzer", "eject", "zeal", "algebra", "adept", "arrow", "shipped", "mobile", "reorder", "light", "plus", "rover", "fawns", "fight", "aphid", "powder", "tufts", "niche", "plotting", "acumen", "equip", "civilian", "camp", "dialect algebra"];
-      assert_eq!(WordList::detect_language(phrase).unwrap(), Language::English);
+        let phrase = vec![
+            "buzzer",
+            "eject",
+            "zeal",
+            "algebra",
+            "adept",
+            "arrow",
+            "shipped",
+            "mobile",
+            "reorder",
+            "light",
+            "plus",
+            "rover",
+            "fawns",
+            "fight",
+            "aphid",
+            "powder",
+            "tufts",
+            "niche",
+            "plotting",
+            "acumen",
+            "equip",
+            "civilian",
+            "camp",
+            "dialect algebra",
+        ];
+        assert_eq!(
+            WordList::detect_language(phrase).unwrap(),
+            Language::English
+        );
     }
 
     #[test]

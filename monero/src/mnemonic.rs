@@ -286,9 +286,9 @@ mod tests {
             mnemonic.to_seed().to_string(),
             "340fbfc0b9e33b0d58998f2ccb5f3411fbaac7c2d0f41ab2443eb83f9bf3050e"
         );
-      }
+    }
 
-      #[test]
+    #[test]
     fn test_detect_language() {
         let phrase: &str = "buzzer eject zeal algebra adept arrow shipped mobile reorder light plus rover fawns fight aphid powder tufts niche plotting acumen equip civilian camp dialect algebra";
         let mnemonic = Mnemonic::detect_language(phrase, None).unwrap();

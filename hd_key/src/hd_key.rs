@@ -1,11 +1,11 @@
 use anyhow::anyhow;
-use base58::{FromBase58, ToBase58};
+use base58::ToBase58;
 use hmac::{Hmac, Mac};
 use secp256k1::{PublicKey, Scalar, Secp256k1, SecretKey};
 use sha2::{Digest, Sha256, Sha512};
 type HmacSha512 = Hmac<Sha512>;
 use crate::slip44::SlipCoin;
-use crate::{DerivPathComponent, DeriveType, NetworkType};
+use crate::{DerivePathComponent, DeriveType, NetworkType};
 use ripemd::Ripemd160;
 use std::fmt;
 
@@ -59,6 +59,7 @@ impl HDKey {
         })
     }
 
+    /// convert private key to Wallet Import Format (WIF)
     pub fn to_wif(&self) -> Result<String, anyhow::Error> {
         if let Some(extended_private_key) = &self.extended_private_key {
             // using wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
@@ -81,17 +82,18 @@ impl HDKey {
         }
     }
 
-    fn get_private_key_hex(&self) -> Result<String, anyhow::Error> {
-        if let Some(extended_private_key) = &self.extended_private_key {
-            return Ok(hex::encode(extended_private_key));
-        } else {
-            return Err(anyhow!(
-                "Extended Public Key was not set so Public Key was not able to be obtained"
-            ));
-        }
-    }
+    // fn get_private_key_hex(&self) -> Result<String, anyhow::Error> {
+    //     if let Some(extended_private_key) = &self.extended_private_key {
+    //         return Ok(hex::encode(extended_private_key));
+    //     } else {
+    //         return Err(anyhow!(
+    //             "Extended Public Key was not set so Public Key was not able to be obtained"
+    //         ));
+    //     }
+    // }
 
-    pub fn get_public_key_hex(&self) -> Result<String, anyhow::Error> {
+    /// provides the public key as a hex string
+    pub fn public_key(&self) -> Result<String, anyhow::Error> {
         if let Some(extended_public_key) = &self.extended_public_key {
             return Ok(hex::encode(extended_public_key));
         } else {
@@ -101,27 +103,28 @@ impl HDKey {
         }
     }
 
-    fn get_public_key_0x(&self) -> Result<String, anyhow::Error> {
-        if let Some(extended_public_key) = &self.extended_public_key {
-            return Ok(format!("0x{}", hex::encode(extended_public_key)));
-        } else {
-            return Err(anyhow!(
-                "Extended Public Key was not set so Public Key was not able to be obtained"
-            ));
-        }
-    }
+    // fn get_public_key_0x(&self) -> Result<String, anyhow::Error> {
+    //     if let Some(extended_public_key) = &self.extended_public_key {
+    //         return Ok(format!("0x{}", hex::encode(extended_public_key)));
+    //     } else {
+    //         return Err(anyhow!(
+    //             "Extended Public Key was not set so Public Key was not able to be obtained"
+    //         ));
+    //     }
+    // }
 
-    fn get_private_key_0x(&self) -> Result<String, anyhow::Error> {
-        if let Some(extended_private_key) = &self.extended_private_key {
-            return Ok(format!("0x{}", hex::encode(extended_private_key)));
-        } else {
-            return Err(anyhow!(
-                "Extended Public Key was not set so Public Key was not able to be obtained"
-            ));
-        }
-    }
+    // fn get_private_key_0x(&self) -> Result<String, anyhow::Error> {
+    //     if let Some(extended_private_key) = &self.extended_private_key {
+    //         return Ok(format!("0x{}", hex::encode(extended_private_key)));
+    //     } else {
+    //         return Err(anyhow!(
+    //             "Extended Public Key was not set so Public Key was not able to be obtained"
+    //         ));
+    //     }
+    // }
 
-    fn deriv_path_str_to_list(deriv_path: &String) -> Result<Vec<String>, anyhow::Error> {
+    /// Helper function to convert a derivation path string to a list of strings
+    fn derive_path_str_to_list(deriv_path: &String) -> Result<Vec<String>, anyhow::Error> {
         let deriv_path_list: Vec<String> = deriv_path.split("/").map(|s| s.to_string()).collect();
         if deriv_path_list.len() <= 0 || deriv_path_list[0] != "m".to_string() {
             return Err(anyhow!("Derivation Path is Invalid"));
@@ -129,17 +132,20 @@ impl HDKey {
         Ok(deriv_path_list)
     }
 
-    fn deriv_path_str_to_info(
-        deriv_path_str: &String,
-    ) -> Result<Vec<DerivPathComponent>, anyhow::Error> {
-        let mut deriv_path_info: Vec<DerivPathComponent> = Vec::new();
-        let deriv_path_list = Self::deriv_path_str_to_list(&deriv_path_str)?;
+    /// Helper function to convert a derivation path string to a list of DerivePathComponent
+    fn derive_path_str_to_info(
+        deriv_path: &String,
+    ) -> Result<Vec<DerivePathComponent>, anyhow::Error> {
+        let mut deriv_path_info: Vec<DerivePathComponent> = Vec::new();
+        let deriv_path_list = Self::derive_path_str_to_list(&deriv_path)?;
         for item in deriv_path_list {
             if item == "m" {
-                deriv_path_info.push(DerivPathComponent::Master);
+                deriv_path_info.push(DerivePathComponent::Master);
             } else if item.contains("'") {
                 match item.replace("'", "").parse::<u32>() {
-                    Ok(n) => deriv_path_info.push(DerivPathComponent::IndexHardened(n + (1 << 31))),
+                    Ok(n) => {
+                        deriv_path_info.push(DerivePathComponent::IndexHardened(n + (1 << 31)))
+                    }
                     Err(_e) => {
                         return Err(anyhow!(
                             "Could not convert derivation path component {} to a hardened index.",
@@ -149,7 +155,7 @@ impl HDKey {
                 }
             } else {
                 match item.parse::<u32>() {
-                    Ok(n) => deriv_path_info.push(DerivPathComponent::IndexNotHardened(n)),
+                    Ok(n) => deriv_path_info.push(DerivePathComponent::IndexNotHardened(n)),
                     Err(_e) => {
                         return Err(anyhow!(
                             "Could not convert derivation path component {} to a hardened index.",
@@ -162,20 +168,22 @@ impl HDKey {
         Ok(deriv_path_info)
     }
 
+    /// Hashes a byte array using the SHA256 algorithm
     pub fn hash160(bytes: &[u8]) -> Vec<u8> {
         Ripemd160::digest(&Sha256::digest(bytes).as_slice()).to_vec()
     }
 
-    pub fn derived_from_master_with_specified_path(
+    /// Creates a new HDKey from a master node and a derivation path
+    pub fn from_master(
         master_node: &HDKey,
         derivation_path: String,
     ) -> Result<Self, anyhow::Error> {
         let deriv_path_str_list: Vec<&str> = derivation_path.split("/").collect();
-        let deriv_path_info = Self::deriv_path_str_to_info(&derivation_path)?;
+        let deriv_path_info = Self::derive_path_str_to_info(&derivation_path)?;
         let mut deriv_type = DeriveType::BIP32;
         if deriv_path_info.len() > 1 {
             match &deriv_path_info[1] {
-                DerivPathComponent::IndexHardened(num) => {
+                DerivePathComponent::IndexHardened(num) => {
                     let purpose = *num - (1 << 31);
                     if purpose == 44 {
                         deriv_type = DeriveType::BIP44;
@@ -208,12 +216,12 @@ impl HDKey {
             let mut mac = HmacSha512::new_from_slice(&chain_code).unwrap();
 
             match item {
-                DerivPathComponent::IndexNotHardened(num) => {
+                DerivePathComponent::IndexNotHardened(num) => {
                     child_index = *num;
                     mac.update(&parent_public_key);
                     mac.update(&num.to_be_bytes());
                 }
-                DerivPathComponent::IndexHardened(num) => {
+                DerivePathComponent::IndexHardened(num) => {
                     child_index = *num;
                     mac.update(&[0u8]);
 
@@ -243,7 +251,7 @@ impl HDKey {
             depth += 1;
         }
 
-        let derived_bip32 = HDKey {
+        let derived_bip32 = Self {
             chain_code,
             extended_private_key: Some(private_key.secret_bytes()),
             extended_public_key: Some(
@@ -264,19 +272,19 @@ impl HDKey {
         Ok(derived_bip32)
     }
 
+    /// duplicate  with the one in lib
     pub fn derive_first_address(
         master_node: &HDKey,
         coin: &SlipCoin,
     ) -> Result<HDKey, anyhow::Error> {
         let bip44_deriv_path = format!("m/0'/{}'/0", coin);
-        HDKey::derived_from_master_with_specified_path(&master_node, bip44_deriv_path)
+        HDKey::from_master(&master_node, bip44_deriv_path)
     }
 
-    pub fn serialization_extended_private_key(
-        &self,
-        prefix: [u8; 4],
-    ) -> Result<String, anyhow::Error> {
+    /// Extended Private Key Serialization
+    pub fn extended_private_key_serialized(&self) -> Result<String, anyhow::Error> {
         if let Some(extended_private_key) = self.extended_private_key {
+            let prefix = self.private_key_prefix()?;
             let mut result = [0u8; 82];
             result[0..4].copy_from_slice(&prefix);
             result[4] = self.depth;
@@ -293,11 +301,10 @@ impl HDKey {
         }
     }
 
-    pub fn serialization_extended_public_key(
-        &self,
-        prefix: [u8; 4],
-    ) -> Result<String, anyhow::Error> {
+    /// Extended Public Key Serialization
+    pub fn extended_public_key_serialized(&self) -> Result<String, anyhow::Error> {
         if let Some(extended_public_key) = self.extended_public_key {
+            let prefix = self.public_key_prefix()?;
             let mut result = [0u8; 82];
             result[0..4].copy_from_slice(&prefix);
             result[4] = self.depth;
@@ -314,7 +321,7 @@ impl HDKey {
         }
     }
 
-    fn get_prefix_for_private_key_serialization(&self) -> Result<[u8; 4], anyhow::Error> {
+    fn private_key_prefix(&self) -> Result<[u8; 4], anyhow::Error> {
         if self.network == NetworkType::MainNet && (self.derivation_type == DeriveType::BIP32)
             || (self.derivation_type == DeriveType::BIP44)
         {
@@ -341,7 +348,7 @@ impl HDKey {
         }
     }
 
-    fn get_prefix_for_public_key_serialization(&self) -> Result<[u8; 4], anyhow::Error> {
+    fn public_key_prefix(&self) -> Result<[u8; 4], anyhow::Error> {
         if self.network == NetworkType::MainNet && (self.derivation_type == DeriveType::BIP32)
             || (self.derivation_type == DeriveType::BIP44)
         {
@@ -374,25 +381,15 @@ impl fmt::Display for HDKey {
         writeln!(fmt, " BIP32 Derivation Path: {}", self.derivation_path)?;
         writeln!(fmt, " Network: {}", self.network)?;
         writeln!(fmt, " Depth: {}", self.depth)?;
-        let priv_prefix = self
-            .get_prefix_for_private_key_serialization()
-            .unwrap_or_default();
-        let result_priv = self
-            .serialization_extended_private_key(priv_prefix)
-            .unwrap_or_default();
+        let result_priv = self.extended_private_key_serialized().unwrap_or_default();
         writeln!(fmt, " BIP32 Extended Private Key: {}", result_priv)?;
         writeln!(fmt, " Private Key: {}", self.to_wif().unwrap_or_default())?;
-        let pub_prefix = self
-            .get_prefix_for_public_key_serialization()
-            .unwrap_or_default();
-        let result_pub = self
-            .serialization_extended_public_key(pub_prefix)
-            .unwrap_or_default();
+        let result_pub = self.extended_public_key_serialized().unwrap_or_default();
         writeln!(fmt, " BIP32 Extended Public Key: {}", result_pub)?;
         writeln!(
             fmt,
             " Public Key: {}",
-            self.get_public_key_hex().unwrap_or_default()
+            self.public_key().unwrap_or_default()
         )?;
 
         Ok(())
@@ -458,35 +455,35 @@ mod tests {
         );
     }
 
-    #[test]
-    fn test_private_key() {
-        let keys = HDKey::new(&[
-            162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
-            182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
-            120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
-            32, 33, 178, 30, 10, 204, 238,
-        ])
-        .unwrap();
-        assert_eq!(
-            keys.get_private_key_hex().unwrap(),
-            "bb9b7dcad2546d921f667bb4de1062a01154e9913956364ad417692d32559343"
-        );
-    }
+    // #[test]
+    // fn test_private_key() {
+    //     let keys = HDKey::new(&[
+    //         162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
+    //         182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
+    //         120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
+    //         32, 33, 178, 30, 10, 204, 238,
+    //     ])
+    //     .unwrap();
+    //     assert_eq!(
+    //         keys.get_private_key_hex().unwrap(),
+    //         "bb9b7dcad2546d921f667bb4de1062a01154e9913956364ad417692d32559343"
+    //     );
+    // }
 
-    #[test]
-    fn test_private_key_0x() {
-        let keys = HDKey::new(&[
-            162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
-            182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
-            120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
-            32, 33, 178, 30, 10, 204, 238,
-        ])
-        .unwrap();
-        assert_eq!(
-            keys.get_private_key_0x().unwrap(),
-            "0xbb9b7dcad2546d921f667bb4de1062a01154e9913956364ad417692d32559343"
-        );
-    }
+    // #[test]
+    // fn test_private_key_0x() {
+    //     let keys = HDKey::new(&[
+    //         162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
+    //         182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
+    //         120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
+    //         32, 33, 178, 30, 10, 204, 238,
+    //     ])
+    //     .unwrap();
+    //     assert_eq!(
+    //         keys.get_private_key_0x().unwrap(),
+    //         "0xbb9b7dcad2546d921f667bb4de1062a01154e9913956364ad417692d32559343"
+    //     );
+    // }
 
     #[test]
     fn test_public_key() {
@@ -498,25 +495,25 @@ mod tests {
         ])
         .unwrap();
         assert_eq!(
-            keys.get_public_key_hex().unwrap(),
+            keys.public_key().unwrap(),
             "02a066d216f83ac5e728e0fcdb5ea9d9c8317eccca4575ed7bb6bd4272402a4ea2"
         );
     }
 
-    #[test]
-    fn test_public_key_0x() {
-        let keys = HDKey::new(&[
-            162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
-            182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
-            120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
-            32, 33, 178, 30, 10, 204, 238,
-        ])
-        .unwrap();
-        assert_eq!(
-            keys.get_public_key_0x().unwrap(),
-            "0x02a066d216f83ac5e728e0fcdb5ea9d9c8317eccca4575ed7bb6bd4272402a4ea2"
-        );
-    }
+    // #[test]
+    // fn test_public_key_0x() {
+    //     let keys = HDKey::new(&[
+    //         162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
+    //         182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
+    //         120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
+    //         32, 33, 178, 30, 10, 204, 238,
+    //     ])
+    //     .unwrap();
+    //     assert_eq!(
+    //         keys.get_public_key_0x().unwrap(),
+    //         "0x02a066d216f83ac5e728e0fcdb5ea9d9c8317eccca4575ed7bb6bd4272402a4ea2"
+    //     );
+    // }
 
     // #[test]
     // fn test_hash160() {
@@ -533,8 +530,7 @@ mod tests {
         ])
         .unwrap();
         assert_eq!(
-            HDKey::derived_from_master_with_specified_path(&keys, "m/44'/60'/0'/0/0".to_string())
-                .unwrap(),
+            HDKey::from_master(&keys, "m/44'/60'/0'/0/0".to_string()).unwrap(),
             HDKey {
                 master_seed: [
                     162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
@@ -615,7 +611,7 @@ mod tests {
             32, 33, 178, 30, 10, 204, 238,
         ])
         .unwrap();
-        assert_eq!(keys.serialization_extended_private_key([4, 136, 178, 30]).unwrap(), "xpub661MyMwAqRbcFXMyiJX7c6ibHGtcUga5EJ5AGk2wpmtJToYC21K3osXhNKbN4ipyvS9at1inYNkgnM7XBp5b3drxxRJFvDSuc9qq22zS8V3")
+        assert_eq!(keys.extended_private_key_serialized().unwrap(), "xprv9s21ZrQH143K33HWcGz7ExmrjF485DrDs59ZUMdLGSMKb1D3UTzoG5DDX8T5yYgPWhhayZbrsd1EAuZjJ9b3HnGoSQyt4tdrgHxbFxhgL1W")
     }
 
     #[test]
@@ -627,6 +623,6 @@ mod tests {
             32, 33, 178, 30, 10, 204, 238,
         ])
         .unwrap();
-        assert_eq!(keys.serialization_extended_public_key([4, 136, 173, 228]).unwrap(), "xprv9s21ZrQH143K33HWcGz7ExmrjF485DrDs59ZUMdLGSMKb1D3UTzoG5DDXC8bPpnkaYrDQzazvXM6YqhGKWZ6STizTZhjAVivaJJLReJoFey")
+        assert_eq!(keys.extended_public_key_serialized().unwrap(), "xpub661MyMwAqRbcFXMyiJX7c6ibHGtcUga5EJ5AGk2wpmtJToYC21K3osXhNPGsUzwLzHJDKShvbH6ZAHF4DB3eCKK9ya271pXyWABaBjRPorF")
     }
 }
