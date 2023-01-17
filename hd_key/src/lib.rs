@@ -1,12 +1,14 @@
 #![forbid(unsafe_code)]
 
-pub mod hd_key;
-pub mod slip44;
-use anyhow::anyhow;
+mod hd_key;
+mod slip44;
 pub use hd_key::HDKey;
 pub use slip44::SlipCoin;
 use std::fmt;
 
+/// The DeriveType enum represents the different derivation path schemes supported by the library.
+///
+/// BIP32 is the default.
 #[derive(Default, PartialEq, Eq, Clone, Debug)]
 pub enum DeriveType {
     #[default]
@@ -42,15 +44,11 @@ impl DeriveType {
         master_node: &HDKey,
         coin: &SlipCoin,
     ) -> Result<HDKey, anyhow::Error> {
-        let derived_first_account = &self.derive_first_account(master_node, coin)?;
-        println!(
-            "First Derived Account HD Key Info: \n{}",
-            derived_first_account
-        );
         let deriv_path = format!("m/{}/{}'/0'/0/0", &self.purpose(), coin);
         HDKey::from_master(&master_node, deriv_path)
     }
 
+    // Derives the default first change address with the specified derivation path scheme
     pub fn derive_specify_account_address_indices(
         &self,
         master_node: &HDKey,
@@ -68,6 +66,7 @@ impl DeriveType {
         HDKey::from_master(&master_node, derived_path)
     }
 
+    /// Derives the default first change address with the specified derivation path scheme
     pub fn derive_specify_change_account_address_indices(
         &self,
         master_node: &HDKey,
@@ -87,6 +86,7 @@ impl DeriveType {
         HDKey::from_master(&master_node, derived_path)
     }
 
+    // Derives the default first change address with the specified derivation path scheme
     pub fn derive_change_internal_chain_specify_account_address_indices(
         &self,
         master_node: &HDKey,
@@ -105,6 +105,7 @@ impl DeriveType {
     }
 }
 
+/// The DerivePathComponent distinguishes between the different derivation path components.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum DerivePathComponent {
     Master,
@@ -112,6 +113,9 @@ pub enum DerivePathComponent {
     IndexNotHardened(u32),
 }
 
+/// The NetworkType enum represents the different network types supported by the library.
+///
+/// MainNet is the default.
 #[derive(Default, PartialEq, Eq, Copy, Clone, Debug)]
 pub enum NetworkType {
     #[default]

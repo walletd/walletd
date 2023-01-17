@@ -1,5 +1,6 @@
 use std::fmt;
 
+/// SLIP-0044: Registered coin types for BIP-0044
 #[derive(Default, PartialEq, Copy, Clone, Debug)]
 pub enum SlipCoin {
     // value is the coin type value in accordance with SLIP-0044: https://github.com/satoshilabs/slips/blob/master/slip-0044.md
