@@ -105,12 +105,12 @@ impl MnemonicHandler for Mnemonic {
     }
 
     /// Mnemonic from phrase while detecting the language (language is not specified by the user but can discern the language from the phrase given)
-    fn from_phrase_detect_language(
+    fn detect_language(
         mnemonic_phrase: &str,
         passphrase: Option<&str>,
     ) -> Result<Mnemonic, anyhow::Error> {
         let phrase: Vec<&str> = mnemonic_phrase.split_whitespace().collect();
-        let language = WordList::detect_language_for_phrase(phrase)?;
+        let language = WordList::detect_language(phrase)?;
         Mnemonic::from_phrase(language, mnemonic_phrase, passphrase)
     }
 
@@ -273,6 +273,25 @@ mod tests {
     fn test_from_phrase() {
         let phrase: &str = "buzzer eject zeal algebra adept arrow shipped mobile reorder light plus rover fawns fight aphid powder tufts niche plotting acumen equip civilian camp dialect algebra";
         let mnemonic = Mnemonic::from_phrase(Language::English, phrase, None).unwrap();
+        assert_eq!(mnemonic.phrase, phrase);
+        assert_eq!(mnemonic.lang, Language::English);
+        // assert_eq!(
+        //     mnemonic.seed,
+        //     Seed::new(vec![
+        //         52, 15, 191, 192, 185, 227, 59, 13, 88, 153, 143, 44, 203, 95, 52, 17, 251, 170,
+        //         199, 194, 208, 244, 26, 178, 68, 62, 184, 63, 155, 243, 5, 14
+        //     ])
+        // );
+        assert_eq!(
+            mnemonic.to_seed().to_string(),
+            "340fbfc0b9e33b0d58998f2ccb5f3411fbaac7c2d0f41ab2443eb83f9bf3050e"
+        );
+    }
+
+    #[test]
+    fn test_detect_language() {
+        let phrase: &str = "buzzer eject zeal algebra adept arrow shipped mobile reorder light plus rover fawns fight aphid powder tufts niche plotting acumen equip civilian camp dialect algebra";
+        let mnemonic = Mnemonic::detect_language(phrase, None).unwrap();
         assert_eq!(mnemonic.phrase, phrase);
         assert_eq!(mnemonic.lang, Language::English);
         // assert_eq!(

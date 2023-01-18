@@ -30,6 +30,8 @@
 //! let seed = restored_mnemonic.to_seed();
 //! println!("seed as bytes: {:?}", seed.as_bytes());
 //! ```
+#![forbid(unsafe_code)]
+
 mod language;
 mod mnemonic;
 mod mnemonic_type;
