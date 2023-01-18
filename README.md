@@ -5,7 +5,6 @@ walletd is a collection of Rust libraries (published as crates) that make intera
 walletd will be compiled into a number of different bindings to allow for non-Rust developers to consume the libraries in their native languages.
 
 This repo contains the core walletd library that leverages all Rust-based functionality the walletd framework will offer.
-[![codecov](https://codecov.io/gh/walletd/mnemonic/branch/main/graph/badge.svg?token=BA4YTBMLEP)](https://codecov.io/gh/walletd/mnemonic)
 ## Child crates
 
 walletd is the core library that encapsulates our child crates. These child crates are as follows:
