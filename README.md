@@ -9,28 +9,22 @@ This repo contains the core walletd library that leverages all Rust-based functi
 
 walletd is the core library that encapsulates our child crates. These child crates are as follows:
 
-`mnemonic` is a hierarchical deterministic (HD) key generator. More information about this crate can be found in the [crate documentation][docs].
+`mnemonic` is a hierarchical deterministic (HD) key generator. More information about this crate can be found in the [crate documentation][docs]. Supports BIP32, BIP39, BIP44, BIP49, BIP84, Monero seeds (25 words (Monero standard) and 14 words (MyMonero legacy seed phrases)).
 
 `wallet-cli` is a command-line tool used for testing and developing new features, when it is more convenient to do so instead of directly in new crates.
 
 ## Release cycles
 During this stage of development, expect v0.x.x releases to be highly experimental, and likely to undergo massive change.
 
-Once stable, (that is, from v1.x.x) walletd plan to release a new version of [walletd][walletd-github], the core cryptocurrency library that depends on this mnemonic library. 
+Once stable, (that is, from v1.x.x) walletd plan to release new versions of [walletd][walletd-github] every TBD weeks.
 
-The walletd team adhere to traditional semver commit messages.
+Traditional bindings for popular languages will be provided in each tagged release. Instructions for building the library yourself are also provided.
+
+The walletd team adhere to traditional semantic versioning when releasing code. For more information regarding [semantic versioning][[semver],  
 
 The authors of walletd provide upgrade guides for any new major version releases. (eg, v1.0.0 -> v2.0.0) As part of this upgrade guide, users will be made aware of features that may be deprecated in future releases at least one major version prior, to provide sufficient time for users to upgrade as necessary.
 
 With regards to security patches, the walletd team will endeavour to backport any security fixes to the last x branches released.
-
-- BIP32.
-- BIP39.
-- BIP44.
-- BIP49.
-- BIP84.
-- Monero seeds 14 word (mymonero style) or 25 words.
-
 ## Usage example
 
 ```rust
@@ -42,6 +36,10 @@ the [example directory][examples].
 
 See the [crate documentation][docs] for way more examples.
 
+## Building walletd yourself
+
+To follow
+
 ## Safety
 
 This crate uses `#![forbid(unsafe_code)]` to ensure everything is implemented in
@@ -49,23 +47,24 @@ This crate uses `#![forbid(unsafe_code)]` to ensure everything is implemented in
 
 ## Minimum supported Rust version
 
-mnemonic's MSRV is 1.60.
+mnemonic's MSRV is 1.60 for all pacakges, unless explicitly specified otherwise on that package's README. ** KB Note: Presently, this version is arbitrary and should be discussed
+
 
 ## Examples
 
-The [examples] folder contains various examples of how to use `mnemonic`. The
+Once walletd is ready for release, we endeavour to include examples of how to use it in each project, both in the README and in the various examples folders.The [examples] folder contains various examples of how to use `mnemonic`. The
 [docs] also provide lots of code snippets and examples.
 
 ## Getting Help
 
-In the `mnemonic`'s repo we also have a [number of examples][examples] showing how
-to put everything together. You're also welcome to open a [discussion] with your question.
+If you are experiencing a bug / issue, or would like to propose a feature, we encourage you to open up an issue request detailing whatever you'd like us to look at.
+
+In the `mnemonic`'s repo we also have a [number of examples][examples] showing how to leverage it. You're also welcome to open a [discussion] with your question.
 
 ## Contributing
 
 :balloon: Thanks for your help improving the project! We are so happy to have
-you! We have a [contributing guide][contributing] to help you get involved in the
-`mnemonic` project.
+you! We have a [contributing guide][contributing] to help you get involved in walletd projects.
 
 ## License
 
@@ -87,3 +86,4 @@ additional terms or conditions.
 [license-mit]: https://github.com/walletd/mnemonic/blob/main/LICENSE-MIT
 [license-apache]: https://github.com/walletd/mnemonic/blob/main/LICENSE-APACHE
 [walletd-github]: https://github.com/walletd/walletd
+[semver]: https://semver.org
