@@ -18,28 +18,33 @@ During this stage of development, expect v0.x.x releases to be highly experiment
 
 Once stable, (that is, from v1.x.x) walletd plan to release new versions of [walletd][walletd-github] every TBD weeks.
 
-Traditional bindings for popular languages will be provided in each tagged release. Instructions for building the library yourself are also provided.
+TBD: Bindings for popular languages will be provided in each tagged release. 
 
-The walletd team adhere to traditional semantic versioning when releasing code. For more information regarding [semantic versioning][[semver],  
+Should any users want to build from scratch, instructions for building the various packages are also provided.
 
-The authors of walletd provide upgrade guides for any new major version releases. (eg, v1.0.0 -> v2.0.0) As part of this upgrade guide, users will be made aware of features that may be deprecated in future releases at least one major version prior, to provide sufficient time for users to upgrade as necessary.
+The walletd team adhere to traditional semantic versioning when releasing code. For more information regarding [semantic versioning, please refer to the semver specification][semver].
 
-With regards to security patches, the walletd team will endeavour to backport any security fixes to the last x branches released.
+TBD: The authors of walletd provide upgrade guides for any new major version releases. (eg, v1.0.0 -> v2.0.0) As part of this upgrade guide, users will be made aware of features that may be deprecated in future releases at least one major version prior, to provide sufficient time for users to upgrade as necessary.
+
+TBD: Release cycle. With regards to security patches, the walletd team will endeavour to backport any security fixes to the last x branches released.
 ## Usage example
 
 ```rust
-// still to come
+// TO DO
 ```
 
-You can find this [example][readme-example] as well as other example projects in
-the [example directory][examples].
+You can find this [example][readme-example] as well as other example projects in the [example directory][examples].
 
-See the [crate documentation][docs] for way more examples.
+See the [crate documentation][docs] for additional examples.
 
 ## Building walletd yourself
 
-To follow
+Clone the repository from GitHub
+Run `cargo build`
 
+The built bindings can be found in the TBD folder.
+
+TBD: Building just one specific set of bindings.
 ## Safety
 
 This crate uses `#![forbid(unsafe_code)]` to ensure everything is implemented in
@@ -47,24 +52,27 @@ This crate uses `#![forbid(unsafe_code)]` to ensure everything is implemented in
 
 ## Minimum supported Rust version
 
-mnemonic's MSRV is 1.60 for all pacakges, unless explicitly specified otherwise on that package's README. ** KB Note: Presently, this version is arbitrary and should be discussed
+** KB Note: Presently, this version is up for discussion
+
+mnemonic's MSRV is 1.60 for all pacakges, unless explicitly specified otherwise on that package's README. 
 
 
 ## Examples
 
-Once walletd is ready for release, we endeavour to include examples of how to use it in each project, both in the README and in the various examples folders.The [examples] folder contains various examples of how to use `mnemonic`. The
+Once walletd is ready for release, we endeavour to include examples of how to use it in each project, both in the README and in the various examples folders.
+
+The [examples] folder contains various examples of how to use this library. The
 [docs] also provide lots of code snippets and examples.
 
 ## Getting Help
 
 If you are experiencing a bug / issue, or would like to propose a feature, we encourage you to open up an issue request detailing whatever you'd like us to look at.
 
-In the `mnemonic`'s repo we also have a [number of examples][examples] showing how to leverage it. You're also welcome to open a [discussion] with your question.
+In each repo we also have a [number of examples][examples] showing how to leverage it. You're also welcome to open a [discussion] with your question.
 
 ## Contributing
 
-:balloon: Thanks for your help improving the project! We are so happy to have
-you! We have a [contributing guide][contributing] to help you get involved in walletd projects.
+:balloon: Thanks for your help improving the project! We are happy to have you get involved. We have a [contributing guide][contributing] to help you get started with contributions to walletd projects.
 
 ## License
 
@@ -74,7 +82,7 @@ or the [MIT license][license-mit], at your option. Files in the project may not 
 ### Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in `mnemonic` by you, shall be licensed as MIT, without any
+for inclusion in walletd (or its child crates) by you, shall be subject to the same license restrictions walletd adheres to, without any
 additional terms or conditions.
 
 [readme-example]: https://github.com/walletd/mnemonic/tree/main/examples/readme
