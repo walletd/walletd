@@ -1,6 +1,6 @@
 extern crate reqwest;
 
-use walletd_coins::{CryptoAmount, CryptoCoin, CryptoWallet, CryptoWalletGeneral};
+use walletd_coin_model::{CryptoAmount, CryptoCoin, CryptoWallet, CryptoWalletGeneral};
 use walletd_hd_keys::{HDKeyPair, NetworkType};
 use walletd_monero_mnemonic::{Mnemonic, MnemonicHandler, Seed};
 

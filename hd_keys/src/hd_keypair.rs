@@ -7,7 +7,7 @@ type HmacSha512 = Hmac<Sha512>;
 use crate::{DerivPathComponent, DerivType, NetworkType};
 use ripemd::Ripemd160;
 use std::fmt;
-use walletd_coins::CryptoCoin;
+use walletd_coin_model::CryptoCoin;
 
 /// Stores collection of associated/related keypairs, all the keypairs in the ring stem from a single master
 pub struct HDKeyPairRing {

@@ -1,6 +1,6 @@
 use core::{fmt, fmt::Display};
 use std::ops;
-use walletd_coins::CryptoAmount;
+use walletd_coin_model::CryptoAmount;
 use web3::ethabi::ethereum_types::U256;
 
 #[derive(Default, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]

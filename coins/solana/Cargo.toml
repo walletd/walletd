@@ -10,7 +10,7 @@ path = "src/lib.rs"
 [dependencies]
 
 walletd_bip39 = {path = "../../mnemonics/bip39"}
-walletd_coins = {path = "../"}
+walletd_coin_model = {path = "../model"}
 walletd_hd_keys = {path = "../../hd_keys"}
 
 anyhow = "1.0.68"

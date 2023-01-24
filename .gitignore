@@ -1,3 +1,5 @@
-/target
+**/.DS_Store
+**/target
 Cargo.lock
+**/cargo-test*.profraw
 /mnemonics

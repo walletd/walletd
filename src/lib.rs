@@ -8,8 +8,8 @@ pub use ::walletd_monero_mnemonic::{
 };
 use anyhow::anyhow;
 pub use walletd_bitcoin;
-pub use walletd_coins;
-pub use walletd_coins::{BlockchainConnector, CryptoCoin, CryptoWallet, CryptoWalletGeneral};
+pub use walletd_coin_model;
+pub use walletd_coin_model::{BlockchainConnector, CryptoCoin, CryptoWallet, CryptoWalletGeneral};
 pub use walletd_ethereum;
 pub use walletd_hd_keys;
 use walletd_hd_keys::NetworkType;

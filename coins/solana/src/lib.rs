@@ -7,7 +7,7 @@ use solana_client::rpc_client::RpcClient;
 const URL: &str = "https://api.devnet.solana.com";
 
 use walletd_bip39::{Language, Mnemonic, MnemonicHandler, MnemonicType};
-use walletd_coins::{CryptoCoin, CryptoWallet};
+use walletd_coin_model::{CryptoCoin, CryptoWallet};
 use walletd_hd_keys::{HDKeyPair, NetworkType};
 
 #[derive(Default)]

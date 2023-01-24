@@ -4,7 +4,7 @@ use bitcoin::{Address, AddressType};
 use bitcoin_hashes::{sha256d, Hash};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use walletd_coins::BlockchainConnector;
+use walletd_coin_model::BlockchainConnector;
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct BTransaction {

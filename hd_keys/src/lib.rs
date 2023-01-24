@@ -4,7 +4,7 @@ pub use hd_keypair::HDKeyPair;
 use std::fmt;
 use std::fmt::Display;
 use std::str::FromStr;
-use walletd_coins::{CryptoCoin, CryptoWallet};
+use walletd_coin_model::{CryptoCoin, CryptoWallet};
 
 #[derive(Default, PartialEq, Eq, Clone, Copy)]
 pub enum DerivType {

@@ -5,8 +5,6 @@ use bitcoincore_rpc::bitcoin::{Block, BlockHash, Transaction, Txid};
 use bitcoincore_rpc::bitcoincore_rpc_json::GetBlockchainInfoResult;
 use bitcoincore_rpc::{Auth, Client, RpcApi};
 
-use walletd_coins::{CryptoCoin, CryptoWallet};
-use walletd_hd_keys::{DerivType, HDKeyPair};
 mod bitcoin_wallet;
 pub use bitcoin_wallet::{BitcoinWallet, Network};
 mod bitcoin_amount;

@@ -32,7 +32,7 @@ use std::any::Any;
 use std::str::FromStr;
 use tiny_keccak::{Hasher, Keccak};
 use walletd_bip39::Seed;
-use walletd_coins::{BlockchainConnector, CryptoCoin, CryptoWallet, CryptoWalletGeneral};
+use walletd_coin_model::{BlockchainConnector, CryptoCoin, CryptoWallet, CryptoWalletGeneral};
 use walletd_hd_keys::{HDKeyPair, NetworkType};
 use web3::api::Eth;
 use web3::transports::Http;

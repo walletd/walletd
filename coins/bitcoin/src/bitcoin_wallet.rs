@@ -15,7 +15,7 @@ use std::cmp::Reverse;
 use std::str::FromStr;
 
 use walletd_bip39::Seed;
-use walletd_coins::{CryptoCoin, CryptoWallet, CryptoWalletGeneral};
+use walletd_coin_model::{CryptoCoin, CryptoWallet, CryptoWalletGeneral};
 use walletd_hd_keys::{HDKeyPair, NetworkType};
 
 use crate::blockstream::{BTransaction, Blockstream, Input, InputType, Output, UTXO};

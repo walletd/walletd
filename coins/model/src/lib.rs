@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use anyhow::anyhow;
 use async_trait::async_trait;
 mod crypto_coin;

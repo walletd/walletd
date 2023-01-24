@@ -1,6 +1,6 @@
 use core::{fmt, fmt::Display};
 use std::ops;
-use walletd_coins::CryptoAmount;
+use walletd_coin_model::CryptoAmount;
 
 #[derive(Default, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct BitcoinAmount {
