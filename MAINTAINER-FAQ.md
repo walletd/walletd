@@ -6,9 +6,9 @@ Don't be afraid to discuss a suggested feature / change with other contributors 
 
 When saying no:
 
-Thank them for their contribution
-Explain why it doesn’t fit into the scope of the project, and offer clear suggestions for improvement, if you’re able. Be kind, but firm.
-Link to relevant documentation, if you have it. If you notice repeated requests for things you don’t want to accept, add them into your documentation to avoid repeating yourself.
-Close the request
+- Thank them for their contribution
+- Explain why it doesn’t fit into the scope of the project, and offer clear suggestions for improvement, if you’re able. Be kind, but firm.
+- Link to relevant documentation, if you have it. If you notice repeated requests for things you don’t want to accept, add them into your documentation to avoid repeating yourself.
+- Close the request
 
-You shouldn’t need more than 1-2 sentences to respond. For example, if a user reports an error for an outdated 
+You shouldn’t need more than 1-2 sentences to respond. For example, if a user reports an error for an outdated version of our software (say, a hotfix for a version we no longer support), mention that it's no longer supported, and close the ticket.
