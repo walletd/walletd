@@ -15,7 +15,7 @@ Before any code is written, an issue should be opened detailing a requested feat
 
 Pull requests that do not have an associated issue are far more likely to be closed immediately, if what they address isn't absolutely clear to maintainers. If you aren't fixing typos or adding clarifying code comments only, there's an incredibly high chance that your PR will be rejected and we'll point you to these contribution rules.
 
-These issues will be discussed, and should a decision be made to incorporate a fix or a feature request, the responsible contributor should create their own fork of the current version of main. Should you desire some assistance or input, we recommend opening a pull request on the appropriate crate's branch and marking your PR as a work-in-progress as part of the label, as well as by using GitHub's "mark as draft" functionality.
+These issues will be discussed, and should a decision be made to incorporate a fix or a feature request, the responsible contributor should create their own fork of the current version of main. Should you desire some assistance or input while you work on your changes, we recommend you open a draft pull request on the appropriate crate's branch and marking your PR as a work-in-progress as part of the label, as well as by using GitHub's "mark as draft" functionality. A maintainer or other collaborater will then have context to assist where you may be having problems.
 
 In order to contribute to the project, a good place to start is by looking at the issues tab. We will review any issues, tagging them based on their complexity, whether we would like assistance from certain types of contibutors, and in the case of new features, discuss whether or not they would be a good fit for the project.
 
@@ -25,6 +25,48 @@ Remember, your options for contribution to the project need not necessarily just
 
 ## Pull request guidelines
 
+### What makes a pull request good?
+Due to the collaborative nature of contributing to open source projects, it's difficult to efficently convey what you were thinking when you wrote your code.
+
+There are ways to address this. One thing walletd does whenever possible is use some form of [Conventional Commits][conventional-commits], which defines a number of different types. **Generally, if you find you need to use two types when creating a git commit message, your commit almost certainly could be broken into two or more separate commits**.
+
+We suggest contributors review at least the quick summary of this standard before they start coding to assist others in understanding how the changes they make affect the codebase. 
+
+Without going into too much detail regarding Conventional Commits, one should make one pull request per "type" of your changes. An acceptable commit prefix message could be: `docs: updated typo`. 
+
+For more intricate commits, we suggest adding a body to your commit messages explaining the changes made by providing more context than a simple commit message. 
+
+An acceptable example commit message that follows this can take the structure that follows: 
+```
+fix: fixes bug related to issue 1173
+
+Issue 1173 caused a problem with the handling of ...
+This commit fixes ... by changing ... to address ...
+
+[optional footer(s)]
+```
+walletd maintainers generally tend to use one of the following types for each commit (this is non-exhaustive): 
+
+build
+chore
+ci
+docs
+feat*
+fix*
+style
+refactor
+perf
+test
+
+
+ *"fix" and "feat" commits are special cases where the commit should necessitate a new version of the repository to be released. Fix corresponds to PATCH and feat corresponds to MINOR in [Semantic Versioning][semver].
+
+Commits that have breaking changes correspond to a MAJOR semver change, and can be part of any type of tag (feat, build, etc). 
+
+Any breaking change commit should have a footer that says BREAKING CHANGE:, or append a ! after the type/scope. A commit of this nature introduces a non-backwards-compatible change (correlating with MAJOR in Semantic Versioning). 
+
+A BREAKING CHANGE can be part of commits of any type.
+### How to contribute
 To get started, fork the current main branch and work from there. 
 
 1. Please restrict your pull request(s) to one feature per branch
@@ -65,3 +107,4 @@ For more information regarding the release cycle of this project, please refer t
 
 
 [readme-example]: https://github.com/walletd/hd_key/tree/main/examples/readme
+[conventional-commits]: https://www.conventionalcommits.org/en/v1.0.0/
