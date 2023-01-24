@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
+about: Suggest a prospective feature for this project
 title: ''
 labels: ''
 assignees: ''
@@ -10,8 +10,8 @@ assignees: ''
 **Is your feature request related to a problem? Please describe.**
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+**Describe the feature / solution you're proposing**
+A clear and concise description of what you would like walletd to support / behave.
 
 **Describe alternatives you've considered**
 A clear and concise description of any alternative solutions or features you've considered.

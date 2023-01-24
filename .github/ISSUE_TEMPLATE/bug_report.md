@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Create a report to help us fix bugs encountered in walletd
 title: ''
 labels: ''
 assignees: ''
@@ -19,6 +19,9 @@ Steps to reproduce the behavior:
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
+
+**Actual behaviour**
+A clear and concise description of what actually happened.
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
