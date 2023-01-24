@@ -2,7 +2,7 @@
 // Ropsten Infura: https://ropsten.infura.io/v3/933b67502c4340a7bf3e873f0de62073
 // Localhost Ganache: http://localhost:8545 by default
 #[tokio::main]
-async fn main() -> web3::Result<()> {
+async fn main() {
     // Run this example with ganache-cli using the following command: ganache-cli -b 3 -m "hamster coin cup brief quote trick stove draft hobby strong caught unable"
     //let transport = web3::transports::Http::new("http://localhost:8545")?;
     let transport = web3::transports::Http::new("https://celo-mainnet.infura.io/v3/933b67502c4340a7bf3e873f0de62073")?; // ganache-cli

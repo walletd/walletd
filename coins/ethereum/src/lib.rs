@@ -1,4 +1,4 @@
-// https://mainnet.infura.io/v3/933b67502c4340a7bf3e873f0de62073 -- Mainnet L1 Blockchain 
+// https://mainnet.infura.io/v3/933b67502c4340a7bf3e873f0de62073 -- Mainnet L1 Blockchain
 // https://celo-mainnet.infura.io/v3/933b67502c4340a7bf3e873f0de62073 -- This is an Infura blockchain that is an `Ethereum L1` client that connects to Infura's Celo Mainnet node.
 // https://goerli.infura.io/v3/933b67502c4340a7bf3e873f0de62073 -- Goerli Testnet L1 Blockchain
 // Goerli is an Ethereum test network that allows for blockchain development testing before deployment on Mainnet
@@ -10,16 +10,16 @@
 // Step 5: Now click on the “Advanced” in left side bar
 // Step 6: In “Advanced” tab when you scroll down, you will find “Show test networks” option, just put it “ON”
 // Step 7: After completing these steps you can find the custom network in the dropdown list.
-// For testing purposes, a Goerli faucet is available at https://goerlifaucet.com/. 
+// For testing purposes, a Goerli faucet is available at https://goerlifaucet.com/.
 // Arbitrary Mainnet address: 0x7a37eadaf5db28e2079f984e923ae14d485b9617
 // 0xc8874652cd7cc403f0c7ae4cfb420012d0de3afef0041ad255ce12ee5344f13a
 // address 0 - 0x9524D3834d09031d87B0192ad52caedc30d92d44 -- key 0x8db5f4b68fbba64a4b8034a9824d2c36b12387491f48f94a71743034ec8ebc7b
 // faucet to address 0 https://goerli.etherscan.io/tx/0x88ab1ff9c26d886309a9943dc58391e265c7e0e31d592e936457aca323c3977c
-// 
-// Candidate functions for possible unified public interface: 
+//
+// Candidate functions for possible unified public interface:
 //
 // new() -- generates new mnemonic and derives the first address, outputing
-// new_from_mnemonic() -- takes a mnemonic and derives the first address, outputing the address and private key 
+// new_from_mnemonic() -- takes a mnemonic and derives the first address, outputing the address and private key
 // new_from_address_and_keys(address, private key) -- takes an address and private key and outputs the address and private key
 // wallet.balance() -- returns the balance of the wallet
 // public_blockchain.get_balance(abritrary address) -- returns the balance of the arbitrary address) -- BlockchainClient is a possible good place to implement this
@@ -180,7 +180,6 @@ impl CryptoWallet for EthereumWallet {
         let to = Address::from_str(to_address)?;
         let amount = U256::from_dec_str("1000000")?; // hack hard code
 
-
         // Build tx object
         let tx_object = TransactionParameters {
             to: Some(to),
@@ -199,14 +198,16 @@ impl CryptoWallet for EthereumWallet {
             .accounts()
             .sign_transaction(tx_object, &key)
             .await?;
-        
 
         let result = blockchain_client
             .eth
             .send_raw_transaction(signed.raw_transaction)
             .await?;
-            
-        println!("Tx succeeded: Hash: {:#?}, EtherScan address: https://goerli.etherscan.io/tx/{:#?}", &result, &result);
+
+        println!(
+            "Tx succeeded: Hash: {:#?}, EtherScan address: https://goerli.etherscan.io/tx/{:#?}",
+            &result, &result
+        );
         Ok(())
     }
 }
