@@ -85,13 +85,13 @@ Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in WalletD (or its child crates) by you, shall be subject to the same license restrictions WalletD adheres to, without any
 additional terms or conditions.
 
-[readme-example]: https://github.com/WalletD/mnemonic/tree/main/examples/readme
+[readme-example]: https://github.com/WalletD/WalletD/tree/main/examples/readme
 [examples]: https://github.com/WalletD/mnemonic/tree/main/examples
 [docs]: https://docs.rs/WalletD_mnemonic
-[contributing]: https://github.com/WalletD/mnemonic/blob/main/CONTRIBUTING.md
-[discussion]: https://github.com/WalletD/mnemonic/discussions/new?category=q-a
-[ecosystem]: https://github.com/WalletD/mnemonic/blob/main/ECOSYSTEM.md
-[license-mit]: https://github.com/WalletD/mnemonic/blob/main/LICENSE-MIT
-[license-apache]: https://github.com/WalletD/mnemonic/blob/main/LICENSE-APACHE
+[contributing]: https://github.com/WalletD/WalletD/blob/main/CONTRIBUTING.md
+[discussion]: https://github.com/WalletD/WalletD/discussions/new?category=q-a
+[ecosystem]: https://github.com/WalletD/WalletD/blob/main/ECOSYSTEM.md
+[license-mit]: https://github.com/WalletD/WalletD/blob/main/LICENSE-MIT
+[license-apache]: https://github.com/WalletD/WalletD/blob/main/LICENSE-APACHE
 [WalletD-github]: https://github.com/WalletD/WalletD
 [semver]: https://semver.org
