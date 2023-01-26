@@ -26,7 +26,7 @@ Make sure all CI/CD passes successfully
 Tag the release on GitHub
 Publish the new crate(s) to crates.io
 
-The release will be tagged on GitHub, and the various packages will be automatically uploaded to [npm](https://www.npmjs.org)
+The release will be tagged on GitHub, and the various packages will be automatically uploaded to [crates.io](https://crates.io)
 
 TBD: release of bindings for various languages and how we handle that
 
