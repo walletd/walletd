@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us fix bugs encountered in walletd
+about: Create a report to help us fix bugs encountered in WalletD
 title: ''
 labels: ''
 assignees: ''

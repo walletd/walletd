@@ -1,14 +1,14 @@
-# walletd contribution guide
+# WalletD contribution guide
 
 ## Effective documentation of our processes
 
 Given the asynchronous nature of open source software development, we believe strongly in documenting our processes, our reasoning and any decisions that may arise in a transparent, collaborative manner.
 
-To this end, when you do discuss aspects of projects within the walletd ecosystem, please try do so in a manner that allows other contributors and interested parties to see what was discussed, rather than keeping conversations siloed.
+To this end, when you do discuss aspects of projects within the WalletD ecosystem, please try do so in a manner that allows other contributors and interested parties to see what was discussed, rather than keeping conversations siloed.
 
 Our team may have meetings where ideas and decisions are made. In order to keep this transparent, where possible, we will endeavour to publish a document that summarises all salient points **Maybe we do this in a repo where we store minutes?**
 
-The walletd team strongly believe that good documentation is critical in clarifying a contributor's reasoning and expectations. Ideally all projects should have documentation that is up-to-date, and when undergoing changes, should at least stipulate in the documentation what aspects of it are out of date.
+The WalletD team strongly believe that good documentation is critical in clarifying a contributor's reasoning and expectations. Ideally all projects should have documentation that is up-to-date, and when undergoing changes, should at least stipulate in the documentation what aspects of it are out of date.
 
 ## Contributing to the project
 Before any code is written, an issue should be opened detailing a requested feature or a bug. Maintainers will review this issue and tag it accordingly.
@@ -28,7 +28,7 @@ Remember, your options for contribution to the project need not necessarily just
 ### What makes a pull request good?
 Due to the collaborative nature of contributing to open source projects, it's difficult to efficently convey what you were thinking when you wrote your code.
 
-There are ways to address this. One thing walletd does whenever possible is use some form of [Conventional Commits][conventional-commits], which defines a number of different types. **Generally, if you find you need to use two types when creating a git commit message, your commit almost certainly could be broken into two or more separate commits**.
+There are ways to address this. One thing WalletD does whenever possible is use some form of [Conventional Commits][conventional-commits], which defines a number of different types. **Generally, if you find you need to use two types when creating a git commit message, your commit almost certainly could be broken into two or more separate commits**.
 
 We suggest contributors review at least the quick summary of this standard before they start coding to assist others in understanding how the changes they make affect the codebase. 
 
@@ -45,7 +45,7 @@ This commit fixes ... by changing ... to address ...
 
 [optional footer(s)]
 ```
-walletd maintainers generally tend to use one of the following types for each commit (this is non-exhaustive): 
+WalletD maintainers generally tend to use one of the following types for each commit (this is non-exhaustive): 
 
 build
 chore
@@ -106,5 +106,5 @@ If you are planning on adding features, documentation or bug fixes, that's reall
 For more information regarding the release cycle of this project, please refer to [the documentation][readme-example]
 
 
-[readme-example]: https://github.com/walletd/hd_key/tree/main/examples/readme
+[readme-example]: https://github.com/WalletD/hd_key/tree/main/examples/readme
 [conventional-commits]: https://www.conventionalcommits.org/en/v1.0.0/

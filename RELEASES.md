@@ -1,6 +1,6 @@
 
 ## Preparing and Publishing Releases
-walletd versioning adheres to [semantic versioning][semver].
+WalletD versioning adheres to [semantic versioning][semver].
 ### Pre-requisites
 
 - Before pushing your local branch, ensure that all tests pass by running `cargo test` for the specific package you are editting. 

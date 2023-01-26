@@ -11,7 +11,7 @@ assignees: ''
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
 
 **Describe the feature / solution you're proposing**
-A clear and concise description of what you would like walletd to support / behave.
+A clear and concise description of what you would like WalletD to support / behave.
 
 **Describe alternatives you've considered**
 A clear and concise description of any alternative solutions or features you've considered.
