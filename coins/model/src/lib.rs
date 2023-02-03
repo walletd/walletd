@@ -19,6 +19,7 @@ pub trait BlockchainConnector: Sized {
 }
 
 pub trait CryptoAmount: std::fmt::Display {
-    /// In the units of main "big" unit (a floating point number, not an integer subdivision) using decimal value, for bitcoin BTC, ethereum ETH, etc.
+    /// In the units of main "big" unit (a floating point number, not an integer
+    /// subdivision) using decimal value, for bitcoin BTC, ethereum ETH, etc.
     fn new_from_decimal_value(value: f64) -> Self;
 }

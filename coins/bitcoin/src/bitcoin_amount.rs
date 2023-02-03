@@ -1,5 +1,7 @@
-use core::{fmt, fmt::Display};
+use core::fmt;
+use core::fmt::Display;
 use std::ops;
+
 use walletd_coin_model::CryptoAmount;
 
 #[derive(Default, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
@@ -47,6 +49,7 @@ impl ops::Mul for BitcoinAmount {
 
 impl ops::Mul<f64> for BitcoinAmount {
     type Output = Self;
+
     fn mul(self, rhs: f64) -> Self::Output {
         Self {
             satoshi: ((self.satoshi as f64) * rhs) as u64,

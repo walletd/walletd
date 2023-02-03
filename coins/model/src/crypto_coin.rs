@@ -1,5 +1,7 @@
+use core::fmt;
+use core::fmt::Display;
+
 use anyhow::anyhow;
-use core::{fmt, fmt::Display};
 
 #[derive(Default, PartialEq, Copy, Clone, Debug)]
 pub enum CryptoCoin {
@@ -12,7 +14,9 @@ pub enum CryptoCoin {
 }
 
 impl CryptoCoin {
-    // Creates a new CryptoCoin based on the coin type value in accordance with SLIP-0044, assumes mainnet, throws error to be handled if testnet or unsupported type
+    // Creates a new CryptoCoin based on the coin type value in accordance with
+    // SLIP-0044, assumes mainnet, throws error to be handled if testnet or
+    // unsupported type
     pub fn new(value: usize) -> Result<Self, anyhow::Error> {
         match value {
             0 => Ok(CryptoCoin::BTC),
@@ -31,7 +35,8 @@ impl CryptoCoin {
         *self as usize
     }
 
-    /// Matches coin name ignoring case and allowing either the long form or short abbrevation form
+    /// Matches coin name ignoring case and allowing either the long form or
+    /// short abbrevation form
     pub fn from_str(coin_name: &str) -> Result<CryptoCoin, anyhow::Error> {
         match coin_name.to_string().to_lowercase().as_str() {
             "btc" | "bitcoin" => Ok(CryptoCoin::BTC),

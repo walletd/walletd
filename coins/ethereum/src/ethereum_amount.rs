@@ -1,5 +1,7 @@
-use core::{fmt, fmt::Display};
+use core::fmt;
+use core::fmt::Display;
 use std::ops;
+
 use walletd_coin_model::CryptoAmount;
 use web3::ethabi::ethereum_types::U256;
 
@@ -71,7 +73,8 @@ impl EthereumAmount {
     }
 
     pub fn eth(&self) -> f64 {
-        self.wei.as_u64() as f64 / f64::powf(10.0, 18.0) // 10^18 wei per ethereum
+        self.wei.as_u64() as f64 / f64::powf(10.0, 18.0) // 10^18 wei per
+                                                         // ethereum
     }
 
     pub fn wei(&self) -> U256 {

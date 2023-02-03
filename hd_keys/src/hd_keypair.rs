@@ -4,12 +4,15 @@ use hmac::{Hmac, Mac};
 use secp256k1::{PublicKey, Scalar, Secp256k1, SecretKey};
 use sha2::{Digest, Sha256, Sha512};
 type HmacSha512 = Hmac<Sha512>;
-use crate::{DerivPathComponent, DerivType, NetworkType};
-use ripemd::Ripemd160;
 use std::fmt;
+
+use ripemd::Ripemd160;
 use walletd_coin_model::CryptoCoin;
 
-/// Stores collection of associated/related keypairs, all the keypairs in the ring stem from a single master
+use crate::{DerivPathComponent, DerivType, NetworkType};
+
+/// Stores collection of associated/related keypairs, all the keypairs in the
+/// ring stem from a single master
 pub struct HDKeyPairRing {
     pub hd_keypairs: Vec<HDKeyPair>,
 }

@@ -1,9 +1,10 @@
 pub mod hd_keypair;
-use anyhow::anyhow;
-pub use hd_keypair::HDKeyPair;
 use std::fmt;
 use std::fmt::Display;
 use std::str::FromStr;
+
+use anyhow::anyhow;
+pub use hd_keypair::HDKeyPair;
 use walletd_coin_model::{CryptoCoin, CryptoWallet};
 
 #[derive(Default, PartialEq, Eq, Clone, Copy)]
@@ -15,7 +16,8 @@ pub enum DerivType {
     BIP84,
 }
 impl DerivType {
-    /// Returns the purppose string representation associated with each derivation type
+    /// Returns the purppose string representation associated with each
+    /// derivation type
     pub fn purpose(&self) -> &str {
         match self {
             DerivType::BIP32 => "0'",
@@ -25,7 +27,8 @@ impl DerivType {
         }
     }
 
-    /// If TestNet coin type value is always 1, otherwise use the specified value for the crypto coin
+    /// If TestNet coin type value is always 1, otherwise use the specified
+    /// value for the crypto coin
     pub fn coin_type_value(coin: &CryptoCoin, network_type: NetworkType) -> usize {
         match network_type {
             NetworkType::MainNet => coin.coin_type_mainnet(),
@@ -33,7 +36,8 @@ impl DerivType {
         }
     }
 
-    /// Derives the default first account with the specified derivation path scheme
+    /// Derives the default first account with the specified derivation path
+    /// scheme
     pub fn derive_first_account(
         &self,
         master_node: &HDKeyPair,
@@ -185,17 +189,22 @@ pub enum DerivPathComponent {
 }
 
 impl DerivPathComponent {
-    /// Convert to the full number used to represent a hardend index from the number used in the derivation path string accompanied by ' to indicate hardened
+    /// Convert to the full number used to represent a hardend index from the
+    /// number used in the derivation path string accompanied by ' to indicate
+    /// hardened
     pub fn hardened_full_index(num: u32) -> u32 {
         num + (1 << 31)
     }
 
-    /// Convert from the full number used represent a hardened index to the number when accompanied by ' indicates a hardened index
+    /// Convert from the full number used represent a hardened index to the
+    /// number when accompanied by ' indicates a hardened index
     pub fn hardened_shortform_index(full_index: u32) -> u32 {
         full_index - (1 << 31)
     }
 
-    /// Returns the short form value of index, for master type always returns 0, for hardened index returns the short form value without the hardened indicator
+    /// Returns the short form value of index, for master type always returns 0,
+    /// for hardened index returns the short form value without the hardened
+    /// indicator
     pub fn to_shortform_index(&self) -> u32 {
         match self {
             DerivPathComponent::Master => 0,

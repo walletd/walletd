@@ -1,21 +1,23 @@
 extern crate reqwest;
 
-use walletd_coin_model::{CryptoAmount, CryptoCoin, CryptoWallet, CryptoWalletGeneral};
-use walletd_hd_keys::{HDKeyPair, NetworkType};
-use walletd_monero_mnemonic::{Mnemonic, MnemonicHandler, Seed};
+use core::fmt;
+use core::fmt::Display;
+use std::any::Any;
+use std::collections::HashMap;
 
 use anyhow::anyhow;
 use async_trait::async_trait;
-use core::{fmt, fmt::Display};
 use curve25519_dalek::scalar::Scalar;
 use hmac::{Hmac, Mac};
 use reqwest::header::{ACCEPT, CONTENT_TYPE};
 use sha2::Sha512;
-use std::any::Any;
-use std::collections::HashMap;
+use walletd_coin_model::{CryptoAmount, CryptoCoin, CryptoWallet, CryptoWalletGeneral};
+use walletd_hd_keys::{HDKeyPair, NetworkType};
+use walletd_monero_mnemonic::{Mnemonic, MnemonicHandler, Seed};
 type HmacSha512 = Hmac<Sha512>;
 use base58_monero as base58;
-use curve25519_dalek::{constants::ED25519_BASEPOINT_TABLE, edwards::EdwardsBasepointTable};
+use curve25519_dalek::constants::ED25519_BASEPOINT_TABLE;
+use curve25519_dalek::edwards::EdwardsBasepointTable;
 use secp256k1::{PublicKey, Secp256k1, SecretKey};
 use tiny_keccak::{Hasher, Keccak};
 
@@ -67,11 +69,11 @@ impl MoneroAmount {
 
 #[async_trait]
 impl CryptoWallet for MoneroWallet {
-    type MnemonicSeed = Seed;
-    type HDKeyInfo = HDKeyPair;
     type AddressFormat = MoneroFormat;
-    type CryptoAmount = MoneroAmount;
     type BlockchainClient = reqwest::Client;
+    type CryptoAmount = MoneroAmount;
+    type HDKeyInfo = HDKeyPair;
+    type MnemonicSeed = Seed;
     type NetworkType = NetworkType;
 
     fn crypto_type(&self) -> CryptoCoin {
@@ -221,6 +223,7 @@ impl MoneroWallet {
             network: network,
         })
     }
+
     pub fn public_standard_address_from_public_keys(
         public_spend_key: &String,
         public_view_key: &String,
@@ -275,6 +278,7 @@ impl MoneroWallet {
         let public_spend = private_spend * G;
         Ok(hex::encode(&public_spend.compress().as_bytes()))
     }
+
     pub fn private_view_key_from_private_spend_key(
         private_spend_key: &String,
     ) -> Result<String, anyhow::Error> {
@@ -339,6 +343,7 @@ impl CryptoWalletGeneral for MoneroWallet {
     fn crypto_type(&self) -> CryptoCoin {
         self.crypto_type
     }
+
     fn as_any(&self) -> &dyn Any {
         self
     }

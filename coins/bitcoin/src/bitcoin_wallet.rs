@@ -1,3 +1,9 @@
+use core::fmt;
+use core::fmt::Display;
+use std::any::Any;
+use std::cmp::Reverse;
+use std::str::FromStr;
+
 use ::secp256k1::{Message, PublicKey, Secp256k1, SecretKey};
 use anyhow::anyhow;
 use async_trait::async_trait;
@@ -7,13 +13,8 @@ pub use bitcoin::{
     Address, AddressType, EcdsaSighashType, Network, PrivateKey as BitcoinPrivateKey,
     PublicKey as BitcoinPublicKey, Script,
 };
-use core::{fmt, fmt::Display};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
-use std::any::Any;
-use std::cmp::Reverse;
-use std::str::FromStr;
-
 use walletd_bip39::Seed;
 use walletd_coin_model::{CryptoCoin, CryptoWallet, CryptoWalletGeneral};
 use walletd_hd_keys::{HDKeyPair, NetworkType};
@@ -33,11 +34,11 @@ pub struct BitcoinWallet {
 
 #[async_trait]
 impl CryptoWallet for BitcoinWallet {
+    type AddressFormat = AddressType;
+    type BlockchainClient = Blockstream;
+    type CryptoAmount = BitcoinAmount;
     type HDKeyInfo = HDKeyPair;
     type MnemonicSeed = Seed;
-    type AddressFormat = AddressType;
-    type CryptoAmount = BitcoinAmount;
-    type BlockchainClient = Blockstream;
     type NetworkType = Network;
 
     fn crypto_type(&self) -> CryptoCoin {
@@ -67,12 +68,14 @@ impl CryptoWallet for BitcoinWallet {
 
         match address_type {
             AddressType::P2pkh => address_info = Address::p2pkh(&public_key, network),
-            // TODO: Not sure about initializing this with an empty script, double check and fix as necessary
+            // TODO: Not sure about initializing this with an empty script, double check and fix as
+            // necessary
             AddressType::P2sh => address_info = Address::p2sh(&Script::new(), network)?,
             AddressType::P2wpkh => address_info = Address::p2wpkh(&public_key, network)?,
             // TODO: Again check the script::new() here and fix if needed
             AddressType::P2wsh => address_info = Address::p2wsh(&Script::new(), network),
-            // Currently not handling the AddressType::P2tr, fix if can understand how to create this address properly
+            // Currently not handling the AddressType::P2tr, fix if can understand how to create
+            // this address properly
             _ => return Err(anyhow!("Currently not handling this Bitcoin address type")),
         }
         let public_address = address_info.to_string();
@@ -110,12 +113,14 @@ impl CryptoWallet for BitcoinWallet {
 
         match address_type {
             AddressType::P2pkh => address_info = Address::p2pkh(&public_key, network),
-            // TODO: Not sure about initializing this with an empty script, double check and fix as necessary
+            // TODO: Not sure about initializing this with an empty script, double check and fix as
+            // necessary
             AddressType::P2sh => address_info = Address::p2sh(&Script::new(), network)?,
             AddressType::P2wpkh => address_info = Address::p2wpkh(&public_key, network)?,
             // TODO: Again check the script::new() here and fix if needed
             AddressType::P2wsh => address_info = Address::p2wsh(&Script::new(), network),
-            // Currently not handling the AddressType::P2tr, fix if can understand how to create this address properly
+            // Currently not handling the AddressType::P2tr, fix if can understand how to create
+            // this address properly
             _ => return Err(anyhow!("Currently not handling this Bitcoin address type")),
         }
         let network_prefix: u8;
@@ -175,7 +180,8 @@ impl CryptoWallet for BitcoinWallet {
 
         // first checking existing endpoints with blockstream
         let fee_estimates = client.fee_estimates().await?;
-        let confirmation_target: u32 = 6; // this variable specifies how many blocks need to include this transaction before it's considered "confirmed"
+        let confirmation_target: u32 = 6; // this variable specifies how many blocks need to include this transaction
+                                          // before it's considered "confirmed"
         let fee_sat_per_byte: f64;
         if let Value::Object(fee_map) = fee_estimates {
             fee_sat_per_byte = fee_map
@@ -191,12 +197,14 @@ impl CryptoWallet for BitcoinWallet {
             return Err(anyhow!("Did not get fee map"));
         }
         // Build the transaction
-        // Specify the inputs and outputs, the difference between the amount of the inputs and the amount of the outputs is the transaction fee
+        // Specify the inputs and outputs, the difference between the amount of the
+        // inputs and the amount of the outputs is the transaction fee
         // Input(s) should cover the total amount
         // Inputs need to come from the utxo
         let available_utxos = client.utxo(self.public_address().as_str()).await?;
 
-        // sum total value with confirmed status, also count number of utxos with confirmed status
+        // sum total value with confirmed status, also count number of utxos with
+        // confirmed status
         let mut total_value_from_utxos = 0;
         let mut inputs_available: Vec<UTXO> = Vec::new();
         let mut inputs_available_tx_info: Vec<BTransaction> = Vec::new();
@@ -330,15 +338,18 @@ impl BitcoinWallet {
         }
     }
 
-    /// Goal is to find a combination of the fewest inputs that is bigger than what we need - close to twice the send amount
-    /// while not producing a change amount that is smaller than what the fee would be to spend that amount
+    /// Goal is to find a combination of the fewest inputs that is bigger than
+    /// what we need - close to twice the send amount while not producing a
+    /// change amount that is smaller than what the fee would be to spend that
+    /// amount
     pub fn choose_inputs_and_set_fee(
         utxo_available: &Vec<UTXO>,
         send_amount: &BitcoinAmount,
         inputs_available_tx_info: &Vec<BTransaction>,
         byte_fee: f64,
     ) -> Result<(Vec<Input>, BitcoinAmount), anyhow::Error> {
-        // Sorting in reverse order of the value each UTXO (from highest UTXO value to lowest), indices keeps track of the original indices after sort
+        // Sorting in reverse order of the value each UTXO (from highest UTXO value to
+        // lowest), indices keeps track of the original indices after sort
         let mut indices = (0..utxo_available.len()).collect::<Vec<_>>();
         indices.sort_by_key(|&i| Reverse(&utxo_available[i].value));
 
@@ -468,10 +479,12 @@ impl BitcoinWallet {
                             return Ok((inputs, set_fee));
                         }
                     }
-                    // even if could not get the change amount to be greater than the min change amount, still proceed by including the added inputs
+                    // even if could not get the change amount to be greater than the min change
+                    // amount, still proceed by including the added inputs
                     return Ok((inputs, set_fee));
                 }
-                // even if could not get the change amount to be greater than the min change amount, still proceed
+                // even if could not get the change amount to be greater than the min change
+                // amount, still proceed
                 return Ok((inputs, set_fee));
             }
         } else {
@@ -498,8 +511,9 @@ impl BitcoinWallet {
         }
     }
 
-    /// Builds a transaction with inputs and outputs, taking into account a fee amount and a change amount
-    /// Uses the rust-bitcoin library and structs/functions
+    /// Builds a transaction with inputs and outputs, taking into account a fee
+    /// amount and a change amount Uses the rust-bitcoin library and
+    /// structs/functions
     pub fn build_transaction(
         &self,
         fee_sat_per_byte: f64,
@@ -633,7 +647,7 @@ impl BitcoinWallet {
     }
 
     pub fn public_address_p2pkh_from_public_key(public_key: &Vec<u8>) -> String {
-        //p2pkh format
+        // p2pkh format
         let mut address = [0u8; 25];
 
         address[0] = 0x00;

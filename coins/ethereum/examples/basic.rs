@@ -1,5 +1,7 @@
-//! TODO: This example might have been working at one point but it is very out of date currently and needs to be updated
-//! It's more of a placeholder at the moment with no actual functionality, we need to update this example with a working basic example for Ethereum
+//! TODO: This example might have been working at one point but it is very out
+//! of date currently and needs to be updated It's more of a placeholder at the
+//! moment with no actual functionality, we need to update this example with a
+//! working basic example for Ethereum
 
 // Mainnet Infura: https://celo-mainnet.infura.io/v3/933b67502c4340a7bf3e873f0de62073
 // Ropsten Infura: https://ropsten.infura.io/v3/933b67502c4340a7bf3e873f0de62073
@@ -11,21 +13,23 @@ extern crate walletd_ethereum;
 /// TODO: update this example with an actual working example
 #[tokio::main]
 async fn main() {
-    // Run this example with ganache-cli using the following command: ganache-cli -b 3 -m "hamster coin cup brief quote trick stove draft hobby strong caught unable"
-    //let transport = web3::transports::Http::new("http://localhost:8545")?;
-    //let transport = web3::transports::Http::new("https://celo-mainnet.infura.io/v3/933b67502c4340a7bf3e873f0de62073")?; // ganache-cli
-    //let web3 = web3::Web3::new(transport);
+    // Run this example with ganache-cli using the following command:
+    // ganache-cli -b 3 -m "hamster coin cup brief quote trick stove draft hobby
+    // strong caught unable" let transport = web3::transports::Http::new("http://localhost:8545")?;
+    // let transport = web3::transports::Http::new("https://celo-mainnet.infura.io/v3/933b67502c4340a7bf3e873f0de62073")?; // ganache-cli
+    // let web3 = web3::Web3::new(transport);
 
     // println!("Calling accounts.");
     // let mut accounts = web3.eth().accounts().await?;
     // println!("Accounts: {:?}", accounts);
-    // accounts.push("00a329c0648769a73afac7f9381e08fb43dbea72".parse().unwrap());
+    // accounts.push("00a329c0648769a73afac7f9381e08fb43dbea72".parse().
+    // unwrap());
 
-    //println!("Calling balance.");
+    // println!("Calling balance.");
 
-    //let endpoint = "http://localhost:8545".to_string(); // ganache-cli
-    // TODO: need to update this, currently build fails becuase infura_key is not found
-    //let endpoint = "https://celo-mainnet.infura.io/v3/933b67502c4340a7bf3e873f0de62073".to_string(); // endpoint aimed at infura
+    // let endpoint = "http://localhost:8545".to_string(); // ganache-cli
+    // TODO: need to update this, currently build fails becuase infura_key is
+    // not found let endpoint = "https://celo-mainnet.infura.io/v3/933b67502c4340a7bf3e873f0de62073".to_string(); // endpoint aimed at infura
     // let eth_client = EthClient {
     //     transport: web3::transports::Http::new(&endpoint)?,
     //     infura_key: infura_key,
@@ -42,19 +46,19 @@ async fn main() {
     // WIP: Address type incorrect
     // get_balance(&eth_client, web3::types::H160);
 
-    // Had to comment this out, should uncomment and update once we get this function to work
-    // get_block_number(&eth_client).await;
+    // Had to comment this out, should uncomment and update once we get this
+    // function to work get_block_number(&eth_client).await;
 
-    //gas_price(&eth_client).await;
+    // gas_price(&eth_client).await;
 
-    //let account_list = get_accounts(&eth_client);
+    // let account_list = get_accounts(&eth_client);
 
     // Ok(())
 }
 
 // WIP
-// async fn get_balance(eth_client: &EthClient, address: web3::types::H160) -> web3::Result<web3::types::U256> {
-//     println!("balance pre-ftw");
+// async fn get_balance(eth_client: &EthClient, address: web3::types::H160) ->
+// web3::Result<web3::types::U256> {     println!("balance pre-ftw");
 //     let transport = web3::transports::Http::new("http://localhost:8545")?;
 //     let web3 = web3::Web3::new(transport);
 //     let account: H160 = 0x75df5695686338883675bb27bd06fc7578aa01b7;

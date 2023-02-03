@@ -58,11 +58,11 @@ impl BlockchainClient {
         Ok(self.blockchain_client.get_raw_transaction(txid, None)?)
     }
 
-    // pub fn get_transaction(&self, txid: &Txid) -> Result<GetTransactionResult, String> {
-    //     Ok(self.blockchain_client.get_transaction(txid, None)?())
+    // pub fn get_transaction(&self, txid: &Txid) -> Result<GetTransactionResult,
+    // String> {     Ok(self.blockchain_client.get_transaction(txid, None)?())
     // }
 
-    // pub fn get_tx_out(&self, txid: &Txid, vout: u32) -> Result<GetTxOutResult, String> {
-    //     Ok(self.blockchain_client.get_tx_out(txid, vout, None)?())
+    // pub fn get_tx_out(&self, txid: &Txid, vout: u32) -> Result<GetTxOutResult,
+    // String> {     Ok(self.blockchain_client.get_tx_out(txid, vout, None)?())
     // }
 }

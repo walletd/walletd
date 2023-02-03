@@ -186,6 +186,7 @@ impl BTransaction {
         let hash = sha256d::Hash::hash(&hex::decode(serialized)?);
         Ok(hex::encode(hash))
     }
+
     /// Serializes the transaction for a given input index
     pub fn serialize_for_segwit_input_index_with_sighash(
         &self,
@@ -199,8 +200,8 @@ impl BTransaction {
         let version_encoded = self.version.to_le_bytes();
         serialization.push_str(&hex::encode(version_encoded));
 
-        // hashPrevouts, double sha256 hash of the all of the previous outpoints (32 byte hash)
-        // Ignoring case of ANYONECANPAY
+        // hashPrevouts, double sha256 hash of the all of the previous outpoints (32
+        // byte hash) Ignoring case of ANYONECANPAY
         let mut prevouts_serialized = String::new();
         for input_here in &self.vin {
             let prev_txid = &input_here.txid;
@@ -221,7 +222,8 @@ impl BTransaction {
         serialization.push_str(hash_prevouts.as_str());
 
         // hashSequence (using the sequence from each input) (32 byte hash)
-        // this is hardcoded right now ignoring case of sighash ANYONECANPAY, SINGLE, NONE
+        // this is hardcoded right now ignoring case of sighash ANYONECANPAY, SINGLE,
+        // NONE
         let mut sequence_serialized = String::new();
         for input_here in &self.vin {
             let sequence_here = input_here.sequence.to_le_bytes();
@@ -282,7 +284,8 @@ impl BTransaction {
         Ok(serialization)
     }
 
-    /// Serializes the transaction data (makes a hex string) considering the data from all of the fields
+    /// Serializes the transaction data (makes a hex string) considering the
+    /// data from all of the fields
     pub fn serialize(transaction: &Self) -> Result<String, anyhow::Error> {
         let mut serialization = String::new();
         // version
@@ -327,7 +330,7 @@ impl BTransaction {
             let len_signature_script_encoded =
                 Self::variable_length_integer_encoding(len_signature_script / 2)?;
             serialization.push_str(&hex::encode(len_signature_script_encoded));
-            //script_sig is already encoded for the serialization
+            // script_sig is already encoded for the serialization
             serialization.push_str(&input.scriptsig);
             // sequence
             serialization.push_str(&hex::encode(input.sequence.to_le_bytes()));
@@ -394,7 +397,8 @@ impl BTransaction {
         Ok(serialization)
     }
 
-    /// Displays the transaction id in the form used in the blockchain which is reverse byte of txid()
+    /// Displays the transaction id in the form used in the blockchain which is
+    /// reverse byte of txid()
     pub fn txid_blockchain(&self) -> Result<String, anyhow::Error> {
         let txid = self.txid()?;
         Self::hex_reverse_byte_order(&txid)
@@ -411,7 +415,8 @@ impl BTransaction {
         Ok(hex::encode(txid))
     }
 
-    /// Hashes the transaction including all data (including the segwit witness data)
+    /// Hashes the transaction including all data (including the segwit witness
+    /// data)
     pub fn wtxid(&self) -> Result<String, anyhow::Error> {
         let transaction = self.clone();
         let serialization = Self::serialize(&transaction)?;
@@ -419,7 +424,8 @@ impl BTransaction {
         Ok(hex::encode(txid))
     }
 
-    /// Returns the "normalized txid" - sha256 double hash of the serialized transaction data without including any inputs unlocking data
+    /// Returns the "normalized txid" - sha256 double hash of the serialized
+    /// transaction data without including any inputs unlocking data
     /// (witness data and signature, public key data is not included)
     pub fn ntxid(&self) -> Result<String, anyhow::Error> {
         let mut transaction = self.clone();
@@ -555,6 +561,7 @@ impl Output {
             Err(anyhow!("Info not availabe for Output"))
         }
     }
+
     pub fn new_vector_from_value(vout_info: &Value) -> Result<Vec<Output>, anyhow::Error> {
         let mut voutputs: Vec<Output> = Vec::new();
         if vout_info.is_array() {
@@ -670,10 +677,10 @@ impl BlockchainConnector for Blockstream {
     ) -> Result<bool, anyhow::Error> {
         let transactions = self.transactions(public_address).await?;
         if transactions.len() == 0 {
-            //println!("No past transactions exist at address: {}", public_address);
+            // println!("No past transactions exist at address: {}", public_address);
             return Ok(false);
         } else {
-            //println!("Past transactions exist at address: {}", public_address);
+            // println!("Past transactions exist at address: {}", public_address);
             return Ok(true);
         }
     }
@@ -841,8 +848,9 @@ impl Blockstream {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use mockito::mock;
+
+    use super::*;
 
     #[test]
     fn test_block_count() {

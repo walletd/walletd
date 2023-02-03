@@ -1,9 +1,10 @@
+use core::fmt;
+use std::any::Any;
+
 use async_trait::async_trait;
 use base58::ToBase58;
-use core::fmt;
 use hex;
 use sha2::{Digest, Sha256};
-use std::any::Any;
 
 use crate::CryptoCoin;
 

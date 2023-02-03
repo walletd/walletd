@@ -1,4 +1,3 @@
-pub use ::walletd_bip39;
 pub use ::walletd_bip39::{
     Language as Bip39Language, Mnemonic as Bip39Mnemonic, MnemonicHandler,
     MnemonicType as Bip39MnemonicType, Seed,
@@ -7,16 +6,13 @@ pub use ::walletd_monero_mnemonic::{
     Language as MoneroLanguage, Mnemonic as MoneroMnemonic, MnemonicType as MoneroMnemonicType,
 };
 use anyhow::anyhow;
-pub use walletd_bitcoin;
-pub use walletd_coin_model;
 pub use walletd_coin_model::{BlockchainConnector, CryptoCoin, CryptoWallet, CryptoWalletGeneral};
-pub use walletd_ethereum;
-pub use walletd_hd_keys;
 use walletd_hd_keys::NetworkType;
 pub use walletd_hd_keys::{DerivType, HDKeyPair};
-pub use walletd_monero;
-pub use walletd_monero_mnemonic;
-pub use walletd_solana;
+pub use {
+    ::walletd_bip39, walletd_bitcoin, walletd_coin_model, walletd_ethereum, walletd_hd_keys,
+    walletd_monero, walletd_monero_mnemonic, walletd_solana,
+};
 
 #[derive(PartialEq, Eq)]
 pub enum MnemonicKeyPairType {
@@ -84,8 +80,11 @@ pub struct AssociatedWallets {
 }
 
 impl AssociatedWallets {
-    /// Discovers wallets with in sequential order based on derivation path, stopping discover when gap limit (n consecutive wallets without transaction history) has been met
-    /// Only considers change index = 0 (the receiving/external chain) when considering the gap limit but if there is transaction history with change index = 1 it is added
+    /// Discovers wallets with in sequential order based on derivation path,
+    /// stopping discover when gap limit (n consecutive wallets without
+    /// transaction history) has been met Only considers change index = 0
+    /// (the receiving/external chain) when considering the gap limit but if
+    /// there is transaction history with change index = 1 it is added
     pub async fn new_discover_associated_wallets(
         crypto_coin: CryptoCoin,
         bip32_master: &HDKeyPair,
@@ -107,9 +106,14 @@ impl AssociatedWallets {
         }
     }
 
-    /// Helper function for new_discover_associated_wallets_sequential_with_gap_limit by search along a particular blockchain
-    /// Discovers wallets with in sequential order based on derivation path, stopping discover when gap limit (n consecutive wallets without transaction history) has been met
-    /// Only considers change index = 0 (the receiving/external chain) when considering the gap limit but if there is transaction history with change index = 1 it is added
+    /// Helper function for
+    /// new_discover_associated_wallets_sequential_with_gap_limit by search
+    /// along a particular blockchain Discovers wallets with in sequential
+    /// order based on derivation path, stopping discover when gap limit (n
+    /// consecutive wallets without transaction history) has been met
+    /// Only considers change index = 0 (the receiving/external chain) when
+    /// considering the gap limit but if there is transaction history with
+    /// change index = 1 it is added
     pub async fn new_search_blockchain_for_associated_wallets(
         blockchain_client: impl BlockchainConnector + std::marker::Sync,
         crypto_coin: CryptoCoin,
@@ -133,7 +137,7 @@ impl AssociatedWallets {
 
         while search_next_account {
             search_next_account = false;
-            //println!("account_index: {}", account_index);
+            // println!("account_index: {}", account_index);
             while current_gap < gap_limit {
                 for change_index in 0..2 {
                     let derived = deriv_type.derive_specify_change_account_address_indices(
@@ -162,7 +166,8 @@ impl AssociatedWallets {
                                 println!("account_index: {}, address_index: {}, previous transaction history: {}", account_index, address_index, exists);
                             }
                         }
-                        // couldn't figure out how to check for past transaction history for ethereum and others, not implemented yet
+                        // couldn't figure out how to check for past transaction history for
+                        // ethereum and others, not implemented yet
                         _ => {
                             return Err(anyhow!(
                                 "Currently not handling scanning for associated wallets for {}",
