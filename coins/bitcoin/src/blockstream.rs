@@ -841,20 +841,20 @@ impl Blockstream {
 
 #[cfg(test)]
 mod tests {
-  use super::*;
-  use mockito::mock;
+    use super::*;
+    use mockito::mock;
 
-  #[test]
-  fn test_block_count() {
-    let _m = mock("GET", "/blocks/tip/height")
-      .with_status(200)
-      .with_header("content-type", "text/plain")
-      .with_body("773876")
-      .create();
+    #[test]
+    fn test_block_count() {
+        let _m = mock("GET", "/blocks/tip/height")
+            .with_status(200)
+            .with_header("content-type", "text/plain")
+            .with_body("773876")
+            .create();
 
-      let url: &String = &mockito::server_url();
-      let bs = Blockstream::new(&mockito::server_url()).unwrap();
-      let check = bs.block_count().unwrap();
-      assert_eq!(773876,check);
-  }
+        let url: &String = &mockito::server_url();
+        let bs = Blockstream::new(&mockito::server_url()).unwrap();
+        let check = bs.block_count().unwrap();
+        assert_eq!(773876, check);
+    }
 }
