@@ -45,10 +45,7 @@ impl CryptoWallet for BitcoinWallet {
         CryptoCoin::BTC
     }
 
-    fn new_from_hd_keys(
-        hd_keys: &HDKeyPair,
-        address_type: AddressType,
-    ) -> Result<Self, anyhow::Error> {
+    fn from_hd_key(hd_keys: &HDKeyPair, address_type: AddressType) -> Result<Self, anyhow::Error> {
         let public_key_bytes = &hd_keys
             .extended_public_key
             .expect("Public key data missing")
@@ -90,7 +87,7 @@ impl CryptoWallet for BitcoinWallet {
         })
     }
 
-    fn new_from_mnemonic_seed(
+    fn from_mnemonic(
         mnemonic_seed: &Seed,
         network: Network,
         address_type: AddressType,

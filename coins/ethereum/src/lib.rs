@@ -100,7 +100,7 @@ impl CryptoWallet for EthereumWallet {
         CryptoCoin::ETH
     }
 
-    fn new_from_hd_keys(
+    fn from_hd_key(
         hd_keys: &HDKeyPair,
         address_format: EthereumFormat,
     ) -> Result<Self, anyhow::Error> {
@@ -128,7 +128,7 @@ impl CryptoWallet for EthereumWallet {
         })
     }
 
-    fn new_from_mnemonic_seed(
+    fn from_mnemonic(
         mnemonic_seed: &Seed,
         network_type: NetworkType,
         address_format: EthereumFormat,

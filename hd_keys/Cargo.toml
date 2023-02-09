@@ -14,7 +14,7 @@ walletd_coin_model = {path = "../coins/model"}
 anyhow = "1.0.68"
 base58 = { version = "0.2.0" }
 hex = { version = "0.4.2" }
-hmac = { version = "0.12.1" }
+hmac = { version = "0.12.1", features = ["std"] }
 ripemd= { version = "0.1.3", default-features = false }
 secp256k1 = {version = "0.25.0", features = ["rand-std"]}
 sha2 = { version = "0.10.6", default-features = false }

@@ -17,12 +17,12 @@ pub trait CryptoWallet: Sized {
     type BlockchainClient;
     type NetworkType;
 
-    fn new_from_hd_keys(
+    fn from_hd_key(
         hd_keys: &Self::HDKeyInfo,
         address_format: Self::AddressFormat,
     ) -> Result<Self, anyhow::Error>;
 
-    fn new_from_mnemonic_seed(
+    fn from_mnemonic(
         mnemonic_seed: &Self::MnemonicSeed,
         network: Self::NetworkType,
         address_format: Self::AddressFormat,
@@ -70,8 +70,12 @@ pub trait CryptoWallet: Sized {
     fn crypto_type(&self) -> CryptoCoin;
 }
 
-/// No associated types
-
+// TODO(#61): Remove the fmt::Display requirement for CryptoWalletGeneral
+/// General struct for a CryptoWallet with no associated types
+/// This is used for the walletd to store a list of wallets of different types
+/// This is needed because the walletd needs to store a list of wallets of
+/// different types and the associated types are not allowed to be used in a
+/// trait object
 pub trait CryptoWalletGeneral: fmt::Display {
     fn crypto_type(&self) -> CryptoCoin;
     fn as_any(&self) -> &dyn Any;

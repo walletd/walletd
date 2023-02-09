@@ -150,7 +150,7 @@ impl AssociatedWallets {
                     let exists: bool;
                     match crypto_coin {
                         CryptoCoin::BTC => {
-                            let wallet = walletd_bitcoin::BitcoinWallet::new_from_hd_keys(
+                            let wallet = walletd_bitcoin::BitcoinWallet::from_hd_key(
                                 &derived,
                                 walletd_bitcoin::AddressType::P2wpkh,
                             )?;
