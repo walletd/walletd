@@ -1,3 +1,8 @@
+//! # Ethereum Wallet (walletd implementation)
+//!
+//! This crate implements Ethereum functionality for wallet-specific and
+//! chain-specific functionality. We should consider moving wallet-agnostic
+//! chain-specific functionality to a different module later
 // https://mainnet.infura.io/v3/933b67502c4340a7bf3e873f0de62073 -- Mainnet L1 Blockchain
 // https://celo-mainnet.infura.io/v3/933b67502c4340a7bf3e873f0de62073 -- This is an Infura blockchain that is an `Ethereum L1` client that connects to Infura's Celo Mainnet node.
 // https://goerli.infura.io/v3/933b67502c4340a7bf3e873f0de62073 -- Goerli Testnet L1 Blockchain
@@ -45,6 +50,7 @@ use web3::ethabi::ethereum_types::U256;
 use web3::transports::Http;
 use web3::types::{Address, TransactionParameters};
 
+pub mod ethclient;
 mod ethereum_amount;
 pub use ethereum_amount::EthereumAmount;
 
