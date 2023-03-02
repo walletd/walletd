@@ -16,15 +16,15 @@ pub use bitcoin::{
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use walletd_bip39::Seed;
-use walletd_coin_model::{CryptoCoin, CryptoWallet, CryptoWalletGeneral};
-use walletd_hd_keys::{HDKeyPair, NetworkType};
+use walletd_coin_model::{CryptoWallet, CryptoWalletGeneral};
+use walletd_hd_key::{HDKey, NetworkType, SlipCoin};
 
 use crate::blockstream::{BTransaction, Blockstream, Input, InputType, Output, UTXO};
 use crate::BitcoinAmount;
 
 #[derive(Debug, Clone)]
 pub struct BitcoinWallet {
-    pub crypto_type: CryptoCoin,
+    pub crypto_type: SlipCoin,
     pub address_info: Address,
     pub public_address: String,
     pub private_key: Option<String>,
@@ -37,15 +37,15 @@ impl CryptoWallet for BitcoinWallet {
     type AddressFormat = AddressType;
     type BlockchainClient = Blockstream;
     type CryptoAmount = BitcoinAmount;
-    type HDKeyInfo = HDKeyPair;
+    type HDKeyInfo = HDKey;
     type MnemonicSeed = Seed;
     type NetworkType = Network;
 
-    fn crypto_type(&self) -> CryptoCoin {
-        CryptoCoin::BTC
+    fn crypto_type(&self) -> SlipCoin {
+        SlipCoin::BTC
     }
 
-    fn from_hd_key(hd_keys: &HDKeyPair, address_type: AddressType) -> Result<Self, anyhow::Error> {
+    fn from_hd_key(hd_keys: &HDKey, address_type: AddressType) -> Result<Self, anyhow::Error> {
         let public_key_bytes = &hd_keys
             .extended_public_key
             .expect("Public key data missing")
@@ -78,11 +78,11 @@ impl CryptoWallet for BitcoinWallet {
         let public_address = address_info.to_string();
 
         Ok(Self {
-            crypto_type: CryptoCoin::BTC,
+            crypto_type: SlipCoin::BTC,
             address_info,
             public_address,
-            private_key: Some(hd_keys.get_private_key_wif()?),
-            public_key: Some(hd_keys.get_public_key_hex()?),
+            private_key: Some(hd_keys.to_wif()?),
+            public_key: Some(hd_keys.public_key()?),
             network,
         })
     }
@@ -130,7 +130,7 @@ impl CryptoWallet for BitcoinWallet {
         let public_address = address_info.to_string();
 
         Ok(Self {
-            crypto_type: CryptoCoin::BTC,
+            crypto_type: SlipCoin::BTC,
             address_info,
             public_address,
             private_key: Some(Self::to_private_key_wif(
@@ -246,7 +246,7 @@ impl BitcoinWallet {
         let network = Network::Bitcoin;
 
         Ok(Self {
-            crypto_type: CryptoCoin::BTC,
+            crypto_type: SlipCoin::BTC,
             address_info,
             public_address,
             private_key: None,
@@ -648,7 +648,7 @@ impl BitcoinWallet {
         let mut address = [0u8; 25];
 
         address[0] = 0x00;
-        address[1..21].copy_from_slice(&HDKeyPair::hash160(&public_key));
+        address[1..21].copy_from_slice(&HDKey::hash160(&public_key));
 
         let checksum = &(Sha256::digest(Sha256::digest(&address[0..21]).as_slice()).to_vec())[0..4];
         address[21..25].copy_from_slice(checksum);
@@ -683,7 +683,7 @@ impl Display for BitcoinWallet {
 }
 
 impl CryptoWalletGeneral for BitcoinWallet {
-    fn crypto_type(&self) -> CryptoCoin {
+    fn crypto_type(&self) -> SlipCoin {
         self.crypto_type
     }
 

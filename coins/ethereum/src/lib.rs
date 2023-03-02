@@ -43,8 +43,8 @@ use async_trait::async_trait;
 use secp256k1::{PublicKey, Secp256k1, SecretKey};
 use tiny_keccak::{Hasher, Keccak};
 use walletd_bip39::Seed;
-use walletd_coin_model::{BlockchainConnector, CryptoCoin, CryptoWallet, CryptoWalletGeneral};
-use walletd_hd_keys::{HDKeyPair, NetworkType};
+use walletd_coin_model::{BlockchainConnector, CryptoWallet, CryptoWalletGeneral};
+use walletd_hd_key::{HDKey, NetworkType, SlipCoin};
 use web3::api::Eth;
 use web3::ethabi::ethereum_types::U256;
 use web3::transports::Http;
@@ -85,7 +85,7 @@ impl EthereumFormat {
 
 #[derive(Default, Debug)]
 pub struct EthereumWallet {
-    crypto_type: CryptoCoin,
+    crypto_type: SlipCoin,
     address_format: EthereumFormat,
     public_address: String,
     private_key: String,
@@ -98,16 +98,16 @@ impl CryptoWallet for EthereumWallet {
     type AddressFormat = EthereumFormat;
     type BlockchainClient = BlockchainClient;
     type CryptoAmount = EthereumAmount;
-    type HDKeyInfo = HDKeyPair;
+    type HDKeyInfo = HDKey;
     type MnemonicSeed = Seed;
     type NetworkType = NetworkType;
 
-    fn crypto_type(&self) -> CryptoCoin {
-        CryptoCoin::ETH
+    fn crypto_type(&self) -> SlipCoin {
+        SlipCoin::ETH
     }
 
     fn from_hd_key(
-        hd_keys: &HDKeyPair,
+        hd_keys: &HDKey,
         address_format: EthereumFormat,
     ) -> Result<Self, anyhow::Error> {
         let public_key_bytes = &hd_keys
@@ -125,11 +125,11 @@ impl CryptoWallet for EthereumWallet {
             }
         }
         Ok(Self {
-            crypto_type: CryptoCoin::ETH,
+            crypto_type: SlipCoin::ETH,
             address_format,
             public_address,
-            private_key: hd_keys.get_private_key_0x()?,
-            public_key: hd_keys.get_public_key_0x()?,
+            private_key: hd_keys.private_key()?,
+            public_key: hd_keys.public_key()?,
             network: hd_keys.network,
         })
     }
@@ -160,7 +160,7 @@ impl CryptoWallet for EthereumWallet {
             }
         }
         Ok(Self {
-            crypto_type: CryptoCoin::ETH,
+            crypto_type: SlipCoin::ETH,
             address_format,
             public_address,
             private_key: Self::to_0x_hex_format(&private_key_bytes)?,
@@ -286,8 +286,8 @@ impl Display for EthereumWallet {
 }
 
 impl CryptoWalletGeneral for EthereumWallet {
-    fn crypto_type(&self) -> CryptoCoin {
-        self.crypto_type
+    fn crypto_type(&self) -> SlipCoin {
+        SlipCoin::ETH
     }
 
     fn as_any(&self) -> &dyn Any {

@@ -6,6 +6,7 @@ use async_trait::async_trait;
 use hmac::{Hmac, Mac};
 use sha2::Sha512;
 use thiserror::Error;
+use walletd_hd_key::SlipCoin;
 type HmacSha512 = Hmac<Sha512>;
 use std::any::Any;
 use std::collections::HashMap;
@@ -19,7 +20,7 @@ use reqwest::header::{ACCEPT, CONTENT_TYPE};
 use crate::hash::keccak256;
 use crate::private_key::KEY_LEN;
 use crate::{
-    Address, AddressType, CryptoCoin, CryptoWallet, CryptoWalletGeneral, HDKeyPair, Mnemonic,
+    Address, AddressType, CryptoWallet, CryptoWalletGeneral, HDKey, Mnemonic,
     MnemonicHandler, MoneroAmount, MoneroPrivateKeys, MoneroPublicKeys, Network, NetworkType, Seed,
 };
 
@@ -28,7 +29,7 @@ const PRIVATE_TESTNET_URL: &str = "http://localhost:28081/json_rpc";
 
 #[derive(Debug)]
 pub struct MoneroWallet {
-    crypto_type: CryptoCoin,
+    crypto_type: SlipCoin,
     address_format: AddressType,
     network: Network,
     public_address: Address,
@@ -41,18 +42,18 @@ impl CryptoWallet for MoneroWallet {
     type AddressFormat = AddressType;
     type BlockchainClient = reqwest::Client;
     type CryptoAmount = MoneroAmount;
-    type HDKeyInfo = HDKeyPair;
+    type HDKeyInfo = HDKey;
     type MnemonicSeed = Seed;
     type NetworkType = Network;
 
-    /// Returns the CryptoCoin type, for Monero, returns CryptoCoin::XMR
-    fn crypto_type(&self) -> CryptoCoin {
-        CryptoCoin::XMR
+    /// Returns the CryptoCoin type, for Monero, returns SlipCoin::XMR
+    fn crypto_type(&self) -> SlipCoin {
+        SlipCoin::XMR
     }
 
     /// Constructs a MoneroWallet given a hd key and address format
     fn from_hd_key(
-        hd_keys: &HDKeyPair,
+        hd_keys: &HDKey,
         address_format: Self::AddressFormat,
     ) -> Result<Self, anyhow::Error> {
         // uses BIP85 specification, https://github.com/bitcoin/bips/blob/master/bip-0085.mediawiki
@@ -79,7 +80,7 @@ impl CryptoWallet for MoneroWallet {
         let public_address = Address::new(&network, &public_keys, &address_format)?;
 
         Ok(Self {
-            crypto_type: CryptoCoin::XMR,
+            crypto_type: SlipCoin::XMR,
             address_format,
             private_keys,
             public_keys,
@@ -99,7 +100,7 @@ impl CryptoWallet for MoneroWallet {
         let public_address = Address::new(&network, &public_keys, &address_format)?;
 
         Ok(Self {
-            crypto_type: CryptoCoin::XMR,
+            crypto_type: SlipCoin::XMR,
             address_format,
             private_keys,
             public_keys,
@@ -156,8 +157,8 @@ impl Display for MoneroWallet {
 }
 
 impl CryptoWalletGeneral for MoneroWallet {
-    fn crypto_type(&self) -> CryptoCoin {
-        self.crypto_type
+    fn crypto_type(&self) -> SlipCoin {
+        SlipCoin::XMR
     }
 
     fn as_any(&self) -> &dyn Any {

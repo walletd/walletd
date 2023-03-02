@@ -19,10 +19,10 @@ impl CryptoCoin {
     // unsupported type
     pub fn new(value: usize) -> Result<Self, anyhow::Error> {
         match value {
-            0 => Ok(CryptoCoin::BTC),
-            60 => Ok(CryptoCoin::ETH),
-            128 => Ok(CryptoCoin::XMR),
-            501 => Ok(CryptoCoin::SOL),
+            0 => Ok(Self::BTC),
+            60 => Ok(Self::ETH),
+            128 => Ok(Self::XMR),
+            501 => Ok(Self::SOL),
             1 => Err(anyhow!("This value is for any testnet")),
             _ => Err(anyhow!(
                 "Currently not supporting a CryptoCoin with a coin type value of {}",
@@ -37,12 +37,12 @@ impl CryptoCoin {
 
     /// Matches coin name ignoring case and allowing either the long form or
     /// short abbrevation form
-    pub fn from_str(coin_name: &str) -> Result<CryptoCoin, anyhow::Error> {
+    pub fn from_str(coin_name: &str) -> Result<Self, anyhow::Error> {
         match coin_name.to_string().to_lowercase().as_str() {
-            "btc" | "bitcoin" => Ok(CryptoCoin::BTC),
-            "eth" | "ethereum" | "ether" => Ok(CryptoCoin::ETH),
-            "sol" | "solana" => Ok(CryptoCoin::SOL),
-            "xmr" | "monero" => Ok(CryptoCoin::XMR),
+            "btc" | "bitcoin" => Ok(Self::BTC),
+            "eth" | "ethereum" | "ether" => Ok(Self::ETH),
+            "sol" | "solana" => Ok(Self::SOL),
+            "xmr" | "monero" => Ok(Self::XMR),
             _ => Err(anyhow!("Current valid options are BTC, ETH, SOL, or XMR")),
         }
     }
@@ -51,10 +51,10 @@ impl CryptoCoin {
 impl Display for CryptoCoin {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            CryptoCoin::BTC => writeln!(f, "Bitcoin (BTC)")?,
-            CryptoCoin::ETH => writeln!(f, "Ethereum (ETH)")?,
-            CryptoCoin::SOL => writeln!(f, "Solana (SOL)")?,
-            CryptoCoin::XMR => writeln!(f, "Monero (XMR)")?,
+            Self::BTC => writeln!(f, "Bitcoin (BTC)")?,
+            Self::ETH => writeln!(f, "Ethereum (ETH)")?,
+            Self::SOL => writeln!(f, "Solana (SOL)")?,
+            Self::XMR => writeln!(f, "Monero (XMR)")?,
         }
         Ok(())
     }

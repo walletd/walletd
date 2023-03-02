@@ -1,17 +1,12 @@
 use core::fmt;
 use core::fmt::Display;
-use core::str::FromStr;
 
-use base58::{FromBase58, ToBase58};
-use ed25519_dalek_bip32::{DerivationPath, ExtendedSecretKey, PublicKey, SecretKey};
-use hex;
+use base58::{ToBase58};
 use solana_client::rpc_client::RpcClient;
 
-const URL: &str = "https://api.devnet.solana.com";
+// const URL: &str = "https://api.devnet.solana.com";
 
-use walletd_bip39::{Language, Mnemonic, MnemonicHandler, MnemonicType};
-use walletd_coin_model::{CryptoCoin, CryptoWallet};
-use walletd_hd_keys::{HDKeyPair, NetworkType};
+use walletd_hd_key::{NetworkType};
 
 #[derive(Default)]
 pub enum SolanaFormat {
@@ -28,15 +23,11 @@ impl SolanaFormat {
 }
 
 pub struct SolanaWallet {
-    crypto_type: CryptoCoin,
     address_format: SolanaFormat,
     public_address: String,
     private_key: String,
     public_key: String,
-    keypair: [u8; 64],
     network: NetworkType,
-    blockchain_client: Option<RpcClient>,
-    seed_hex: Option<String>,
 }
 
 impl SolanaWallet {

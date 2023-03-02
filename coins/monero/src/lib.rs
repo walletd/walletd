@@ -1,5 +1,5 @@
 pub use walletd_coin_model::{CryptoAmount, CryptoCoin, CryptoWallet, CryptoWalletGeneral};
-pub use walletd_hd_keys::{HDKeyPair, NetworkType};
+pub use walletd_hd_key::{HDKey, NetworkType};
 pub use walletd_monero_mnemonic::{Mnemonic, MnemonicHandler, Seed};
 
 pub mod hash;

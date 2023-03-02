@@ -6,11 +6,11 @@ pub use ::walletd_monero_mnemonic::{
     Language as MoneroLanguage, Mnemonic as MoneroMnemonic, MnemonicType as MoneroMnemonicType,
 };
 use anyhow::anyhow;
-pub use walletd_coin_model::{BlockchainConnector, CryptoCoin, CryptoWallet, CryptoWalletGeneral};
-use walletd_hd_keys::NetworkType;
-pub use walletd_hd_keys::{DerivType, HDKeyPair};
+pub use walletd_coin_model::{BlockchainConnector, CryptoWallet, CryptoWalletGeneral};
+use walletd_hd_key::{NetworkType, SlipCoin};
+pub use walletd_hd_key::{DeriveType, HDKey};
 pub use {
-    ::walletd_bip39, walletd_bitcoin, walletd_coin_model, walletd_ethereum, walletd_hd_keys,
+    ::walletd_bip39, walletd_bitcoin, walletd_coin_model, walletd_ethereum, walletd_hd_key,
     walletd_monero, walletd_monero_mnemonic, walletd_solana,
 };
 
@@ -27,7 +27,7 @@ pub struct KeyPair {
     pub mnemonic_phrase: String,
     pub passphrase: Option<String>,
     pub associated_wallets: Vec<Box<dyn CryptoWalletGeneral>>,
-    pub associated_derived_info: Vec<HDKeyPair>,
+    pub associated_derived_info: Vec<HDKey>,
     pub network_type: NetworkType,
 }
 
@@ -75,7 +75,7 @@ impl KeyPair {
 
 pub struct AssociatedWallets {
     pub wallets: Vec<Box<dyn CryptoWalletGeneral>>,
-    pub derived_info: Vec<HDKeyPair>,
+    pub derived_info: Vec<HDKey>,
     pub any_transaction_history: bool,
 }
 
@@ -86,14 +86,14 @@ impl AssociatedWallets {
     /// (the receiving/external chain) when considering the gap limit but if
     /// there is transaction history with change index = 1 it is added
     pub async fn new_discover_associated_wallets(
-        crypto_coin: CryptoCoin,
-        bip32_master: &HDKeyPair,
-        deriv_type: &DerivType,
+        crypto_coin: SlipCoin,
+        bip32_master: &HDKey,
+        deriv_type: &DeriveType,
         network_type: &NetworkType,
         gap_limit_specified: Option<usize>,
     ) -> Result<Self, anyhow::Error> {
         match crypto_coin {
-            CryptoCoin::BTC => {
+            SlipCoin::BTC => {
                 let blockchain_client;
                 match network_type {
                     NetworkType::TestNet => {blockchain_client = walletd_bitcoin::Blockstream::new(walletd_bitcoin::BLOCKSTREAM_TESTNET_URL)?;},
@@ -116,16 +116,16 @@ impl AssociatedWallets {
     /// change index = 1 it is added
     pub async fn new_search_blockchain_for_associated_wallets(
         blockchain_client: impl BlockchainConnector + std::marker::Sync,
-        crypto_coin: CryptoCoin,
-        bip32_master: &HDKeyPair,
-        deriv_type: &DerivType,
+        crypto_coin: SlipCoin,
+        bip32_master: &HDKey,
+        deriv_type: &DeriveType,
         network_type: &NetworkType,
         gap_limit_specified: Option<usize>,
     ) -> Result<Self, anyhow::Error> {
         let mut associated_wallets: Vec<Box<dyn CryptoWalletGeneral>> = Vec::new();
-        let mut derived_info: Vec<HDKeyPair> = Vec::new();
+        let mut derived_info: Vec<HDKey> = Vec::new();
         let mut any_transaction_history = false;
-        let coin_type = CryptoCoin::BTC;
+        let coin_type = SlipCoin::BTC;
         let mut gap_limit = 20; // default gap limit
         if let Some(limit) = gap_limit_specified {
             gap_limit = limit
@@ -149,7 +149,7 @@ impl AssociatedWallets {
                     )?;
                     let exists: bool;
                     match crypto_coin {
-                        CryptoCoin::BTC => {
+                        SlipCoin::BTC => {
                             let wallet = walletd_bitcoin::BitcoinWallet::from_hd_key(
                                 &derived,
                                 walletd_bitcoin::AddressType::P2wpkh,

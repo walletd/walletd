@@ -6,7 +6,7 @@ use base58::ToBase58;
 use hex;
 use sha2::{Digest, Sha256};
 
-use crate::CryptoCoin;
+use walletd_hd_key::SlipCoin;
 
 #[async_trait]
 pub trait CryptoWallet: Sized {
@@ -67,7 +67,7 @@ pub trait CryptoWallet: Sized {
         public_address: &str,
     ) -> Result<(), anyhow::Error>;
 
-    fn crypto_type(&self) -> CryptoCoin;
+    fn crypto_type(&self) -> SlipCoin;
 }
 
 // TODO(#61): Remove the fmt::Display requirement for CryptoWalletGeneral
@@ -77,6 +77,6 @@ pub trait CryptoWallet: Sized {
 /// different types and the associated types are not allowed to be used in a
 /// trait object
 pub trait CryptoWalletGeneral: fmt::Display {
-    fn crypto_type(&self) -> CryptoCoin;
+    fn crypto_type(&self) -> SlipCoin;
     fn as_any(&self) -> &dyn Any;
 }
