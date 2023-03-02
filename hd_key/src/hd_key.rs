@@ -32,7 +32,7 @@ pub struct HDKey {
 
 impl HDKey {
     /// Create new master BIP32 node based on a seed
-    pub fn new(seed: &[u8]) -> Result<Self, anyhow::Error> {
+    pub fn new(seed: &[u8], network_type: NetworkType) -> Result<Self, anyhow::Error> {
         let mut mac: HmacSha512 = HmacSha512::new_from_slice(b"Bitcoin seed").unwrap(); // the "Bitcoin seed" string is specified in the bip32 protocol
         mac.update(seed);
         let hmac = mac.finalize().into_bytes();
@@ -55,6 +55,7 @@ impl HDKey {
             depth: 0,
             parent_fingerprint: [0u8; 4],
             derivation_path: "m".into(),
+            network: network_type,
             ..Default::default()
         })
     }
@@ -113,18 +114,18 @@ impl HDKey {
     //     }
     // }
 
-    // fn get_private_key_0x(&self) -> Result<String, anyhow::Error> {
-    //     if let Some(extended_private_key) = &self.extended_private_key {
-    //         return Ok(format!("0x{}", hex::encode(extended_private_key)));
-    //     } else {
-    //         return Err(anyhow!(
-    //             "Extended Public Key was not set so Public Key was not able to be obtained"
-    //         ));
-    //     }
-    // }
+    pub fn private_key(&self) -> Result<String, anyhow::Error> {
+        if let Some(extended_private_key) = &self.extended_private_key {
+            return Ok(format!("0x{}", hex::encode(extended_private_key)));
+        } else {
+            return Err(anyhow!(
+                "Extended Public Key was not set so Public Key was not able to be obtained"
+            ));
+        }
+    }
 
     /// Helper function to convert a derivation path string to a list of strings
-    fn derive_path_str_to_list(deriv_path: &String) -> Result<Vec<String>, anyhow::Error> {
+    pub fn derive_path_str_to_list(deriv_path: &String) -> Result<Vec<String>, anyhow::Error> {
         let deriv_path_list: Vec<String> = deriv_path.split("/").map(|s| s.to_string()).collect();
         if deriv_path_list.len() <= 0 || deriv_path_list[0] != "m".to_string() {
             return Err(anyhow!("Derivation Path is Invalid"));
@@ -133,7 +134,7 @@ impl HDKey {
     }
 
     /// Helper function to convert a derivation path string to a list of DerivePathComponent
-    fn derive_path_str_to_info(
+    pub fn derive_path_str_to_info(
         deriv_path: &String,
     ) -> Result<Vec<DerivePathComponent>, anyhow::Error> {
         let mut deriv_path_info: Vec<DerivePathComponent> = Vec::new();
@@ -402,12 +403,15 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let keys = HDKey::new(&[
-            162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
-            182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
-            120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
-            32, 33, 178, 30, 10, 204, 238,
-        ])
+        let keys = HDKey::new(
+            &[
+                162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
+                249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
+                30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
+                57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
+            ],
+            NetworkType::MainNet,
+        )
         .unwrap();
         assert_eq!(
             keys,
@@ -442,12 +446,15 @@ mod tests {
 
     #[test]
     fn test_wif() {
-        let keys = HDKey::new(&[
-            162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
-            182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
-            120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
-            32, 33, 178, 30, 10, 204, 238,
-        ])
+        let keys = HDKey::new(
+            &[
+                162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
+                249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
+                30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
+                57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
+            ],
+            NetworkType::MainNet,
+        )
         .unwrap();
         assert_eq!(
             keys.to_wif().unwrap(),
@@ -487,12 +494,15 @@ mod tests {
 
     #[test]
     fn test_public_key() {
-        let keys = HDKey::new(&[
-            162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
-            182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
-            120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
-            32, 33, 178, 30, 10, 204, 238,
-        ])
+        let keys = HDKey::new(
+            &[
+                162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
+                249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
+                30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
+                57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
+            ],
+            NetworkType::MainNet,
+        )
         .unwrap();
         assert_eq!(
             keys.public_key().unwrap(),
@@ -522,12 +532,15 @@ mod tests {
 
     #[test]
     fn test_derived_from_master() {
-        let keys = HDKey::new(&[
-            162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
-            182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
-            120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
-            32, 33, 178, 30, 10, 204, 238,
-        ])
+        let keys = HDKey::new(
+            &[
+                162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
+                249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
+                30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
+                57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
+            ],
+            NetworkType::MainNet,
+        )
         .unwrap();
         assert_eq!(
             HDKey::from_master(&keys, "m/44'/60'/0'/0/0".to_string()).unwrap(),
@@ -563,12 +576,15 @@ mod tests {
 
     #[test]
     fn test_derive_first_address() {
-        let keys = HDKey::new(&[
-            162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
-            182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
-            120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
-            32, 33, 178, 30, 10, 204, 238,
-        ])
+        let keys = HDKey::new(
+            &[
+                162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
+                249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
+                30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
+                57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
+            ],
+            NetworkType::MainNet,
+        )
         .unwrap();
         assert_eq!(
             HDKey::derive_first_address(&keys, &SlipCoin::BTC).unwrap(),
@@ -604,24 +620,30 @@ mod tests {
 
     #[test]
     fn test_serialization_extended_private_key() {
-        let keys = HDKey::new(&[
-            162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
-            182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
-            120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
-            32, 33, 178, 30, 10, 204, 238,
-        ])
+        let keys = HDKey::new(
+            &[
+                162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
+                249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
+                30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
+                57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
+            ],
+            NetworkType::MainNet,
+        )
         .unwrap();
         assert_eq!(keys.extended_private_key_serialized().unwrap(), "xprv9s21ZrQH143K33HWcGz7ExmrjF485DrDs59ZUMdLGSMKb1D3UTzoG5DDX8T5yYgPWhhayZbrsd1EAuZjJ9b3HnGoSQyt4tdrgHxbFxhgL1W")
     }
 
     #[test]
     fn test_serialization_extended_public_key() {
-        let keys = HDKey::new(&[
-            162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
-            182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
-            120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
-            32, 33, 178, 30, 10, 204, 238,
-        ])
+        let keys = HDKey::new(
+            &[
+                162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
+                249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
+                30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
+                57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
+            ],
+            NetworkType::MainNet,
+        )
         .unwrap();
         assert_eq!(keys.extended_public_key_serialized().unwrap(), "xpub661MyMwAqRbcFXMyiJX7c6ibHGtcUga5EJ5AGk2wpmtJToYC21K3osXhNPGsUzwLzHJDKShvbH6ZAHF4DB3eCKK9ya271pXyWABaBjRPorF")
     }

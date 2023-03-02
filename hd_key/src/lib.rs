@@ -2,14 +2,17 @@
 
 mod hd_key;
 mod slip44;
+use anyhow::anyhow;
 pub use hd_key::HDKey;
 pub use slip44::SlipCoin;
-use std::fmt;
-
+use std::{
+    fmt::{self, Display},
+    str::FromStr,
+};
 /// The DeriveType enum represents the different derivation path schemes supported by the library.
 ///
 /// BIP32 is the default.
-#[derive(Default, PartialEq, Eq, Clone, Debug)]
+#[derive(Default, PartialEq, Eq, Copy, Clone, Debug)]
 pub enum DeriveType {
     #[default]
     BIP32,
@@ -28,6 +31,7 @@ impl DeriveType {
             DeriveType::BIP84 => "84'",
         }
     }
+
     /// Derives the default first account with the specified derivation path scheme
     pub fn derive_first_account(
         &self,
@@ -38,7 +42,7 @@ impl DeriveType {
         HDKey::from_master(&master_node, derived_account_path)
     }
 
-    // Derives the default first address with the specified derivation path scheme
+    /// Derives the default first address with the specified derivation path scheme
     pub fn derive_first_address(
         &self,
         master_node: &HDKey,
@@ -48,7 +52,7 @@ impl DeriveType {
         HDKey::from_master(&master_node, deriv_path)
     }
 
-    // Derives the default first change address with the specified derivation path scheme
+    /// Derives the default first change address with the specified derivation path scheme
     pub fn derive_specify_account_address_indices(
         &self,
         master_node: &HDKey,
@@ -86,7 +90,7 @@ impl DeriveType {
         HDKey::from_master(&master_node, derived_path)
     }
 
-    // Derives the default first change address with the specified derivation path scheme
+    /// Derives the default first change address with the specified derivation path scheme
     pub fn derive_change_internal_chain_specify_account_address_indices(
         &self,
         master_node: &HDKey,
@@ -105,12 +109,73 @@ impl DeriveType {
     }
 }
 
+impl FromStr for DeriveType {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, anyhow::Error> {
+        match s {
+            "0'" => Ok(DeriveType::BIP32),
+            "44'" => Ok(DeriveType::BIP44),
+            "49'" => Ok(DeriveType::BIP49),
+            "84'" => Ok(DeriveType::BIP84),
+            _ => Err(anyhow!("Unknown purpose, unknown deriv type")),
+        }
+    }
+}
+
 /// The DerivePathComponent distinguishes between the different derivation path components.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum DerivePathComponent {
     Master,
     IndexHardened(u32),
     IndexNotHardened(u32),
+}
+
+impl DerivePathComponent {
+    /// Convert to the full number used to represent a hardend index from the
+    /// number used in the derivation path string accompanied by ' to indicate
+    /// hardened
+    pub fn hardened_full_index(num: u32) -> u32 {
+        num + (1 << 31)
+    }
+
+    /// Convert from the full number used represent a hardened index to the
+    /// number when accompanied by ' indicates a hardened index
+    pub fn hardened_shortform_index(full_index: u32) -> u32 {
+        full_index - (1 << 31)
+    }
+
+    /// Returns the short form value of index, for master type always returns 0,
+    /// for hardened index returns the short form value without the hardened
+    /// indicator
+    pub fn to_shortform_index(&self) -> u32 {
+        match self {
+            DerivePathComponent::Master => 0,
+            DerivePathComponent::IndexHardened(num) => Self::hardened_shortform_index(*num),
+            DerivePathComponent::IndexNotHardened(num) => *num,
+        }
+    }
+}
+
+impl Display for DerivePathComponent {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            DerivePathComponent::Master => {
+                writeln!(f, "m")?;
+            }
+            DerivePathComponent::IndexHardened(num) => {
+                writeln!(
+                    f,
+                    "{}'",
+                    DerivePathComponent::hardened_shortform_index(*num)
+                )?;
+            }
+            DerivePathComponent::IndexNotHardened(num) => {
+                writeln!(f, "{}", num)?;
+            }
+        }
+        Ok(())
+    }
 }
 
 /// The NetworkType enum represents the different network types supported by the library.
@@ -152,12 +217,15 @@ mod tests {
     #[test]
     fn test_derive_first_account() {
         let dt = DeriveType::BIP32;
-        let keys = HDKey::new(&[
-            162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
-            182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
-            120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
-            32, 33, 178, 30, 10, 204, 238,
-        ])
+        let keys = HDKey::new(
+            &[
+                162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
+                249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
+                30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
+                57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
+            ],
+            NetworkType::MainNet,
+        )
         .unwrap();
         assert_eq!(
             dt.derive_first_account(&keys, &SlipCoin::BTC).unwrap(),
@@ -194,12 +262,15 @@ mod tests {
     #[test]
     fn test_derive_first_address() {
         let dt = DeriveType::BIP32;
-        let keys = HDKey::new(&[
-            162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
-            182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
-            120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
-            32, 33, 178, 30, 10, 204, 238,
-        ])
+        let keys = HDKey::new(
+            &[
+                162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
+                249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
+                30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
+                57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
+            ],
+            NetworkType::MainNet,
+        )
         .unwrap();
         assert_eq!(
             dt.derive_first_address(&keys, &SlipCoin::BTC).unwrap(),
@@ -236,12 +307,15 @@ mod tests {
     #[test]
     fn test_derive_specify_account_address_indices() {
         let dt = DeriveType::BIP32;
-        let keys = HDKey::new(&[
-            162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
-            182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
-            120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
-            32, 33, 178, 30, 10, 204, 238,
-        ])
+        let keys = HDKey::new(
+            &[
+                162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
+                249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
+                30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
+                57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
+            ],
+            NetworkType::MainNet,
+        )
         .unwrap();
         assert_eq!(
             dt.derive_specify_account_address_indices(&keys, &SlipCoin::BTC, 0, 0)
@@ -279,12 +353,15 @@ mod tests {
     #[test]
     fn test_derive_specify_change_account_address_indices() {
         let dt = DeriveType::BIP32;
-        let keys = HDKey::new(&[
-            162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
-            182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
-            120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
-            32, 33, 178, 30, 10, 204, 238,
-        ])
+        let keys = HDKey::new(
+            &[
+                162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
+                249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
+                30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
+                57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
+            ],
+            NetworkType::MainNet,
+        )
         .unwrap();
         assert_eq!(
             dt.derive_specify_change_account_address_indices(&keys, &SlipCoin::BTC, 0, 0, 0)
@@ -322,12 +399,15 @@ mod tests {
     #[test]
     fn test_derive_change_internal_chain_specify_account_address_indices() {
         let dt = DeriveType::BIP32;
-        let keys = HDKey::new(&[
-            162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
-            182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
-            120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
-            32, 33, 178, 30, 10, 204, 238,
-        ])
+        let keys = HDKey::new(
+            &[
+                162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
+                249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
+                30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
+                57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
+            ],
+            NetworkType::MainNet,
+        )
         .unwrap();
         assert_eq!(
             dt.derive_change_internal_chain_specify_account_address_indices(
