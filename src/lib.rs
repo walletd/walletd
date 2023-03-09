@@ -7,8 +7,8 @@ pub use ::walletd_monero_mnemonic::{
 };
 use anyhow::anyhow;
 pub use walletd_coin_model::{BlockchainConnector, CryptoWallet, CryptoWalletGeneral};
-use walletd_hd_key::{NetworkType, SlipCoin};
 pub use walletd_hd_key::{DeriveType, HDKey};
+use walletd_hd_key::{NetworkType, SlipCoin};
 pub use {
     ::walletd_bip39, walletd_bitcoin, walletd_coin_model, walletd_ethereum, walletd_hd_key,
     walletd_monero, walletd_monero_mnemonic, walletd_solana,
@@ -155,7 +155,7 @@ impl AssociatedWallets {
                                 walletd_bitcoin::AddressType::P2wpkh,
                             )?;
                             exists = blockchain_client
-                                .check_if_past_transactions_exist(&wallet.public_address())
+                                .check_if_past_transactions_exist(&wallet.public_address_string())
                                 .await?;
                             if exists {
                                 any_transaction_history = true;

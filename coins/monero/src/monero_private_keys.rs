@@ -154,8 +154,8 @@ mod tests {
         let result = MoneroPrivateKeys::from_seed(&VALID_INFO_1.seed).unwrap();
         let private_spend_key = result.spend_key().unwrap();
         let private_view_key = result.view_key();
-        assert_eq!(private_spend_key.as_bytes(), VALID_INFO_1.private_spend_key);
-        assert_eq!(private_view_key.as_bytes(), VALID_INFO_1.private_view_key);
+        assert_eq!(private_spend_key.as_slice(), VALID_INFO_1.private_spend_key);
+        assert_eq!(private_view_key.as_slice(), VALID_INFO_1.private_view_key);
     }
     #[test]
     fn test_from_private_spend_key() {
@@ -164,8 +164,8 @@ mod tests {
         let private_keys = result.unwrap();
         let private_spend_key = private_keys.spend_key().unwrap();
         let private_view_key = private_keys.view_key();
-        assert_eq!(private_spend_key.as_bytes(), VALID_INFO_1.private_spend_key);
-        assert_eq!(private_view_key.as_bytes(), VALID_INFO_1.private_view_key);
+        assert_eq!(private_spend_key.as_slice(), VALID_INFO_1.private_spend_key);
+        assert_eq!(private_view_key.as_slice(), VALID_INFO_1.private_view_key);
     }
 
     #[test]
@@ -175,6 +175,6 @@ mod tests {
         let private_keys = result.unwrap();
         assert!(private_keys.spend_key().is_none());
         let private_view_key = private_keys.view_key();
-        assert_eq!(private_view_key.as_bytes(), VALID_INFO_1.private_view_key);
+        assert_eq!(private_view_key.as_slice(), VALID_INFO_1.private_view_key);
     }
 }

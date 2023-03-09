@@ -1,22 +1,14 @@
 pub mod ethclient {
 
-    use std::collections::BTreeMap;
-    use std::env;
-    use std::fs::File;
-    use std::io::BufReader;
-
-    use hex_literal::hex;
     // use std::io::Error;
     use thiserror::Error;
     use web3::contract::{Contract, Options};
     use web3::ethabi::Uint;
     use web3::helpers as w3h;
     use web3::transports::Http;
-    use web3::types::{
-        Address, Block, BlockId, BlockNumber, Transaction, TransactionId, H160, H256, U256, U64,
-    };
+    use web3::types::{BlockId, BlockNumber, TransactionId, H160, H256, U64};
     // TODO(#70): Remove once we finish cleaning and refactoring
-    fn print_type_of<T>(_: &T) {
+    pub fn print_type_of<T>(_: &T) {
         println!("{}", std::any::type_name::<T>())
     }
 
@@ -48,7 +40,10 @@ pub mod ethclient {
         }
 
         // TODO: (#75) - Add a function to get a block's transaction data using its hash
-        pub async fn transaction_data_from_hash(&self, transaction_hash: H256) -> web3::Result<()> {
+        pub async fn transaction_data_from_hash(
+            &self,
+            _transaction_hash: H256,
+        ) -> web3::Result<()> {
             unimplemented!("transaction_data_from_hash is unimplemented");
             Ok(())
         }
@@ -96,11 +91,11 @@ pub mod ethclient {
                     .await
                 {
                     Ok(Some(tx)) => Ok(tx),
-                    Err(error) => Err(Error::TxResponseError),
+                    Err(_error) => Err(Error::TxResponseError),
                     _ => Err(Error::TxResponseError),
                 };
                 // println!("transaction data {:#?}", tx);
-                let smart_contract_addr = match tx.unwrap().to {
+                let _smart_contract_addr = match tx.unwrap().to {
                     Some(addr) => match &self.web3.eth().code(addr, None).await {
                         Ok(code) => {
                             if code == &web3::types::Bytes::from([]) {

@@ -10,12 +10,13 @@ use curve25519_dalek::edwards::{CompressedEdwardsY, EdwardsPoint};
 use thiserror::Error;
 
 use crate::private_key::{PrivateKey, KEY_LEN};
+use crate::{DoSerialize, SerializedArchive};
 
 /// A Monero public spend or view key should be a valid Ed25519 point on the
 /// Edwards elliptic curve. It can be represented as 32 bytes.
 /// This struct can be used to represent either a public view key or a public
 /// spend key
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Hash)]
 pub struct PublicKey(pub CompressedEdwardsY);
 
 #[derive(Debug, Error, Clone, Copy, PartialEq)]
@@ -30,7 +31,15 @@ pub enum Error {
     #[error("Hex string could not be parsed to bytes, Error: {0}")]
     HexError(#[from] hex::FromHexError),
 }
-
+impl DoSerialize for PublicKey {
+    fn do_serialize(&self, serialized: &mut SerializedArchive) -> Result<(), anyhow::Error> {
+        serialized.data.extend_from_slice(self.as_slice());
+        serialized
+            .json_stream
+            .push_str(&hex::encode(self.as_slice().to_vec()));
+        Ok(())
+    }
+}
 impl PublicKey {
     /// Create a PrivateKey from a slice of a byte array
     /// Returns an error if the slice is not appropriate to be converted to a
@@ -56,7 +65,7 @@ impl PublicKey {
     }
 
     /// Represent the PublicKey as a reference to a slice of bytes.
-    pub fn as_bytes(&self) -> &[u8] {
+    pub fn as_slice(&self) -> &[u8] {
         self.0.as_bytes()
     }
 
@@ -75,7 +84,7 @@ impl PublicKey {
 
 impl Display for PublicKey {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", hex::encode(self.as_bytes()))
+        write!(f, "{}", hex::encode(self.as_slice()))
     }
 }
 
@@ -119,7 +128,7 @@ mod tests {
     fn test_as_bytes() {
         let value = [1u8; 32];
         let public_key = PublicKey(CompressedEdwardsY::from_slice(&value));
-        let bytes = public_key.as_bytes();
+        let bytes = public_key.as_slice();
         assert_eq!(bytes.len(), KEY_LEN);
         assert_eq!(bytes, &value)
     }
@@ -137,7 +146,7 @@ mod tests {
     fn test_from_private_key() {
         // Checking with underlying math
         let value = [1u8; 32];
-        let private_key = PrivateKey::from_scalar(Scalar::from_bytes_mod_order(value));
+        let private_key = PrivateKey::from_scalar(&Scalar::from_bytes_mod_order(value));
         let public_key = PublicKey::from_private_key(&private_key);
         let expected_point = &private_key.as_scalar() * &G_BASEPOINT;
         let expected = PublicKey::from_slice(&expected_point.compress().to_bytes());
@@ -177,5 +186,82 @@ mod tests {
             Error::HexError(_) => {}
             _ => panic!("Unexpected error"),
         }
+    }
+
+    #[test]
+    fn test_check_keys() {
+        // check_key c2cb3cf3840aa9893e00ec77093d3d44dba7da840b51c48462072d58d8efd183
+        // false
+        let key_1 = hex!("c2cb3cf3840aa9893e00ec77093d3d44dba7da840b51c48462072d58d8efd183");
+        let actual_1 = PublicKey::from_slice(&key_1);
+        assert!(actual_1.is_err());
+
+        // check_key bd85a61bae0c101d826cbed54b1290f941d26e70607a07fc6f0ad611eb8f70a6
+        // true
+        let key_2 = hex!("bd85a61bae0c101d826cbed54b1290f941d26e70607a07fc6f0ad611eb8f70a6");
+        let actual_2 = PublicKey::from_slice(&key_2);
+        assert!(actual_2.is_ok());
+
+        // check_key 328f81cad4eba24ab2bad7c0e56b1e2e7346e625bcb06ae649aef3ffa0b8bef3
+        // false
+        let key_3 = hex!("328f81cad4eba24ab2bad7c0e56b1e2e7346e625bcb06ae649aef3ffa0b8bef3");
+        let actual_3 = PublicKey::from_slice(&key_3);
+        assert!(actual_3.is_err());
+
+        // check_key 6016a5463b9e5a58c3410d3f892b76278883473c3f0b69459172d3de49e85abe
+        // true
+        let key_4 = hex!("6016a5463b9e5a58c3410d3f892b76278883473c3f0b69459172d3de49e85abe");
+        let actual_4 = PublicKey::from_slice(&key_4);
+        let expected_4 = PublicKey::from_slice(&key_4);
+        assert!(actual_4.is_ok());
+
+        // check_key 4c71282b2add07cdc6898a2622553f1ca4eb851e5cb121181628be5f3814c5b1
+        // false
+        let key_5 = hex!("4c71282b2add07cdc6898a2622553f1ca4eb851e5cb121181628be5f3814c5b1");
+        let actual_5 = PublicKey::from_slice(&key_5);
+        assert!(actual_5.is_err());
+    }
+
+    #[test]
+    fn test_check_from_private() {
+        // secret_key_to_public_key
+        // b2f420097cd63cdbdf834d090b1e604f08acf0af5a3827d0887863aaa4cc4406 true
+        // d764c19d6c14280315d81eb8f2fc777582941047918f52f8dcef8225e9c92c52
+        let secret_key_1 = hex!("b2f420097cd63cdbdf834d090b1e604f08acf0af5a3827d0887863aaa4cc4406");
+        let expected_pub_key_1 =
+            hex!("d764c19d6c14280315d81eb8f2fc777582941047918f52f8dcef8225e9c92c52");
+        let actual_pub_key_1 =
+            PublicKey::from_private_key(&PrivateKey::from_slice(&secret_key_1).unwrap());
+        assert_eq!(actual_pub_key_1.to_bytes(), expected_pub_key_1);
+
+        // secret_key_to_public_key
+        // f264699c939208870fecebc013b773b793dd18ea39dbe1cb712a19a692fdb000 true
+        // bcb483f075d37658b854d4b9968fafae976e5532ca99879479c85ef5da1deead
+        let secret_key_2 = hex!("f264699c939208870fecebc013b773b793dd18ea39dbe1cb712a19a692fdb000");
+        let expected_pub_key_2 =
+            hex!("bcb483f075d37658b854d4b9968fafae976e5532ca99879479c85ef5da1deead");
+        let actual_pub_key_2 =
+            PublicKey::from_private_key(&PrivateKey::from_slice(&secret_key_2).unwrap());
+        assert_eq!(actual_pub_key_2.to_bytes(), expected_pub_key_2);
+
+        // secret_key_to_public_key
+        // bd65eb76171bb9b9542a6e06b9503c09fd4a9290fe51828ed766e5aeb742dc02 true
+        // 1dec6cc63ff1984ee46a70a46687877a87fcc1e790562da73b33b1a8fd8cad37
+        let secret_key_3 = hex!("bd65eb76171bb9b9542a6e06b9503c09fd4a9290fe51828ed766e5aeb742dc02");
+        let expected_pub_key_3 =
+            hex!("1dec6cc63ff1984ee46a70a46687877a87fcc1e790562da73b33b1a8fd8cad37");
+        let actual_pub_key_3 =
+            PublicKey::from_private_key(&PrivateKey::from_slice(&secret_key_3).unwrap());
+        assert_eq!(actual_pub_key_3.to_bytes(), expected_pub_key_3);
+
+        // secret_key_to_public_key
+        // 37621ebd8de6ca022419fd083066285da76ada9bae6d2b7c1a3847d78a726b0b true
+        // 25255c26721758456545bcaea3a99407cd3df7c8208eeb49bd80450627138fab
+        let secret_key_4 = hex!("37621ebd8de6ca022419fd083066285da76ada9bae6d2b7c1a3847d78a726b0b");
+        let expected_pub_key_4 =
+            hex!("25255c26721758456545bcaea3a99407cd3df7c8208eeb49bd80450627138fab");
+        let actual_pub_key_4 =
+            PublicKey::from_private_key(&PrivateKey::from_slice(&secret_key_4).unwrap());
+        assert_eq!(actual_pub_key_4.to_bytes(), expected_pub_key_4);
     }
 }

@@ -755,7 +755,7 @@ impl Blockstream {
             .await?
             .text()
             .await?;
-        let data = r#"{
+        let _data = r#"{
         "txid":"6249b166d78529e435628245034df9e4c81d9b34b4d12c5600527c96b6e0d8ce",
         "version":1,
         "locktime":0,
@@ -860,7 +860,7 @@ mod tests {
             .with_body("773876")
             .create();
 
-        let url: &String = &mockito::server_url();
+        let _url: &String = &mockito::server_url();
         let bs = Blockstream::new(&mockito::server_url()).unwrap();
         let check = bs.block_count().unwrap();
         assert_eq!(773876, check);

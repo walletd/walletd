@@ -57,7 +57,7 @@ impl CryptoWallet for BitcoinWallet {
         let address_info;
 
         let network: Network;
-        // TODO: consider handling the other Bitcoin network types
+        // TODO(#82): consider handling the other Bitcoin network types
         match hd_keys.network {
             NetworkType::MainNet => network = Network::Bitcoin,
             NetworkType::TestNet => network = Network::Testnet,
@@ -65,11 +65,11 @@ impl CryptoWallet for BitcoinWallet {
 
         match address_type {
             AddressType::P2pkh => address_info = Address::p2pkh(&public_key, network),
-            // TODO: Not sure about initializing this with an empty script, double check and fix as
+            // TODO(#83): Not sure about initializing this with an empty script, double check and fix as
             // necessary
             AddressType::P2sh => address_info = Address::p2sh(&Script::new(), network)?,
             AddressType::P2wpkh => address_info = Address::p2wpkh(&public_key, network)?,
-            // TODO: Again check the script::new() here and fix if needed
+            // TODO(#83): Again check the script::new() here and fix if needed
             AddressType::P2wsh => address_info = Address::p2wsh(&Script::new(), network),
             // Currently not handling the AddressType::P2tr, fix if can understand how to create
             // this address properly
@@ -110,11 +110,11 @@ impl CryptoWallet for BitcoinWallet {
 
         match address_type {
             AddressType::P2pkh => address_info = Address::p2pkh(&public_key, network),
-            // TODO: Not sure about initializing this with an empty script, double check and fix as
+            // TODO(#83): Not sure about initializing this with an empty script, double check and fix as
             // necessary
             AddressType::P2sh => address_info = Address::p2sh(&Script::new(), network)?,
             AddressType::P2wpkh => address_info = Address::p2wpkh(&public_key, network)?,
-            // TODO: Again check the script::new() here and fix if needed
+            // TODO(#83): Again check the script::new() here and fix if needed
             AddressType::P2wsh => address_info = Address::p2wsh(&Script::new(), network),
             // Currently not handling the AddressType::P2tr, fix if can understand how to create
             // this address properly
@@ -142,7 +142,7 @@ impl CryptoWallet for BitcoinWallet {
         })
     }
 
-    fn public_address(&self) -> String {
+    fn public_address_string(&self) -> String {
         self.public_address.clone()
     }
 
@@ -151,13 +151,13 @@ impl CryptoWallet for BitcoinWallet {
         blockchain_client: &Blockstream,
     ) -> Result<BitcoinAmount, anyhow::Error> {
         let utxo_info = blockchain_client
-            .utxo(self.public_address().as_str())
+            .utxo(self.public_address_string().as_str())
             .await?;
         let amount = BitcoinWallet::confirmed_balance_from_utxo(utxo_info)?;
 
         println!(
             "Confirmed balance for address: {} in BTC: {} in satoshis: {}",
-            self.public_address(),
+            self.public_address_string(),
             &amount.btc(),
             &amount.satoshi()
         );
@@ -170,7 +170,7 @@ impl CryptoWallet for BitcoinWallet {
         send_amount: &BitcoinAmount,
         public_address: &str,
     ) -> Result<(), anyhow::Error> {
-        println!("Going to attempt a transfer to address: {} from address: {} of amount: {} BTC ({} Sats)", public_address, self.public_address(),
+        println!("Going to attempt a transfer to address: {} from address: {} of amount: {} BTC ({} Sats)", public_address, self.public_address_string(),
             &send_amount.btc(), &send_amount.satoshi());
 
         let receiver_view_wallet = Self::new_view_only(public_address)?;
@@ -198,7 +198,7 @@ impl CryptoWallet for BitcoinWallet {
         // inputs and the amount of the outputs is the transaction fee
         // Input(s) should cover the total amount
         // Inputs need to come from the utxo
-        let available_utxos = client.utxo(self.public_address().as_str()).await?;
+        let available_utxos = client.utxo(self.public_address_string().as_str()).await?;
 
         // sum total value with confirmed status, also count number of utxos with
         // confirmed status
@@ -242,7 +242,7 @@ impl BitcoinWallet {
     fn new_view_only(public_address: &str) -> Result<Self, anyhow::Error> {
         let address_info = Address::from_str(public_address)?;
         let public_address = address_info.to_string();
-        // Currently hardcoding to Mainnet, TODO handle other Bitcoin network options
+        // Currently hardcoding to Mainnet, TODO(#82) handle other Bitcoin network options
         let network = Network::Bitcoin;
 
         Ok(Self {
@@ -550,7 +550,7 @@ impl BitcoinWallet {
 
         // Create two outputs, one for the send amount and another for the change amount
         // Hardcoding p2wpkh SegWit transaction option
-        // TODO right away need to add the scriptpubkey info
+        // TODO(#83) right away need to add the scriptpubkey info
         let mut outputs: Vec<Output> = Vec::new();
         let mut output_send = Output {
             ..Default::default()
@@ -605,11 +605,11 @@ impl BitcoinWallet {
                     input.scriptsig = hex::encode(script_sig.as_bytes());
                 }
                 "p2sh" => {
-                    // TODO need to handle redeem scripts
+                    // TODO(#83) need to handle redeem scripts
                     return Err(anyhow!("Not currently handling P2SH"));
                 }
                 "v0_p2wsh" => {
-                    // TODO need to handle redeem scripts
+                    // TODO(#83) need to handle redeem scripts
                     return Err(anyhow!("Not currently handling v0_p2wsh"));
                 }
                 "v0_p2wpkh" => {

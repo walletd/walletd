@@ -38,7 +38,6 @@ use core::fmt::Display;
 use std::any::Any;
 use std::str::FromStr;
 
-use anyhow::anyhow;
 use async_trait::async_trait;
 use secp256k1::{PublicKey, Secp256k1, SecretKey};
 use tiny_keccak::{Hasher, Keccak};
@@ -106,15 +105,12 @@ impl CryptoWallet for EthereumWallet {
         SlipCoin::ETH
     }
 
-    fn from_hd_key(
-        hd_keys: &HDKey,
-        address_format: EthereumFormat,
-    ) -> Result<Self, anyhow::Error> {
+    fn from_hd_key(hd_keys: &HDKey, address_format: EthereumFormat) -> Result<Self, anyhow::Error> {
         let public_key_bytes = &hd_keys
             .extended_public_key
             .expect("extended public key data not available")
             .to_vec();
-        let mut public_address: String;
+        let public_address: String;
         match address_format {
             EthereumFormat::Checksummed => {
                 public_address = Self::public_address_checksummed_from_public_key(public_key_bytes)?
@@ -169,7 +165,7 @@ impl CryptoWallet for EthereumWallet {
         })
     }
 
-    fn public_address(&self) -> String {
+    fn public_address_string(&self) -> String {
         self.public_address.clone()
     }
 
@@ -177,14 +173,14 @@ impl CryptoWallet for EthereumWallet {
         &self,
         blockchain_client: &Self::BlockchainClient,
     ) -> Result<Self::CryptoAmount, anyhow::Error> {
-        let address = web3::types::H160::from_str(&self.public_address())?;
+        let address = web3::types::H160::from_str(&self.public_address_string())?;
         blockchain_client.balance(address).await
     }
 
     async fn transfer(
         &self,
         blockchain_client: &Self::BlockchainClient,
-        send_amount: &Self::CryptoAmount,
+        _send_amount: &Self::CryptoAmount,
         to_address: &str,
     ) -> Result<(), anyhow::Error> {
         let to = Address::from_str(to_address)?;

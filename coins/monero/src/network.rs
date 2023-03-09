@@ -34,17 +34,17 @@ impl Network {
             Mainnet => match addr_type {
                 Standard => 18,
                 Integrated(_) => 19,
-                SubAddress => 42,
+                _SubAddress => 42,
             },
             Testnet => match addr_type {
                 Standard => 53,
                 Integrated(_) => 54,
-                SubAddress => 63,
+                _SubAddress => 63,
             },
             Stagenet => match addr_type {
                 Standard => 24,
                 Integrated(_) => 25,
-                SubAddress => 36,
+                _SubAddress => 36,
             },
         }
     }

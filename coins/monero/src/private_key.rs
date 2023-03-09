@@ -8,13 +8,14 @@ use curve25519_dalek::scalar::Scalar;
 use thiserror::Error;
 
 pub const KEY_LEN: usize = 32;
+use rand::{thread_rng, Rng};
 
 /// A Monero private spend or view key should be a a valid Curve25519 scalar.
 /// It can be represented as 32 bytes.
 /// This struct can be used to represent either a private view key or a private
 /// spend key.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct PrivateKey(Scalar);
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct PrivateKey(pub Scalar);
 
 #[derive(Debug, Error, PartialEq, Clone)]
 pub enum Error {
@@ -31,7 +32,13 @@ pub enum Error {
 }
 
 impl PrivateKey {
+    // Generates a new random PrivateKey
+    pub fn new() -> Self {
+        PrivateKey(Scalar::from_bytes_mod_order(thread_rng().gen()))
+    }
+
     /// Create a PrivateKey from a slice of a byte array.
+    /// First convers the byte array to a valid Scalar using
     /// Returns an error if the slice is not appropriate to be converted to a
     /// PrivateKey.
     pub fn from_slice(data: &[u8]) -> Result<PrivateKey, Error> {
@@ -50,7 +57,7 @@ impl PrivateKey {
     }
 
     /// Represent the PrivateKey as a reference to a slice of bytes.
-    pub fn as_bytes(&self) -> &[u8] {
+    pub fn as_slice(&self) -> &[u8] {
         self.0.as_bytes()
     }
 
@@ -65,14 +72,14 @@ impl PrivateKey {
     }
 
     /// Construct a PrivateKey from a Scalar
-    pub fn from_scalar(scalar: Scalar) -> Self {
-        Self { 0: scalar }
+    pub fn from_scalar(scalar: &Scalar) -> Self {
+        Self { 0: scalar.clone() }
     }
 }
 
 impl Display for PrivateKey {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", hex::encode(self.as_bytes()))
+        write!(f, "{}", hex::encode(self.as_slice()))
     }
 }
 
@@ -87,8 +94,9 @@ impl FromStr for PrivateKey {
 
 #[cfg(test)]
 mod tests {
+    use hex_literal::hex;
+
     use super::*;
-    use crate::private_key;
 
     #[test]
     fn test_from_slice() {
@@ -123,7 +131,7 @@ mod tests {
     fn test_as_bytes() {
         let value = [1u8; 32];
         let private_key = PrivateKey(Scalar::from_bytes_mod_order(value));
-        let bytes = private_key.as_bytes();
+        let bytes = private_key.as_slice();
         assert_eq!(bytes.len(), KEY_LEN);
         assert_eq!(bytes, &value)
     }
@@ -163,5 +171,24 @@ mod tests {
             Error::HexError(_) => {}
             _ => panic!("Unexpected error"),
         }
+    }
+
+    #[test]
+    fn test_check_scalar_validity() {
+        // check_scalar ac10e070c8574ef374bdd1c5dbe9bacfd927f9ae0705cf08018ff865f6092d0f
+        // true
+        let bytes_1 = hex!("ac10e070c8574ef374bdd1c5dbe9bacfd927f9ae0705cf08018ff865f6092d0f");
+        let actual_1 = PrivateKey::from_slice(&bytes_1);
+        assert!(actual_1.is_ok());
+        // check_scalar 18fd66f7a0874de792f12a1b2add7d294100ea454537ae5794d0abc91dbf098a
+        // false
+        let bytes_2 = hex!("18fd66f7a0874de792f12a1b2add7d294100ea454537ae5794d0abc91dbf098a");
+        let actual_2 = PrivateKey::from_slice(&bytes_2);
+        assert!(actual_2.is_err());
+        // check_scalar ecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+        // false
+        let bytes_3 = hex!("ecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        let actual_3 = PrivateKey::from_slice(&bytes_3);
+        assert!(actual_3.is_err());
     }
 }

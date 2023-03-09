@@ -1,12 +1,10 @@
 use core::fmt;
 use core::fmt::Display;
 
-use base58::{ToBase58};
+use base58::ToBase58;
 use solana_client::rpc_client::RpcClient;
-
 // const URL: &str = "https://api.devnet.solana.com";
-
-use walletd_hd_key::{NetworkType};
+use walletd_hd_key::NetworkType;
 
 #[derive(Default)]
 pub enum SolanaFormat {

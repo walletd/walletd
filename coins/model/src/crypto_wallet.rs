@@ -5,11 +5,12 @@ use async_trait::async_trait;
 use base58::ToBase58;
 use hex;
 use sha2::{Digest, Sha256};
-
 use walletd_hd_key::SlipCoin;
 
 #[async_trait]
 pub trait CryptoWallet: Sized {
+    // TODO(#61): create custom error type for each coin
+    // and add a new associated type here for Error
     type MnemonicSeed;
     type HDKeyInfo;
     type AddressFormat;
@@ -28,7 +29,7 @@ pub trait CryptoWallet: Sized {
         address_format: Self::AddressFormat,
     ) -> Result<Self, anyhow::Error>;
 
-    fn public_address(&self) -> String;
+    fn public_address_string(&self) -> String;
 
     fn to_private_key_wif(seed: &[u8], network_prefix: u8) -> Result<String, anyhow::Error> {
         // using wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
@@ -42,7 +43,8 @@ pub trait CryptoWallet: Sized {
         private_key.append(&mut checksum);
         Ok(private_key.to_base58())
     }
-
+    // TODO(#61): Clean up these functions like the to_public_key_hex etc.
+    // Provide good common interface for all coins using the CryptoWallet trait
     fn to_public_key_hex(public_key: &[u8]) -> Result<String, anyhow::Error> {
         Ok(hex::encode(public_key))
     }

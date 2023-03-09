@@ -5,12 +5,15 @@ use std::str::FromStr;
 use hex;
 use thiserror::Error;
 
+use crate::{keccak256, KeyDerivation, KeyImage, PrivateKey, PublicKey};
+
 const SHORT_HASH_SIZE: usize = 8;
 const LONG_HASH_SIZE: usize = 32;
 const TX_EXTRA_NONCE_PAYMENT_ID: u8 = 0x00;
 const TX_EXTRA_NONCE_ENCRYPTED_PAYMENT_ID: u8 = 0x01;
 const TX_EXTRA_NONCE: u8 = 0x02;
 const TX_EXTRA_NONCE_MAX_COUNT: usize = 255;
+const HASH_KEY_ENCRYPTED_PAYMENT_ID: u8 = 0x8d;
 
 #[derive(Error, Debug, PartialEq, Clone)]
 pub enum Error {
@@ -27,6 +30,12 @@ pub enum Error {
 
     #[error("Error decoding hex string: {0}")]
     HexError(#[from] hex::FromHexError),
+    //// Only short payment ids (8 bytes) should be encrypted
+    #[error("Only short payment ids (8 bytes) should be encrypted")]
+    OnlyEncryptShortPaymentIds,
+    /// Received data of incorrect length
+    #[error("Incorrect data length, expected {expected:?} bytes, found {found:?} bytes")]
+    IncorrectDataLength { expected: usize, found: usize },
 }
 
 /// Enum representing the short and long payment id styles
@@ -122,6 +131,28 @@ impl PaymentId {
         Ok(())
     }
 
+    pub fn encrypt_payment_id(
+        &self,
+        public_key: &PublicKey,
+        secret_key: &PrivateKey,
+    ) -> Result<Self, Error> {
+        if self.style()? != PaymentIdStyle::Short {
+            return Err(Error::OnlyEncryptShortPaymentIds);
+        }
+        let derivation = KeyDerivation::generate(&public_key, &secret_key);
+
+        let mut data = [0u8; 33];
+        data[0..32].copy_from_slice(&derivation.as_slice());
+        data[32] = HASH_KEY_ENCRYPTED_PAYMENT_ID;
+        let hash = keccak256(&data);
+        let mut encrypted_data = self.0.clone();
+
+        for b in 0..8 {
+            encrypted_data[b] ^= hash[b];
+        }
+        Ok(PaymentId(encrypted_data))
+    }
+
     pub fn to_bytes(&self) -> Vec<u8> {
         self.0.clone()
     }
@@ -165,7 +196,6 @@ impl Display for PaymentId {
 
 #[cfg(test)]
 mod tests {
-    use std::process::id;
 
     use super::*;
 

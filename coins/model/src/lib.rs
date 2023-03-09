@@ -9,10 +9,10 @@ pub use crypto_wallet::{CryptoWallet, CryptoWalletGeneral};
 pub trait BlockchainConnector: Sized {
     fn new(url: &str) -> Result<Self, anyhow::Error>;
 
-    /// TODO: currently only implemented for Bitcoin, otherwise results in error
+    /// TODO(#84): currently only implemented for Bitcoin, otherwise results in error
     async fn check_if_past_transactions_exist(
         &self,
-        public_address: &str,
+        _public_address: &str,
     ) -> Result<bool, anyhow::Error> {
         Err(anyhow!("Function not implemented yet"))
     }

@@ -103,11 +103,6 @@ async fn main() {
 //     }
 // }
 
-use std::io::Error;
-
-use web3::transports::Http;
-use web3::types::H160;
-
 // async fn get_block_number(eth_client: &EthClient) -> web3::Result<u64> {
 //     println!("block number ftw");
 

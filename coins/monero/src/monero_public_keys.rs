@@ -43,7 +43,6 @@ mod tests {
     use hex_literal::hex;
 
     use super::*;
-    use crate::PrivateKey;
 
     struct KeyInfo<'a> {
         private_spend_key: &'a [u8],
@@ -68,7 +67,7 @@ mod tests {
         let public_keys = MoneroPublicKeys::from_private_keys(&private_keys);
         let public_view_key = public_keys.view_key().unwrap();
         let public_spend_key = public_keys.spend_key().unwrap();
-        assert_eq!(public_view_key.as_bytes(), VALID_INFO_1.public_view_key);
-        assert_eq!(public_spend_key.as_bytes(), VALID_INFO_1.public_spend_key);
+        assert_eq!(public_view_key.as_slice(), VALID_INFO_1.public_view_key);
+        assert_eq!(public_spend_key.as_slice(), VALID_INFO_1.public_spend_key);
     }
 }

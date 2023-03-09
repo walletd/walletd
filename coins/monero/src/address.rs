@@ -1,11 +1,9 @@
 use std::fmt;
 use std::fmt::{Display, Formatter};
-use std::ops::Sub;
 use std::str::FromStr;
 
 use base58_monero::base58;
 use curve25519_dalek::scalar::Scalar;
-use hmac::digest::InvalidBufferSize;
 use thiserror::Error;
 
 use crate::{
@@ -117,10 +115,10 @@ impl Display for AddressType {
 /// specified network and address type format
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Address {
-    network: Network,
-    format: AddressType,
-    public_spend_key: PublicKey,
-    public_view_key: PublicKey,
+    pub network: Network,
+    pub format: AddressType,
+    pub public_spend_key: PublicKey,
+    pub public_view_key: PublicKey,
 }
 
 #[derive(Error, Debug, PartialEq)]
@@ -187,8 +185,8 @@ impl Address {
 
         let mut bytes = Vec::new();
         bytes.push(self.network.as_u8(&self.format));
-        bytes.extend_from_slice(self.public_spend_key.as_bytes());
-        bytes.extend_from_slice(self.public_view_key.as_bytes());
+        bytes.extend_from_slice(self.public_spend_key.as_slice());
+        bytes.extend_from_slice(self.public_view_key.as_slice());
 
         match &self.format {
             Standard | Subaddress(_) => (),
