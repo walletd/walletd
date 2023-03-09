@@ -1,0 +1,8 @@
+[workspace]
+members = [
+  "bitcoin",
+  "ethereum",
+  "model",
+  "monero",
+  "solana"
+]

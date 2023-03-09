@@ -1,0 +1,868 @@
+use anyhow::anyhow;
+use async_trait::async_trait;
+use bitcoin::{Address, AddressType};
+use bitcoin_hashes::{sha256d, Hash};
+use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
+use walletd_coin_model::BlockchainConnector;
+
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
+pub struct BTransaction {
+    pub txid: String,
+    pub version: i32,
+    pub locktime: u32,
+    pub vin: Vec<Input>,
+    pub vout: Vec<Output>,
+    pub size: u64,
+    pub weight: u64,
+    pub fee: u64,
+    pub status: Status,
+}
+
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
+pub struct Output {
+    pub scriptpubkey: String,
+    pub scriptpubkey_asm: String,
+    pub scriptpubkey_type: String,
+    pub scriptpubkey_address: String,
+    pub pubkeyhash: String,
+    pub value: u64,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Input {
+    pub txid: String,
+    pub vout: u32,
+    pub prevout: Output,
+    pub scriptsig: String,
+    pub scriptsig_asm: String,
+    pub witness: Vec<String>,
+    pub is_coinbase: bool,
+    pub sequence: u32,
+    pub inner_redeemscript_asm: String,
+}
+
+#[derive(Serialize, Deserialize, Default, Clone, Debug)]
+pub struct Status {
+    pub confirmed: bool,
+    pub block_height: u32,
+    pub block_hash: String,
+    pub block_time: u32,
+}
+
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
+pub struct UTXO {
+    pub status: Status,
+    pub txid: String,
+    pub value: u64,
+    pub vout: u32,
+}
+
+pub enum InputType {
+    P2pkh,
+    P2sh,
+    P2wsh,
+    P2wpkh,
+    P2sh2Wpkh,
+    P2sh2Wsh,
+}
+
+impl InputType {
+    pub fn new(utxo_prevout: &Output) -> Result<Self, anyhow::Error> {
+        match utxo_prevout.scriptpubkey_type.as_str() {
+            "p2pkh" => return Ok(InputType::P2pkh),
+            "p2sh" => {
+                let scriptpubkey_asm = &utxo_prevout
+                    .scriptpubkey_asm
+                    .split_whitespace()
+                    .map(|x| x.to_string())
+                    .collect::<Vec<String>>();
+                let op_pushbytes = scriptpubkey_asm.get(1);
+                if let Some(op) = op_pushbytes {
+                    match op.as_str() {
+                        "OP_PUSHBYTES_22" => return Ok(InputType::P2sh2Wpkh),
+                        "OP_PUSHBYTES_34" => return Ok(InputType::P2sh2Wsh),
+                        _ => return Ok(InputType::P2sh),
+                    }
+                }
+                return Ok(InputType::P2sh);
+            }
+            "v0_p2wsh" => return Ok(InputType::P2wsh),
+            "v0_p2wpkh" => return Ok(InputType::P2wpkh),
+            _ => Err(anyhow!("Unknown scriptpubkey_type, not currently handled")),
+        }
+    }
+
+    pub fn is_segwit(&self) -> bool {
+        match self {
+            InputType::P2pkh | InputType::P2sh => false,
+            InputType::P2sh2Wpkh | InputType::P2sh2Wsh | InputType::P2wsh | InputType::P2wpkh => {
+                true
+            }
+        }
+    }
+}
+
+impl BTransaction {
+    pub fn new_from_value(transaction_info: &Value) -> Result<BTransaction, anyhow::Error> {
+        let mut transaction = BTransaction {
+            ..Default::default()
+        };
+
+        if let Value::Object(object) = transaction_info {
+            for obj_item in object {
+                if obj_item.0 == "txid" {
+                    transaction.txid = serde_json::from_value(obj_item.1.clone())?;
+                } else if obj_item.0 == "version" {
+                    transaction.version = serde_json::from_value(obj_item.1.clone())?;
+                } else if obj_item.0 == "locktime" {
+                    transaction.version = serde_json::from_value(obj_item.1.clone())?;
+                } else if obj_item.0 == "vin" {
+                    transaction.vin = Input::new_vector_from_value(obj_item.1)?;
+                } else if obj_item.0 == "vout" {
+                    transaction.vout = Output::new_vector_from_value(obj_item.1)?;
+                } else if obj_item.0 == "size" {
+                    transaction.size = serde_json::from_value(obj_item.1.clone())?;
+                } else if obj_item.0 == "weight" {
+                    transaction.weight = serde_json::from_value(obj_item.1.clone())?;
+                } else if obj_item.0 == "fee" {
+                    transaction.weight = serde_json::from_value(obj_item.1.clone())?;
+                } else if obj_item.0 == "status" {
+                    transaction.status = Status::new_from_value(obj_item.1)?;
+                }
+            }
+            return Ok(transaction);
+        }
+        return Err(anyhow!("Transaction info not available"));
+    }
+
+    pub fn new_transactions(transactions_info: Value) -> Result<Vec<Self>, anyhow::Error> {
+        let mut all_transactions_info: Vec<BTransaction> = Vec::new();
+        if transactions_info.is_array() {
+            if let Value::Array(vec) = transactions_info {
+                for item in vec.iter() {
+                    let mut transaction_info = BTransaction {
+                        ..Default::default()
+                    };
+                    if let Value::Object(map) = item {
+                        for map_item in map {
+                            if map_item.0 == "status" {
+                                transaction_info.status = Status::new_from_value(map_item.1)?;
+                            } else if map_item.0 == "fee" {
+                                transaction_info.fee = serde_json::from_value(map_item.1.clone())?;
+                            } else if map_item.0 == "locktime" {
+                                transaction_info.locktime =
+                                    serde_json::from_value(map_item.1.clone())?;
+                            } else if map_item.0 == "size" {
+                                transaction_info.size = serde_json::from_value(map_item.1.clone())?;
+                            } else if map_item.0 == "txid" {
+                                transaction_info.txid = serde_json::from_value(map_item.1.clone())?;
+                            } else if map_item.0 == "version" {
+                                transaction_info.version =
+                                    serde_json::from_value(map_item.1.clone())?;
+                            } else if map_item.0 == "vin" {
+                                transaction_info.vin = Input::new_vector_from_value(map_item.1)?;
+                            } else if map_item.0 == "vout" {
+                                transaction_info.vout = Output::new_vector_from_value(map_item.1)?;
+                            } else if map_item.0 == "weight" {
+                                transaction_info.weight =
+                                    serde_json::from_value(map_item.1.clone())?;
+                            }
+                        }
+                        all_transactions_info.push(transaction_info);
+                    }
+                }
+            }
+        }
+        Ok(all_transactions_info)
+    }
+
+    pub fn transaction_hash_for_signing_segwit_input_index(
+        &self,
+        index: usize,
+        sighash_num: u32,
+    ) -> Result<String, anyhow::Error> {
+        let serialized = self.serialize_for_segwit_input_index_with_sighash(index, sighash_num)?;
+        let hash = sha256d::Hash::hash(&hex::decode(serialized)?);
+        Ok(hex::encode(hash))
+    }
+
+    /// Serializes the transaction for a given input index
+    pub fn serialize_for_segwit_input_index_with_sighash(
+        &self,
+        index: usize,
+        sighash_num: u32,
+    ) -> Result<String, anyhow::Error> {
+        let input = self.vin.get(index).expect("index not present");
+        let mut serialization = String::new();
+
+        // nVersion of the transaction (4-byte little endian)
+        let version_encoded = self.version.to_le_bytes();
+        serialization.push_str(&hex::encode(version_encoded));
+
+        // hashPrevouts, double sha256 hash of the all of the previous outpoints (32
+        // byte hash) Ignoring case of ANYONECANPAY
+        let mut prevouts_serialized = String::new();
+        for input_here in &self.vin {
+            let prev_txid = &input_here.txid;
+            if prev_txid.len() != 64 {
+                return Err(anyhow!(
+                    "The references txid in hex format should be 64 characters long"
+                ));
+            }
+            let prev_txid_encoded = Self::hex_reverse_byte_order(prev_txid)?;
+            prevouts_serialized.push_str(prev_txid_encoded.as_str());
+            let prev_vout: u32 = input_here.vout;
+            let prev_vout_encoded = &prev_vout.to_le_bytes();
+            prevouts_serialized.push_str(&hex::encode(prev_vout_encoded));
+        }
+
+        let hash_prevouts = hex::encode(sha256d::Hash::hash(&hex::decode(prevouts_serialized)?));
+
+        serialization.push_str(hash_prevouts.as_str());
+
+        // hashSequence (using the sequence from each input) (32 byte hash)
+        // this is hardcoded right now ignoring case of sighash ANYONECANPAY, SINGLE,
+        // NONE
+        let mut sequence_serialized = String::new();
+        for input_here in &self.vin {
+            let sequence_here = input_here.sequence.to_le_bytes();
+            sequence_serialized.push_str(hex::encode(sequence_here).as_str());
+        }
+        let hash_sequence = hex::encode(sha256d::Hash::hash(&hex::decode(sequence_serialized)?));
+
+        serialization.push_str(hash_sequence.as_str());
+
+        // outpoint (32-byte hash + 4-byte little endian)
+        let prev_txid = &input.txid;
+        if prev_txid.len() != 64 {
+            return Err(anyhow!(
+                "The references txid in hex format should be 64 characters long"
+            ));
+        }
+        let prev_txid_encoded = Self::hex_reverse_byte_order(prev_txid)?;
+        serialization.push_str(prev_txid_encoded.as_str());
+        let prev_vout: u32 = input.vout;
+        let prev_vout_encoded = &prev_vout.to_le_bytes();
+        serialization.push_str(&hex::encode(prev_vout_encoded));
+
+        // scriptCode of the input, hardcoded to p2wpkh
+        let pubkeyhash = input.prevout.pubkeyhash.as_str();
+
+        let script_code = "1976a914".to_string() + pubkeyhash + "88ac";
+        serialization.push_str(script_code.as_str());
+
+        // value of output spent by this input (8 byte little endian)
+        serialization.push_str(&hex::encode(input.prevout.value.to_le_bytes()));
+
+        // nSequence of the input (4 byte little endian)
+        serialization.push_str(&hex::encode(input.sequence.to_le_bytes()));
+
+        // hashOutputs (32 byte hash) hardcoding for sighash ALL
+        let mut outputs_serialization = String::new();
+        for output in &self.vout {
+            let value: u64 = output.value;
+            let value_encoded = value.to_le_bytes();
+            outputs_serialization.push_str(&hex::encode(value_encoded));
+            let len_scriptpubkey = output.scriptpubkey.len();
+            if len_scriptpubkey % 2 != 0 {
+                return Err(anyhow!("Length of scriptpubkey should be a multiple of 2"));
+            }
+            let len_scriptpubkey_encoded =
+                Self::variable_length_integer_encoding(len_scriptpubkey / 2)?;
+            outputs_serialization.push_str(&hex::encode(len_scriptpubkey_encoded));
+            // scriptpubkey is already encoded for the serialization
+            outputs_serialization.push_str(output.scriptpubkey.as_str());
+        }
+        let hash_outputs = hex::encode(sha256d::Hash::hash(&hex::decode(outputs_serialization)?));
+        serialization.push_str(hash_outputs.as_str());
+        // Lock Time
+        serialization.push_str(&hex::encode(self.locktime.to_le_bytes()));
+        // Sighash
+        serialization.push_str(&hex::encode(sighash_num.to_le_bytes()));
+
+        Ok(serialization)
+    }
+
+    /// Serializes the transaction data (makes a hex string) considering the
+    /// data from all of the fields
+    pub fn serialize(transaction: &Self) -> Result<String, anyhow::Error> {
+        let mut serialization = String::new();
+        // version
+        let version_encoded = transaction.version.to_le_bytes();
+        serialization.push_str(&hex::encode(version_encoded));
+
+        // Handling the segwit marker and flag
+        let mut segwit_transaction = false;
+        for input in transaction.vin.iter() {
+            if input.witness.len() > 0 {
+                segwit_transaction = true;
+            }
+        }
+
+        if segwit_transaction {
+            let marker_encoded = "00";
+            serialization.push_str(marker_encoded);
+            let flag_encoded = "01";
+            serialization.push_str(flag_encoded);
+        }
+
+        // Inputs
+        let num_inputs = transaction.vin.len();
+        let num_inputs_encoded = Self::variable_length_integer_encoding(num_inputs)?;
+        serialization.push_str(&hex::encode(num_inputs_encoded));
+        for input in &transaction.vin {
+            let prev_txid = &input.txid;
+            if prev_txid.len() != 64 {
+                return Err(anyhow!(
+                    "The references txid in hex format should be 64 characters long"
+                ));
+            }
+            let prev_txid_encoded = Self::hex_reverse_byte_order(prev_txid)?;
+            serialization.push_str(prev_txid_encoded.as_str());
+            let prev_vout: u32 = input.vout;
+            let prev_vout_encoded = &prev_vout.to_le_bytes();
+            serialization.push_str(&hex::encode(prev_vout_encoded));
+            let len_signature_script = input.scriptsig.len();
+            if len_signature_script % 2 != 0 {
+                return Err(anyhow!("Length of script_sig should be a multiple of 2"));
+            }
+            let len_signature_script_encoded =
+                Self::variable_length_integer_encoding(len_signature_script / 2)?;
+            serialization.push_str(&hex::encode(len_signature_script_encoded));
+            // script_sig is already encoded for the serialization
+            serialization.push_str(&input.scriptsig);
+            // sequence
+            serialization.push_str(&hex::encode(input.sequence.to_le_bytes()));
+        }
+
+        // Outputs
+        let num_outputs = transaction.vout.len();
+        let num_outputs_encoded = Self::variable_length_integer_encoding(num_outputs)?;
+        serialization.push_str(&hex::encode(num_outputs_encoded));
+        for output in &transaction.vout {
+            let value: u64 = output.value;
+            let value_encoded = value.to_le_bytes();
+            serialization.push_str(&hex::encode(value_encoded));
+            let len_scriptpubkey = output.scriptpubkey.len();
+            if len_scriptpubkey % 2 != 0 {
+                println!(
+                    "len_scriptpubkey: {}, {}",
+                    len_scriptpubkey, output.scriptpubkey
+                );
+                return Err(anyhow!("Length of scriptpubkey should be a multiple of 2"));
+            }
+            let len_scriptpubkey_encoded =
+                Self::variable_length_integer_encoding(len_scriptpubkey / 2)?;
+            serialization.push_str(&hex::encode(len_scriptpubkey_encoded));
+            // scriptpubkey is already encoded for the serialization
+            serialization.push_str(output.scriptpubkey.as_str());
+        }
+
+        // Witness data
+        if segwit_transaction {
+            let mut witness_counts: Vec<usize> = Vec::new();
+            let mut witness_lens: Vec<u8> = Vec::new();
+            let mut witness_data: Vec<String> = Vec::new();
+
+            for (i, input) in transaction.vin.iter().enumerate() {
+                witness_counts.push(0);
+                for data in &input.witness {
+                    witness_counts[i] += 1;
+                    if data.len() % 2 != 0 {
+                        return Err(anyhow!(
+                            "Witness data length in hex should be a multiple of 2"
+                        ));
+                    }
+                    witness_lens.push((data.len() / 2).try_into()?);
+                    witness_data.push(data.to_string());
+                }
+            }
+            let mut witness_counter = 0;
+            for i in 0..transaction.vin.len() {
+                serialization.push_str(&hex::encode(Self::variable_length_integer_encoding(
+                    witness_counts[i],
+                )?));
+                for _j in 0..witness_counts[i] {
+                    serialization
+                        .push_str(&hex::encode(witness_lens[witness_counter].to_le_bytes()));
+                    serialization.push_str(witness_data[witness_counter].as_str());
+                    witness_counter += 1;
+                }
+            }
+        }
+
+        // Lock Time
+        serialization.push_str(&hex::encode(transaction.locktime.to_le_bytes()));
+        Ok(serialization)
+    }
+
+    /// Displays the transaction id in the form used in the blockchain which is
+    /// reverse byte of txid()
+    pub fn txid_blockchain(&self) -> Result<String, anyhow::Error> {
+        let txid = self.txid()?;
+        Self::hex_reverse_byte_order(&txid)
+    }
+
+    /// Hashes the transaction without including the segwit data
+    pub fn txid(&self) -> Result<String, anyhow::Error> {
+        let mut transaction = self.clone();
+        for input in &mut transaction.vin {
+            input.witness = Vec::new();
+        }
+        let serialization = Self::serialize(&transaction)?;
+        let txid = sha256d::Hash::hash(&hex::decode(&serialization)?);
+        Ok(hex::encode(txid))
+    }
+
+    /// Hashes the transaction including all data (including the segwit witness
+    /// data)
+    pub fn wtxid(&self) -> Result<String, anyhow::Error> {
+        let transaction = self.clone();
+        let serialization = Self::serialize(&transaction)?;
+        let txid = sha256d::Hash::hash(&hex::decode(&serialization)?);
+        Ok(hex::encode(txid))
+    }
+
+    /// Returns the "normalized txid" - sha256 double hash of the serialized
+    /// transaction data without including any inputs unlocking data
+    /// (witness data and signature, public key data is not included)
+    pub fn ntxid(&self) -> Result<String, anyhow::Error> {
+        let mut transaction = self.clone();
+        for input in &mut transaction.vin {
+            input.witness = Vec::new();
+            input.scriptsig = String::new();
+            input.scriptsig_asm = String::new();
+        }
+        let serialization = Self::serialize(&transaction)?;
+        let ntxid = sha256d::Hash::hash(&hex::decode(&serialization)?);
+        Ok(hex::encode(ntxid))
+    }
+
+    pub fn hex_reverse_byte_order(hex_string: &String) -> Result<String, anyhow::Error> {
+        let len = hex_string.len();
+        if len % 2 != 0 {
+            return Err(anyhow!(
+                "The hex string should have a length that is a multiple of 2"
+            ));
+        }
+        let mut encoded = String::new();
+        for i in 0..len / 2 {
+            let reverse_ind = len - i * 2 - 2;
+            encoded.push_str(&hex_string[reverse_ind..reverse_ind + 2]);
+        }
+        Ok(encoded)
+    }
+
+    pub fn variable_length_integer_encoding(num: usize) -> Result<Vec<u8>, anyhow::Error> {
+        if num < 0xFD {
+            Ok(vec![num as u8])
+        } else if num <= 0xFFFF {
+            let num_as_bytes = (num as u16).to_le_bytes().to_vec();
+            Ok([vec![0xFD], num_as_bytes].concat())
+        } else if num <= 0xFFFFFFFF {
+            let num_as_bytes = (num as u32).to_le_bytes().to_vec();
+            Ok([vec![0xFE], num_as_bytes].concat())
+        } else {
+            let num_as_bytes = (num as u64).to_le_bytes().to_vec();
+            Ok([vec![0xFF], num_as_bytes].concat())
+        }
+    }
+}
+
+impl Default for Input {
+    fn default() -> Self {
+        Self {
+            txid: String::new(),
+            vout: 0,
+            prevout: Output {
+                ..Default::default()
+            },
+            scriptsig: String::new(),
+            scriptsig_asm: String::new(),
+            witness: Vec::new(),
+            is_coinbase: false,
+            sequence: 0xFFFFFFFF,
+            inner_redeemscript_asm: String::new(),
+        }
+    }
+}
+
+impl Input {
+    pub fn new_from_value(input_info: &Value) -> Result<Input, anyhow::Error> {
+        let mut input = Input {
+            ..Default::default()
+        };
+        if let Value::Object(object) = input_info {
+            for obj_item in object {
+                if obj_item.0 == "txid" {
+                    input.txid = serde_json::from_value(obj_item.1.clone())?;
+                } else if obj_item.0 == "vout" {
+                    input.vout = serde_json::from_value(obj_item.1.clone())?;
+                } else if obj_item.0 == "prevout" {
+                    input.prevout = Output::new_from_value(obj_item.1)?;
+                } else if obj_item.0 == "scriptsig" {
+                    input.scriptsig = serde_json::from_value(obj_item.1.clone())?;
+                } else if obj_item.0 == "scriptsig_asm" {
+                    input.scriptsig_asm = serde_json::from_value(obj_item.1.clone())?;
+                } else if obj_item.0 == "witness" {
+                    input.witness = serde_json::from_value(obj_item.1.clone())?;
+                } else if obj_item.0 == "is_coinbase" {
+                    input.is_coinbase = serde_json::from_value(obj_item.1.clone())?;
+                } else if obj_item.0 == "sequence" {
+                    input.sequence = serde_json::from_value(obj_item.1.clone())?;
+                } else if obj_item.0 == "inner_redeemscript_asm" {
+                    input.inner_redeemscript_asm = serde_json::from_value(obj_item.1.clone())?;
+                }
+            }
+            Ok(input)
+        } else {
+            Err(anyhow!("Input info is not there"))
+        }
+    }
+
+    pub fn new_vector_from_value(vin_info: &Value) -> Result<Vec<Input>, anyhow::Error> {
+        let mut vinputs: Vec<Input> = Vec::new();
+        if vin_info.is_array() {
+            if let Value::Array(vec) = vin_info {
+                for item in vec.iter() {
+                    let input_info: Input = Input::new_from_value(item)?;
+                    vinputs.push(input_info);
+                }
+            }
+            Ok(vinputs)
+        } else {
+            Err(anyhow!("Info not there for vector of Input"))
+        }
+    }
+}
+
+impl Output {
+    pub fn new_from_value(output_info: &Value) -> Result<Output, anyhow::Error> {
+        let mut output = Output {
+            ..Default::default()
+        };
+        if let Value::Object(object) = output_info {
+            for obj_item in object {
+                if obj_item.0 == "scriptpubkey" {
+                    output.scriptpubkey = serde_json::from_value(obj_item.1.clone())?;
+                } else if obj_item.0 == "scriptpubkey_asm" {
+                    output.scriptpubkey_asm = serde_json::from_value(obj_item.1.clone())?;
+                } else if obj_item.0 == "scriptpubkey_type" {
+                    output.scriptpubkey_type = serde_json::from_value(obj_item.1.clone())?;
+                } else if obj_item.0 == "scriptpubkey_address" {
+                    output.scriptpubkey_address = serde_json::from_value(obj_item.1.clone())?;
+                } else if obj_item.0 == "value" {
+                    output.value = serde_json::from_value(obj_item.1.clone())?;
+                }
+            }
+            Ok(output)
+        } else {
+            Err(anyhow!("Info not availabe for Output"))
+        }
+    }
+
+    pub fn new_vector_from_value(vout_info: &Value) -> Result<Vec<Output>, anyhow::Error> {
+        let mut voutputs: Vec<Output> = Vec::new();
+        if vout_info.is_array() {
+            if let Value::Array(vec) = vout_info {
+                for item in vec.iter() {
+                    let output_info: Output = Output::new_from_value(item)?;
+                    voutputs.push(output_info);
+                }
+            }
+            Ok(voutputs)
+        } else {
+            Err(anyhow!("Info not there for vector of Output"))
+        }
+    }
+
+    pub fn set_scriptpubkey_info(&mut self, address_info: Address) -> Result<(), anyhow::Error> {
+        self.scriptpubkey_address = address_info.to_string();
+        let address_type = address_info.address_type().expect("address type missing");
+        match address_type {
+            AddressType::P2pkh => self.scriptpubkey_type = "p2pkh".to_string(),
+            AddressType::P2sh => self.scriptpubkey_type = "p2sh".to_string(),
+            AddressType::P2wpkh => self.scriptpubkey_type = "v0_p2wpkh".to_string(),
+            AddressType::P2wsh => self.scriptpubkey_type = "v0_p2wsh".to_string(),
+            _ => {
+                return Err(anyhow!(
+                    "Currently not implemented setting scriptpubkey for this address type"
+                ))
+            }
+        }
+        let script_pubkey = address_info.script_pubkey();
+        self.scriptpubkey_asm = script_pubkey.asm();
+        self.scriptpubkey = hex::encode(script_pubkey.as_bytes());
+        Ok(())
+    }
+}
+
+impl Status {
+    pub fn new_from_value(status_info: &Value) -> Result<Status, anyhow::Error> {
+        let mut status = Status {
+            ..Default::default()
+        };
+        if let Value::Object(object) = status_info {
+            for obj_item in object {
+                if obj_item.0 == "confirmed" {
+                    status.confirmed = serde_json::from_value(obj_item.1.clone())?;
+                } else if obj_item.0 == "block_height" {
+                    status.block_height = serde_json::from_value(obj_item.1.clone())?;
+                } else if obj_item.0 == "block_hash" {
+                    status.block_hash = serde_json::from_value(obj_item.1.clone())?;
+                } else if obj_item.0 == "block_time" {
+                    status.block_time = serde_json::from_value(obj_item.1.clone())?;
+                }
+            }
+            Ok(status)
+        } else {
+            return Err(anyhow!("status info not available"));
+        }
+    }
+}
+
+impl UTXO {
+    pub fn new_utxos(utxo_info: Value) -> Result<Vec<UTXO>, anyhow::Error> {
+        let mut all_utxo_info: Vec<UTXO> = Vec::new();
+        if utxo_info.is_array() {
+            if let Value::Array(vec) = utxo_info {
+                for item in vec.iter() {
+                    let mut utxo: UTXO = UTXO {
+                        ..Default::default()
+                    };
+                    if let Value::Object(map) = item {
+                        for map_item in map {
+                            if map_item.0 == "status" {
+                                utxo.status = Status::new_from_value(map_item.1)?;
+                            } else if map_item.0 == "txid" {
+                                utxo.txid = serde_json::from_value(map_item.1.clone())?;
+                            } else if map_item.0 == "value" {
+                                utxo.value = serde_json::from_value(map_item.1.clone())?;
+                            } else if map_item.0 == "vout" {
+                                utxo.vout = serde_json::from_value(map_item.1.clone())?;
+                            }
+                        }
+                    }
+                    all_utxo_info.push(utxo);
+                }
+            }
+            Ok(all_utxo_info)
+        } else {
+            Err(anyhow!("utxo_info was not array value"))
+        }
+    }
+}
+#[derive(Clone, Default, Debug)]
+pub struct Blockstream {
+    pub client: reqwest::Client,
+    pub url: String,
+}
+
+pub const BLOCKSTREAM_TESTNET_URL: &str = "https://blockstream.info/testnet/api";
+pub const BLOCKSTREAM_URL: &str = "https://blockstream.info/api";
+
+#[async_trait]
+impl BlockchainConnector for Blockstream {
+    fn new(url: &str) -> Result<Self, anyhow::Error> {
+        Ok(Self {
+            client: reqwest::Client::new(),
+            url: url.to_string(),
+        })
+    }
+
+    async fn check_if_past_transactions_exist(
+        &self,
+        public_address: &str,
+    ) -> Result<bool, anyhow::Error> {
+        let transactions = self.transactions(public_address).await?;
+        if transactions.len() == 0 {
+            // println!("No past transactions exist at address: {}", public_address);
+            return Ok(false);
+        } else {
+            // println!("Past transactions exist at address: {}", public_address);
+            return Ok(true);
+        }
+    }
+}
+
+impl Blockstream {
+    // fetch the block height
+    pub fn block_count(&self) -> Result<u64, anyhow::Error> {
+        let body = reqwest::blocking::get(format!("{}/blocks/tip/height", self.url))
+            .expect("Error getting block count")
+            .text()?;
+        println!("body = {:?}", body);
+        let block_count: u64 = body.parse()?;
+        Ok(block_count)
+    }
+
+    // fetch fee estimates from blockstream
+    pub async fn fee_estimates(&self) -> Result<Value, anyhow::Error> {
+        let body = reqwest::get(format!("{}/fee-estimates", self.url))
+            .await?
+            .text()
+            .await?;
+        let fee_estimates = serde_json::from_str(&body)?;
+        Ok(fee_estimates)
+    }
+
+    // fetch transactions from blockstream
+    pub async fn transactions(&self, address: &str) -> Result<Vec<BTransaction>, anyhow::Error> {
+        let body = reqwest::get(format!("{}/address/{}/txs", self.url, address))
+            .await?
+            .text()
+            .await?;
+        let transactions: Value = serde_json::from_str(&body)?;
+        let all_transactions_info = BTransaction::new_transactions(transactions);
+        all_transactions_info
+    }
+
+    // fetch mempool transactions from blockstream
+    pub fn mempool_transactions(&self, address: &str) -> Result<Value, anyhow::Error> {
+        let body = reqwest::blocking::get(format!("{}/address/{}/txs/mempool", self.url, address))
+            .expect("Error getting transactions")
+            .text();
+        println!("body = {:?}", body);
+        let transactions = json!(&body?);
+        Ok(transactions)
+    }
+
+    /// Fetch UTXOs from blockstream
+    pub async fn utxo(&self, address: &str) -> Result<Vec<UTXO>, anyhow::Error> {
+        let body = reqwest::get(format!("{}/address/{}/utxo", self.url, address))
+            .await?
+            .text()
+            .await?;
+
+        let utxo: Value = serde_json::from_str(&body)?;
+        let all_utxo_info = UTXO::new_utxos(utxo);
+        all_utxo_info
+    }
+
+    pub async fn get_raw_transaction_hex(&self, txid: &str) -> Result<String, anyhow::Error> {
+        let body = reqwest::get(format!("{}/tx/{}/raw", self.url, txid))
+            .await?
+            .text()
+            .await?;
+        let raw_transaction_hex = json!(&body);
+        Ok(raw_transaction_hex.to_string())
+    }
+
+    /// Fetch transaction info
+    pub async fn transaction(&self, txid: &str) -> Result<BTransaction, anyhow::Error> {
+        let body = reqwest::get(format!("{}/tx/{}", self.url, txid))
+            .await?
+            .text()
+            .await?;
+        let _data = r#"{
+        "txid":"6249b166d78529e435628245034df9e4c81d9b34b4d12c5600527c96b6e0d8ce",
+        "version":1,
+        "locktime":0,
+        "vin":[
+          {
+            "txid":"4894c96e044bd6c278f927a220c42048602e4d8bfa888f5c35610b1c4643140d",
+            "vout":1,
+            "prevout":{
+              "scriptpubkey":"a914f7861160df5cce001291293dfba24923816fc7e987",
+              "scriptpubkey_asm":"OP_HASH160 OP_PUSHBYTES_20 f7861160df5cce001291293dfba24923816fc7e9 OP_EQUAL",
+              "scriptpubkey_type":"p2sh",
+              "scriptpubkey_address":"3QFoS8FPLCiVzzra4TPqVCq5ntpswP9Ey3",
+              "value":48713312
+            },
+            "scriptsig":"160014630cf4b24dbd691fef2bb3fa50605484632f611e",
+            "scriptsig_asm":"OP_PUSHBYTES_22 0014630cf4b24dbd691fef2bb3fa50605484632f611e",
+            "witness":[
+              "304402201e23c13611331720f5dfe2455b2d3c3b259d84cadc5e3de6e792a750978efeb8022006d3acad3c1c5b7e6227c80b71fee635f9303fd164b378c98a9fb3063105ff9201",
+              "025e7a3239de2b1dbde8d8ff5c0c620ac47bfd32e761f509c13424fe8481dbb98e"
+            ],
+            "is_coinbase":false,
+            "sequence":4294967295,
+            "inner_redeemscript_asm":"OP_0 OP_PUSHBYTES_20 630cf4b24dbd691fef2bb3fa50605484632f611e"
+          }
+        ],
+        "vout":[
+          {
+            "scriptpubkey":"a914b3efe280e64077202c171cc3fefb4bb02adc7d0687",
+            "scriptpubkey_asm":"OP_HASH160 OP_PUSHBYTES_20 b3efe280e64077202c171cc3fefb4bb02adc7d06 OP_EQUAL",
+            "scriptpubkey_type":"p2sh",
+            "scriptpubkey_address":"3J6SFNJSHq9k6k2Cwzdy6RMC1z3ubR1ot1",
+            "value":15632000
+          },
+          {
+            "scriptpubkey":"a91445a3f3cc49da0b67c969771b0b8ef76c45aaff2787",
+            "scriptpubkey_asm":"OP_HASH160 OP_PUSHBYTES_20 45a3f3cc49da0b67c969771b0b8ef76c45aaff27 OP_EQUAL",
+            "scriptpubkey_type":"p2sh",
+            "scriptpubkey_address":"383ExPThK2M5yZEtHXU1YcqehVBDxHKuWJ",
+            "value":33065280
+          }
+        ],
+        "size":247,
+        "weight":661,
+        "fee":16032,
+        "status":{
+          "confirmed":true,
+          "block_height":663393,
+          "block_hash":"0000000000000000000efbc1d707a0b95bc281c908ecf1f149d2d93ca8d6a175",
+          "block_time":1609181106
+        }
+      }"#;
+        let transaction_info: Value = serde_json::from_str(&body)?;
+        let transaction: BTransaction = BTransaction::new_from_value(&transaction_info)?;
+        Ok(transaction)
+    }
+
+    /// Broadcast a raw transaction to the network
+    pub async fn post_a_transaction(
+        &self,
+        raw_transaction_hex: &'static str,
+    ) -> Result<String, anyhow::Error> {
+        let trans_resp = self
+            .client
+            .post(format!("{}/tx", self.url))
+            .body(raw_transaction_hex)
+            .send()
+            .await
+            .expect("Transaction failed to be posted");
+
+        let trans_status = trans_resp.status();
+        let trans_content = trans_resp.text().await?;
+        if !trans_status.is_client_error() && !trans_status.is_server_error() {
+            println!("Successful in broadcasting the transaction");
+            println!("Posted txid: {}", trans_content);
+            Ok(trans_content)
+        } else {
+            println!(
+                "trans_status.is_client_error(): {}",
+                trans_status.is_client_error()
+            );
+            println!(
+                "trans_status.is_server_error(): {}",
+                trans_status.is_server_error()
+            );
+            println!("trans_content: {}", trans_content);
+            Err(anyhow!("Error in broadcasting the transaction"))
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use mockito::mock;
+
+    use super::*;
+
+    #[test]
+    fn test_block_count() {
+        let _m = mock("GET", "/blocks/tip/height")
+            .with_status(200)
+            .with_header("content-type", "text/plain")
+            .with_body("773876")
+            .create();
+
+        let _url: &String = &mockito::server_url();
+        let bs = Blockstream::new(&mockito::server_url()).unwrap();
+        let check = bs.block_count().unwrap();
+        assert_eq!(773876, check);
+    }
+}
