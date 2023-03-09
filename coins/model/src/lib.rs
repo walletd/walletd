@@ -1,8 +1,8 @@
 use anyhow::anyhow;
 use async_trait::async_trait;
-mod crypto_coin;
+pub mod crypto_coin;
 pub use crypto_coin::CryptoCoin;
-mod crypto_wallet;
+pub mod crypto_wallet;
 pub use crypto_wallet::{CryptoWallet, CryptoWalletGeneral};
 
 #[async_trait]

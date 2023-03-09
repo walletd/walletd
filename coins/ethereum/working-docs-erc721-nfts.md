@@ -1,27 +1,41 @@
-This doc is intended for clarifying ERC-20 token creation
+This doc explains non-fungible tokens (which conform to the ERC-721 standard)
 
 # Interact with ERC-20 tokens
-ERC-20​ is a simple token standard and the most common contract type on Ethereum.
+ERC-721​ is an EIP that details a non-fungible token standard for Ethereum.
 
-You can:
-[Send ERC-20 transactions​ using eth_sendRawTransaction.](https://docs.infura.io/infura/networks/ethereum/how-to/interact-with-erc-20-tokens#sending-transactions)
-[Observe event logs of mined ERC-20 transactions​ using eth_getLogs](https://docs.infura.io/infura/networks/ethereum/how-to/interact-with-erc-20-tokens#mined-transactions)
-Follow [this tutorial](https://docs.infura.io/infura/tutorials/ethereum/retrieve-the-balance-of-an-erc-20-token) to retrieve the balance of ERC-20 tokens.
-Follow [this tutorial](https://docs.infura.io/infura/tutorials/ethereum/track-erc-20-token-transfers) to track ERC-20 token transfers.
+## ERC-721 tokens implement the following functions and events
 
-## ERC-20 token functions and events
+An ERC-721 token must implement the ERC721 interface and (optionally?) the ERC165 interface
 
-An ERC-20 token must implement the following functions:
+```
+interface ERC721 /* is ERC165 */ { 
+    event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId); 
+    event Approval(address indexed _owner, address indexed _approved, uint256 indexed _tokenId); 
+    event ApprovalForAll(address indexed _owner, address indexed _operator, bool _approved); 
+    function balanceOf(address _owner) external view returns (uint256); 
+    function ownerOf(uint256 _tokenId) external view returns (address); 
+    function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes data) external payable; 
+    function safeTransferFrom(address _from, address _to, uint256 _tokenId) external payable; 
+    function transferFrom(address _from, address _to, uint256 _tokenId) external payable; 
+    function approve(address _approved, uint256 _tokenId) external payable; 
+    function setApprovalForAll(address _operator, bool _approved) external; 
+    function getApproved(uint256 _tokenId) external view returns (address); 
+    function isApprovedForAll(address _owner, address _operator) external view returns (bool); 
+} 
+interface ERC165 { 
+    function supportsInterface(bytes4 interfaceID) external view returns (bool); 
+} 
+```
 
-totalSupply() - Returns the total token supply.
-balanceOf(owner) - Returns the account balance of another account with address owner.
-allowance(owner, spender) - Returns the amount which spender is still allowed to withdraw from owner.
-transfer(to, value) - Transfers value amount of tokens to address to.
-approve(spender, value) - Allows spender to withdraw from your account multiple times, up to the value amount.
-transferFrom(from, to, value) - Transfers value amount of tokens from address from to address to.
+balanceOf: Finds the balance of an input address
+ownerOf: Returns the owner address for a given token ID
+safeTransferFrom: Transfers an NFT ownership from one address to another address, as opposed to transferFrom, and it also checks whether the recipient is a valid ERC-721 receiver address
+transferFrom: Transfers ownership of an NFT
+approve: Gives a given entity permission to transfer a token
+setApprovalForAll: Controls the approval for a third party (operator) to manage all of msg.sender assets
+getApproved: Gets the approved address for a single NFT
+isApprovedForAll: Checks if approve for all addresses is allowed
 
-At certain times, an ERC-20 token also must emit the following events:
+Common methods shared between ERC20 and ERC721
 
-Transfer(from, to, value) - Must trigger when tokens are transferred, including zero value transfers.
-Approval(owner, spender, value) - Must trigger on any successful call to approve(spender, value).
-View  for more details about how these functions work and when to emit these events.
+balanceOf(owner) - Returns the account balance of another account with address owner. // common to erc20

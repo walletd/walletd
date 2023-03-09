@@ -5,7 +5,7 @@ use std::ops;
 use walletd_coin_model::CryptoAmount;
 use web3::ethabi::ethereum_types::U256;
 
-#[derive(Default, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+#[derive(Default, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Debug)]
 pub struct EthereumAmount {
     pub wei: U256,
 }
@@ -79,6 +79,10 @@ impl EthereumAmount {
 
     pub fn wei(&self) -> U256 {
         self.wei
+    }
+
+    pub fn new_from_wei(wei_amount: U256) -> Self {
+        Self { wei: wei_amount }
     }
 }
 
