@@ -2,14 +2,14 @@
 
 mod hd_key;
 mod slip44;
+use std::fmt::{self, Display};
+use std::str::FromStr;
+
 use anyhow::anyhow;
 pub use hd_key::HDKey;
 pub use slip44::SlipCoin;
-use std::{
-    fmt::{self, Display},
-    str::FromStr,
-};
-/// The DeriveType enum represents the different derivation path schemes supported by the library.
+/// The DeriveType enum represents the different derivation path schemes
+/// supported by the library.
 ///
 /// BIP32 is the default.
 #[derive(Default, PartialEq, Eq, Copy, Clone, Debug)]
@@ -22,7 +22,8 @@ pub enum DeriveType {
 }
 
 impl DeriveType {
-    /// Returns the purppose string representation associated with each derivation type
+    /// Returns the purppose string representation associated with each
+    /// derivation type
     pub fn purpose(&self) -> &str {
         match self {
             DeriveType::BIP32 => "0'",
@@ -32,27 +33,30 @@ impl DeriveType {
         }
     }
 
-    /// Derives the default first account with the specified derivation path scheme
+    /// Derives the default first account with the specified derivation path
+    /// scheme
     pub fn derive_first_account(
         &self,
         master_node: &HDKey,
         coin: &SlipCoin,
     ) -> Result<HDKey, anyhow::Error> {
         let derived_account_path = format!("m/{}/{}'/0'", &self.purpose(), coin);
-        HDKey::from_master(&master_node, derived_account_path)
+        HDKey::from_master(master_node, derived_account_path)
     }
 
-    /// Derives the default first address with the specified derivation path scheme
+    /// Derives the default first address with the specified derivation path
+    /// scheme
     pub fn derive_first_address(
         &self,
         master_node: &HDKey,
         coin: &SlipCoin,
     ) -> Result<HDKey, anyhow::Error> {
         let deriv_path = format!("m/{}/{}'/0'/0/0", &self.purpose(), coin);
-        HDKey::from_master(&master_node, deriv_path)
+        HDKey::from_master(master_node, deriv_path)
     }
 
-    /// Derives the default first change address with the specified derivation path scheme
+    /// Derives the default first change address with the specified derivation
+    /// path scheme
     pub fn derive_specify_account_address_indices(
         &self,
         master_node: &HDKey,
@@ -67,10 +71,11 @@ impl DeriveType {
             account_index,
             address_index
         );
-        HDKey::from_master(&master_node, derived_path)
+        HDKey::from_master(master_node, derived_path)
     }
 
-    /// Derives the default first change address with the specified derivation path scheme
+    /// Derives the default first change address with the specified derivation
+    /// path scheme
     pub fn derive_specify_change_account_address_indices(
         &self,
         master_node: &HDKey,
@@ -87,10 +92,11 @@ impl DeriveType {
             change_index,
             address_index
         );
-        HDKey::from_master(&master_node, derived_path)
+        HDKey::from_master(master_node, derived_path)
     }
 
-    /// Derives the default first change address with the specified derivation path scheme
+    /// Derives the default first change address with the specified derivation
+    /// path scheme
     pub fn derive_change_internal_chain_specify_account_address_indices(
         &self,
         master_node: &HDKey,
@@ -105,7 +111,7 @@ impl DeriveType {
             account_index,
             address_index
         );
-        HDKey::from_master(&master_node, derived_path)
+        HDKey::from_master(master_node, derived_path)
     }
 }
 
@@ -123,7 +129,8 @@ impl FromStr for DeriveType {
     }
 }
 
-/// The DerivePathComponent distinguishes between the different derivation path components.
+/// The DerivePathComponent distinguishes between the different derivation path
+/// components.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum DerivePathComponent {
     Master,
@@ -178,7 +185,8 @@ impl Display for DerivePathComponent {
     }
 }
 
-/// The NetworkType enum represents the different network types supported by the library.
+/// The NetworkType enum represents the different network types supported by the
+/// library.
 ///
 /// MainNet is the default.
 #[derive(Default, PartialEq, Eq, Copy, Clone, Debug)]

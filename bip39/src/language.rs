@@ -1,18 +1,18 @@
-static CHINESE_SIMPLIFIED: &'static str = include_str!("langs/chinese_simplified.txt");
-static CHINESE_TRADITIONAL: &'static str = include_str!("langs/chinese_traditional.txt");
-static CZECH: &'static str = include_str!("langs/czech.txt");
-static ENGLISH: &'static str = include_str!("langs/english.txt");
-static FRENCH: &'static str = include_str!("langs/french.txt");
-static ITALIAN: &'static str = include_str!("langs/italian.txt");
-static JAPANESE: &'static str = include_str!("langs/japanese.txt");
-static KOREAN: &'static str = include_str!("langs/korean.txt");
-static SPANISH: &'static str = include_str!("langs/spanish.txt");
-static PORTUGUESE: &'static str = include_str!("langs/portuguese.txt");
+static CHINESE_SIMPLIFIED: &str = include_str!("langs/chinese_simplified.txt");
+static CHINESE_TRADITIONAL: &str = include_str!("langs/chinese_traditional.txt");
+static CZECH: &str = include_str!("langs/czech.txt");
+static ENGLISH: &str = include_str!("langs/english.txt");
+static FRENCH: &str = include_str!("langs/french.txt");
+static ITALIAN: &str = include_str!("langs/italian.txt");
+static JAPANESE: &str = include_str!("langs/japanese.txt");
+static KOREAN: &str = include_str!("langs/korean.txt");
+static SPANISH: &str = include_str!("langs/spanish.txt");
+static PORTUGUESE: &str = include_str!("langs/portuguese.txt");
 
-use anyhow::anyhow;
 use std::fmt;
 use std::str::FromStr;
 
+use anyhow::anyhow;
 use walletd_mnemonic_model::LanguageHandler;
 
 #[derive(Debug)]
@@ -63,7 +63,8 @@ impl WordList {
         }
     }
 
-    /// If all words in the phrase are present in a language's wordlist, the language of the phrase is detected
+    /// If all words in the phrase are present in a language's wordlist, the
+    /// language of the phrase is detected
     pub fn detect_language(phrase: Vec<&str>) -> Result<Language, anyhow::Error> {
         let all_languages = enum_iterator::all::<Language>().collect::<Vec<_>>();
         for language in all_languages {
@@ -93,10 +94,12 @@ impl WordList {
     }
 }
 
-/// The choice of language for a mnemonic phrase not only determines the words used,
-/// but also has an impact on the binary value of each word when the ['Mnemonic'][Mnemonic] is converted into a ['Seed'][Seed].
+/// The choice of language for a mnemonic phrase not only determines the words
+/// used, but also has an impact on the binary value of each word when the
+/// ['Mnemonic'][Mnemonic] is converted into a ['Seed'][Seed].
 ///
-/// English is the only officially supported language, the rest are provided for convenience.
+/// English is the only officially supported language, the rest are provided for
+/// convenience.
 ///
 /// [Mnemonic]: ./mnemonic/struct.Mnemonic.html
 /// [Seed]: ./seed/struct.Seed.html
@@ -116,6 +119,7 @@ pub enum Language {
 
 impl FromStr for Language {
     type Err = anyhow::Error;
+
     /// Converts a string to a Language.
     fn from_str(input: &str) -> Result<Language, Self::Err> {
         match input {
@@ -234,7 +238,8 @@ mod tests {
         assert_eq!(wordlist.inner.len(), 2048);
         assert_eq!(wordlist.get_index("的").unwrap(), 0);
         assert_eq!(wordlist.get_index("歇").unwrap(), 2047);
-        // assert!(wordlist.get_index("效").is_err()); // cant find a character thats not in the list
+        // assert!(wordlist.get_index("效").is_err()); // cant find a character
+        // thats not in the list
     }
 
     #[test]
@@ -243,7 +248,8 @@ mod tests {
         assert_eq!(wordlist.inner.len(), 2048);
         assert_eq!(wordlist.get_index("的").unwrap(), 0);
         assert_eq!(wordlist.get_index("歇").unwrap(), 2047);
-        // assert!(wordlist.get_index("效").is_err()); // cant find a character thats not in the list
+        // assert!(wordlist.get_index("效").is_err()); // cant find a character
+        // thats not in the list
     }
 
     #[test]

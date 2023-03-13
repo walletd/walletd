@@ -1,6 +1,5 @@
-//!
-//! This is a Rust implementation of the Monero Mnemonic Seed standard for Monero Wallets
-//! mnemonic phrases.
+//! This is a Rust implementation of the Monero Mnemonic Seed standard for
+//! Monero Wallets mnemonic phrases.
 //!
 //!
 //! ## Quickstart
@@ -33,13 +32,11 @@ mod language;
 mod mnemonic;
 mod mnemonic_type;
 
+#[doc(inline)]
+pub use language::Language;
+pub use walletd_mnemonic_model::{MnemonicHandler, Seed};
+
 use self::language::WordList;
 #[doc(inline)]
 pub use self::mnemonic::Mnemonic;
-#[doc(inline)]
-pub use language::Language;
-
 pub use self::mnemonic_type::MnemonicType;
-
-pub use walletd_mnemonic_model::MnemonicHandler;
-pub use walletd_mnemonic_model::Seed;

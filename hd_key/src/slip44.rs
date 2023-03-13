@@ -1,5 +1,7 @@
-use anyhow::anyhow;
 use std::fmt;
+use std::str::FromStr;
+
+use anyhow::anyhow;
 
 /// SLIP-0044: Registered coin types for BIP-0044
 #[derive(Default, Eq, PartialEq, Copy, Clone, Debug)]
@@ -42,9 +44,14 @@ impl SlipCoin {
             )),
         }
     }
+}
+
+impl FromStr for SlipCoin {
+    type Err = anyhow::Error;
+
     /// Matches coin name ignoring case and allowing either the long form or
     /// short abbrevation form
-    pub fn from_str(coin_name: &str) -> Result<Self, anyhow::Error> {
+    fn from_str(coin_name: &str) -> Result<Self, anyhow::Error> {
         match coin_name.to_string().to_lowercase().as_str() {
             "btc" | "bitcoin" => Ok(Self::BTC),
             "eth" | "ethereum" | "ether" => Ok(Self::ETH),

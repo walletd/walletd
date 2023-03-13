@@ -1,22 +1,22 @@
-static CHINESE_SIMPLIFIED: &'static str = include_str!("langs/chinese_simplified.txt");
-static DUTCH: &'static str = include_str!("langs/dutch.txt");
-static ENGLISH: &'static str = include_str!("langs/english.txt");
-static ESPERANTO: &'static str = include_str!("langs/esperanto.txt");
-static FRENCH: &'static str = include_str!("langs/french.txt");
-static GERMAN: &'static str = include_str!("langs/german.txt");
-static ITALIAN: &'static str = include_str!("langs/italian.txt");
-static JAPANESE: &'static str = include_str!("langs/japanese.txt");
-static LOJBAN: &'static str = include_str!("langs/lojban.txt");
-static PORTUGUESE: &'static str = include_str!("langs/portuguese.txt");
-static RUSSIAN: &'static str = include_str!("langs/russian.txt");
-static SPANISH: &'static str = include_str!("langs/spanish.txt");
+static CHINESE_SIMPLIFIED: &str = include_str!("langs/chinese_simplified.txt");
+static DUTCH: &str = include_str!("langs/dutch.txt");
+static ENGLISH: &str = include_str!("langs/english.txt");
+static ESPERANTO: &str = include_str!("langs/esperanto.txt");
+static FRENCH: &str = include_str!("langs/french.txt");
+static GERMAN: &str = include_str!("langs/german.txt");
+static ITALIAN: &str = include_str!("langs/italian.txt");
+static JAPANESE: &str = include_str!("langs/japanese.txt");
+static LOJBAN: &str = include_str!("langs/lojban.txt");
+static PORTUGUESE: &str = include_str!("langs/portuguese.txt");
+static RUSSIAN: &str = include_str!("langs/russian.txt");
+static SPANISH: &str = include_str!("langs/spanish.txt");
 
-use anyhow::anyhow;
-use crc::{crc32, Hasher32};
 use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
 
+use anyhow::anyhow;
+use crc::{crc32, Hasher32};
 use walletd_mnemonic_model::LanguageHandler;
 
 #[derive(Debug)]
@@ -35,7 +35,7 @@ impl WordList {
                 WordList {
                     inner: words,
                     prefix_length: 3,
-                    trimmed_word_map: Self::create_trimmed_word_list(&ENGLISH, 3),
+                    trimmed_word_map: Self::create_trimmed_word_list(ENGLISH, 3),
                 }
             }
             Language::ChineseSimplified => {
@@ -43,7 +43,7 @@ impl WordList {
                 WordList {
                     inner: words,
                     prefix_length: 1,
-                    trimmed_word_map: Self::create_trimmed_word_list(&CHINESE_SIMPLIFIED, 1),
+                    trimmed_word_map: Self::create_trimmed_word_list(CHINESE_SIMPLIFIED, 1),
                 }
             }
             Language::Dutch => {
@@ -51,7 +51,7 @@ impl WordList {
                 WordList {
                     inner: words,
                     prefix_length: 4,
-                    trimmed_word_map: Self::create_trimmed_word_list(&DUTCH, 4),
+                    trimmed_word_map: Self::create_trimmed_word_list(DUTCH, 4),
                 }
             }
             Language::Esperanto => {
@@ -59,7 +59,7 @@ impl WordList {
                 WordList {
                     inner: words,
                     prefix_length: 4,
-                    trimmed_word_map: Self::create_trimmed_word_list(&ESPERANTO, 4),
+                    trimmed_word_map: Self::create_trimmed_word_list(ESPERANTO, 4),
                 }
             }
             Language::French => {
@@ -67,7 +67,7 @@ impl WordList {
                 WordList {
                     inner: words,
                     prefix_length: 4,
-                    trimmed_word_map: Self::create_trimmed_word_list(&FRENCH, 4),
+                    trimmed_word_map: Self::create_trimmed_word_list(FRENCH, 4),
                 }
             }
             Language::German => {
@@ -75,7 +75,7 @@ impl WordList {
                 WordList {
                     inner: words,
                     prefix_length: 4,
-                    trimmed_word_map: Self::create_trimmed_word_list(&GERMAN, 4),
+                    trimmed_word_map: Self::create_trimmed_word_list(GERMAN, 4),
                 }
             }
             Language::Italian => {
@@ -83,7 +83,7 @@ impl WordList {
                 WordList {
                     inner: words,
                     prefix_length: 4,
-                    trimmed_word_map: Self::create_trimmed_word_list(&ITALIAN, 4),
+                    trimmed_word_map: Self::create_trimmed_word_list(ITALIAN, 4),
                 }
             }
             Language::Japanese => {
@@ -91,7 +91,7 @@ impl WordList {
                 WordList {
                     inner: words,
                     prefix_length: 3,
-                    trimmed_word_map: Self::create_trimmed_word_list(&JAPANESE, 3),
+                    trimmed_word_map: Self::create_trimmed_word_list(JAPANESE, 3),
                 }
             }
             Language::Lojban => {
@@ -99,7 +99,7 @@ impl WordList {
                 WordList {
                     inner: words,
                     prefix_length: 4,
-                    trimmed_word_map: Self::create_trimmed_word_list(&LOJBAN, 4),
+                    trimmed_word_map: Self::create_trimmed_word_list(LOJBAN, 4),
                 }
             }
             Language::Portuguese => {
@@ -107,7 +107,7 @@ impl WordList {
                 WordList {
                     inner: words,
                     prefix_length: 4,
-                    trimmed_word_map: Self::create_trimmed_word_list(&PORTUGUESE, 4),
+                    trimmed_word_map: Self::create_trimmed_word_list(PORTUGUESE, 4),
                 }
             }
             Language::Russian => {
@@ -115,7 +115,7 @@ impl WordList {
                 WordList {
                     inner: words,
                     prefix_length: 4,
-                    trimmed_word_map: Self::create_trimmed_word_list(&RUSSIAN, 4),
+                    trimmed_word_map: Self::create_trimmed_word_list(RUSSIAN, 4),
                 }
             }
             Language::Spanish => {
@@ -123,13 +123,14 @@ impl WordList {
                 WordList {
                     inner: words,
                     prefix_length: 4,
-                    trimmed_word_map: Self::create_trimmed_word_list(&SPANISH, 4),
+                    trimmed_word_map: Self::create_trimmed_word_list(SPANISH, 4),
                 }
             }
         }
     }
 
-    /// If all words in the phrase are present in a language's wordlist, the language of the phrase is detected
+    /// If all words in the phrase are present in a language's wordlist, the
+    /// language of the phrase is detected
     pub fn detect_language(phrase: Vec<&str>) -> Result<Language, anyhow::Error> {
         let all_languages = enum_iterator::all::<Language>().collect::<Vec<_>>();
         for language in all_languages {
@@ -187,13 +188,11 @@ impl WordList {
         let trimmed_word = Self::to_trimmed(word, unique_prefix_len);
         let index = trimmed_word_map.get(&trimmed_word);
         match index {
-            None => {
-                return Err(anyhow!(
-                    "Could not find trimmed word in word list. Attempted to find index of {}",
-                    trimmed_word
-                ))
-            }
-            Some(i) => return Ok(*i),
+            None => Err(anyhow!(
+                "Could not find trimmed word in word list. Attempted to find index of {}",
+                trimmed_word
+            )),
+            Some(i) => Ok(*i),
         }
     }
 
@@ -206,9 +205,7 @@ impl WordList {
 
         let mut digest = crc32::Digest::new(crc32::IEEE);
         digest.write(phrase_trimmed.concat().as_bytes());
-        phrase[(digest.sum32() % phrase.len() as u32) as usize]
-            .clone()
-            .to_string()
+        phrase[(digest.sum32() % phrase.len() as u32) as usize].to_string()
     }
 
     /// Get inner data
@@ -226,10 +223,12 @@ impl WordList {
     }
 }
 
-/// The choice of language for a mnemonic phrase not only determines the words used,
-/// but also has an impact on the binary value of each word when the ['Mnemonic'][Mnemonic] is converted into a ['Seed'][Seed].
+/// The choice of language for a mnemonic phrase not only determines the words
+/// used, but also has an impact on the binary value of each word when the
+/// ['Mnemonic'][Mnemonic] is converted into a ['Seed'][Seed].
 ///
-/// English is the only officially supported language, the rest are provided for convenience.
+/// English is the only officially supported language, the rest are provided for
+/// convenience.
 ///
 /// [Mnemonic]: ./mnemonic/struct.Mnemonic.html
 /// [Seed]: ./seed/struct.Seed.html
@@ -267,6 +266,7 @@ impl LanguageHandler for Language {
 
 impl FromStr for Language {
     type Err = anyhow::Error;
+
     /// Converts a string to a Language.
     fn from_str(input: &str) -> Result<Language, Self::Err> {
         match input {
@@ -396,7 +396,8 @@ mod tests {
         assert_eq!(wordlist.inner.len(), 1626);
         // assert_eq!(get_index("的").unwrap(), 0);
         // assert_eq!(wordlist.get_index("貌").unwrap(), 1625);
-        // assert!(wordlist.get_index("效").is_err()); // cant find a character thats not in the list
+        // assert!(wordlist.get_index("效").is_err()); // cant find a character
+        // thats not in the list
     }
 
     #[test]

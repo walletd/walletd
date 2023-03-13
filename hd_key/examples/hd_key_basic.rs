@@ -1,5 +1,4 @@
-use walletd_hd_key::HDKey;
-use walletd_hd_key::NetworkType;
+use walletd_hd_key::{HDKey, NetworkType};
 
 fn main() -> () {
     let keys = HDKey::new(

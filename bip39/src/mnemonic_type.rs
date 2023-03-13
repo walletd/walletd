@@ -1,22 +1,25 @@
-use anyhow::anyhow;
 use std::fmt;
+
+use anyhow::anyhow;
 
 pub const ENTROPY_OFFSET: usize = 8;
 
-/// Determines the number of words that will make up the [`Mnemonic`][Mnemonic] phrase
+/// Determines the number of words that will make up the [`Mnemonic`][Mnemonic]
+/// phrase
 ///
-/// Also directly affects the amount of entropy that will be used to create a [`Mnemonic`][Mnemonic],
-/// and therefore the cryptographic strength of the HD wallet keys/addresses that can be derived from
-/// it using the [`Seed`][Seed].
+/// Also directly affects the amount of entropy that will be used to create a
+/// [`Mnemonic`][Mnemonic], and therefore the cryptographic strength of the HD
+/// wallet keys/addresses that can be derived from it using the [`Seed`][Seed].
 ///
-/// For example, a 12 word mnemonic phrase is essentially a friendly representation of a 128-bit key,
-/// while a 24 word mnemonic phrase is essentially a 256-bit key.
+/// For example, a 12 word mnemonic phrase is essentially a friendly
+/// representation of a 128-bit key, while a 24 word mnemonic phrase is
+/// essentially a 256-bit key.
 ///
-/// If you know you want a specific phrase length, you can use the enum variant directly, for example
-/// `MnemonicType::Words12`.
+/// If you know you want a specific phrase length, you can use the enum variant
+/// directly, for example `MnemonicType::Words12`.
 ///
-/// You can also get a `MnemonicType` that corresponds to one of the standard BIP39 key sizes by
-/// passing arbitrary `usize` values:
+/// You can also get a `MnemonicType` that corresponds to one of the standard
+/// BIP39 key sizes by passing arbitrary `usize` values:
 ///
 /// ```
 /// use walletd_bip39::MnemonicType;
@@ -61,7 +64,8 @@ impl Default for MnemonicType {
 impl MnemonicType {
     /// Creates the MnemonicType based on the word count
     ///
-    /// Specifying a word count not provided for by the BIP39 standard will return an `Error`
+    /// Specifying a word count not provided for by the BIP39 standard will
+    /// return an `Error`
     ///
     /// # Example
     /// ```
@@ -84,7 +88,8 @@ impl MnemonicType {
 
     /// Creates the MnemonicType based on the length of the key size in bits
     ///
-    /// Specifying a key size not provided for by the BIP39 standard will return an `Error`
+    /// Specifying a key size not provided for by the BIP39 standard will return
+    /// an `Error`
     ///
     /// # Example
     /// ```
@@ -107,10 +112,12 @@ impl MnemonicType {
 
     /// Get a `MnemonicType` for an existing mnemonic phrase
     ///
-    /// This can be used when you need information about a mnemonic phrase based on the number of
-    /// words, for example you can get the entropy value using [`MnemonicType::entropy_bits`][MnemonicType::entropy_bits()].
+    /// This can be used when you need information about a mnemonic phrase based
+    /// on the number of words, for example you can get the entropy value
+    /// using [`MnemonicType::entropy_bits`][MnemonicType::entropy_bits()].
     ///
-    /// Specifying a phrase that does not match one of the standard BIP39 phrase lengths will return an `Error`
+    /// Specifying a phrase that does not match one of the standard BIP39 phrase
+    /// lengths will return an `Error`
     ///
     /// # Example
     /// ```
@@ -125,7 +132,7 @@ impl MnemonicType {
     ///
     /// [MnemonicType::entropy_bits()]: ./enum.MnemonicType.html#method.entropy_bits
     pub fn from_phrase(phrase: &str) -> Result<MnemonicType, anyhow::Error> {
-        let word_count = phrase.split(" ").count();
+        let word_count = phrase.split(' ').count();
 
         Self::from_word_count(word_count)
     }

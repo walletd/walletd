@@ -1,10 +1,11 @@
 use std::fmt;
 
-/// The secret value used to derive HD wallet addresses from a [`Mnemonic`][Mnemonic] phrase.
+/// The secret value used to derive HD wallet addresses from a
+/// [`Mnemonic`][Mnemonic] phrase.
 ///
-/// To get the raw byte value use [`Seed::as_bytes()`][Seed::as_bytes()]. These can be used to derive
-/// HD wallet addresses using another crate (deriving HD wallet addresses is outside the scope of this
-/// crate and the BIP39 standard).
+/// To get the raw byte value use [`Seed::as_bytes()`][Seed::as_bytes()]. These
+/// can be used to derive HD wallet addresses using another crate (deriving HD
+/// wallet addresses is outside the scope of this crate and the BIP39 standard).
 ///
 /// [Mnemonic]: ./mnemonic/struct.Mnemonic.html
 /// [Seed]: ./seed/struct.Seed.html
