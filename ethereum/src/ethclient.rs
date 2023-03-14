@@ -13,11 +13,12 @@ pub mod ethclient {
     use web3::helpers as w3h;
     use web3::transports::Http;
     use web3::types::{BlockId, BlockNumber, TransactionId, H160, H256, U64, U256};
+    use walletd_coin_model::CryptoAmount;
     // TODO(#70): Remove once we finish cleaning and refactoring
     pub fn print_type_of<T>(_: &T) {
         println!("{}", std::any::type_name::<T>())
     }
-
+    
     #[derive(Error, Debug, PartialEq, Eq, Clone)]
     pub enum Error {
         // Failed to initialise ethclient
@@ -44,7 +45,7 @@ pub mod ethclient {
         web3: web3::Web3<web3::transports::Http>,
         endpoint: String, // Do we actually need this?
     }
-
+    #[allow(unused)]
     impl EthClient {
         pub fn new(transport: Http, endpoint: &str) -> Self {
             // TODO(#71): Change transport to support web sockets
@@ -55,6 +56,21 @@ pub mod ethclient {
                 endpoint: endpoint.to_string(), // web3 uses an &str for endpoint
             }
         }
+
+        pub async fn balance(
+            &self,
+            address: H160,
+            block_number: Option<BlockNumber>,
+        ) -> Result<U256, web3::Error> {
+            //let address_as_h160 = hex!(address);
+            //let address = web3::types::H160::from_str(address)?;
+            if let balance = self.web3.eth().balance(address, None).await {
+                Ok(balance.unwrap())
+            } else {
+                Err(web3::Error::InvalidResponse("Invalid response".to_string()))
+            }
+        }
+    
 
         /// Gets a transaction given a specific tx hash
         /// Returns a Result containing a Transaction object
