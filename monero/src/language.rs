@@ -15,12 +15,14 @@ use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
 
-use anyhow::anyhow;
 use crc::{crc32, Hasher32};
 use walletd_mnemonic_model::LanguageHandler;
 
+use crate::Error;
+
 #[derive(Debug)]
 pub struct WordList {
+    language: Language,
     inner: Vec<&'static str>,
     prefix_length: usize,
     trimmed_word_map: HashMap<String, usize>,
@@ -33,6 +35,7 @@ impl WordList {
             Language::English => {
                 let words = ENGLISH.split_whitespace().collect();
                 WordList {
+                    language,
                     inner: words,
                     prefix_length: 3,
                     trimmed_word_map: Self::create_trimmed_word_list(ENGLISH, 3),
@@ -41,6 +44,7 @@ impl WordList {
             Language::ChineseSimplified => {
                 let words = CHINESE_SIMPLIFIED.split_whitespace().collect();
                 WordList {
+                    language,
                     inner: words,
                     prefix_length: 1,
                     trimmed_word_map: Self::create_trimmed_word_list(CHINESE_SIMPLIFIED, 1),
@@ -49,6 +53,7 @@ impl WordList {
             Language::Dutch => {
                 let words = DUTCH.split_whitespace().collect();
                 WordList {
+                    language,
                     inner: words,
                     prefix_length: 4,
                     trimmed_word_map: Self::create_trimmed_word_list(DUTCH, 4),
@@ -57,6 +62,7 @@ impl WordList {
             Language::Esperanto => {
                 let words = ESPERANTO.split_whitespace().collect();
                 WordList {
+                    language,
                     inner: words,
                     prefix_length: 4,
                     trimmed_word_map: Self::create_trimmed_word_list(ESPERANTO, 4),
@@ -65,6 +71,7 @@ impl WordList {
             Language::French => {
                 let words = FRENCH.split_whitespace().collect();
                 WordList {
+                    language,
                     inner: words,
                     prefix_length: 4,
                     trimmed_word_map: Self::create_trimmed_word_list(FRENCH, 4),
@@ -73,6 +80,7 @@ impl WordList {
             Language::German => {
                 let words = GERMAN.split_whitespace().collect();
                 WordList {
+                    language,
                     inner: words,
                     prefix_length: 4,
                     trimmed_word_map: Self::create_trimmed_word_list(GERMAN, 4),
@@ -81,6 +89,7 @@ impl WordList {
             Language::Italian => {
                 let words = ITALIAN.split_whitespace().collect();
                 WordList {
+                    language,
                     inner: words,
                     prefix_length: 4,
                     trimmed_word_map: Self::create_trimmed_word_list(ITALIAN, 4),
@@ -89,6 +98,7 @@ impl WordList {
             Language::Japanese => {
                 let words = JAPANESE.split_whitespace().collect();
                 WordList {
+                    language,
                     inner: words,
                     prefix_length: 3,
                     trimmed_word_map: Self::create_trimmed_word_list(JAPANESE, 3),
@@ -97,6 +107,7 @@ impl WordList {
             Language::Lojban => {
                 let words = LOJBAN.split_whitespace().collect();
                 WordList {
+                    language,
                     inner: words,
                     prefix_length: 4,
                     trimmed_word_map: Self::create_trimmed_word_list(LOJBAN, 4),
@@ -105,6 +116,7 @@ impl WordList {
             Language::Portuguese => {
                 let words = PORTUGUESE.split_whitespace().collect();
                 WordList {
+                    language,
                     inner: words,
                     prefix_length: 4,
                     trimmed_word_map: Self::create_trimmed_word_list(PORTUGUESE, 4),
@@ -113,6 +125,7 @@ impl WordList {
             Language::Russian => {
                 let words = RUSSIAN.split_whitespace().collect();
                 WordList {
+                    language,
                     inner: words,
                     prefix_length: 4,
                     trimmed_word_map: Self::create_trimmed_word_list(RUSSIAN, 4),
@@ -121,6 +134,7 @@ impl WordList {
             Language::Spanish => {
                 let words = SPANISH.split_whitespace().collect();
                 WordList {
+                    language,
                     inner: words,
                     prefix_length: 4,
                     trimmed_word_map: Self::create_trimmed_word_list(SPANISH, 4),
@@ -129,19 +143,28 @@ impl WordList {
         }
     }
 
+    /// Gets the index of a word in a language's wordlist, returns error if word
+    /// is not found in wordlist for a language
+    #[allow(dead_code)]
+    pub fn get_index(&self, word: &str) -> Result<usize, Error> {
+        match self.inner.iter().position(|element| element == &word) {
+            Some(index) => Ok(index),
+            None => Err(Error::InvalidWord(
+                word.to_string(),
+                self.language.to_string(),
+            )),
+        }
+    }
+
     /// If all words in the phrase are present in a language's wordlist, the
     /// language of the phrase is detected
-    pub fn detect_language(phrase: Vec<&str>) -> Result<Language, anyhow::Error> {
+    pub fn detect_language(phrase: Vec<&str>) -> Result<Language, Error> {
         let all_languages = enum_iterator::all::<Language>().collect::<Vec<_>>();
         for language in all_languages {
             let wordlist = WordList::new(language);
             let mut matched_language = true;
             for word in &phrase {
-                match WordList::get_trimmed_word_index(
-                    word,
-                    &wordlist.trimmed_word_map,
-                    wordlist.prefix_length,
-                ) {
+                match wordlist.trimmed_word_index(word) {
                     Ok(_) => continue,
                     Err(_) => {
                         matched_language = false;
@@ -153,9 +176,7 @@ impl WordList {
                 return Ok(language);
             }
         }
-        Err(anyhow!(
-            "Could not find a language match for the given phrase"
-        ))
+        Err(Error::InvalidPhraseLanguage(phrase.join(" ")))
     }
 
     /// Create a version of the wordlist with each word trimmed
@@ -180,17 +201,13 @@ impl WordList {
     }
 
     /// Get the index of the trimmed word
-    pub fn get_trimmed_word_index(
-        word: &str,
-        trimmed_word_map: &HashMap<String, usize>,
-        unique_prefix_len: usize,
-    ) -> Result<usize, anyhow::Error> {
-        let trimmed_word = Self::to_trimmed(word, unique_prefix_len);
-        let index = trimmed_word_map.get(&trimmed_word);
+    pub fn trimmed_word_index(&self, word: &str) -> Result<usize, Error> {
+        let trimmed_word = Self::to_trimmed(word, self.prefix_length());
+        let index = self.trimmed_word_map.get(&trimmed_word);
         match index {
-            None => Err(anyhow!(
-                "Could not find trimmed word in word list. Attempted to find index of {}",
-                trimmed_word
+            None => Err(Error::InvalidWord(
+                format!("trimmed_word {}", trimmed_word),
+                self.language.to_string(),
             )),
             Some(i) => Ok(*i),
         }
@@ -218,8 +235,16 @@ impl WordList {
         self.prefix_length
     }
 
+    /// Get the trimmed_word_map
+    #[allow(dead_code)]
     pub fn trimmed_word_map(&self) -> HashMap<String, usize> {
         self.trimmed_word_map.clone()
+    }
+
+    /// Get the wordlist's language
+    #[allow(dead_code)]
+    pub fn language(&self) -> Language {
+        self.language
     }
 }
 
@@ -232,7 +257,7 @@ impl WordList {
 ///
 /// [Mnemonic]: ./mnemonic/struct.Mnemonic.html
 /// [Seed]: ./seed/struct.Seed.html
-#[derive(Debug, Clone, Copy, PartialEq, enum_iterator::Sequence)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, enum_iterator::Sequence)]
 pub enum Language {
     English,
     ChineseSimplified,
@@ -265,7 +290,7 @@ impl LanguageHandler for Language {
 }
 
 impl FromStr for Language {
-    type Err = anyhow::Error;
+    type Err = Error;
 
     /// Converts a string to a Language.
     fn from_str(input: &str) -> Result<Language, Self::Err> {
@@ -282,7 +307,7 @@ impl FromStr for Language {
             "Portuguese" => Ok(Language::Portuguese),
             "Russian" => Ok(Language::Russian),
             "Spanish" => Ok(Language::Spanish),
-            _ => Err(anyhow!("Could not match str {} to a language", input)),
+            _ => Err(Error::InvalidStrReprLang(input.into())),
         }
     }
 }
@@ -394,108 +419,108 @@ mod tests {
     fn test_chinese_simplified_wordlist() {
         let wordlist = WordList::new(Language::ChineseSimplified);
         assert_eq!(wordlist.inner.len(), 1626);
-        // assert_eq!(get_index("的").unwrap(), 0);
-        // assert_eq!(wordlist.get_index("貌").unwrap(), 1625);
-        // assert!(wordlist.get_index("效").is_err()); // cant find a character
-        // thats not in the list
+        assert_eq!(wordlist.get_index("的").unwrap(), 0);
+        assert_eq!(wordlist.get_index("貌").unwrap(), 1625);
+        assert!(wordlist.get_index("A").is_err()); // cant find a character
+                                                   // thats not in the list
     }
 
     #[test]
     fn test_dutch_wordlist() {
         let wordlist = WordList::new(Language::Dutch);
         assert_eq!(wordlist.inner.len(), 1626);
-        // assert_eq!(wordlist.get_index("aalglad").unwrap(), 0);
-        // assert_eq!(wordlist.get_index("zworen").unwrap(), 1625);
-        // assert!(wordlist.get_index("neplatný").is_err());
+        assert_eq!(wordlist.get_index("aalglad").unwrap(), 0);
+        assert_eq!(wordlist.get_index("zworen").unwrap(), 1625);
+        assert!(wordlist.get_index("neplatný").is_err());
     }
 
     #[test]
     fn test_english_wordlist() {
         let wordlist = WordList::new(Language::English);
         assert_eq!(wordlist.inner.len(), 1626);
-        // assert_eq!(wordlist.get_index("abbey").unwrap(), 0);
-        // assert_eq!(wordlist.get_index("zoom").unwrap(), 1625);
-        // assert!(wordlist.get_index("invalid").is_err());
+        assert_eq!(wordlist.get_index("abbey").unwrap(), 0);
+        assert_eq!(wordlist.get_index("zoom").unwrap(), 1625);
+        assert!(wordlist.get_index("invalid").is_err());
     }
 
     #[test]
     fn test_esperanto_wordlist() {
         let wordlist = WordList::new(Language::Esperanto);
         assert_eq!(wordlist.inner.len(), 1626);
-        // assert_eq!(wordlist.get_index("abako").unwrap(), 0);
-        // assert_eq!(wordlist.get_index("zumilo").unwrap(), 1625);
-        // assert!(wordlist.get_index("neplatný").is_err());
+        assert_eq!(wordlist.get_index("abako").unwrap(), 0);
+        assert_eq!(wordlist.get_index("zumilo").unwrap(), 1625);
+        assert!(wordlist.get_index("neplatný").is_err());
     }
 
     #[test]
     fn test_french_wordlist() {
         let wordlist = WordList::new(Language::French);
         assert_eq!(wordlist.inner.len(), 1626);
-        // assert_eq!(wordlist.get_index("abandon").unwrap(), 0);
-        // assert_eq!(wordlist.get_index("zoom").unwrap(), 1625);
-        // assert!(wordlist.get_index("invalide").is_err());
+        assert_eq!(wordlist.get_index("abandon").unwrap(), 0);
+        assert_eq!(wordlist.get_index("zoom").unwrap(), 1625);
+        assert!(wordlist.get_index("invalide").is_err());
     }
 
     #[test]
     fn test_german_wordlist() {
         let wordlist = WordList::new(Language::German);
         assert_eq!(wordlist.inner.len(), 1626);
-        // assert_eq!(wordlist.get_index("Abakus").unwrap(), 0);
-        // assert_eq!(wordlist.get_index("Zyklop").unwrap(), 1625);
-        // assert!(wordlist.get_index("invalide").is_err());
+        assert_eq!(wordlist.get_index("Abakus").unwrap(), 0);
+        assert_eq!(wordlist.get_index("Zyklop").unwrap(), 1625);
+        assert!(wordlist.get_index("invalide").is_err());
     }
 
     #[test]
     fn test_italian_wordlist() {
         let wordlist = WordList::new(Language::Italian);
         assert_eq!(wordlist.inner.len(), 1626);
-        // assert_eq!(wordlist.get_index("abbinare").unwrap(), 0);
-        // assert_eq!(wordlist.get_index("zucchero").unwrap(), 1625);
-        // assert!(wordlist.get_index("valido").is_err());
+        assert_eq!(wordlist.get_index("abbinare").unwrap(), 0);
+        assert_eq!(wordlist.get_index("zucchero").unwrap(), 1625);
+        assert!(wordlist.get_index("valido").is_err());
     }
 
     #[test]
     fn test_japanese_wordlist() {
         let wordlist = WordList::new(Language::Japanese);
         assert_eq!(wordlist.inner.len(), 1626);
-        // assert_eq!(wordlist.get_index("あいこくしん").unwrap(), 0);
-        // assert_eq!(wordlist.get_index("ひしょ").unwrap(), 1625);
-        // assert!(wordlist.get_index("無効").is_err());
+        assert_eq!(wordlist.get_index("あいこくしん").unwrap(), 0);
+        assert_eq!(wordlist.get_index("ひしょ").unwrap(), 1625);
+        assert!(wordlist.get_index("無効").is_err());
     }
 
     #[test]
     fn test_lojban_wordlist() {
         let wordlist = WordList::new(Language::Lojban);
         assert_eq!(wordlist.inner.len(), 1626);
-        // assert_eq!(wordlist.get_index("backi").unwrap(), 0);
-        // assert_eq!(wordlist.get_index("snaxa'a").unwrap(), 1625);
-        // assert!(wordlist.get_index("유효하지 않은").is_err());
+        assert_eq!(wordlist.get_index("backi").unwrap(), 0);
+        assert_eq!(wordlist.get_index("snaxa'a").unwrap(), 1625);
+        assert!(wordlist.get_index("유효하지 않은").is_err());
     }
 
     #[test]
     fn test_portuguese_wordlist() {
         let wordlist = WordList::new(Language::Portuguese);
         assert_eq!(wordlist.inner.len(), 1626);
-        // assert_eq!(wordlist.get_index("abaular").unwrap(), 0);
-        // assert_eq!(wordlist.get_index("zumbi").unwrap(), 1625);
-        // assert!(wordlist.get_index("inválido").is_err());
+        assert_eq!(wordlist.get_index("abaular").unwrap(), 0);
+        assert_eq!(wordlist.get_index("zumbi").unwrap(), 1625);
+        assert!(wordlist.get_index("inválido").is_err());
     }
 
     #[test]
     fn test_russian_wordlist() {
         let wordlist = WordList::new(Language::Russian);
         assert_eq!(wordlist.inner.len(), 1626);
-        // assert_eq!(wordlist.get_index("абажур").unwrap(), 0);
-        // assert_eq!(wordlist.get_index("ящик").unwrap(), 1625);
-        // assert!(wordlist.get_index("inválido").is_err());
+        assert_eq!(wordlist.get_index("абажур").unwrap(), 0);
+        assert_eq!(wordlist.get_index("ящик").unwrap(), 1625);
+        assert!(wordlist.get_index("inválido").is_err());
     }
 
     #[test]
     fn test_spanish_wordlist() {
         let wordlist = WordList::new(Language::Spanish);
         assert_eq!(wordlist.inner.len(), 1626);
-        // assert_eq!(wordlist.get_index("ábaco").unwrap(), 0);
-        // assert_eq!(wordlist.get_index("rito").unwrap(), 1625);
-        // assert!(wordlist.get_index("inválido").is_err());
+        assert_eq!(wordlist.get_index("ábaco").unwrap(), 0);
+        assert_eq!(wordlist.get_index("rito").unwrap(), 1625);
+        assert!(wordlist.get_index("inválido").is_err());
     }
 }

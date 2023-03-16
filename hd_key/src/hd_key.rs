@@ -101,7 +101,7 @@ impl HDKey {
         }
     }
 
-    // TODO(#)
+    // TODO(#20): refactor hd_key
     // fn get_public_key_0x(&self) -> Result<String, anyhow::Error> {
     //     if let Some(extended_public_key) = &self.extended_public_key {
     //         return Ok(format!("0x{}", hex::encode(extended_public_key)));

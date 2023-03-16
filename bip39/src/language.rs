@@ -12,11 +12,13 @@ static PORTUGUESE: &str = include_str!("langs/portuguese.txt");
 use std::fmt;
 use std::str::FromStr;
 
-use anyhow::anyhow;
 use walletd_mnemonic_model::LanguageHandler;
+
+use crate::Error;
 
 #[derive(Debug)]
 pub struct WordList {
+    language: Language,
     inner: Vec<&'static str>,
 }
 
@@ -24,48 +26,63 @@ impl WordList {
     pub fn new(language: Language) -> WordList {
         match language {
             Language::English => WordList {
+                language,
                 inner: ENGLISH.split_whitespace().collect(),
             },
             Language::ChineseSimplified => WordList {
+                language,
                 inner: CHINESE_SIMPLIFIED.split_whitespace().collect(),
             },
             Language::ChineseTraditional => WordList {
+                language,
                 inner: CHINESE_TRADITIONAL.split_whitespace().collect(),
             },
             Language::Czech => WordList {
+                language,
                 inner: CZECH.split_whitespace().collect(),
             },
             Language::French => WordList {
+                language,
                 inner: FRENCH.split_whitespace().collect(),
             },
             Language::Italian => WordList {
+                language,
                 inner: ITALIAN.split_whitespace().collect(),
             },
             Language::Japanese => WordList {
+                language,
                 inner: JAPANESE.split_whitespace().collect(),
             },
             Language::Korean => WordList {
+                language,
                 inner: KOREAN.split_whitespace().collect(),
             },
             Language::Spanish => WordList {
+                language,
                 inner: SPANISH.split_whitespace().collect(),
             },
             Language::Portuguese => WordList {
+                language,
                 inner: PORTUGUESE.split_whitespace().collect(),
             },
         }
     }
 
-    pub fn get_index(&self, word: &str) -> Result<usize, anyhow::Error> {
+    /// Gets the index of a word in a language's wordlist, returns error if word
+    /// is not found in wordlist for a language
+    pub fn get_index(&self, word: &str) -> Result<usize, Error> {
         match self.inner.iter().position(|element| element == &word) {
             Some(index) => Ok(index),
-            None => Err(anyhow!("Invalid word")),
+            None => Err(Error::InvalidWord(
+                word.to_string(),
+                self.language.to_string(),
+            )),
         }
     }
 
     /// If all words in the phrase are present in a language's wordlist, the
     /// language of the phrase is detected
-    pub fn detect_language(phrase: Vec<&str>) -> Result<Language, anyhow::Error> {
+    pub fn detect_language(phrase: Vec<&str>) -> Result<Language, Error> {
         let all_languages = enum_iterator::all::<Language>().collect::<Vec<_>>();
         for language in all_languages {
             let wordlist = WordList::new(language);
@@ -84,9 +101,7 @@ impl WordList {
                 return Ok(language);
             }
         }
-        Err(anyhow!(
-            "Could not find a language match for the given phrase"
-        ))
+        Err(Error::InvalidPhraseLanguage(phrase.join(" ")))
     }
 
     pub fn inner(&self) -> Vec<&'static str> {
@@ -103,7 +118,7 @@ impl WordList {
 ///
 /// [Mnemonic]: ./mnemonic/struct.Mnemonic.html
 /// [Seed]: ./seed/struct.Seed.html
-#[derive(Debug, Clone, Copy, PartialEq, enum_iterator::Sequence)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, enum_iterator::Sequence)]
 pub enum Language {
     English,
     ChineseSimplified,
@@ -118,7 +133,7 @@ pub enum Language {
 }
 
 impl FromStr for Language {
-    type Err = anyhow::Error;
+    type Err = Error;
 
     /// Converts a string to a Language.
     fn from_str(input: &str) -> Result<Language, Self::Err> {
@@ -133,7 +148,7 @@ impl FromStr for Language {
             "Korean" => Ok(Language::Korean),
             "Portuguese" => Ok(Language::Portuguese),
             "Spanish" => Ok(Language::Spanish),
-            _ => Err(anyhow!("Could not match str {} to a language", input))?,
+            _ => Err(Error::InvalidStrReprLang(input.into())),
         }
     }
 }

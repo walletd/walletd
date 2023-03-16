@@ -10,7 +10,7 @@ use std::fmt;
 /// [Mnemonic]: ./mnemonic/struct.Mnemonic.html
 /// [Seed]: ./seed/struct.Seed.html
 /// [Seed::as_bytes()]: ./seed/struct.Seed.html#method.as_bytes
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Seed {
     bytes: Vec<u8>,
 }
