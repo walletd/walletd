@@ -69,7 +69,7 @@ pub fn create_new_keypair(
                 ))?;
             }
             let mnemonic = Bip39Mnemonic::new(mnemonic_language, mnemonic_type, passphrase);
-            println!("Created BIP39 Mnemonic: \n{}", mnemonic);
+            
             Ok(KeyPair::new(
                 mnemonic.to_seed(),
                 mnemonic.phrase(),
@@ -91,7 +91,7 @@ pub fn create_new_keypair(
                 mnemonic_language = MoneroLanguage::from_str(language.to_lowercase().as_str())?;
             }
             let mnemonic = MoneroMnemonic::new(mnemonic_language, mnemonic_type, passphrase);
-            println!("Created Monero Mnemonic: \n{}", mnemonic);
+            
             Ok(KeyPair::new(
                 mnemonic.to_seed(),
                 mnemonic.phrase(),
