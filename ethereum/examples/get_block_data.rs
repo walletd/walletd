@@ -10,10 +10,9 @@ use crate::ethclient::EthClient;
 #[tokio::main]
 async fn main() -> web3::Result<()> {
     // Transport can be one of Http, WebSocket, Ipc
-    let transport = web3::transports::Http::new(INFURA_GOERLI_ENDPOINT)?;
-    let eth_client = EthClient::new(transport, &INFURA_GOERLI_ENDPOINT.to_string());
-    let bn: U64 = U64::from(8455626);
-    let _block_data = EthClient::block_data_from_U64(&eth_client, bn);
+    let eth_client = EthClient::new(&INFURA_GOERLI_ENDPOINT.to_string());
+    let block_number: U64 = U64::from(8455626);
+    let _block_data = EthClient::block_data_from_U64(&eth_client, block_number);
 
     let _latest_block_data = EthClient::latest_block(&eth_client);
     Ok(())

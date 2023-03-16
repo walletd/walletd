@@ -7,9 +7,9 @@ use walletd_coin_model::crypto_wallet::CryptoWallet;
 use walletd_coin_model::BlockchainConnector;
 use walletd_ethereum::*;
 // use hex_literal::hex;
-use walletd_hd_keys::HDKeyPair;
+use walletd_hd_key::HDKey;
 // use walletd_coin_model::CryptoWallet;
-use walletd_hd_keys::NetworkType;
+use walletd_hd_key::NetworkType;
 
 const GOERLI_TEST_ADDRESS: &str = "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
 #[tokio::main]
@@ -30,12 +30,12 @@ async fn main() -> web3::Result<()> {
     );
 
     println!("blockchain_client: {:?}", &blockchain_client);
-    // let wallet = match EthereumWallet::from_mnemonic(&seed,
-    //     NetworkType::TestNet,
-    //     EthereumFormat::Checksummed) {
-    //     Ok(wallet) => Ok(wallet),
-    //     Err(e) => Err(e)
-    // };
+    let wallet = match EthereumWallet::from_mnemonic(&seed,
+        NetworkType::TestNet,
+        EthereumFormat::Checksummed) {
+        Ok(wallet) => Ok(wallet),
+        Err(e) => Err(e)
+    };
 
     // This example now assumes that the wallet has been funded with some testnet
     // ETH let sa = 10000.0;

@@ -8,17 +8,17 @@ pub mod ethclient {
     use hex_literal::hex;
     // use std::io::Error;
     use thiserror::Error;
+    use walletd_coin_model::CryptoAmount;
     use web3::contract::{Contract, Options};
     use web3::ethabi::Uint;
     use web3::helpers as w3h;
     use web3::transports::Http;
-    use web3::types::{BlockId, BlockNumber, TransactionId, H160, H256, U64, U256};
-    use walletd_coin_model::CryptoAmount;
+    use web3::types::{BlockId, BlockNumber, TransactionId, H160, H256, U256, U64};
     // TODO(#70): Remove once we finish cleaning and refactoring
     pub fn print_type_of<T>(_: &T) {
         println!("{}", std::any::type_name::<T>())
     }
-    
+
     #[derive(Error, Debug, PartialEq, Eq, Clone)]
     pub enum Error {
         // Failed to initialise ethclient
@@ -42,13 +42,15 @@ pub mod ethclient {
     #[derive(Clone, Debug)]
     pub struct EthClient {
         transport: web3::transports::Http,
-        web3: web3::Web3<web3::transports::Http>,
+        // TODO: (#52) - Change ethclient.web3 being public for current examples when smart contracts are worked on again
+        pub web3: web3::Web3<web3::transports::Http>,
         endpoint: String, // Do we actually need this?
     }
     #[allow(unused)]
     impl EthClient {
-        pub fn new(transport: Http, endpoint: &str) -> Self {
+        pub fn new(endpoint: &str) -> Self {
             // TODO(#71): Change transport to support web sockets
+            let transport = web3::transports::Http::new(endpoint).unwrap();
             let web3 = web3::Web3::new(transport.clone());
             Self {
                 transport: transport,
@@ -62,15 +64,14 @@ pub mod ethclient {
             address: H160,
             block_number: Option<BlockNumber>,
         ) -> Result<U256, web3::Error> {
-            //let address_as_h160 = hex!(address);
-            //let address = web3::types::H160::from_str(address)?;
+            // let address_as_h160 = hex!(address);
+            // let address = web3::types::H160::from_str(address)?;
             if let balance = self.web3.eth().balance(address, None).await {
                 Ok(balance.unwrap())
             } else {
                 Err(web3::Error::InvalidResponse("Invalid response".to_string()))
             }
         }
-    
 
         /// Gets a transaction given a specific tx hash
         /// Returns a Result containing a Transaction object
@@ -104,10 +105,7 @@ pub mod ethclient {
 
         // TODO(#70): Remove this after write-only functionality is finished
         /// Debug transaction for adding smart contract functionality
-        pub async fn print_txdata_for_block(
-            &self,
-            block: &web3::types::Block<H256>,
-        ) -> web3::Result<()> {
+        pub async fn print_txdata_for_block(&self, block: &web3::types::Block<H256>) {
             for transaction_hash in &block.transactions {
                 let tx = match self
                     .web3
@@ -132,7 +130,7 @@ pub mod ethclient {
                     tx.gas_price,
                 );
             }
-            Ok(())
+            ()
         }
 
         pub async fn get_smart_contract_tx_vec_from_block_hash(
@@ -202,23 +200,27 @@ pub mod ethclient {
                 };
                 println!("transaction data {:#?}", tx);
                 // let smart_contract_addr = match tx.unwrap().to {
-                //     Some(addr) => match &self.web3.eth().code(addr, None).await {
-                //         Ok(code) => {
+                //     Some(addr) => match &self.web3.eth().code(addr,
+                // None).await {         Ok(code) => {
                 //             if code == &web3::types::Bytes::from([]) {
                 //                 // "Empty code, skipping
                 //                 continue;
                 //             } else {
-                //                 // "Non empty code, this address has bytecode we have retrieved
-                //                 // Attempt to initialise an instance of an ERC20 contract at this
+                //                 // "Non empty code, this address has bytecode
+                // we have retrieved                 // Attempt
+                // to initialise an instance of an ERC20 contract at this
                 //                 // address
-                //                 let smart_contract = self.initialise_contract(addr).unwrap();
+                //                 let smart_contract =
+                // self.initialise_contract(addr).unwrap();
                 //                 let token_name: String =
-                //                     self.get_token_name(&smart_contract).await.unwrap();
+                //
+                // self.get_token_name(&smart_contract).await.unwrap();
 
-                //                 // Attempt to get and print the total supply of an ERC20-compliant
-                //                 // contract
-                //                 let total_supply: Uint =
-                //                     self.total_supply(&smart_contract).await.unwrap();
+                //                 // Attempt to get and print the total supply
+                // of an ERC20-compliant                 //
+                // contract                 let total_supply:
+                // Uint =
+                // self.total_supply(&smart_contract).await.unwrap();
 
                 //                 println!("token name {:#?}", token_name);
                 //                 println!("token supply {:#?}", total_supply);
@@ -229,8 +231,8 @@ pub mod ethclient {
                 //         }
                 //     },
                 //     _ => {
-                //         // println!("To address is not a valid address, skipping.");
-                //         continue;
+                //         // println!("To address is not a valid address,
+                // skipping.");         continue;
                 //     }
                 // };
             }
@@ -351,8 +353,8 @@ pub mod ethclient {
             block_id: &str,
         ) -> web3::Result<web3::types::Block<H256>> {
             // we're using a string because U64 is a web3 type
-            let bn = block_id.parse::<U64>().unwrap();
-            let blockid = BlockNumber::Number(bn);
+            let block_number = block_id.parse::<U64>().unwrap();
+            let blockid = BlockNumber::Number(block_number);
             let block_data = &self
                 .web3
                 .eth()

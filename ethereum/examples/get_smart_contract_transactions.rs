@@ -9,66 +9,66 @@
 // use walletd_hd_keys::HDKeyPair;
 // // use walletd_coin_model::CryptoWallet;
 // use walletd_hd_keys::NetworkType;
+use walletd_ethereum::ethclient::ethclient::EthClient;
+use web3::types::{*};
+use core::fmt::Error;
 
-// #[tokio::main]
-// async fn main() {
+pub const INFURA_GOERLI_ENDPOINT: &str =
+    "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
+#[tokio::main]
+    async fn main() {
 
-//     let transport = web3::transports::Http::new(INFURA_GOERLI_ENDPOINT)?;
-//     let eth_client = EthClient::new(transport,
-// &INFURA_GOERLI_ENDPOINT.to_string());     let bn = "8455626";
-//     let block_data = EthClient::block_data_from_numeric_string(&eth_client,
-// &bn);
+    //let transport = web3::transports::Http::new(&INFURA_GOERLI_ENDPOINT);
+    let eth_client = EthClient::new(&INFURA_GOERLI_ENDPOINT.to_string());   
+    let bn = "8455626";
+    let block_data = EthClient::block_data_from_numeric_string(&eth_client, &bn).await.unwrap();
 
-//     smart_contract_transactions(&self, block: &web3::types::Block<H256>) {
-//         for transaction_hash in &block.transactions {
-//             let tx = match self
-//                 .web3
-//                 .eth()
-//                 .transaction(TransactionId::Hash(*transaction_hash))
-//                 .await
-//             {
-//                 Ok(Some(tx)) => Ok(tx),
-//                 Err(error) => Err(Error::TxResponseError),
-//                 _ => Err(Error::TxResponseError),
-//             };
-//             // println!("transaction data {:#?}", tx);
-//             let smart_contract_addr = match tx.unwrap().to {
-//                 Some(addr) => match &self.web3.eth().code(addr, None).await {
-//                     Ok(code) => {
-//                         if code == &web3::types::Bytes::from([]) {
-//                             // "Empty code, skipping
-//                             continue;
-//                         } else {
-//                             // "Non empty code, this address has bytecode we
-// have retrieved                             // Attempt to initialise an
-// instance of an ERC20 contract at this                             // address
-//                             let smart_contract =
-// self.initialise_contract(addr).unwrap();                             let
-// token_name: String =                                 
-// self.get_token_name(&smart_contract).await.unwrap();
+    //let sct = smart_contract_transactions(block_data, Block) {
+    eth_client.smart_contract_transactions(&block_data).await;        
+        for transaction_hash in &block_data.transactions {
+            let tx = match eth_client
+                .web3
+                .eth()
+                .transaction(TransactionId::Hash(*transaction_hash))
+                .await
+                .unwrap()
+            {
+                Some(tx) => Ok(tx),
+                None => Err(Error),
+            };
+            // println!("transaction data {:#?}", tx);
+            let smart_contract_addr = match tx.unwrap().to {
+                Some(addr) => match eth_client.web3.eth().code(addr, None).await {
+                    Ok(code) => {
+                        if code == web3::types::Bytes::from([]) {
+                            // "Empty code, skipping
+                            continue;
+                        } else {
+                            // Non empty code, this address has bytecode we have retrieved
+                            // Attempt to initialise an instance of an ERC20 contract at this                             
+                            // address
+                            let smart_contract = eth_client.initialise_contract(addr).unwrap();
+                            let token_name: String =                                 
+                                eth_client.get_token_name(&smart_contract).await.unwrap();
 
-//                             // Attempt to get and print the total supply of
-// an ERC20-compliant                             // contract
-//                             let total_supply: Uint =
-//                                 
-// self.total_supply(&smart_contract).await.unwrap();
+                            // Attempt to get and print the total supply of an ERC20-compliant contract
+                            let total_supply: U256 =
+                                eth_client.total_supply(&smart_contract).await.unwrap();
 
-//                             println!("token name {:#?}", token_name);
-//                             println!("token supply {:#?}", total_supply);
-//                         }
-//                     }
-//                     _ => {
+                            println!("token name {:#?}", token_name);
+                            println!("token supply {:#?}", total_supply);
+                        }
+                    }
+                    _ => {
 
-//                         continue;
-//                     }
-//                 },
-//                 _ => {
-//                     // println!("To address is not a valid address,
-// skipping.");                     continue;
-//                 }
-//             };
-//         }
-//         // println!("{:#?}", smart_contract_addr);
-//     }
-
-// }
+                        continue;
+                    }
+                },
+                _ => {
+                    // println!("To address is not a valid address,
+                    // skipping.");
+                    continue;
+                }
+            };
+        }
+    }

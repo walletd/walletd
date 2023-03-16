@@ -5,9 +5,9 @@ use walletd_bip39::{Language, Mnemonic, MnemonicHandler};
 use walletd_coin_model::crypto_wallet::CryptoWallet;
 use walletd_ethereum::*;
 // use hex_literal::hex;
-use walletd_hd_keys::HDKeyPair;
+use walletd_hd_key::HDKey;
 // use walletd_coin_model::CryptoWallet;
-use walletd_hd_keys::NetworkType;
+use walletd_hd_key::NetworkType;
 
 const GOERLI_TEST_ADDRESS: &str = "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
 #[tokio::main]
