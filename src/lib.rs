@@ -13,6 +13,7 @@ pub use {
     ::walletd_bip39, walletd_bitcoin, walletd_coin_model, walletd_ethereum, walletd_hd_key,
     walletd_monero, walletd_monero_mnemonic, walletd_solana,
 };
+pub mod onboard;
 
 #[derive(PartialEq, Eq)]
 pub enum MnemonicKeyPairType {
