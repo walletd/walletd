@@ -1,4 +1,5 @@
 use anyhow::anyhow;
+use std::any::Any;
 use async_trait::async_trait;
 use bitcoin::{Address, AddressType};
 use bitcoin_hashes::{sha256d, Hash};
@@ -684,6 +685,10 @@ impl BlockchainConnector for Blockstream {
             return Ok(true);
         }
     }
+
+    fn as_any(&self) -> &dyn Any {
+      self
+  }
 }
 
 impl Blockstream {

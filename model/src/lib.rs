@@ -4,10 +4,12 @@ pub mod crypto_coin;
 pub use crypto_coin::CryptoCoin;
 pub mod crypto_wallet;
 pub use crypto_wallet::{CryptoWallet, CryptoWalletGeneral};
+use std::any::Any;
 
 #[async_trait]
-pub trait BlockchainConnector: Sized {
-    fn new(url: &str) -> Result<Self, anyhow::Error>;
+pub trait BlockchainConnector{
+    fn new(url: &str) -> Result<Self, anyhow::Error> where Self: Sized;
+    fn as_any(&self) -> &dyn Any;
 
     /// TODO(#84): currently only implemented for Bitcoin, otherwise results in error
     async fn check_if_past_transactions_exist(

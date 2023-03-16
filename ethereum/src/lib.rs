@@ -371,6 +371,10 @@ impl BlockchainConnector for BlockchainClient {
             eth: web3_eth,
         })
     }
+
+    fn as_any(&self) -> &dyn Any {
+      self
+  }
 }
 
 impl BlockchainClient {
