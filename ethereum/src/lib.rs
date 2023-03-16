@@ -107,29 +107,28 @@ impl CryptoWallet for EthereumWallet {
     }
 
     fn from_hd_key(hd_keys: &HDKey, address_format: EthereumFormat) -> Result<Self, anyhow::Error> {
-        todo!();
-        // let public_key_bytes = &hd_keys
-        //     .extended_public_key
-        //     .expect("extended public key data not available")
-        //     .to_vec();
-        // let public_address: String;
-        // match address_format {
-        //     EthereumFormat::Checksummed => {
-        //         public_address = Self::public_address_checksummed_from_public_key(public_key_bytes)?
-        //     }
-        //     EthereumFormat::NonChecksummed => {
-        //         public_address =
-        //             Self::public_address_nonchecksummed_from_public_key(public_key_bytes)?
-        //     }
-        // }
-        // Ok(Self {
-        //     crypto_type: SlipCoin::ETH,
-        //     address_format,
-        //     public_address,
-        //     private_key: hd_keys.private_key()?,
-        //     public_key: hd_keys.public_key()?,
-        //     network: hd_keys.network,
-        // })
+        let public_key_bytes = &hd_keys
+            .extended_public_key
+            .expect("extended public key data not available")
+            .to_vec();
+        let public_address: String;
+        match address_format {
+                EthereumFormat::Checksummed => {
+                        public_address = Self::public_address_checksummed_from_public_key(public_key_bytes)?
+                    }
+                    EthereumFormat::NonChecksummed => {
+                            public_address =
+                                Self::public_address_nonchecksummed_from_public_key(public_key_bytes)?
+                        }
+                    }
+                    Ok(Self {
+            crypto_type: SlipCoin::ETH,
+            address_format,
+            public_address,
+            private_key: hd_keys.private_key()?,
+            public_key: hd_keys.public_key()?,
+            network: hd_keys.network,
+        })
     }
 
     // async fn balance(
