@@ -264,6 +264,7 @@ impl HDKey {
             derivation_type: deriv_type,
             child_index,
             master_seed: master_node.master_seed.clone(),
+            network: master_node.network,
             ..Default::default()
         };
         Ok(derived_bip32)

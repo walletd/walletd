@@ -21,8 +21,17 @@ pub trait MnemonicHandler {
         passphrase: Option<&str>,
     ) -> Self::MnemonicStyle;
 
+    /// Recovers a mnemonic given the language, mnemonic phrase, and optional
+    /// passphrase
     fn from_phrase(
         language: Self::LanguageHandler,
+        phrase: &str,
+        specified_passphrase: Option<&str>,
+    ) -> Result<Self::MnemonicStyle, Self::ErrorType>;
+
+    /// Recovers a mnemonic given the mnemonic phrase and optional passphrase,
+    /// attempts to auto detect the language of the mnemonic phrase
+    fn detect_language(
         phrase: &str,
         specified_passphrase: Option<&str>,
     ) -> Result<Self::MnemonicStyle, Self::ErrorType>;

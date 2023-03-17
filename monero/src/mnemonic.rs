@@ -168,6 +168,24 @@ impl MnemonicHandler for Mnemonic {
         }
     }
 
+    /// Restores a mnemonic from a mnemonic phrase and optional passphrase,
+    /// automatically detects the language
+    fn detect_language(
+        phrase: &str,
+        specified_passphrase: Option<&str>,
+    ) -> Result<Self::MnemonicStyle, Self::ErrorType> {
+        let mnemonic_type = MnemonicType::from_phrase(phrase)?;
+        let language = WordList::detect_language(phrase.split(' ').collect())?;
+        let seed = Mnemonic::create_seed(language, phrase, mnemonic_type, specified_passphrase)?;
+
+        Ok(Mnemonic {
+            phrase: phrase.into(),
+            lang: language,
+            seed,
+            mnemonic_type,
+        })
+    }
+
     /// Returns the ['Seed'][Seed] associated with the mnemonic phrase
     /// [Seed]: ./seed/struct.Seed.html
     fn to_seed(&self) -> Seed {
