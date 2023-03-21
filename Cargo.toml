@@ -9,6 +9,7 @@ path = "src/lib.rs"
 
 [dependencies]
 anyhow = "1.0.68"
+hex = { version = "0.4.2" }
 walletd_bip39 = {path = "./mnemonics/bip39"}
 walletd_monero_mnemonic = {path = "./mnemonics/monero"}
 walletd_coin_model = {path = "./coins/model"}
