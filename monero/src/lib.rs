@@ -1,5 +1,5 @@
-pub use walletd_coin_model::{CryptoAmount, CryptoCoin, CryptoWallet, CryptoWalletGeneral};
-pub use walletd_hd_key::{HDKey, NetworkType};
+pub use walletd_coin_model::{CryptoAmount, CryptoWallet, CryptoAddressGeneral};
+pub use walletd_hd_key::{HDKey, HDNetworkType};
 pub use walletd_monero_mnemonic::{Mnemonic, MnemonicHandler, Seed};
 
 pub mod hash;
@@ -38,14 +38,10 @@ pub mod transaction;
 pub mod varint;
 pub use varint::{VarInt, VarIntEncoding};
 
-pub struct BlockchainClient {
-    blockchain_client: reqwest::Client,
-}
+pub struct BlockchainClient(pub reqwest::Client);
 
 impl BlockchainClient {
     pub fn new(_url: &str) -> Result<Self, anyhow::Error> {
-        Ok(Self {
-            blockchain_client: reqwest::Client::new(),
-        })
+        Ok(Self(reqwest::Client::new()))
     }
 }

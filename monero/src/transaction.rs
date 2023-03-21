@@ -6,21 +6,13 @@ use curve25519_dalek::scalar::Scalar;
 use thiserror::Error;
 
 use crate::key_image::KeyDerivation;
-use crate::monero_lws::{UnspentOutput, FAKE_OUTPUTS_COUNT};
-use crate::rct_types::{
-    CtKey, MultiSigOut, MultiSigkLRki, RCTType, RangeProofType, RctConfig, RctKey, RctSig,
-};
+use crate::monero_lws::UnspentOutput;
+use crate::rct_types::{CtKey, MultiSigOut, MultiSigkLRki, RctConfig, RctKey, RctSig};
 use crate::varint::VarIntEncoding;
 use crate::{
-    fee_utils, keccak256, key_image, payment_id, public_key, Address, AddressType, DoSerialize,
-    KeyImage, MoneroAmount, MoneroPrivateKeys, PaymentId, PrivateKey, PublicKey, SerializedArchive,
-    SubaddressIndex, VarInt,
+    keccak256, key_image, payment_id, public_key, Address, DoSerialize, KeyImage, MoneroAmount,
+    PaymentId, PrivateKey, PublicKey, SerializedArchive, SubaddressIndex, VarInt,
 };
-
-const TX_EXTRA_TAG_PUBKEY: u8 = 0x01;
-const HF_VERSION_VIEW_TAGS: u8 = 15;
-const HF_VERSION_PER_BYTE_FEE: u8 = 8;
-const EXPECTED_MINIMUM_HF_VERSION: u8 = 15;
 
 /// TODO(#68): Figure out what this CryptoHash is and implement it
 #[derive(Debug, Clone)]
@@ -441,7 +433,7 @@ impl ViewTagBuf {
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut buf = Vec::new();
         buf.extend_from_slice(&self.salt);
-        buf.extend_from_slice(&self.derivation.as_slice());
+        buf.extend_from_slice(self.derivation.as_slice());
         buf.extend_from_slice(&self.output_index);
         buf
     }
@@ -461,8 +453,7 @@ impl ViewTag {
         // view_tag_ful = H[salt|derivation|output_index]
         let view_tag_full = keccak256(&buf.to_bytes());
         assert!(ViewTag::size_of() < view_tag_full.len());
-        let view_tag = ViewTag(view_tag_full[0]);
-        view_tag
+        ViewTag(view_tag_full[0])
     }
 }
 

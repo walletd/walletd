@@ -1,17 +1,17 @@
 // EthereumAmount.new_from_eth(u64)
 // use std::str::FromStr;
 
-use thiserror::Error;
 use walletd_bip39::{Language, Mnemonic, MnemonicHandler};
 use walletd_coin_model::crypto_wallet::CryptoWallet;
 use walletd_coin_model::BlockchainConnector;
 use walletd_ethereum::*;
 // use hex_literal::hex;
-use walletd_hd_key::HDKey;
+// use walletd_hd_key::HDKey;
 // use walletd_coin_model::CryptoWallet;
 use walletd_hd_key::NetworkType;
 
-const GOERLI_TEST_ADDRESS: &str = "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
+// const GOERLI_TEST_ADDRESS: &str =
+// "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
 #[tokio::main]
 async fn main() -> web3::Result<()> {
     // main_wip()?;
@@ -30,11 +30,14 @@ async fn main() -> web3::Result<()> {
     );
 
     println!("blockchain_client: {:?}", &blockchain_client);
-    let wallet = match EthereumWallet::from_mnemonic(&seed,
+    let _wallet = match EthereumWallet::from_mnemonic(
+        &seed,
         NetworkType::TestNet,
-        EthereumFormat::Checksummed) {
+        EthereumFormat::Checksummed) 
+    {
         Ok(wallet) => Ok(wallet),
-        Err(e) => Err(e)
+        Err(e) => Err(e),
+        Err(e) => Err(e),
     };
 
     // This example now assumes that the wallet has been funded with some testnet

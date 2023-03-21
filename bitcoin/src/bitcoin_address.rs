@@ -13,17 +13,17 @@ pub use bitcoin::{
     Address, AddressType, EcdsaSighashType, Network, PrivateKey as BitcoinPrivateKey,
     PublicKey as BitcoinPublicKey, Script,
 };
-use serde_json::Value;
 use sha2::{Digest, Sha256};
 use walletd_bip39::Seed;
-use walletd_coin_model::{CryptoWallet, CryptoWalletGeneral};
-use walletd_hd_key::{HDKey, NetworkType, SlipCoin};
+use walletd_coin_model::{CryptoWallet, CryptoAddressGeneral};
+use walletd_hd_key::{HDKey, HDNetworkType, SlipCoin};
+use crate::FeeEstimates;
 
-use crate::blockstream::{BTransaction, Blockstream, Input, InputType, Output, UTXO};
+use crate::blockstream::{BTransaction, Blockstream, Input, InputType, Output, Utxo};
 use crate::BitcoinAmount;
 
 #[derive(Debug, Clone)]
-pub struct BitcoinWallet {
+pub struct BitcoinAddress {
     pub crypto_type: SlipCoin,
     pub address_info: Address,
     pub public_address: String,
@@ -33,7 +33,7 @@ pub struct BitcoinWallet {
 }
 
 #[async_trait]
-impl CryptoWallet for BitcoinWallet {
+impl CryptoWallet for BitcoinAddress {
     type AddressFormat = AddressType;
     type BlockchainClient = Blockstream;
     type CryptoAmount = BitcoinAmount;
@@ -51,30 +51,29 @@ impl CryptoWallet for BitcoinWallet {
             .expect("Public key data missing")
             .to_vec();
         let public_key = BitcoinPublicKey {
-            inner: bitcoin::secp256k1::PublicKey::from_slice(&public_key_bytes)?,
+            inner: bitcoin::secp256k1::PublicKey::from_slice(public_key_bytes)?,
             compressed: true,
         };
-        let address_info;
 
-        let network: Network;
         // TODO(#82): consider handling the other Bitcoin network types
-        match hd_keys.network {
-            NetworkType::MainNet => network = Network::Bitcoin,
-            NetworkType::TestNet => network = Network::Testnet,
-        }
+        let network: Network = match hd_keys.network {
+            HDNetworkType::MainNet => Network::Bitcoin,
+            HDNetworkType::TestNet => Network::Testnet,
+        };
 
-        match address_type {
-            AddressType::P2pkh => address_info = Address::p2pkh(&public_key, network),
-            // TODO(#83): Not sure about initializing this with an empty script, double check and fix as
-            // necessary
-            AddressType::P2sh => address_info = Address::p2sh(&Script::new(), network)?,
-            AddressType::P2wpkh => address_info = Address::p2wpkh(&public_key, network)?,
+        let address_info: Address = match address_type {
+            AddressType::P2pkh => Address::p2pkh(&public_key, network),
+            // TODO(#83): Not sure about initializing this with an empty script, double check and
+            // fix as necessary
+            AddressType::P2sh => Address::p2sh(&Script::new(), network)?,
+            AddressType::P2wpkh => Address::p2wpkh(&public_key, network)?,
             // TODO(#83): Again check the script::new() here and fix if needed
-            AddressType::P2wsh => address_info = Address::p2wsh(&Script::new(), network),
+            AddressType::P2wsh => Address::p2wsh(&Script::new(), network),
             // Currently not handling the AddressType::P2tr, fix if can understand how to create
             // this address properly
             _ => return Err(anyhow!("Currently not handling this Bitcoin address type")),
-        }
+        };
+
         let public_address = address_info.to_string();
 
         Ok(Self {
@@ -106,26 +105,24 @@ impl CryptoWallet for BitcoinWallet {
             compressed: true,
         };
 
-        let address_info: Address;
-
-        match address_type {
-            AddressType::P2pkh => address_info = Address::p2pkh(&public_key, network),
-            // TODO(#83): Not sure about initializing this with an empty script, double check and fix as
-            // necessary
-            AddressType::P2sh => address_info = Address::p2sh(&Script::new(), network)?,
-            AddressType::P2wpkh => address_info = Address::p2wpkh(&public_key, network)?,
+        let address_info: Address = match address_type {
+            AddressType::P2pkh => Address::p2pkh(&public_key, network),
+            // TODO(#83): Not sure about initializing this with an empty script, double check and
+            // fix as necessary
+            AddressType::P2sh => Address::p2sh(&Script::new(), network)?,
+            AddressType::P2wpkh => Address::p2wpkh(&public_key, network)?,
             // TODO(#83): Again check the script::new() here and fix if needed
-            AddressType::P2wsh => address_info = Address::p2wsh(&Script::new(), network),
+            AddressType::P2wsh => Address::p2wsh(&Script::new(), network),
             // Currently not handling the AddressType::P2tr, fix if can understand how to create
             // this address properly
             _ => return Err(anyhow!("Currently not handling this Bitcoin address type")),
-        }
-        let network_prefix: u8;
-        match network {
-            Network::Bitcoin => network_prefix = 0x80,
-            Network::Testnet => network_prefix = 0xef,
+        };
+
+        let network_prefix: u8 = match network {
+            Network::Bitcoin => 0x80,
+            Network::Testnet => 0xef,
             _ => return Err(anyhow!("Currently not handling network {}", network)),
-        }
+        };
 
         let public_address = address_info.to_string();
 
@@ -153,14 +150,8 @@ impl CryptoWallet for BitcoinWallet {
         let utxo_info = blockchain_client
             .utxo(self.public_address_string().as_str())
             .await?;
-        let amount = BitcoinWallet::confirmed_balance_from_utxo(utxo_info)?;
+        let amount = Self::confirmed_balance_from_utxo(utxo_info)?;
 
-        println!(
-            "Confirmed balance for address: {} in BTC: {} in satoshis: {}",
-            self.public_address_string(),
-            &amount.btc(),
-            &amount.satoshi()
-        );
         return Ok(amount);
     }
 
@@ -176,11 +167,12 @@ impl CryptoWallet for BitcoinWallet {
         let receiver_view_wallet = Self::new_view_only(public_address)?;
 
         // first checking existing endpoints with blockstream
-        let fee_estimates = client.fee_estimates().await?;
+        let fee_estimates: FeeEstimates = client.fee_estimates().await?;
         let confirmation_target: u32 = 6; // this variable specifies how many blocks need to include this transaction
                                           // before it's considered "confirmed"
         let fee_sat_per_byte: f64;
-        if let Value::Object(fee_map) = fee_estimates {
+        let fee_map = &fee_estimates.0;
+        if !fee_map.is_empty() {
             fee_sat_per_byte = fee_map
                 .get(confirmation_target.to_string().as_str())
                 .expect("fee_map missing key")
@@ -190,9 +182,11 @@ impl CryptoWallet for BitcoinWallet {
                 "fee_sat_per_vB for confirmation_target {} is {}",
                 confirmation_target, fee_sat_per_byte
             );
+            
         } else {
             return Err(anyhow!("Did not get fee map"));
         }
+
         // Build the transaction
         // Specify the inputs and outputs, the difference between the amount of the
         // inputs and the amount of the outputs is the transaction fee
@@ -203,12 +197,12 @@ impl CryptoWallet for BitcoinWallet {
         // sum total value with confirmed status, also count number of utxos with
         // confirmed status
         let mut total_value_from_utxos = 0;
-        let mut inputs_available: Vec<UTXO> = Vec::new();
+        let mut inputs_available: Vec<Utxo> = Vec::new();
         let mut inputs_available_tx_info: Vec<BTransaction> = Vec::new();
         for utxo in available_utxos {
             if utxo.status.confirmed {
                 total_value_from_utxos += &utxo.value;
-                let tx_info = client.transaction(&utxo.txid.as_str()).await?;
+                let tx_info = client.transaction(utxo.txid.as_str()).await?;
                 inputs_available.push(utxo);
                 inputs_available_tx_info.push(tx_info);
             }
@@ -225,7 +219,7 @@ impl CryptoWallet for BitcoinWallet {
             fee_sat_per_byte,
             &inputs_available,
             &inputs_available_tx_info,
-            &send_amount,
+            send_amount,
             &receiver_view_wallet,
         )?;
 
@@ -236,13 +230,29 @@ impl CryptoWallet for BitcoinWallet {
         client.post_a_transaction(raw_transaction_hex).await?;
         Ok(())
     }
+
+    fn address_by_index(
+        &self,
+        bip32_master: &HDKey,
+        index: usize,
+    ) -> Result<Box<dyn CryptoAddressGeneral>, anyhow::Error> {
+        let derived_key = HDKey::derive(
+            bip32_master,
+            format!("m/84'/0'/0'/0/{}", index),
+        )?;
+        Ok(Box::new(BitcoinAddress::from_hd_key(
+            &derived_key,
+            AddressType::P2wpkh,
+        )?))
+    }
 }
 
-impl BitcoinWallet {
+impl BitcoinAddress {
     fn new_view_only(public_address: &str) -> Result<Self, anyhow::Error> {
         let address_info = Address::from_str(public_address)?;
         let public_address = address_info.to_string();
-        // Currently hardcoding to Mainnet, TODO(#82) handle other Bitcoin network options
+        // Currently hardcoding to Mainnet, TODO(#82) handle other Bitcoin network
+        // options
         let network = Network::Bitcoin;
 
         Ok(Self {
@@ -257,9 +267,9 @@ impl BitcoinWallet {
 
     fn public_key(&self) -> Result<Vec<u8>, anyhow::Error> {
         if let Some(key) = self.public_key.clone() {
-            return Ok(hex::decode(key)?);
+            Ok(hex::decode(key)?)
         } else {
-            return Err(anyhow!("Public Key not included"));
+            Err(anyhow!("Public Key not included"))
         }
     }
 
@@ -325,13 +335,13 @@ impl BitcoinWallet {
                 + (num_outputs * NONSEGWIT_DEFAULT_BYTES_PER_OUTPUT)
                 + NONSEGWIT_DEFAULT_BYTES_BASE;
             let estimated_fee = f64::ceil(byte_fee * (tx_size as f64)) as u64;
-            return Ok(estimated_fee);
+            Ok(estimated_fee)
         } else {
             let tx_size = (num_inputs * SEGWIT_DEFAULT_BYTES_PER_INPUT)
                 + (num_outputs * SEGWIT_DEFAULT_BYTES_PER_OUTPUT)
                 + SEGWIT_DEFAULT_BYTES_BASE;
             let estimated_fee = f64::ceil(byte_fee * (tx_size as f64)) as u64;
-            return Ok(estimated_fee);
+            Ok(estimated_fee)
         }
     }
 
@@ -340,9 +350,9 @@ impl BitcoinWallet {
     /// change amount that is smaller than what the fee would be to spend that
     /// amount
     pub fn choose_inputs_and_set_fee(
-        utxo_available: &Vec<UTXO>,
+        utxo_available: &Vec<Utxo>,
         send_amount: &BitcoinAmount,
-        inputs_available_tx_info: &Vec<BTransaction>,
+        inputs_available_tx_info: &[BTransaction],
         byte_fee: f64,
     ) -> Result<(Vec<Input>, BitcoinAmount), anyhow::Error> {
         // Sorting in reverse order of the value each UTXO (from highest UTXO value to
@@ -359,7 +369,7 @@ impl BitcoinWallet {
         for ind in &indices {
             let utxo = &utxo_available[*ind];
             let utxo_prevout = &inputs_available_tx_info[*ind].vout[utxo.vout as usize];
-            if !segwit_transaction && InputType::new(&utxo_prevout)?.is_segwit() {
+            if !segwit_transaction && InputType::new(utxo_prevout)?.is_segwit() {
                 segwit_transaction = true;
             }
             let value = BitcoinAmount {
@@ -422,7 +432,7 @@ impl BitcoinWallet {
             };
             if change_amount > min_change_amount {
                 // Met the goal, return the inputs collected
-                return Ok((inputs, set_fee));
+                Ok((inputs, set_fee))
             }
             // initial change amount was not greater than the min_change_amount
             else {
@@ -435,7 +445,7 @@ impl BitcoinWallet {
                     for ind in &indices[start..] {
                         let utxo = &utxo_available[*ind];
                         let utxo_prevout = &inputs_available_tx_info[*ind].vout[utxo.vout as usize];
-                        if !segwit_transaction && InputType::new(&utxo_prevout)?.is_segwit() {
+                        if !segwit_transaction && InputType::new(utxo_prevout)?.is_segwit() {
                             segwit_transaction = true;
                         }
                         let value = BitcoinAmount {
@@ -482,7 +492,7 @@ impl BitcoinWallet {
                 }
                 // even if could not get the change amount to be greater than the min change
                 // amount, still proceed
-                return Ok((inputs, set_fee));
+                Ok((inputs, set_fee))
             }
         } else {
             // did not meet goal (there are no more utxos to use to meet goal)
@@ -499,11 +509,11 @@ impl BitcoinWallet {
                 )?,
             };
             if obtained_amount > *send_amount + set_fee {
-                return Ok((inputs, set_fee));
+                Ok((inputs, set_fee))
             } else {
-                return Err(anyhow!(
+                Err(anyhow!(
                     "Not enough funds to cover the send amount as well as the fee needed"
-                ));
+                ))
             }
         }
     }
@@ -514,10 +524,10 @@ impl BitcoinWallet {
     pub fn build_transaction(
         &self,
         fee_sat_per_byte: f64,
-        utxo_available: &Vec<UTXO>,
-        inputs_available_tx_info: &Vec<BTransaction>,
+        utxo_available: &Vec<Utxo>,
+        inputs_available_tx_info: &[BTransaction],
         send_amount: &BitcoinAmount,
-        receiver_view_wallet: &BitcoinWallet,
+        receiver_view_wallet: &BitcoinAddress,
     ) -> Result<BTransaction, anyhow::Error> {
         println!("Building a Transaction");
         // choose inputs
@@ -588,7 +598,7 @@ impl BitcoinWallet {
             )?;
             let secret_key = SecretKey::from_slice(private_key.to_bytes().as_slice())
                 .expect("32 bytes, within curve order");
-            let sig_with_hashtype = BitcoinWallet::signature_sighashall_for_trasaction_hash(
+            let sig_with_hashtype = Self::signature_sighashall_for_trasaction_hash(
                 transaction_hash_for_input_with_sighash.to_string(),
                 secret_key,
             )?;
@@ -614,7 +624,7 @@ impl BitcoinWallet {
                 }
                 "v0_p2wpkh" => {
                     // Need to specify witness data to unlock
-                    input.witness = vec![sig_with_hashtype, hex::encode(&self.public_key()?)];
+                    input.witness = vec![sig_with_hashtype, hex::encode(self.public_key()?)];
                 }
                 _ => {
                     return Err(anyhow!(
@@ -629,7 +639,7 @@ impl BitcoinWallet {
     }
 
     pub fn confirmed_balance_from_utxo(
-        utxo_info: Vec<UTXO>,
+        utxo_info: Vec<Utxo>,
     ) -> Result<BitcoinAmount, anyhow::Error> {
         let mut satoshis: u64 = 0;
         for item in utxo_info {
@@ -643,20 +653,20 @@ impl BitcoinWallet {
         self.address_info.clone()
     }
 
-    pub fn public_address_p2pkh_from_public_key(public_key: &Vec<u8>) -> String {
+    pub fn public_address_p2pkh_from_public_key(public_key: &[u8]) -> String {
         // p2pkh format
         let mut address = [0u8; 25];
 
         address[0] = 0x00;
-        address[1..21].copy_from_slice(&HDKey::hash160(&public_key));
+        address[1..21].copy_from_slice(&HDKey::hash160(public_key));
 
         let checksum = &(Sha256::digest(Sha256::digest(&address[0..21]).as_slice()).to_vec())[0..4];
         address[21..25].copy_from_slice(checksum);
-        return address.to_base58();
+        address.to_base58()
     }
 }
 
-impl Display for BitcoinWallet {
+impl Display for BitcoinAddress {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "Bitcoin Wallet")?;
         writeln!(f, " Network: {}", self.network)?;
@@ -682,12 +692,16 @@ impl Display for BitcoinWallet {
     }
 }
 
-impl CryptoWalletGeneral for BitcoinWallet {
+impl CryptoAddressGeneral for BitcoinAddress {
     fn crypto_type(&self) -> SlipCoin {
         self.crypto_type
     }
 
     fn as_any(&self) -> &dyn Any {
         self
+    }
+
+    fn box_clone(&self) -> Box<dyn CryptoAddressGeneral> {
+        Box::new(self.clone())
     }
 }

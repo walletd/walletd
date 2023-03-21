@@ -34,7 +34,7 @@ impl SerializedArchive {
         T: DoSerialize,
     {
         self.add_tag(tag);
-        self.begin_array_with_size(vec.len());
+        self.begin_array_with_size(vec.len())?;
         for (i, item) in vec.iter().enumerate() {
             item.do_serialize(self)?;
             if i < vec.len() - 1 {
@@ -59,7 +59,7 @@ impl SerializedArchive {
         V: Variant,
     {
         self.add_tag(tag);
-        self.begin_array_with_size(vec.len());
+        self.begin_array_with_size(vec.len())?;
         // Tag the variant type
         let variant_tag = variant.variant_tag();
         self.data.push(variant_tag);
@@ -92,10 +92,10 @@ impl SerializedArchive {
     /// as added directly to the serialized data. The json stream is updated
     /// with the hex encoded version of the key encapsulated in quotes
     pub fn serialize_key(&mut self, key: &[u8]) -> Result<(), anyhow::Error> {
-        self.data.extend_from_slice(&key);
-        self.json_stream.push_str("\"");
-        self.json_stream.push_str(&hex::encode(key.to_vec()));
-        self.json_stream.push_str("\"");
+        self.data.extend_from_slice(key);
+        self.json_stream.push('\"');
+        self.json_stream.push_str(&hex::encode(key));
+        self.json_stream.push('\"');
         Ok(())
     }
 
@@ -103,31 +103,31 @@ impl SerializedArchive {
     /// Encodes the data to as hex and adds it to the json stream
     pub fn serialize_directly(&mut self, blob: &[u8]) -> Result<(), anyhow::Error> {
         self.data.extend_from_slice(blob);
-        self.json_stream.push_str(&hex::encode(blob.to_vec()));
+        self.json_stream.push_str(&hex::encode(blob));
         Ok(())
     }
 
     /// Adds the tag to the serialized result, assumes no indent is needed
-    pub fn add_tag(&mut self, tag: &str) -> () {
+    pub fn add_tag(&mut self, tag: &str) {
         if !self.object_begin {
             self.json_stream.push_str(", ");
         } else {
             self.object_begin = false;
         }
-        self.json_stream.push_str("\"");
+        self.json_stream.push('\"');
         self.json_stream.push_str(tag);
         self.json_stream.push_str("\": ");
     }
 
-    pub fn begin_object(&mut self) -> () {
-        self.json_stream.push_str("{");
+    pub fn begin_object(&mut self) {
+        self.json_stream.push('{');
         self.depth += 1;
         self.object_begin = true;
     }
 
     /// Currently assuming that make_intent is not set
-    pub fn end_object(&mut self) -> () {
-        self.json_stream.push_str("}");
+    pub fn end_object(&mut self) {
+        self.json_stream.push('}');
         self.depth -= 1;
         self.object_begin = false;
     }
@@ -135,26 +135,26 @@ impl SerializedArchive {
     /// Begins an array in the json stream and also adds the size of the array
     /// to the data stream
     pub fn begin_array_with_size(&mut self, size: usize) -> Result<(), anyhow::Error> {
-        self.json_stream.push_str("[");
+        self.json_stream.push('[');
         self.depth += 1;
         size.do_serialize(self)?;
         Ok(())
     }
 
     /// Begins an array in the json stream, does not affect data stream
-    pub fn begin_array(&mut self) -> () {
-        self.json_stream.push_str("[");
+    pub fn begin_array(&mut self) {
+        self.json_stream.push('[');
         self.depth += 1;
     }
 
     /// Adds a delimiter for an array into the json stream
-    pub fn delimit_array(&mut self) -> () {
+    pub fn delimit_array(&mut self) {
         self.json_stream.push_str(", ");
     }
 
     /// Ends an array in the json stream
-    pub fn end_array(&mut self) -> () {
-        self.json_stream.push_str("]");
+    pub fn end_array(&mut self) {
+        self.json_stream.push(']');
         self.depth -= 1;
     }
 

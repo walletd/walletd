@@ -38,8 +38,7 @@ pub trait CryptoWallet: Sized {
         private_key.append(&mut seed.to_vec());
         // assuming public key is compressed
         private_key.push(0x01);
-        let mut checksum =
-            Sha256::digest(&Sha256::digest(&private_key.as_slice()).to_vec())[0..4].to_vec();
+        let mut checksum = Sha256::digest(Sha256::digest(private_key.as_slice()))[0..4].to_vec();
         private_key.append(&mut checksum);
         Ok(private_key.to_base58())
     }
@@ -70,6 +69,12 @@ pub trait CryptoWallet: Sized {
     ) -> Result<(), anyhow::Error>;
 
     fn crypto_type(&self) -> SlipCoin;
+
+    fn address_by_index(
+        &self,
+        bip32_master: &Self::HDKeyInfo,
+        index: usize,
+    ) -> Result<Box<dyn CryptoAddressGeneral>, anyhow::Error>;
 }
 
 // TODO(#61): Remove the fmt::Display requirement for CryptoWalletGeneral
@@ -78,7 +83,8 @@ pub trait CryptoWallet: Sized {
 /// This is needed because the walletd needs to store a list of wallets of
 /// different types and the associated types are not allowed to be used in a
 /// trait object
-pub trait CryptoWalletGeneral: fmt::Display {
+pub trait CryptoAddressGeneral: fmt::Display {
     fn crypto_type(&self) -> SlipCoin;
     fn as_any(&self) -> &dyn Any;
+    fn box_clone(&self) -> Box<dyn CryptoAddressGeneral>;
 }

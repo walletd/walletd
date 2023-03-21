@@ -26,7 +26,7 @@ async fn main() {
 
     let create_account = Some(true);
     let generated_locally = Some(true);
-    let response = blockchain_client
+    let _response = blockchain_client
         .login(
             public_address,
             private_view_key,
@@ -36,12 +36,12 @@ async fn main() {
         .await
         .unwrap();
 
-    let response = blockchain_client
+    let _response = blockchain_client
         .get_address_info(public_address, private_view_key)
         .await
         .unwrap();
 
-    let response = blockchain_client
+    let _response = blockchain_client
         .get_address_txs(public_address, private_view_key)
         .await
         .unwrap();
@@ -50,14 +50,13 @@ async fn main() {
         .get_unspent_outs(public_address, private_view_key, 0, true, 2000000000)
         .await
         .unwrap();
-    let per_byte_fee: u64 = unspent_outs_response["per_byte_fee"].as_u64().unwrap();
-    let fee_mask: u64 = unspent_outs_response["fee_mask"].as_u64().unwrap();
-    let fork_version: u8 = unspent_outs_response["fork_version"]
+    let _per_byte_fee: u64 = unspent_outs_response["per_byte_fee"].as_u64().unwrap();
+    let _fee_mask: u64 = unspent_outs_response["fee_mask"].as_u64().unwrap();
+    let _fork_version: u8 = unspent_outs_response["fork_version"]
         .as_u64()
         .unwrap()
         .try_into()
         .unwrap();
-    
 
     let spendable_outputs =
         MoneroLWSConnection::to_unspent_outputs(&my_test_wallet, &unspent_outs_response).unwrap();

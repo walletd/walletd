@@ -4,20 +4,16 @@
 //! getting Monero blockchain information from it. MyMonero is an example Monero
 //! LWS that can be connected to using this module
 
-use curve25519_dalek::scalar::Scalar;
 use reqwest;
-use serde::ser::{SerializeStruct, Serializer};
+use serde::ser::SerializeStruct;
 use serde::{Deserialize, Serialize};
 use serde_aux::prelude::deserialize_number_from_string;
 use serde_json::Value;
 use thiserror::Error;
-use zeroize::Zeroize;
 
-use crate::monero_serialize::DoSerialize;
 use crate::rct_types::RctKey;
 use crate::{
-    hash, keccak256, mix_outs, public_key, KeyDerivation, KeyImage, MixAmountAndOuts, MoneroWallet,
-    PrivateKey, PublicKey,
+    mix_outs, public_key, KeyDerivation, KeyImage, MixAmountAndOuts, MoneroWallet, PublicKey,
 };
 
 /// The number of fake outputs to request from the LWS
@@ -93,17 +89,17 @@ impl UnspentOutput {
     /// Parses the rct string and returns the commit value as a Key
     pub fn parse_rct_commit(
         &self,
-        account: &MoneroWallet,
-        tx_pub_key: &PublicKey,
+        _account: &MoneroWallet,
+        _tx_pub_key: &PublicKey,
     ) -> Result<RctKey, Error> {
         match &self.rct {
-            None => return Ok(RctKey::zero_commit(self.amount)),
+            None => Ok(RctKey::zero_commit(self.amount)),
             Some(rct_string) => {
                 if rct_string.is_empty() {
-                    return Ok(RctKey::zero_commit(self.amount));
+                    Ok(RctKey::zero_commit(self.amount))
                 } else if rct_string.len() >= 64 {
                     let rct_commit_str = &rct_string[0..64];
-                    let rct_commit = hex::decode(&rct_commit_str)?;
+                    let rct_commit = hex::decode(rct_commit_str)?;
                     Ok(RctKey::from_slice(&rct_commit))
                 } else {
                     Err(Error::InvalidRctStringLength)
@@ -119,16 +115,16 @@ impl UnspentOutput {
         tx_pub_key: &PublicKey,
     ) -> Result<RctKey, Error> {
         match &self.rct {
-            None => return Ok(RctKey::identity()),
+            None => Ok(RctKey::identity()),
             Some(rct_string) => {
                 if rct_string.is_empty() {
-                    return Ok(RctKey::identity());
+                    Ok(RctKey::identity())
                 } else if rct_string.len() < 128 {
                     if rct_string == "coinbase" {
                         return Ok(RctKey::identity());
                     }
                     let key_deriv =
-                        KeyDerivation::generate(&tx_pub_key, &account.private_keys().view_key());
+                        KeyDerivation::generate(tx_pub_key, &account.private_keys().view_key());
                     let derived_sec_key = key_deriv.derive_private_key(
                         self.index,
                         &account
@@ -145,9 +141,9 @@ impl UnspentOutput {
                         return Ok(encrypted_mask);
                     }
                     let key_deriv =
-                        KeyDerivation::generate(&tx_pub_key, &account.private_keys().view_key());
+                        KeyDerivation::generate(tx_pub_key, &account.private_keys().view_key());
                     let decrypted_mask =
-                        &encrypted_mask.as_scalar() - key_deriv.hash_to_scalar(self.index);
+                        encrypted_mask.as_scalar() - key_deriv.hash_to_scalar(self.index);
                     return Ok(RctKey::from_slice(&decrypted_mask.to_bytes()));
                 } else {
                     return Err(Error::InvalidRctStringLength);
@@ -167,11 +163,10 @@ impl MoneroLWSConnection {
     /// Internal function used to parse the response, check for error in
     /// response
     async fn parse_response_error(response: reqwest::Response) -> Result<Value, Error> {
-
         let status = response.status();
         let content = response.text().await?;
         if status.is_client_error() && status.is_server_error() {
-            return Err(Error::ErrorClientSideAndServerSide(content));
+            Err(Error::ErrorClientSideAndServerSide(content))
         } else if status.is_client_error() {
             return Err(Error::ClientSideError(content));
         } else if status.is_server_error() {

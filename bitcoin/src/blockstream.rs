@@ -1,11 +1,22 @@
-use anyhow::anyhow;
 use std::any::Any;
+
+use anyhow::anyhow;
 use async_trait::async_trait;
 use bitcoin::{Address, AddressType};
 use bitcoin_hashes::{sha256d, Hash};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use walletd_coin_model::BlockchainConnector;
+use chrono::prelude::DateTime;
+use chrono::Utc;
+
+use prettytable::Table;
+use prettytable::row;
+use std::fmt;
+
+use std::time::{UNIX_EPOCH, Duration};
+
+use crate::BitcoinAmount;
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct BTransaction {
@@ -20,6 +31,73 @@ pub struct BTransaction {
     pub status: Status,
 }
 
+
+impl BTransaction {
+    pub fn overview(transactions: Vec<BTransaction>, owners_addresses: Vec<String>) -> Result<Vec<String>, anyhow::Error> {
+        if transactions.len() != owners_addresses.len() {
+            return Err(anyhow!("transactions and owners_addresses should be of the same length"));
+        }
+        let mut table_rows = Vec::new();
+        let mut table = Table::new();
+        table.add_row(row!["Tx ID", "Amount (BTC)", "Fee Amount (BTC)", "To/From Address", "Status"]);
+        table_rows.push(table.to_string());
+        for i in 0..transactions.len() {
+            let input_amount = BitcoinAmount::new_from_satoshi(transactions[i].vin.iter().fold(0, |acc, input| acc + input.prevout.value)).btc();
+            let output_amount = BitcoinAmount::new_from_satoshi(transactions[i].vout.iter().fold(0, |acc, output| acc + output.value)).btc();
+            let change_amount = BitcoinAmount::new_from_satoshi(transactions[i].vout.iter().filter(|output| output.scriptpubkey_address == owners_addresses[i]).fold(0, |acc, output| acc + output.value)).btc();
+            let amount = input_amount - output_amount + change_amount;
+            let fee_amount = BitcoinAmount::new_from_satoshi(transactions[i].fee).btc();
+            let status_string = if transactions[i].status.confirmed {
+                format!("Complete, Confirmed in block {}", transactions[i].status.block_height)
+            } else {
+                "Pending Confirmation".to_string()
+            };
+            let mut table = Table::new();
+            table.add_row(row![transactions[i].txid, amount.to_string(), fee_amount.to_string(), owners_addresses[i], status_string]);
+            table_rows.push(table.to_string());
+        }
+        Ok(table_rows)
+    }
+
+    pub fn details(&self, owners_address: String) -> Result<String, anyhow::Error> {
+        let mut table_string = String::new();
+        let mut table = Table::new();
+        table.add_row(row!["Tx ID", self.txid]);
+        table_string.push_str(&table.to_string());
+        table = Table::new();
+        table.add_row(row!["Status", self.status]);
+        table_string.push_str(&table.to_string());
+        let input_amount = BitcoinAmount::new_from_satoshi(self.vin.iter().fold(0, |acc, input| acc + input.prevout.value)).btc();
+        let output_amount = BitcoinAmount::new_from_satoshi(self.vout.iter().fold(0, |acc, output| acc + output.value)).btc();
+        let change_amount = BitcoinAmount::new_from_satoshi(self.vout.iter().filter(|output| output.scriptpubkey_address == owners_address).fold(0, |acc, output| acc + output.value)).btc();
+        let amount = input_amount - output_amount + change_amount;
+        let fee_amount = BitcoinAmount::new_from_satoshi(self.fee).btc();
+        table = Table::new();
+        table.add_row(row!["Amount: ", amount.to_string()]);
+        table.add_row(row!["Fee Amount: ", fee_amount.to_string()]);
+        table.add_row(row!["To/From Address: ", owners_address]);
+        table.add_row(row!["Version", self.version]);
+        table.add_row(row!["Locktime", self.locktime]);
+        table.add_row(row!["Size", self.size]);
+        table.add_row(row!["Weight", self.weight]);
+        table_string.push_str(&table.to_string());
+        
+        table = Table::new();
+        table.add_row(row!["Inputs"]);
+        for input in &self.vin {
+            table.add_row(row![input.to_string()]);
+        }
+        table_string.push_str(&table.to_string());
+        table = Table::new();
+        table.add_row(row!["Outputs"]);
+        for output in &self.vout {
+            table.add_row(row![output.to_string()]);
+        }
+        table_string.push_str(&table.to_string());
+        Ok(table_string)
+    }
+}
+
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct Output {
     pub scriptpubkey: String,
@@ -28,6 +106,29 @@ pub struct Output {
     pub scriptpubkey_address: String,
     pub pubkeyhash: String,
     pub value: u64,
+}
+
+impl fmt::Display for Output {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut table = Table::new();
+        if !self.scriptpubkey.is_empty() {
+            table.add_row(row!["ScriptPubKey", self.scriptpubkey]);
+        }
+        if !self.scriptpubkey_asm.is_empty() {
+            table.add_row(row!["ScriptPubKey ASM", self.scriptpubkey_asm]);
+        }
+        if !self.scriptpubkey_type.is_empty() {
+            table.add_row(row!["ScriptPubKey Type", self.scriptpubkey_type]);
+        }
+        if !self.scriptpubkey_address.is_empty() {
+            table.add_row(row!["ScriptPubKey Address", self.scriptpubkey_address]);
+        }
+        if !self.pubkeyhash.is_empty() {
+            table.add_row(row!["PubKeyHash", self.pubkeyhash]);
+        }
+        table.add_row(row!["Value (BTC)", BitcoinAmount::new_from_satoshi(self.value).btc()]);
+        write!(f, "{}", table)
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -43,6 +144,29 @@ pub struct Input {
     pub inner_redeemscript_asm: String,
 }
 
+impl fmt::Display for Input {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut table = Table::new();
+        table.add_row(row!["Input Tx ID", self.txid]);
+        table.add_row(row!["Amount (BTC)", BitcoinAmount::new_from_satoshi(self.vout as u64).btc()]);
+        if !self.scriptsig.is_empty() {
+            table.add_row(row!["ScriptSig", self.scriptsig]);
+        }
+        if !self.scriptsig_asm.is_empty() {
+            table.add_row(row!["ScriptSig ASM", self.scriptsig_asm]);
+        }
+        if !self.witness.is_empty() {
+            table.add_row(row!["Witness", self.witness.join(" ")]);
+        }
+        if !self.inner_redeemscript_asm.is_empty() {
+            table.add_row(row!["Inner Redeemscript ASM", self.inner_redeemscript_asm]);
+        }
+        table.add_row(row!["Is Coinbase", self.is_coinbase]);
+        table.add_row(row!["Sequence", self.sequence]);
+        write!(f, "{}", table)
+    }
+}
+
 #[derive(Serialize, Deserialize, Default, Clone, Debug)]
 pub struct Status {
     pub confirmed: bool,
@@ -51,8 +175,25 @@ pub struct Status {
     pub block_time: u32,
 }
 
+impl fmt::Display for Status {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+       let mut table = Table::new();
+       table.add_row(row!["Confirmed: ", self.confirmed]);
+         table.add_row(row!["Block Height: ", self.block_height]);
+            table.add_row(row!["Block Hash: ", self.block_hash]);
+            // Creates a new SystemTime from the specified number of whole seconds
+    let d = UNIX_EPOCH + Duration::from_secs(1524885322);
+    // Create DateTime from SystemTime
+    let datetime = DateTime::<Utc>::from(d);
+    // Formats the combined date and time with the specified format string.
+    let timestamp_str = datetime.format("%Y-%m-%d %H:%M:%S.%f").to_string();
+                table.add_row(row!["Timestamp ", timestamp_str]);
+                write!(f, "{}", table)
+    }
+}
+
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
-pub struct UTXO {
+pub struct Utxo {
     pub status: Status,
     pub txid: String,
     pub value: u64,
@@ -71,7 +212,7 @@ pub enum InputType {
 impl InputType {
     pub fn new(utxo_prevout: &Output) -> Result<Self, anyhow::Error> {
         match utxo_prevout.scriptpubkey_type.as_str() {
-            "p2pkh" => return Ok(InputType::P2pkh),
+            "p2pkh" => Ok(InputType::P2pkh),
             "p2sh" => {
                 let scriptpubkey_asm = &utxo_prevout
                     .scriptpubkey_asm
@@ -86,10 +227,10 @@ impl InputType {
                         _ => return Ok(InputType::P2sh),
                     }
                 }
-                return Ok(InputType::P2sh);
+                Ok(InputType::P2sh)
             }
-            "v0_p2wsh" => return Ok(InputType::P2wsh),
-            "v0_p2wpkh" => return Ok(InputType::P2wpkh),
+            "v0_p2wsh" => Ok(InputType::P2wsh),
+            "v0_p2wpkh" => Ok(InputType::P2wpkh),
             _ => Err(anyhow!("Unknown scriptpubkey_type, not currently handled")),
         }
     }
@@ -117,7 +258,7 @@ impl BTransaction {
                 } else if obj_item.0 == "version" {
                     transaction.version = serde_json::from_value(obj_item.1.clone())?;
                 } else if obj_item.0 == "locktime" {
-                    transaction.version = serde_json::from_value(obj_item.1.clone())?;
+                    transaction.locktime = serde_json::from_value(obj_item.1.clone())?;
                 } else if obj_item.0 == "vin" {
                     transaction.vin = Input::new_vector_from_value(obj_item.1)?;
                 } else if obj_item.0 == "vout" {
@@ -127,14 +268,14 @@ impl BTransaction {
                 } else if obj_item.0 == "weight" {
                     transaction.weight = serde_json::from_value(obj_item.1.clone())?;
                 } else if obj_item.0 == "fee" {
-                    transaction.weight = serde_json::from_value(obj_item.1.clone())?;
+                    transaction.fee = serde_json::from_value(obj_item.1.clone())?;
                 } else if obj_item.0 == "status" {
                     transaction.status = Status::new_from_value(obj_item.1)?;
                 }
             }
             return Ok(transaction);
         }
-        return Err(anyhow!("Transaction info not available"));
+        Err(anyhow!("Transaction info not available"))
     }
 
     pub fn new_transactions(transactions_info: Value) -> Result<Vec<Self>, anyhow::Error> {
@@ -296,7 +437,7 @@ impl BTransaction {
         // Handling the segwit marker and flag
         let mut segwit_transaction = false;
         for input in transaction.vin.iter() {
-            if input.witness.len() > 0 {
+            if !input.witness.is_empty() {
                 segwit_transaction = true;
             }
         }
@@ -380,11 +521,11 @@ impl BTransaction {
                 }
             }
             let mut witness_counter = 0;
-            for i in 0..transaction.vin.len() {
+            for witness_count in witness_counts {
                 serialization.push_str(&hex::encode(Self::variable_length_integer_encoding(
-                    witness_counts[i],
+                    witness_count,
                 )?));
-                for _j in 0..witness_counts[i] {
+                for _j in 0..witness_count {
                     serialization
                         .push_str(&hex::encode(witness_lens[witness_counter].to_le_bytes()));
                     serialization.push_str(witness_data[witness_counter].as_str());
@@ -412,7 +553,7 @@ impl BTransaction {
             input.witness = Vec::new();
         }
         let serialization = Self::serialize(&transaction)?;
-        let txid = sha256d::Hash::hash(&hex::decode(&serialization)?);
+        let txid = sha256d::Hash::hash(&hex::decode(serialization)?);
         Ok(hex::encode(txid))
     }
 
@@ -421,7 +562,7 @@ impl BTransaction {
     pub fn wtxid(&self) -> Result<String, anyhow::Error> {
         let transaction = self.clone();
         let serialization = Self::serialize(&transaction)?;
-        let txid = sha256d::Hash::hash(&hex::decode(&serialization)?);
+        let txid = sha256d::Hash::hash(&hex::decode(serialization)?);
         Ok(hex::encode(txid))
     }
 
@@ -436,7 +577,7 @@ impl BTransaction {
             input.scriptsig_asm = String::new();
         }
         let serialization = Self::serialize(&transaction)?;
-        let ntxid = sha256d::Hash::hash(&hex::decode(&serialization)?);
+        let ntxid = sha256d::Hash::hash(&hex::decode(serialization)?);
         Ok(hex::encode(ntxid))
     }
 
@@ -618,18 +759,18 @@ impl Status {
             }
             Ok(status)
         } else {
-            return Err(anyhow!("status info not available"));
+            Err(anyhow!("status info not available"))
         }
     }
 }
 
-impl UTXO {
-    pub fn new_utxos(utxo_info: Value) -> Result<Vec<UTXO>, anyhow::Error> {
-        let mut all_utxo_info: Vec<UTXO> = Vec::new();
+impl Utxo {
+    pub fn new_utxos(utxo_info: Value) -> Result<Vec<Utxo>, anyhow::Error> {
+        let mut all_utxo_info: Vec<Utxo> = Vec::new();
         if utxo_info.is_array() {
             if let Value::Array(vec) = utxo_info {
                 for item in vec.iter() {
-                    let mut utxo: UTXO = UTXO {
+                    let mut utxo: Utxo = Utxo {
                         ..Default::default()
                     };
                     if let Value::Object(map) = item {
@@ -677,7 +818,7 @@ impl BlockchainConnector for Blockstream {
         public_address: &str,
     ) -> Result<bool, anyhow::Error> {
         let transactions = self.transactions(public_address).await?;
-        if transactions.len() == 0 {
+        if transactions.is_empty() {
             // println!("No past transactions exist at address: {}", public_address);
             return Ok(false);
         } else {
@@ -687,8 +828,27 @@ impl BlockchainConnector for Blockstream {
     }
 
     fn as_any(&self) -> &dyn Any {
-      self
-  }
+        self
+    }
+}
+
+#[derive(Clone, Default, Debug, Deserialize, Serialize)]
+pub struct FeeEstimates(pub serde_json::Map<String, Value>);
+
+
+impl fmt::Display for FeeEstimates {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut table = Table::new();
+        writeln!(f, "Fee Estimates")?;
+        table.add_row(row!["Confirmation Target", "Fee (sat/vB)"]);
+        let mut keys = self.0.iter().map(|(a, _b)| a.parse::<u32>().expect("expecting that key should be able to be parsed as u32")).collect::<Vec<_>>();
+        keys.sort();
+        for key in keys {
+           table.add_row(row![key, self.0[&key.to_string()]]);
+        }
+        write!(f, "{}", table)?;
+        Ok(())
+    }
 }
 
 impl Blockstream {
@@ -703,12 +863,12 @@ impl Blockstream {
     }
 
     // fetch fee estimates from blockstream
-    pub async fn fee_estimates(&self) -> Result<Value, anyhow::Error> {
+    pub async fn fee_estimates(&self) -> Result<FeeEstimates, anyhow::Error> {
         let body = reqwest::get(format!("{}/fee-estimates", self.url))
             .await?
             .text()
             .await?;
-        let fee_estimates = serde_json::from_str(&body)?;
+        let fee_estimates: FeeEstimates = serde_json::from_str(&body)?;
         Ok(fee_estimates)
     }
 
@@ -719,8 +879,7 @@ impl Blockstream {
             .text()
             .await?;
         let transactions: Value = serde_json::from_str(&body)?;
-        let all_transactions_info = BTransaction::new_transactions(transactions);
-        all_transactions_info
+        BTransaction::new_transactions(transactions)
     }
 
     // fetch mempool transactions from blockstream
@@ -734,15 +893,14 @@ impl Blockstream {
     }
 
     /// Fetch UTXOs from blockstream
-    pub async fn utxo(&self, address: &str) -> Result<Vec<UTXO>, anyhow::Error> {
+    pub async fn utxo(&self, address: &str) -> Result<Vec<Utxo>, anyhow::Error> {
         let body = reqwest::get(format!("{}/address/{}/utxo", self.url, address))
             .await?
             .text()
             .await?;
 
         let utxo: Value = serde_json::from_str(&body)?;
-        let all_utxo_info = UTXO::new_utxos(utxo);
-        all_utxo_info
+        Utxo::new_utxos(utxo)
     }
 
     pub async fn get_raw_transaction_hex(&self, txid: &str) -> Result<String, anyhow::Error> {

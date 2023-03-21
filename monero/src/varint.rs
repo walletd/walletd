@@ -1,10 +1,7 @@
-use core::convert::TryInto;
 use std::fmt::Display;
 use std::mem::size_of;
-use std::ops;
 
-use num::ToPrimitive;
-use {num, From};
+use num;
 
 use crate::DoSerialize;
 
@@ -26,11 +23,13 @@ pub struct VarInt<T: UnsignedInt>(pub T);
 
 impl<T: UnsignedInt> VarInt<T> {
     // Creates a new varint from a number of the generic type
+    #[allow(dead_code)]
     fn new(value: T) -> Self {
         VarInt(value)
     }
 
     /// Converts the varint to a number of the generic type
+    #[allow(dead_code)]
     fn to_num(&self) -> T {
         self.0
     }

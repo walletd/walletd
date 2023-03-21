@@ -1,12 +1,12 @@
 use anyhow::anyhow;
 use curve25519_dalek::constants::ED25519_BASEPOINT_TABLE as G_BASEPOINT;
-use curve25519_dalek::edwards::{CompressedEdwardsY, EdwardsPoint};
+use curve25519_dalek::edwards::CompressedEdwardsY;
 use curve25519_dalek::scalar::Scalar;
 use monero_generators::hash_to_point;
 use thiserror::Error;
 
 use crate::{
-    keccak256, DoSerialize, Hash, MoneroPrivateKeys, MoneroPublicKeys, PrivateKey, PublicKey,
+    DoSerialize, Hash, MoneroPrivateKeys, MoneroPublicKeys, PrivateKey, PublicKey,
     SerializedArchive, VarInt, VarIntEncoding,
 };
 
@@ -18,6 +18,7 @@ pub struct KeyDerivation(CompressedEdwardsY);
 impl KeyDerivation {
     /// Generates the key derivation from a public key and a private key
     /// **Source:** [`monero/src/crypto/crypto.cpp`](https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/crypto/crypto.cpp#L190-L203)
+    #[allow(non_snake_case)]
     pub fn generate(public_key: &PublicKey, secret_key: &PrivateKey) -> KeyDerivation {
         let mut rA = secret_key.as_scalar() * public_key.to_edwards_point();
         rA = rA.mul_by_cofactor();
@@ -45,7 +46,7 @@ impl KeyDerivation {
     /// protocol **Source** [`monero/src/crypto/crypto.cpp`](https://github.com/monero-project/monero/blob/9f814edbd78c70c70b814ca934c1ddef58768262/src/crypto/crypto.cpp#L205-L215)
     pub fn hash_to_scalar(&self, output_index: u64) -> Scalar {
         // H_s(derivation || output_index)
-        let mut derivation = self.0.to_bytes().to_vec().clone();
+        let mut derivation = self.0.to_bytes().to_vec();
         derivation.extend(VarInt(output_index).encode_to_bytes());
         Hash::hash_to_scalar(&derivation)
     }
@@ -70,7 +71,7 @@ impl KeyDerivation {
     ) -> Result<PrivateKey, Error> {
         let hash = self.hash_to_scalar(output_index);
         // compute x = Hs(D || i) + b, x is derived private key, b is private spend key
-        let derived_private_key = hash + &private_spend_key.as_scalar();
+        let derived_private_key = hash + private_spend_key.as_scalar();
         Ok(PrivateKey::from_scalar(&derived_private_key))
     }
 }
@@ -112,18 +113,16 @@ impl KeyImage {
         output_index: u64,
     ) -> Result<Self, Error> {
         let private_view_key = private_keys.view_key();
-        let private_spend_key;
-        match private_keys.spend_key() {
-            Some(key) => private_spend_key = key,
+        let private_spend_key = match private_keys.spend_key() {
+            Some(key) => key,
             None => return Err(Error::MissingPrivateSpendKey),
-        }
+        };
 
         let public_keys = MoneroPublicKeys::from_private_keys(private_keys);
-        let public_spend_key;
-        match public_keys.spend_key() {
-            Some(key) => public_spend_key = key,
+        let public_spend_key = match public_keys.spend_key() {
+            Some(key) => key,
             None => return Err(Error::MissingPublicSpendKey),
-        }
+        };
 
         // compute D = a * R, where R is tx_pub_key, a is private_view_key, D is the
         // derivation variable
@@ -136,7 +135,7 @@ impl KeyImage {
         let derived_public_key = hash * &G_BASEPOINT + public_spend_key.to_edwards_point();
 
         // compute x = Hs(D || i) + b, x is derived private key, b is private spend key
-        let derived_private_key = hash + &private_spend_key.as_scalar();
+        let derived_private_key = hash + private_spend_key.as_scalar();
 
         // (and check if P==x*G)
         let check_derived_public_key = &derived_private_key * &G_BASEPOINT;
@@ -252,11 +251,11 @@ mod tests {
             hex!("3e3047a633b1f84250ae11b5c8e8825a3df4729f6cbe4713b887db62f268187d");
         let secret_key_3_bytes =
             hex!("6df324e24178d91c640b75ab1c6905f8e6bb275bc2c2a5d9b9ecf446765a5a05");
-        let expected_key_deriv_3 =
+        let _expected_key_deriv_3 =
             hex!("9dcac9c9e87dd96a4115d84d587218d8bf165a0527153b1c306e562fe39a46ab");
         let public_key_3 = PublicKey::from_slice(&public_key_3_bytes).unwrap();
         let secret_key_3 = PrivateKey::from_slice(&secret_key_3_bytes).unwrap();
-        let actual_key_deriv_3 = KeyDerivation::generate(&public_key_3, &secret_key_3);
+        let _actual_key_deriv_3 = KeyDerivation::generate(&public_key_3, &secret_key_3);
     }
 
     #[test]
@@ -343,9 +342,9 @@ mod tests {
         let key_deriv_1 = hex!("0fc47054f355ced4d67de73bfa12e4c78ff19089548fffa7d07a674741860f97");
         let output_index_1 = 66;
         let base_1 = hex!("5619c62aa4ad787274b1071598b6ecacf4f9dacca2fd11b0c80741b744400500");
-        let expected_derived_sec_key_1 =
+        let _expected_derived_sec_key_1 =
             hex!("55297d64b0c0556d5583ce0e30c2024ccce90c93d16bdeb4e40fce7afff87803");
-        let actual_derived_sec_key_1 = KeyDerivation::from_slice(&key_deriv_1)
+        let _actual_derived_sec_key_1 = KeyDerivation::from_slice(&key_deriv_1)
             .unwrap()
             .derive_private_key(output_index_1, &PrivateKey::from_slice(&base_1).unwrap())
             .unwrap();
@@ -357,9 +356,9 @@ mod tests {
         let key_deriv_2 = hex!("fea25a8d0184526c85c16c032c7678c7a1e3ace773b31566d159dc8a3cb81ae1");
         let output_index_2 = 755;
         let base_2 = hex!("265685f284fe213678cad94e337196428237ac55edb5871c1f0209769ba9a803");
-        let expected_derived_sec_key_2 =
+        let _expected_derived_sec_key_2 =
             hex!("e83934c766427920055d77755b7205156e1bffc37f68135182f0974fe008470c");
-        let actual_derived_sec_key_2 = KeyDerivation::from_slice(&key_deriv_2)
+        let _actual_derived_sec_key_2 = KeyDerivation::from_slice(&key_deriv_2)
             .unwrap()
             .derive_private_key(output_index_2, &PrivateKey::from_slice(&base_2).unwrap())
             .unwrap();
@@ -371,9 +370,9 @@ mod tests {
         let key_deriv_3 = hex!("df2c15b6f3ee51445f9097f5488158a8021dd15be1e6dbe676087bda1f2d9760");
         let output_index_3 = 62075;
         let base_3 = hex!("04a4ca22d78a0e746c9e58e785da9635664cfdccf4b1e87537b359f656dff403");
-        let expected_derived_sec_key_3 =
+        let _expected_derived_sec_key_3 =
             hex!("6bad669f91c2df065ee93b446b2db9d3582960ff804096ef76be64febda5450e");
-        let actual_derived_sec_key_3 = KeyDerivation::from_slice(&key_deriv_3)
+        let _actual_derived_sec_key_3 = KeyDerivation::from_slice(&key_deriv_3)
             .unwrap()
             .derive_private_key(output_index_3, &PrivateKey::from_slice(&base_3).unwrap())
             .unwrap();
@@ -385,9 +384,9 @@ mod tests {
         let key_deriv_4 = hex!("04fcd66c3c3551d8c9cfe47a2dda3bee9af6690790415f15f3c85fcbeae5eb1a");
         let out_index_4 = 42055609;
         let base_4 = hex!("de68a85fdadf027981b4acf455a2b112d33f70937f6b4df24234144a5e189704");
-        let expected_derived_sec_key_4 =
+        let _expected_derived_sec_key_4 =
             hex!("0fa11e23bc5fcf7fda3ceb2e07ba62adae3c696ab3d315ec51358f9a4267ee01");
-        let actual_derived_sec_key_4 = KeyDerivation::from_slice(&key_deriv_4)
+        let _actual_derived_sec_key_4 = KeyDerivation::from_slice(&key_deriv_4)
             .unwrap()
             .derive_private_key(out_index_4, &PrivateKey::from_slice(&base_4).unwrap())
             .unwrap();

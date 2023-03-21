@@ -5,7 +5,7 @@ use std::str::FromStr;
 use hex;
 use thiserror::Error;
 
-use crate::{keccak256, KeyDerivation, KeyImage, PrivateKey, PublicKey};
+use crate::{keccak256, KeyDerivation, PrivateKey, PublicKey};
 
 const SHORT_HASH_SIZE: usize = 8;
 const LONG_HASH_SIZE: usize = 32;
@@ -47,6 +47,7 @@ pub enum PaymentIdStyle {
 
 impl PaymentIdStyle {
     /// Returns the size of the payment id in bytes
+    #[allow(dead_code)]
     fn hash_size(&self) -> usize {
         match self {
             PaymentIdStyle::Short => SHORT_HASH_SIZE,
@@ -77,7 +78,7 @@ impl PaymentId {
     /// Constructs a PaymentId struct from a string, returns error if the hex
     /// string cannot be parsed or if the size is not 8 or 32 bytes
     pub fn from(payment_id: String) -> Result<Self, Error> {
-        let payment_id_bytes = hex::decode(payment_id.clone())?;
+        let payment_id_bytes = hex::decode(payment_id)?;
         match payment_id_bytes.len() {
             SHORT_HASH_SIZE => Ok(PaymentId(payment_id_bytes)),
             LONG_HASH_SIZE => Ok(PaymentId(payment_id_bytes)),
@@ -139,10 +140,10 @@ impl PaymentId {
         if self.style()? != PaymentIdStyle::Short {
             return Err(Error::OnlyEncryptShortPaymentIds);
         }
-        let derivation = KeyDerivation::generate(&public_key, &secret_key);
+        let derivation = KeyDerivation::generate(public_key, secret_key);
 
         let mut data = [0u8; 33];
-        data[0..32].copy_from_slice(&derivation.as_slice());
+        data[0..32].copy_from_slice(derivation.as_slice());
         data[32] = HASH_KEY_ENCRYPTED_PAYMENT_ID;
         let hash = keccak256(&data);
         let mut encrypted_data = self.0.clone();
@@ -167,15 +168,13 @@ impl PaymentId {
 
     pub fn style(&self) -> Result<PaymentIdStyle, Error> {
         match self.0.len() {
-            SHORT_HASH_SIZE => return Ok(PaymentIdStyle::Short),
-            LONG_HASH_SIZE => return Ok(PaymentIdStyle::Long),
-            _ => {
-                return Err(Error::SizeMismatch {
-                    expected_short: SHORT_HASH_SIZE,
-                    expected_long: LONG_HASH_SIZE,
-                    found: self.0.len(),
-                })
-            }
+            SHORT_HASH_SIZE => Ok(PaymentIdStyle::Short),
+            LONG_HASH_SIZE => Ok(PaymentIdStyle::Long),
+            _ => Err(Error::SizeMismatch {
+                expected_short: SHORT_HASH_SIZE,
+                expected_long: LONG_HASH_SIZE,
+                found: self.0.len(),
+            }),
         }
     }
 }

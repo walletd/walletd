@@ -26,21 +26,20 @@ use crate::monero_lws::{UnspentOutput, DEFAULT_DUST_THRESHOLD, FAKE_OUTPUTS_COUN
 use crate::private_key::KEY_LEN;
 use crate::rct_types::RctKey;
 use crate::transaction::{
-    GetOutsEntry, PendingTransaction, Priority, SendTransaction,
-    TxDestinationEntry,
+    GetOutsEntry, PendingTransaction, Priority, SendTransaction, TxDestinationEntry,
 };
 use crate::{
-    Address, AddressType, CryptoWallet, CryptoWalletGeneral, HDKey, MoneroAmount,
-    MoneroLWSConnection, MoneroPrivateKeys, MoneroPublicKeys, Network, NetworkType, PublicKey,
+    Address, AddressType, CryptoWallet, CryptoAddressGeneral, HDKey, MoneroAmount,
+    MoneroLWSConnection, MoneroPrivateKeys, MoneroPublicKeys, Network, HDNetworkType, PublicKey,
     Seed, SerializedArchive,
 };
 
 const TX_EXTRA_TAG_PUBKEY: u8 = 0x01;
 const HF_VERSION_VIEW_TAGS: u8 = 15;
-const HF_VERSION_PER_BYTE_FEE: u8 = 8;
 const EXPECTED_MINIMUM_HF_VERSION: u8 = 15;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct MoneroWallet {
     crypto_type: SlipCoin,
     address_format: AddressType,
@@ -59,11 +58,11 @@ pub enum Error {
     /// Incorrect number of outputs for amount
     #[error("Not correct number of outputs for amount: expected {expected}, found {found}")]
     IncorrectNumberOfOutputs { expected: usize, found: usize },
-    #[error("monero_lws Error: {0}")]
-    HexError(#[from] monero_lws::Error),
+    #[error("Monero::LWS Error: {0}")]
+    MoneroLWS(#[from] monero_lws::Error),
     // Error from public_key module
     #[error("public_key Error: {0}")]
-    PublicKeyError(#[from] public_key::Error),
+    PublicKey(#[from] public_key::Error),
     /// Error because sending zero amount
     #[error("Error because sending zero amount")]
     SendingZeroAmount,
@@ -75,7 +74,7 @@ pub enum Error {
     OnlyOnePaymentIdAllowed,
     /// Error from handling payment id
     #[error("Error from handling payment id")]
-    PaymentIdError(#[from] payment_id::Error),
+    PaymentId(#[from] payment_id::Error),
     /// Error stemming from insufficient funds for transfer
     #[error("Insufficient funds, unable to complete transfer, needed {needed:?}, found {found:?}")]
     InsufficientFunds { needed: u64, found: u64 },
@@ -101,15 +100,15 @@ pub enum Error {
     UnsupportedTxOutTargetVariant,
     /// Error converted from an anyhow::Error
     #[error("Error converted from an anyhow::Error: {0}")]
-    AnyhowError(#[from] anyhow::Error),
+    FromAnyhow(#[from] anyhow::Error),
     /// Error converted from the key_image module
     #[error("Error converted from the key_image module: {0}")]
-    KeyImageError(#[from] key_image::Error),
+    KeyImage(#[from] key_image::Error),
     /// Error from vectors having different lengths
     #[error("Expected vectors to the same length: vector 1 length {0:?} != vector 2 length {1:?}")]
     DifferentLengths(usize, usize),
     #[error("Transaction error, outputs value greater than inputs value: inputs {inputs:?}, outputs {outputs:?}")]
-    TransactionValueError { inputs: u64, outputs: u64 },
+    TransactionValue { inputs: u64, outputs: u64 },
 }
 
 #[async_trait]
@@ -148,8 +147,8 @@ impl CryptoWallet for MoneroWallet {
         let public_keys = MoneroPublicKeys::from_private_keys(&private_keys);
 
         let network = match hd_keys.network {
-            NetworkType::MainNet => Network::Mainnet,
-            NetworkType::TestNet => Network::Stagenet,
+            HDNetworkType::MainNet => Network::Mainnet,
+            HDNetworkType::TestNet => Network::Stagenet,
         };
 
         let public_address = Address::new(&network, &public_keys, &address_format)?;
@@ -160,7 +159,7 @@ impl CryptoWallet for MoneroWallet {
             private_keys,
             public_keys,
             public_address,
-            network: network,
+            network,
         })
     }
 
@@ -211,7 +210,7 @@ impl CryptoWallet for MoneroWallet {
                 0,
             )
             .await?;
-        let unspent_outs = MoneroLWSConnection::to_unspent_outputs(&self, &unspent_outs_response)?;
+        let unspent_outs = MoneroLWSConnection::to_unspent_outputs(self, &unspent_outs_response)?;
         println!("unspent outs: {:?}", unspent_outs);
         let mut balance = MoneroAmount::from_piconero(0);
         for unspent_out in unspent_outs {
@@ -222,7 +221,9 @@ impl CryptoWallet for MoneroWallet {
 
     /// TODO(#81) add transfer functionality for Monero
     /// to send to multiple destinations
-    /// TODO(#68): fix this transfer function so that it is able to send a valid transaction, currently transaction created is not valid and does not pass the validate check
+    /// TODO(#68): fix this transfer function so that it is able to send a valid
+    /// transaction, currently transaction created is not valid and does not
+    /// pass the validate check
     async fn transfer(
         &self,
         blockchain_client: &Self::BlockchainClient,
@@ -245,7 +246,6 @@ impl CryptoWallet for MoneroWallet {
             )
             .await?;
 
-        
         let per_byte_fee: u64 = unspent_outs_response["per_byte_fee"]
             .as_u64()
             .expect("per_byte_fee should be present");
@@ -273,10 +273,10 @@ impl CryptoWallet for MoneroWallet {
         };
 
         let mut unspent_outs =
-            MoneroLWSConnection::to_unspent_outputs(&self, &unspent_outs_response)?;
+            MoneroLWSConnection::to_unspent_outputs(self, &unspent_outs_response)?;
 
         let using_mix_outs =
-            Self::light_wallet_get_outs(&self, blockchain_client, &unspent_outs).await?;
+            Self::light_wallet_get_outs(self, blockchain_client, &unspent_outs).await?;
 
         let mut pending_transaction =
             self.create_transaction(&send_transfer, &mut unspent_outs, &using_mix_outs)?;
@@ -288,7 +288,7 @@ impl CryptoWallet for MoneroWallet {
             .tx
             .do_serialize(&mut serialized_tx)?;
         let raw_tx_hex = hex::encode(serialized_tx.data);
-        
+
         let validated = signed_pending_tx.pending_tx.tx.validate()?;
         if validated {
             match blockchain_client
@@ -307,6 +307,14 @@ impl CryptoWallet for MoneroWallet {
             Err(anyhow!("Transaction is not valid"))
         }
     }
+
+    fn address_by_index(
+        &self,
+        _bip32_master: &HDKey,
+        _index: usize,
+    ) -> Result<Box<dyn CryptoAddressGeneral>, anyhow::Error> {
+        Err(anyhow!("Not implemented"))
+    }
 }
 
 impl MoneroWallet {
@@ -316,7 +324,7 @@ impl MoneroWallet {
         &self,
         send_transfer: &SendTransaction,
         unspent_outs: &mut Vec<UnspentOutput>,
-        using_mix_outs: &Vec<Vec<GetOutsEntry>>,
+        using_mix_outs: &[Vec<GetOutsEntry>],
     ) -> Result<PendingTransaction, Error> {
         if !send_transfer.sweep_all {
             for send_amount_to_dest in &send_transfer.destinations {
@@ -365,7 +373,7 @@ impl MoneroWallet {
         // check for a long payment id provided in the transaction parameters
         // if a payment_id is provided in send_transfer, add the info to tx_extra
         if let Some(pid) = &send_transfer.payment_id {
-            if extra_nonce.len() > 0 {
+            if !extra_nonce.is_empty() {
                 return Err(Error::OnlyOnePaymentIdAllowed);
             }
             extra_nonce = pid.extra_nonce()?;
@@ -376,23 +384,20 @@ impl MoneroWallet {
         // The short payment id is encrypted and added to tx_extra.
         for destination in &send_transfer.destinations {
             let dst_addr = &destination.addr;
-            match &dst_addr.format {
-                AddressType::Integrated(pid) => {
-                    if extra_nonce.len() > 0 {
-                        return Err(Error::OnlyOnePaymentIdAllowed);
-                    }
-                    extra_nonce = pid.extra_nonce()?;
-                    // encrypt the pid
-                    let encrypted_pid = pid.encrypt_payment_id(&tx_key_pub, &tx_key)?;
-                    encrypted_pid.add_pid_to_tx_extra(&mut tx_extra)?;
+            if let AddressType::Integrated(pid) = &dst_addr.format {
+                if !extra_nonce.is_empty() {
+                    return Err(Error::OnlyOnePaymentIdAllowed);
                 }
-                _ => {}
+                extra_nonce = pid.extra_nonce()?;
+                // encrypt the pid
+                let encrypted_pid = pid.encrypt_payment_id(&tx_key_pub, &tx_key)?;
+                encrypted_pid.add_pid_to_tx_extra(&mut tx_extra)?;
             }
         }
 
         // add dummy payment id if payment id was not already added, unless we have more
         // than the usual 1 destination + change
-        if extra_nonce.len() == 0 && send_transfer.destinations.len() > 1 {
+        if extra_nonce.is_empty() && send_transfer.destinations.len() > 1 {
             let dummy_pid = PaymentId::from_slice(&[0u8; 8])?;
             let encrypted_pid = dummy_pid.encrypt_payment_id(&tx_key_pub, &tx_key)?;
             encrypted_pid.add_pid_to_tx_extra(&mut extra_nonce)?;
@@ -436,12 +441,11 @@ impl MoneroWallet {
         let mut using_inds: Vec<usize> = Vec::new();
 
         // We need to gather enough funds to try to cover the potential total
-        let potential_total;
-        if send_transfer.sweep_all {
-            potential_total = MoneroAmount::from_piconero(u64::MAX);
+        let potential_total = if send_transfer.sweep_all {
+            MoneroAmount::from_piconero(u64::MAX)
         } else {
-            potential_total = final_total_wo_fee + max_estimated_fee;
-        }
+            final_total_wo_fee + max_estimated_fee
+        };
 
         // using_outs_amount keeps track of the amount of unspent outs we have selected
         // so far to use
@@ -562,14 +566,14 @@ impl MoneroWallet {
                 .position(|oe| oe.0 == unspent_out.global_index)
                 .ok_or(Error::DidNotFindRealOutputIndex)?;
             let rct_tx_pub_key = PublicKey::from_str(&unspent_out.tx_pub_key.clone())?;
-            let rct_commit = &unspent_out.parse_rct_commit(&self, &rct_tx_pub_key)?;
-            let rct_mask = &unspent_out.parse_rct_mask(&self, &rct_tx_pub_key)?;
+            let _rct_commit = &unspent_out.parse_rct_commit(self, &rct_tx_pub_key)?;
+            let rct_mask = &unspent_out.parse_rct_mask(self, &rct_tx_pub_key)?;
             let rct_dest_public_key = PublicKey::from_str(&unspent_out.public_key)?;
-            let real_oe = transaction::OutputEntry(
+            let _real_oe = transaction::OutputEntry(
                 unspent_out.global_index,
                 rct_types::CtKey {
                     dest: RctKey::from_slice(&rct_dest_public_key.to_bytes()),
-                    mask: rct_types::RctKey::commit(src.amount, &rct_mask),
+                    mask: rct_types::RctKey::commit(src.amount, rct_mask),
                 },
             );
 
@@ -693,7 +697,7 @@ impl MoneroWallet {
 
         // check mony
         if summary_outs_money > summary_inputs_money {
-            return Err(Error::TransactionValueError {
+            return Err(Error::TransactionValue {
                 inputs: summary_inputs_money,
                 outputs: summary_outs_money,
             });
@@ -712,6 +716,8 @@ impl MoneroWallet {
             bp_version: 4,
         };
 
+        assert!(all_rct);
+
         let use_simple_rct = true;
 
         let mut amount_in: u64 = 0;
@@ -729,7 +735,7 @@ impl MoneroWallet {
             index.push(sources[i].real_output);
             in_sk.push(rct_types::CtKey {
                 dest: RctKey::from_slice(in_contexts[i].private_key.as_slice()),
-                mask: sources[i].mask.clone(),
+                mask: sources[i].mask,
             })
         }
 
@@ -795,7 +801,7 @@ impl MoneroWallet {
 
         // TODO(#68): add zeroize for in_sk
 
-        let mut tx = transaction::Transaction {
+        let tx = transaction::Transaction {
             prefix: tx_prefix.clone(),
             prunable_hash_valid: false,
             hash_valid: false,
@@ -815,7 +821,7 @@ impl MoneroWallet {
             use_rct: true,
             rct_config,
             sources,
-            change_dts: change_dst.clone(),
+            change_dts: change_dst,
             splitted_dsts: splitted_dsts.clone(),
             selected_transfers: vec![0], // Only one transaction handled for now
             extra: tx_prefix.extra.clone(),
@@ -836,7 +842,7 @@ impl MoneroWallet {
             tx_key,
             additional_tx_keys: Vec::new(), /* TODO(#68): add support for additional tx keys as
                                              * needed */
-            tx: tx.clone(),
+            tx,
             dust: DEFAULT_DUST_THRESHOLD, // TODO(#68): check on this
             multisig_sigs: Vec::new(),    /* TODO(#68): need to add multisig support for monero
                                            * transactions */
@@ -876,7 +882,7 @@ impl MoneroWallet {
 
         // TODO(#68): need to be able to handle txout_to_tagged_key case as well as the
         // txout_to_key case
-        for (i, vout) in unsigned_pending_tx
+        for (i, _vout) in unsigned_pending_tx
             .pending_tx
             .tx
             .prefix
@@ -894,12 +900,12 @@ impl MoneroWallet {
 
     /// Returns the public keys for the wallet
     pub fn public_keys(&self) -> MoneroPublicKeys {
-        self.public_keys.clone()
+        self.public_keys
     }
 
     /// Returns the private keys for the wallet
     pub fn private_keys(&self) -> MoneroPrivateKeys {
-        self.private_keys.clone()
+        self.private_keys
     }
 
     /// Returns the public address for the wallet
@@ -909,7 +915,7 @@ impl MoneroWallet {
 
     /// Returns the network type for the wallet
     pub fn network(&self) -> Network {
-        self.network.clone()
+        self.network
     }
 
     /// Handles getting the relevant outputs from the server and creating the
@@ -954,8 +960,8 @@ impl MoneroWallet {
         for (idx, using_out) in using_outs.iter().enumerate() {
             // add real output first
             let tx_pub_key = PublicKey::from_str(&using_out.public_key)?;
-            let rct_commit = using_out.parse_rct_commit(&self, &tx_pub_key)?;
-            let rct_mask = using_out.parse_rct_mask(&self, &tx_pub_key)?;
+            let _rct_commit = using_out.parse_rct_commit(self, &tx_pub_key)?;
+            let rct_mask = using_out.parse_rct_mask(self, &tx_pub_key)?;
             let real_output = GetOutsEntry(
                 using_out.global_index,
                 PublicKey::from_str(&using_out.public_key)?,
@@ -968,8 +974,7 @@ impl MoneroWallet {
             let mut rng = rand::thread_rng();
             let mut random_order: Vec<usize> = (0..FAKE_OUTPUTS_COUNT).collect();
             random_order.shuffle(&mut rng);
-            for o in 0..FAKE_OUTPUTS_COUNT {
-                let i = random_order[o];
+            for i in random_order {
                 let amount_key = idx;
                 let global_index = &random_outs_server[amount_key].outputs[i].global_index;
                 let real_index = using_out.global_index;
@@ -982,8 +987,8 @@ impl MoneroWallet {
 
                 let output_public_key =
                     PublicKey::from_str(&random_outs_server[amount_key].outputs[i].public_key)?;
-                let mut rct_commit = using_out.parse_rct_commit(&self, &output_public_key)?;
-                let mut mask = using_out.parse_rct_mask(&self, &output_public_key)?;
+                let rct_commit = using_out.parse_rct_commit(self, &output_public_key)?;
+                let _mask = using_out.parse_rct_mask(self, &output_public_key)?;
 
                 // TODO(#68): not sure if using this cache correctly for anything useful
                 // See if these commented lines can be removed
@@ -996,7 +1001,7 @@ impl MoneroWallet {
             idx_out.sort_by(|a, b| a.0.cmp(&b.0));
             outs.push(idx_out);
         }
-        return Ok(outs);
+        Ok(outs)
     }
 }
 
@@ -1021,12 +1026,16 @@ impl Display for MoneroWallet {
     }
 }
 
-impl CryptoWalletGeneral for MoneroWallet {
+impl CryptoAddressGeneral for MoneroWallet {
     fn crypto_type(&self) -> SlipCoin {
         SlipCoin::XMR
     }
 
     fn as_any(&self) -> &dyn Any {
         self
+    }
+
+    fn box_clone(&self) -> Box<dyn CryptoAddressGeneral> {
+        Box::new(self.clone())
     }
 }

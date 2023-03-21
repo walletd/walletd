@@ -68,9 +68,16 @@ impl ops::Div for BitcoinAmount {
 }
 
 impl BitcoinAmount {
+
     pub fn new_from_btc(btc_amount: f64) -> Self {
         let satoshi = (btc_amount * 100_000_000.0) as u64; // 100 million satoshis per bitcoin
         Self { satoshi }
+    }
+
+    pub fn new_from_satoshi(satoshi_amount: u64) -> Self {
+        Self {
+            satoshi: satoshi_amount,
+        }
     }
 
     pub fn btc(&self) -> f64 {
@@ -79,6 +86,20 @@ impl BitcoinAmount {
 
     pub fn satoshi(&self) -> u64 {
         self.satoshi
+    }
+}
+
+impl CryptoAmount for BitcoinAmount {
+    fn new_from_main_unit_decimal_value(value: f64) -> Self {
+        Self::new_from_btc(value)
+    }
+
+    fn to_main_unit_decimal_value(&self) -> f64 {
+        self.btc()
+    }
+
+    fn to_smallest_unit_integer_value(&self) -> u64 {
+        self.satoshi()
     }
 }
 
@@ -91,11 +112,5 @@ impl Display for BitcoinAmount {
             self.satoshi()
         )?;
         Ok(())
-    }
-}
-
-impl CryptoAmount for BitcoinAmount {
-    fn new_from_decimal_value(value: f64) -> Self {
-        Self::new_from_btc(value)
     }
 }

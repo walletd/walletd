@@ -29,14 +29,14 @@ pub enum Error {
     InvalidPoint,
     /// Error in decoding hex
     #[error("Hex string could not be parsed to bytes, Error: {0}")]
-    HexError(#[from] hex::FromHexError),
+    FromHex(#[from] hex::FromHexError),
 }
 impl DoSerialize for PublicKey {
     fn do_serialize(&self, serialized: &mut SerializedArchive) -> Result<(), anyhow::Error> {
         serialized.data.extend_from_slice(self.as_slice());
         serialized
             .json_stream
-            .push_str(&hex::encode(self.as_slice().to_vec()));
+            .push_str(&hex::encode(self.as_slice()));
         Ok(())
     }
 }
@@ -53,8 +53,8 @@ impl PublicKey {
         }
         let point = CompressedEdwardsY::from_slice(data);
         match point.decompress() {
-            Some(_) => return Ok(PublicKey(point)),
-            None => return Err(Error::InvalidPoint),
+            Some(_) => Ok(PublicKey(point)),
+            None => Err(Error::InvalidPoint),
         }
     }
 
@@ -183,7 +183,7 @@ mod tests {
         let result = PublicKey::from_str(hex_string);
         assert!(result.is_err());
         match result.unwrap_err() {
-            Error::HexError(_) => {}
+            Error::FromHex(_) => {}
             _ => panic!("Unexpected error"),
         }
     }
@@ -212,7 +212,7 @@ mod tests {
         // true
         let key_4 = hex!("6016a5463b9e5a58c3410d3f892b76278883473c3f0b69459172d3de49e85abe");
         let actual_4 = PublicKey::from_slice(&key_4);
-        let expected_4 = PublicKey::from_slice(&key_4);
+        let _expected_4 = PublicKey::from_slice(&key_4);
         assert!(actual_4.is_ok());
 
         // check_key 4c71282b2add07cdc6898a2622553f1ca4eb851e5cb121181628be5f3814c5b1

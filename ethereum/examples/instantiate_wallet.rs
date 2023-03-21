@@ -1,15 +1,15 @@
 // use std::str::FromStr;
 
-use thiserror::Error;
 use walletd_bip39::{Language, Mnemonic, MnemonicHandler};
 use walletd_coin_model::crypto_wallet::CryptoWallet;
 use walletd_ethereum::*;
 // use hex_literal::hex;
-use walletd_hd_key::HDKey;
+// use walletd_hd_key::HDKey;
 // use walletd_coin_model::CryptoWallet;
 use walletd_hd_key::NetworkType;
 
-const GOERLI_TEST_ADDRESS: &str = "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
+// const GOERLI_TEST_ADDRESS: &str =
+// "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
 #[tokio::main]
 async fn main() -> web3::Result<()> {
     // main_wip()?;

@@ -6,6 +6,7 @@ use crate::MoneroAmount;
 pub const DEFAULT_DUST_THRESHOLD: u64 = 2000000000; // 2 * pow(10, 9)
 const APPROXIMATE_INPUT_BYTES: usize = 80;
 
+#[allow(clippy::too_many_arguments)]
 pub fn estimate_rct_tx_size(
     n_inputs: usize,
     mixin: usize,
@@ -65,6 +66,7 @@ pub fn estimate_rct_tx_size(
     size as u64
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn estimate_tx_size(
     use_rct: bool,
     n_inputs: usize,
@@ -77,7 +79,7 @@ pub fn estimate_tx_size(
     use_view_tags: bool,
 ) -> u64 {
     if use_rct {
-        return estimate_rct_tx_size(
+        estimate_rct_tx_size(
             n_inputs,
             mixin,
             n_outputs,
@@ -86,14 +88,15 @@ pub fn estimate_tx_size(
             clsag,
             bulletproof_plus,
             use_view_tags,
-        );
+        )
     } else {
-        return (n_inputs * (mixin + 1) * APPROXIMATE_INPUT_BYTES
+        (n_inputs * (mixin + 1) * APPROXIMATE_INPUT_BYTES
             + extra_size
-            + (if use_view_tags { todo!() } else { 0 })) as u64;
+            + (if use_view_tags { todo!() } else { 0 })) as u64
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn estimate_tx_weight(
     use_rct: bool,
     n_inputs: usize,
@@ -142,10 +145,11 @@ pub fn calculate_fee_from_weight(
 }
 
 pub fn calculate_fee(fee_per_kb: u64, bytes: u64) -> MoneroAmount {
-    let kB = (bytes + 1023) / 1024;
-    MoneroAmount::from_piconero(kB * fee_per_kb)
+    let kb = (bytes + 1023) / 1024;
+    MoneroAmount::from_piconero(kb * fee_per_kb)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn estimate_fee(
     use_per_byte_fee: bool,
     use_rct: bool,
@@ -172,7 +176,7 @@ pub fn estimate_fee(
             bulletproof_plus,
             use_view_tags,
         );
-        return calculate_fee_from_weight(base_fee, estimated_tx_weight, fee_quantization_mask);
+        calculate_fee_from_weight(base_fee, estimated_tx_weight, fee_quantization_mask)
     } else {
         let estimated_tx_size = estimate_tx_size(
             use_rct,
@@ -185,6 +189,6 @@ pub fn estimate_fee(
             bulletproof_plus,
             use_view_tags,
         );
-        return calculate_fee(base_fee, estimated_tx_size);
+        calculate_fee(base_fee, estimated_tx_size)
     }
 }

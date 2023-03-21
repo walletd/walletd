@@ -3,10 +3,12 @@ use thiserror::Error;
 use crate::AddressType;
 
 /// Monero network enum, options are Mainnet, Testnet, and Stagenet
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Network {
     /// Mainnet is the "production" network and blockchain where XMR units have
     /// value.
+    /// Thi
+    #[default]
     Mainnet,
     /// Stagenet is a development network which is technically equivalent to
     /// mainnet but XMR units have no value.
@@ -28,23 +30,22 @@ impl Network {
     /// Returns the "magic byte" associated with a given network and address
     /// type
     pub fn as_u8(self, addr_type: &AddressType) -> u8 {
-        use AddressType::*;
         use Network::*;
         match self {
             Mainnet => match addr_type {
-                Standard => 18,
-                Integrated(_) => 19,
-                _SubAddress => 42,
+                AddressType::Standard => 18,
+                AddressType::Integrated(_) => 19,
+                AddressType::Subaddress(_) => 42,
             },
             Testnet => match addr_type {
-                Standard => 53,
-                Integrated(_) => 54,
-                _SubAddress => 63,
+                AddressType::Standard => 53,
+                AddressType::Integrated(_) => 54,
+                AddressType::Subaddress(_) => 63,
             },
             Stagenet => match addr_type {
-                Standard => 24,
-                Integrated(_) => 25,
-                _SubAddress => 36,
+                AddressType::Standard => 24,
+                AddressType::Integrated(_) => 25,
+                AddressType::Subaddress(_) => 36,
             },
         }
     }
@@ -58,11 +59,5 @@ impl Network {
             24 | 25 | 36 => Ok(Stagenet),
             _ => Err(Error::InvalidMagicByte),
         }
-    }
-}
-
-impl Default for Network {
-    fn default() -> Self {
-        Network::Mainnet
     }
 }

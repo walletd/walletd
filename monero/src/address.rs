@@ -80,15 +80,15 @@ impl AddressType {
         use AddressType::*;
         use Network::*;
         match (magic_byte, network) {
-            (18, Mainnet) | (24, Stagenet) | (53, Testnet) => return Ok(Standard),
+            (18, Mainnet) | (24, Stagenet) | (53, Testnet) => Ok(Standard),
             (19, Mainnet) | (25, Stagenet) | (43, Testnet) => {
                 // Integrate addresses incorporate an 8 byte payment id
-                return Ok(Integrated(PaymentId::from_slice(&bytes[65..73])?));
+                Ok(Integrated(PaymentId::from_slice(&bytes[65..73])?))
             }
             (42, Mainnet) | (36, Stagenet) | (63, Testnet) => {
                 // Cannot discern the major and minor subaddress indices from the
                 // address bytes so setting them to None
-                return Ok(Subaddress(None));
+                Ok(Subaddress(None))
             }
             (_, _) => Err(Error::AddressTypeParseError),
         }
@@ -169,7 +169,7 @@ impl Address {
             None => return Err(Error::MissingPublicViewKey),
         };
         Ok(Self {
-            network: network.clone(),
+            network: *network,
             public_spend_key,
             public_view_key,
             format: format.clone(),
@@ -194,7 +194,7 @@ impl Address {
                 if id.style()? != PaymentIdStyle::Short {
                     return Err(Error::WrongPaymentIdStyle);
                 }
-                bytes.extend_from_slice(&id.as_bytes());
+                bytes.extend_from_slice(id.as_bytes());
             }
         }
 
@@ -208,7 +208,7 @@ impl Address {
     pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
         let magic_byte = bytes[0];
         let network = network::Network::from_u8(magic_byte)?;
-        let format = AddressType::from_slice(&bytes)?;
+        let format = AddressType::from_slice(bytes)?;
         let public_spend_key = PublicKey::from_slice(&bytes[1..33])?;
         let public_view_key = PublicKey::from_slice(&bytes[33..65])?;
 
@@ -242,6 +242,7 @@ impl Display for Address {
     }
 }
 
+#[allow(dead_code)]
 pub struct SubaddressKeys {
     index: SubaddressIndex,
     private_keys: MoneroPrivateKeys,
@@ -261,16 +262,16 @@ impl SubaddressKeys {
         if index.is_zero() {
             return Ok(Self {
                 index: index.clone(),
-                private_keys: primary_private_keys.clone(),
-                public_keys: primary_public_keys.clone(),
+                private_keys: *primary_private_keys,
+                public_keys: primary_public_keys,
             });
         }
 
         let (major, minor) = index.as_tuple();
         let mut derivation: Vec<_> = b"SubAddr\x00"[..].into();
-        derivation.extend(&primary_private_keys.view_key().to_bytes());
-        derivation.extend(&major.to_le_bytes());
-        derivation.extend(&minor.to_le_bytes());
+        derivation.extend(primary_private_keys.view_key().to_bytes());
+        derivation.extend(major.to_le_bytes());
+        derivation.extend(minor.to_le_bytes());
 
         let subaddress_scalar = Scalar::from_bytes_mod_order(keccak256(&derivation)).to_bytes();
         let private_keys = MoneroPrivateKeys::from_private_view_key(&subaddress_scalar)?;
@@ -282,7 +283,7 @@ impl SubaddressKeys {
                 .to_bytes(),
             )?;
             let public_view_key = PublicKey::from_slice(
-                &(&primary_private_keys.view_key().as_scalar()
+                &(primary_private_keys.view_key().as_scalar()
                     * public_spend_key.to_edwards_point())
                 .compress()
                 .to_bytes(),
@@ -316,14 +317,14 @@ mod tests {
     use super::*;
 
     const SEED: &[u8] = &hex!("66dcbb7490ee34dad1b04fa316b90ba1795ce70586298e2cc09455de1ae95273");
-    const PRIVATE_VIEW_KEY_A: &[u8] =
-        &hex!("25d014a444fb7a1e6836c680d3ec1b6eed628a29c3c85e0379fb89f53c4c610a");
-    const PRIVATE_SPEND_KEY: &[u8] =
-        &hex!("eb1003ead738b471f5668a2e00e4f20e795ce70586298e2cc09455de1ae95203");
-    const PUBLIC_VIEW_KEY: &[u8] =
-        &hex!("603ebe3bc1b2590c8a5e4caa90ee807cada4f881ad4f21f6c3653459781034c0");
-    const PUBLIC_SPEND_KEY: &[u8] =
-        &hex!("dce90ff7304d8b648bfbac69624b4c6562340c5c748a8a6d2c84bad3b76fe974");
+    // const PRIVATE_VIEW_KEY_A: &[u8] =
+    //    &hex!("25d014a444fb7a1e6836c680d3ec1b6eed628a29c3c85e0379fb89f53c4c610a");
+    // const PRIVATE_SPEND_KEY: &[u8] =
+    //    &hex!("eb1003ead738b471f5668a2e00e4f20e795ce70586298e2cc09455de1ae95203");
+    // const PUBLIC_VIEW_KEY: &[u8] =
+    //    &hex!("603ebe3bc1b2590c8a5e4caa90ee807cada4f881ad4f21f6c3653459781034c0");
+    // const PUBLIC_SPEND_KEY: &[u8] =
+    //    &hex!("dce90ff7304d8b648bfbac69624b4c6562340c5c748a8a6d2c84bad3b76fe974");
     const ADDRESS: &str = "49zf2PF7nLSHpRwWcPG8ePHxYnR6eFmYuKG8Akpq5vFALTzZzMdv3kC36fCSP3UfFdMrY51QAs5NGiGuwXK6YMa3Nk7549x";
     const SUBADDRESS_0_1: &str = "87i7kA61fNvMboXiYWHVygPAggKJPETFqLXXcdH4mQTrECvrTxZMtt6e6owj1k8jUVjNR11eBuBMWHFBtxAwEVcm9dcSUxr";
     const SUBADDRESS_0_2: &str = "8A9XmWsATrhfedtNhTMNKELwfCwMVAk2iVTdUJdFRb2AC4tV4VeBjsCLYR9cSQTwnvLo4MAuQFMLP6Si4xp6t6BS788db3t";

@@ -43,7 +43,7 @@ mod tests {
     use hex_literal::hex;
 
     use super::*;
-
+    #[allow(dead_code)]
     struct KeyInfo<'a> {
         private_spend_key: &'a [u8],
         private_view_key: &'a [u8],
@@ -63,7 +63,7 @@ mod tests {
     #[test]
     fn test_from_private_keys() {
         let private_keys =
-            MoneroPrivateKeys::from_private_spend_key(&VALID_INFO_1.private_spend_key).unwrap();
+            MoneroPrivateKeys::from_private_spend_key(VALID_INFO_1.private_spend_key).unwrap();
         let public_keys = MoneroPublicKeys::from_private_keys(&private_keys);
         let public_view_key = public_keys.view_key().unwrap();
         let public_spend_key = public_keys.spend_key().unwrap();

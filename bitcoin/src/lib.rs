@@ -5,13 +5,13 @@ use bitcoincore_rpc::bitcoin::{Block, BlockHash, Transaction, Txid};
 use bitcoincore_rpc::bitcoincore_rpc_json::GetBlockchainInfoResult;
 use bitcoincore_rpc::{Auth, Client, RpcApi};
 
-mod bitcoin_wallet;
-pub use bitcoin_wallet::{BitcoinWallet, Network};
+mod bitcoin_address;
+pub use bitcoin_address::{BitcoinAddress, Network};
 mod bitcoin_amount;
 pub use bitcoin_amount::BitcoinAmount;
 mod blockstream;
 pub use blockstream::{
-    BTransaction, Blockstream, Input, Output, Status, BLOCKSTREAM_TESTNET_URL, BLOCKSTREAM_URL,
+    BTransaction, Blockstream, Input, Output, Status, FeeEstimates, BLOCKSTREAM_TESTNET_URL, BLOCKSTREAM_URL,
 };
 pub const USER: &str = "test";
 pub const PASS: &str = "test";

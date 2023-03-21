@@ -94,9 +94,9 @@ impl MoneroPrivateKeys {
         }
         let (major, minor) = index.as_tuple();
         let mut derivation: Vec<_> = b"SubAddr\x00"[..].into();
-        derivation.extend(&self.view_key().to_bytes());
-        derivation.extend(&major.to_le_bytes());
-        derivation.extend(&minor.to_le_bytes());
+        derivation.extend(self.view_key().to_bytes());
+        derivation.extend(major.to_le_bytes());
+        derivation.extend(minor.to_le_bytes());
 
         let view_key = PrivateKey::from_slice(
             &Scalar::from_bytes_mod_order(keccak256(&derivation)).to_bytes(),
@@ -140,7 +140,7 @@ mod tests {
     #[test]
     fn test_from_seed() {
         // Test with invalid length
-        let result = MoneroPrivateKeys::from_seed(&INVALID_INFO_1.seed);
+        let result = MoneroPrivateKeys::from_seed(INVALID_INFO_1.seed);
         assert!(result.is_err());
         match result.unwrap_err() {
             Error::InvalidByteLength { expected, found } => {
@@ -151,7 +151,7 @@ mod tests {
         }
 
         // Test with correct length
-        let result = MoneroPrivateKeys::from_seed(&VALID_INFO_1.seed).unwrap();
+        let result = MoneroPrivateKeys::from_seed(VALID_INFO_1.seed).unwrap();
         let private_spend_key = result.spend_key().unwrap();
         let private_view_key = result.view_key();
         assert_eq!(private_spend_key.as_slice(), VALID_INFO_1.private_spend_key);
@@ -159,7 +159,7 @@ mod tests {
     }
     #[test]
     fn test_from_private_spend_key() {
-        let result = MoneroPrivateKeys::from_private_spend_key(&VALID_INFO_1.private_spend_key);
+        let result = MoneroPrivateKeys::from_private_spend_key(VALID_INFO_1.private_spend_key);
         assert!(result.is_ok());
         let private_keys = result.unwrap();
         let private_spend_key = private_keys.spend_key().unwrap();
@@ -170,7 +170,7 @@ mod tests {
 
     #[test]
     fn test_from_private_view_key() {
-        let result = MoneroPrivateKeys::from_private_view_key(&VALID_INFO_1.private_view_key);
+        let result = MoneroPrivateKeys::from_private_view_key(VALID_INFO_1.private_view_key);
         assert!(result.is_ok());
         let private_keys = result.unwrap();
         assert!(private_keys.spend_key().is_none());

@@ -1,5 +1,4 @@
 extern crate walletd_monero;
-use std::fmt::Display;
 
 use walletd_monero::{varint, VarInt, VarIntEncoding};
 

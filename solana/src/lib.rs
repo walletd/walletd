@@ -4,7 +4,7 @@ use core::fmt::Display;
 use base58::ToBase58;
 use solana_client::rpc_client::RpcClient;
 // const URL: &str = "https://api.devnet.solana.com";
-use walletd_hd_key::NetworkType;
+use walletd_hd_key::HDNetworkType;
 
 #[derive(Default)]
 pub enum SolanaFormat {
@@ -12,10 +12,10 @@ pub enum SolanaFormat {
     Standard,
 }
 
-impl SolanaFormat {
-    pub fn to_string(&self) -> String {
+impl Display for SolanaFormat {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            SolanaFormat::Standard => "Standard".to_string(),
+            SolanaFormat::Standard => write!(f, "Standard"),
         }
     }
 }
@@ -25,7 +25,7 @@ pub struct SolanaWallet {
     public_address: String,
     private_key: String,
     public_key: String,
-    network: NetworkType,
+    network: HDNetworkType,
 }
 
 impl SolanaWallet {
@@ -47,20 +47,16 @@ impl Display for SolanaWallet {
         writeln!(f, " Network: {}", self.network)?;
         writeln!(f, " Private Key: {}", self.private_key)?;
         writeln!(f, " Public Key: {}", self.public_key)?;
-        writeln!(f, " Address Format: {}", self.address_format.to_string())?;
+        writeln!(f, " Address Format: {}", self.address_format)?;
         writeln!(f, " Public Address: {}", self.public_address)?;
         Ok(())
     }
 }
 
-pub struct BlockchainClient {
-    blockchain_client: RpcClient,
-}
+pub struct BlockchainClient(pub RpcClient);
 
 impl BlockchainClient {
     pub fn new(url: &str) -> Result<Self, anyhow::Error> {
-        Ok(Self {
-            blockchain_client: RpcClient::new(url),
-        })
+        Ok(Self(RpcClient::new(url)))
     }
 }

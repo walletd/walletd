@@ -14,7 +14,7 @@ use rand::{thread_rng, Rng};
 /// It can be represented as 32 bytes.
 /// This struct can be used to represent either a private view key or a private
 /// spend key.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct PrivateKey(pub Scalar);
 
 #[derive(Debug, Error, PartialEq, Clone)]
@@ -28,7 +28,7 @@ pub enum Error {
     NotCanonicalScalar,
     /// Error in decoding hex
     #[error("Hex string could not be parsed to bytes, Error: {0}")]
-    HexError(#[from] hex::FromHexError),
+    FromHex(#[from] hex::FromHexError),
 }
 
 impl PrivateKey {
@@ -51,8 +51,8 @@ impl PrivateKey {
         let mut bytes = [0u8; KEY_LEN];
         bytes.copy_from_slice(data);
         match Scalar::from_canonical_bytes(bytes) {
-            Some(scalar) => return Ok(PrivateKey(scalar)),
-            None => return Err(Error::NotCanonicalScalar),
+            Some(scalar) => Ok(PrivateKey(scalar)),
+            None => Err(Error::NotCanonicalScalar),
         }
     }
 
@@ -73,7 +73,7 @@ impl PrivateKey {
 
     /// Construct a PrivateKey from a Scalar
     pub fn from_scalar(scalar: &Scalar) -> Self {
-        Self { 0: scalar.clone() }
+        Self(*scalar)
     }
 }
 
@@ -168,7 +168,7 @@ mod tests {
         let result = PrivateKey::from_str(hex_string);
         assert!(result.is_err());
         match result.unwrap_err() {
-            Error::HexError(_) => {}
+            Error::FromHex(_) => {}
             _ => panic!("Unexpected error"),
         }
     }

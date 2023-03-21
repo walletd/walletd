@@ -66,7 +66,7 @@ impl MixAmountAndOuts {
             }
             Ok(mix_outs)
         } else {
-            return Err(Error::MixAmountInfoMissing);
+            Err(Error::MixAmountInfoMissing)
         }
     }
 }

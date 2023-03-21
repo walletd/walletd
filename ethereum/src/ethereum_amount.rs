@@ -94,7 +94,16 @@ impl Display for EthereumAmount {
 }
 
 impl CryptoAmount for EthereumAmount {
-    fn new_from_decimal_value(value: f64) -> Self {
+    
+    fn new_from_main_unit_decimal_value(value: f64) -> Self {
         Self::new_from_eth(value)
+    }
+
+    fn to_main_unit_decimal_value(&self) -> f64 {
+        self.eth()
+    }
+
+    fn to_smallest_unit_integer_value(&self) -> u64 {
+        self.wei.as_u64()
     }
 }

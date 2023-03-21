@@ -89,7 +89,7 @@ impl ops::Mul for MoneroAmount {
 
     fn mul(self, rhs: Self) -> Self::Output {
         Self {
-            piconero: self.piconero + rhs.piconero,
+            piconero: self.piconero * rhs.piconero,
         }
     }
 }
