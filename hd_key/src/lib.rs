@@ -32,87 +32,6 @@ impl DeriveType {
             DeriveType::BIP84 => "84'",
         }
     }
-
-    /// Derives the default first account with the specified derivation path
-    /// scheme
-    pub fn derive_first_account(
-        &self,
-        master_node: &HDKey,
-        coin: &SlipCoin,
-    ) -> Result<HDKey, anyhow::Error> {
-        let derived_account_path = format!("m/{}/{}'/0'", &self.purpose(), coin);
-        HDKey::from_master(master_node, derived_account_path)
-    }
-
-    /// Derives the default first address with the specified derivation path
-    /// scheme
-    pub fn derive_first_address(
-        &self,
-        master_node: &HDKey,
-        coin: &SlipCoin,
-    ) -> Result<HDKey, anyhow::Error> {
-        let deriv_path = format!("m/{}/{}'/0'/0/0", &self.purpose(), coin);
-        HDKey::from_master(master_node, deriv_path)
-    }
-
-    /// Derives the default first change address with the specified derivation
-    /// path scheme
-    pub fn derive_specify_account_address_indices(
-        &self,
-        master_node: &HDKey,
-        coin: &SlipCoin,
-        account_index: usize,
-        address_index: usize,
-    ) -> Result<HDKey, anyhow::Error> {
-        let derived_path = format!(
-            "m/{}/{}'/{}'/0/{}",
-            &self.purpose(),
-            coin,
-            account_index,
-            address_index
-        );
-        HDKey::from_master(master_node, derived_path)
-    }
-
-    /// Derives the default first change address with the specified derivation
-    /// path scheme
-    pub fn derive_specify_change_account_address_indices(
-        &self,
-        master_node: &HDKey,
-        coin: &SlipCoin,
-        change_index: usize,
-        account_index: usize,
-        address_index: usize,
-    ) -> Result<HDKey, anyhow::Error> {
-        let derived_path = format!(
-            "m/{}/{}'/{}'/{}/{}",
-            &self.purpose(),
-            coin,
-            account_index,
-            change_index,
-            address_index
-        );
-        HDKey::from_master(master_node, derived_path)
-    }
-
-    /// Derives the default first change address with the specified derivation
-    /// path scheme
-    pub fn derive_change_internal_chain_specify_account_address_indices(
-        &self,
-        master_node: &HDKey,
-        coin: &SlipCoin,
-        account_index: usize,
-        address_index: usize,
-    ) -> Result<HDKey, anyhow::Error> {
-        let derived_path = format!(
-            "m/{}/{}/{}'/1/{}",
-            &self.purpose(),
-            coin,
-            account_index,
-            address_index
-        );
-        HDKey::from_master(master_node, derived_path)
-    }
 }
 
 impl FromStr for DeriveType {
@@ -158,7 +77,7 @@ impl DerivePathComponent {
     pub fn to_shortform_index(&self) -> u32 {
         match self {
             DerivePathComponent::Master => 0,
-            DerivePathComponent::IndexHardened(num) => Self::hardened_shortform_index(*num),
+            DerivePathComponent::IndexHardened(num) => *num,
             DerivePathComponent::IndexNotHardened(num) => *num,
         }
     }
@@ -168,20 +87,48 @@ impl Display for DerivePathComponent {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             DerivePathComponent::Master => {
-                writeln!(f, "m")?;
+                write!(f, "m")?;
             }
             DerivePathComponent::IndexHardened(num) => {
-                writeln!(
+                write!(
                     f,
                     "{}'",
-                    DerivePathComponent::hardened_shortform_index(*num)
+                num
                 )?;
             }
             DerivePathComponent::IndexNotHardened(num) => {
-                writeln!(f, "{}", num)?;
+                write!(f, "{}", num)?;
             }
         }
         Ok(())
+    }
+}
+
+impl FromStr for DerivePathComponent {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, anyhow::Error> {
+        if s == "m" {
+            return Ok(DerivePathComponent::Master);
+        }
+        let mut chars = s.chars();
+        let mut is_hardened = false;
+        let mut num = String::new();
+        while let Some(c) = chars.next() {
+            if c == '\'' {
+                is_hardened = true;
+                
+            }
+            else {
+                num.push(c);
+            }
+        }
+        let num: u32 = num.parse()?;
+        if is_hardened {
+            Ok(DerivePathComponent::IndexHardened(num))
+        } else {
+            Ok(DerivePathComponent::IndexNotHardened(num))
+        }
     }
 }
 
@@ -190,17 +137,17 @@ impl Display for DerivePathComponent {
 ///
 /// MainNet is the default.
 #[derive(Default, PartialEq, Eq, Copy, Clone, Debug)]
-pub enum NetworkType {
+pub enum HDNetworkType {
     #[default]
     MainNet,
     TestNet,
 }
 
-impl fmt::Display for NetworkType {
+impl fmt::Display for HDNetworkType {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            NetworkType::MainNet => fmt.write_str("mainnet")?,
-            NetworkType::TestNet => fmt.write_str("testnet")?,
+            HDNetworkType::MainNet => fmt.write_str("mainnet")?,
+            HDNetworkType::TestNet => fmt.write_str("testnet")?,
         };
         Ok(())
     }
@@ -212,8 +159,8 @@ mod tests {
 
     #[test]
     fn test_network_type() {
-        assert_eq!(NetworkType::MainNet.to_string(), "mainnet");
-        assert_eq!(NetworkType::TestNet.to_string(), "testnet");
+        assert_eq!(HDNetworkType::MainNet.to_string(), "mainnet");
+        assert_eq!(HDNetworkType::TestNet.to_string(), "testnet");
     }
 
     #[test]
@@ -232,7 +179,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ],
-            NetworkType::MainNet,
+            HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(
@@ -261,7 +208,7 @@ mod tests {
                     63, 46, 66, 210, 6, 3, 180, 128, 2, 30, 250, 181, 84, 87, 185
                 ]),
                 child_index: 2147483648,
-                network: NetworkType::MainNet,
+                network: HDNetworkType::MainNet,
                 derivation_type: DeriveType::BIP32
             }
         );
@@ -277,7 +224,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ],
-            NetworkType::MainNet,
+            HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(
@@ -306,7 +253,7 @@ mod tests {
                     201, 165, 200, 202, 72, 77, 132, 229, 128, 178, 82, 207, 191, 60, 8
                 ]),
                 child_index: 0,
-                network: NetworkType::MainNet,
+                network: HDNetworkType::MainNet,
                 derivation_type: DeriveType::BIP32
             }
         );
@@ -322,7 +269,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ],
-            NetworkType::MainNet,
+            HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(
@@ -352,7 +299,7 @@ mod tests {
                     201, 165, 200, 202, 72, 77, 132, 229, 128, 178, 82, 207, 191, 60, 8
                 ]),
                 child_index: 0,
-                network: NetworkType::MainNet,
+                network: HDNetworkType::MainNet,
                 derivation_type: DeriveType::BIP32
             }
         );
@@ -368,7 +315,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ],
-            NetworkType::MainNet,
+            HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(
@@ -398,7 +345,7 @@ mod tests {
                     201, 165, 200, 202, 72, 77, 132, 229, 128, 178, 82, 207, 191, 60, 8
                 ]),
                 child_index: 0,
-                network: NetworkType::MainNet,
+                network: HDNetworkType::MainNet,
                 derivation_type: DeriveType::BIP32
             }
         );
@@ -414,7 +361,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ],
-            NetworkType::MainNet,
+            HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(
@@ -449,7 +396,7 @@ mod tests {
                     176, 222, 183, 173, 68, 237, 102, 204, 32, 248, 50, 40, 173, 116, 81, 207
                 ]),
                 child_index: 0,
-                network: NetworkType::MainNet,
+                network: HDNetworkType::MainNet,
                 derivation_type: DeriveType::BIP32
             }
         );

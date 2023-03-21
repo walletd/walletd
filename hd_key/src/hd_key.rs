@@ -5,11 +5,10 @@ use secp256k1::{PublicKey, Scalar, Secp256k1, SecretKey};
 use sha2::{Digest, Sha256, Sha512};
 type HmacSha512 = Hmac<Sha512>;
 use std::fmt;
-
+use std::str::FromStr;
 use ripemd::Ripemd160;
 
-use crate::slip44::SlipCoin;
-use crate::{DerivePathComponent, DeriveType, NetworkType};
+use crate::{DerivePathComponent, DeriveType, HDNetworkType};
 
 /// Can represent a master node, wallets/accounts, wallet chains, or accounts
 /// HDKey follows the BIP32 protocol
@@ -17,19 +16,20 @@ use crate::{DerivePathComponent, DeriveType, NetworkType};
 pub struct HDKey {
     pub master_seed: Vec<u8>,
     pub derivation_path: String,
+    pub derivation_type: DeriveType,
     pub chain_code: [u8; 32],
     pub depth: u8,
     pub parent_fingerprint: [u8; 4],
     pub extended_private_key: Option<[u8; 32]>,
     pub extended_public_key: Option<[u8; 33]>,
     pub child_index: u32,
-    pub network: NetworkType,
-    pub derivation_type: DeriveType,
+    pub network: HDNetworkType,
+
 }
 
 impl HDKey {
     /// Create new master BIP32 node based on a seed
-    pub fn new(seed: &[u8], network_type: NetworkType) -> Result<Self, anyhow::Error> {
+    pub fn new(seed: &[u8], network_type: HDNetworkType) -> Result<Self, anyhow::Error> {
         let mut mac: HmacSha512 = HmacSha512::new_from_slice(b"Bitcoin seed").unwrap(); // the "Bitcoin seed" string is specified in the bip32 protocol
         mac.update(seed);
         let hmac = mac.finalize().into_bytes();
@@ -63,8 +63,8 @@ impl HDKey {
             // using wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
             let mut private_key: Vec<u8> = Vec::new();
             match self.network {
-                NetworkType::MainNet => private_key.push(0x80),
-                NetworkType::TestNet => private_key.push(0xef),
+                HDNetworkType::MainNet => private_key.push(0x80),
+                HDNetworkType::TestNet => private_key.push(0xef),
             }
             private_key.append(&mut extended_private_key.to_vec());
             // assuming public key is compressed
@@ -139,31 +139,7 @@ impl HDKey {
         let mut deriv_path_info: Vec<DerivePathComponent> = Vec::new();
         let deriv_path_list = Self::derive_path_str_to_list(deriv_path)?;
         for item in deriv_path_list {
-            if item == "m" {
-                deriv_path_info.push(DerivePathComponent::Master);
-            } else if item.contains('\'') {
-                match item.replace('\'', "").parse::<u32>() {
-                    Ok(n) => {
-                        deriv_path_info.push(DerivePathComponent::IndexHardened(n + (1 << 31)))
-                    }
-                    Err(_e) => {
-                        return Err(anyhow!(
-                            "Could not convert derivation path component {} to a hardened index.",
-                            item
-                        ))
-                    }
-                }
-            } else {
-                match item.parse::<u32>() {
-                    Ok(n) => deriv_path_info.push(DerivePathComponent::IndexNotHardened(n)),
-                    Err(_e) => {
-                        return Err(anyhow!(
-                            "Could not convert derivation path component {} to a hardened index.",
-                            item
-                        ))
-                    }
-                }
-            }
+            deriv_path_info.push(DerivePathComponent::from_str(&item)?);
         }
         Ok(deriv_path_info)
     }
@@ -173,34 +149,20 @@ impl HDKey {
         Ripemd160::digest(Sha256::digest(bytes).as_slice()).to_vec()
     }
 
-    /// Creates a new HDKey from a master node and a derivation path
-    pub fn from_master(
-        master_node: &HDKey,
+    /// Derives a HDKey following the specified derivation path
+    pub fn derive(
+        &self,
         derivation_path: String,
     ) -> Result<Self, anyhow::Error> {
         let deriv_path_str_list: Vec<&str> = derivation_path.split('/').collect();
         let deriv_path_info = Self::derive_path_str_to_info(&derivation_path)?;
-        let mut deriv_type = DeriveType::BIP32;
-        if deriv_path_info.len() > 1 {
-            if let DerivePathComponent::IndexHardened(num) = &deriv_path_info[1] {
-                let purpose = *num - (1 << 31);
-                if purpose == 44 {
-                    deriv_type = DeriveType::BIP44;
-                } else if purpose == 49 {
-                    deriv_type = DeriveType::BIP49;
-                } else if purpose == 84 {
-                    deriv_type = DeriveType::BIP84;
-                }
-            }
-        }
-
-        let mut deriv_path = "m".to_string();
+        let mut deriv_path =  self.derivation_path.clone();
         let mut private_key = SecretKey::from_slice(
-            &master_node
+            &self
                 .extended_private_key
                 .expect("Missing private key"),
         )?;
-        let mut chain_code = master_node.chain_code;
+        let mut chain_code = self.chain_code;
         let mut parent_fingerprint = [0u8; 4];
         let mut parent_private_key = private_key;
         let mut depth = 0;
@@ -219,11 +181,12 @@ impl HDKey {
                     mac.update(&num.to_be_bytes());
                 }
                 DerivePathComponent::IndexHardened(num) => {
-                    child_index = *num;
+                    let full_num = DerivePathComponent::hardened_full_index(*num);
+                    child_index = full_num;
                     mac.update(&[0u8]);
 
                     mac.update(&parent_private_key.secret_bytes());
-                    mac.update(&num.to_be_bytes());
+                    mac.update(&full_num.to_be_bytes());
                 }
                 _ => {
                     return Err(anyhow!(
@@ -248,6 +211,13 @@ impl HDKey {
             depth += 1;
         }
 
+        let deriv_path_str_list: Vec<&str> = deriv_path.split('/').collect();
+        let deriv_path_info = Self::derive_path_str_to_info(&derivation_path)?;
+        if deriv_path_info.len() < 2 || deriv_path_info[0] != DerivePathComponent::Master {
+            return Err(anyhow!("Invalid derivation path {}", deriv_path))
+        }
+        let deriv_type = DeriveType::from_str(deriv_path_str_list[1])?;
+
         let derived_bip32 = Self {
             chain_code,
             extended_private_key: Some(private_key.secret_bytes()),
@@ -263,21 +233,14 @@ impl HDKey {
             derivation_path: deriv_path,
             derivation_type: deriv_type,
             child_index,
-            master_seed: master_node.master_seed.clone(),
-            network: master_node.network,
-            ..Default::default()
+            master_seed: self.master_seed.clone(),
+            network: self.network,
+
         };
         Ok(derived_bip32)
     }
 
-    /// duplicate  with the one in lib
-    pub fn derive_first_address(
-        master_node: &HDKey,
-        coin: &SlipCoin,
-    ) -> Result<HDKey, anyhow::Error> {
-        let bip44_deriv_path = format!("m/0'/{}'/0", coin);
-        HDKey::from_master(master_node, bip44_deriv_path)
-    }
+
 
     /// Extended Private Key Serialization
     pub fn extended_private_key_serialized(&self) -> Result<String, anyhow::Error> {
@@ -320,25 +283,29 @@ impl HDKey {
     }
 
     fn private_key_prefix(&self) -> Result<[u8; 4], anyhow::Error> {
-        if self.network == NetworkType::MainNet && (self.derivation_type == DeriveType::BIP32)
+        if self.network == HDNetworkType::MainNet && (self.derivation_type == DeriveType::BIP32)
             || (self.derivation_type == DeriveType::BIP44)
         {
             Ok([0x04, 0x88, 0xAD, 0xE4])
-        } else if self.network == NetworkType::TestNet
+        } else if self.network == HDNetworkType::TestNet
             && (self.derivation_type == DeriveType::BIP32)
             || (self.derivation_type == DeriveType::BIP44)
         {
             Ok([0x04, 0x35, 0x83, 0x94])
-        } else if self.network == NetworkType::MainNet && self.derivation_type == DeriveType::BIP49
+        } else if self.network == HDNetworkType::MainNet
+            && self.derivation_type == DeriveType::BIP49
         {
             Ok([0x04, 0x9D, 0x78, 0x78])
-        } else if self.network == NetworkType::TestNet && self.derivation_type == DeriveType::BIP49
+        } else if self.network == HDNetworkType::TestNet
+            && self.derivation_type == DeriveType::BIP49
         {
             Ok([0x04, 0x4A, 0x4E, 0x28])
-        } else if self.network == NetworkType::MainNet && self.derivation_type == DeriveType::BIP84
+        } else if self.network == HDNetworkType::MainNet
+            && self.derivation_type == DeriveType::BIP84
         {
             Ok([0x04, 0xB2, 0x43, 0x0C])
-        } else if self.network == NetworkType::TestNet && self.derivation_type == DeriveType::BIP84
+        } else if self.network == HDNetworkType::TestNet
+            && self.derivation_type == DeriveType::BIP84
         {
             Ok([0x04, 0x5F, 0x18, 0xBC])
         } else {
@@ -347,25 +314,29 @@ impl HDKey {
     }
 
     fn public_key_prefix(&self) -> Result<[u8; 4], anyhow::Error> {
-        if self.network == NetworkType::MainNet && (self.derivation_type == DeriveType::BIP32)
+        if self.network == HDNetworkType::MainNet && (self.derivation_type == DeriveType::BIP32)
             || (self.derivation_type == DeriveType::BIP44)
         {
             Ok([0x04, 0x88, 0xB2, 0x1E])
-        } else if self.network == NetworkType::TestNet
+        } else if self.network == HDNetworkType::TestNet
             && (self.derivation_type == DeriveType::BIP32)
             || (self.derivation_type == DeriveType::BIP44)
         {
             Ok([0x04, 0x35, 0x87, 0xCF])
-        } else if self.network == NetworkType::MainNet && self.derivation_type == DeriveType::BIP49
+        } else if self.network == HDNetworkType::MainNet
+            && self.derivation_type == DeriveType::BIP49
         {
             Ok([0x04, 0x9D, 0x7C, 0xB2])
-        } else if self.network == NetworkType::TestNet && self.derivation_type == DeriveType::BIP49
+        } else if self.network == HDNetworkType::TestNet
+            && self.derivation_type == DeriveType::BIP49
         {
             Ok([0x04, 0x4A, 0x52, 0x62])
-        } else if self.network == NetworkType::MainNet && self.derivation_type == DeriveType::BIP84
+        } else if self.network == HDNetworkType::MainNet
+            && self.derivation_type == DeriveType::BIP84
         {
             Ok([0x04, 0xB2, 0x47, 0x46])
-        } else if self.network == NetworkType::TestNet && self.derivation_type == DeriveType::BIP84
+        } else if self.network == HDNetworkType::TestNet
+            && self.derivation_type == DeriveType::BIP84
         {
             Ok([0x04, 0x5F, 0x1C, 0xF6])
         } else {
@@ -407,7 +378,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ],
-            NetworkType::MainNet,
+            HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(
@@ -435,7 +406,7 @@ mod tests {
                     49, 126, 204, 202, 69, 117, 237, 123, 182, 189, 66, 114, 64, 42, 78, 162
                 ]),
                 child_index: 0,
-                network: NetworkType::MainNet,
+                network: HDNetworkType::MainNet,
                 derivation_type: DeriveType::BIP32
             }
         );
@@ -450,7 +421,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ],
-            NetworkType::MainNet,
+            HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(
@@ -500,7 +471,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ],
-            NetworkType::MainNet,
+            HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(
@@ -541,11 +512,11 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ],
-            NetworkType::MainNet,
+            HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(
-            HDKey::from_master(&keys, "m/44'/60'/0'/0/0".to_string()).unwrap(),
+            HDKey::derive(&keys, "m/44'/60'/0'/0/0".to_string()).unwrap(),
             HDKey {
                 master_seed: [
                     162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
@@ -570,7 +541,7 @@ mod tests {
                     245, 197, 197, 57, 113, 112, 101, 150, 46, 195, 101, 233, 63, 6, 97
                 ]),
                 child_index: 0,
-                network: NetworkType::MainNet,
+                network: HDNetworkType::MainNet,
                 derivation_type: DeriveType::BIP44
             }
         );
@@ -585,7 +556,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ],
-            NetworkType::MainNet,
+            HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(
@@ -614,7 +585,7 @@ mod tests {
                     219, 35, 80, 180, 150, 209, 204, 148, 66, 53, 170, 31, 143, 255, 58, 221
                 ]),
                 child_index: 0,
-                network: NetworkType::MainNet,
+                network: HDNetworkType::MainNet,
                 derivation_type: DeriveType::BIP32
             }
         );
@@ -629,7 +600,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ],
-            NetworkType::MainNet,
+            HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(keys.extended_private_key_serialized().unwrap(), "xprv9s21ZrQH143K33HWcGz7ExmrjF485DrDs59ZUMdLGSMKb1D3UTzoG5DDX8T5yYgPWhhayZbrsd1EAuZjJ9b3HnGoSQyt4tdrgHxbFxhgL1W")
@@ -644,7 +615,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ],
-            NetworkType::MainNet,
+            HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(keys.extended_public_key_serialized().unwrap(), "xpub661MyMwAqRbcFXMyiJX7c6ibHGtcUga5EJ5AGk2wpmtJToYC21K3osXhNPGsUzwLzHJDKShvbH6ZAHF4DB3eCKK9ya271pXyWABaBjRPorF")

@@ -12,16 +12,18 @@ pub enum SlipCoin {
     ETH = 60,
     XMR = 128,
     SOL = 501,
+    AnyTestnet = 1,
 }
 
 impl fmt::Display for SlipCoin {
     /// Converts a SlipCoin to a number string.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            SlipCoin::BTC => write!(f, "{}", 0)?,
-            SlipCoin::ETH => write!(f, "{}", 60)?,
-            SlipCoin::SOL => write!(f, "{}", 501)?,
-            SlipCoin::XMR => write!(f, "{}", 128)?,
+            SlipCoin::BTC => write!(f, "{}'", 0)?,
+            SlipCoin::ETH => write!(f, "{}'", 60)?,
+            SlipCoin::SOL => write!(f, "{}'", 501)?,
+            SlipCoin::XMR => write!(f, "{}'", 128)?,
+            SlipCoin::AnyTestnet => write!(f, "{}'", 1)?,
         }
         Ok(())
     }
@@ -37,7 +39,7 @@ impl SlipCoin {
             60 => Ok(Self::ETH),
             128 => Ok(Self::XMR),
             501 => Ok(Self::SOL),
-            1 => Err(anyhow!("This value is for any testnet")),
+            1 => Ok(Self::AnyTestnet),
             _ => Err(anyhow!(
                 "Currently not supporting a SlipCoin with a coin type value of {}",
                 value
