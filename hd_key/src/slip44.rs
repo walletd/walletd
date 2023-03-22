@@ -87,9 +87,9 @@ mod tests {
 
     #[test]
     fn test_slip_coin() {
-        assert_eq!(SlipCoin::BTC.to_string(), "0");
-        assert_eq!(SlipCoin::ETH.to_string(), "60");
-        assert_eq!(SlipCoin::XMR.to_string(), "128");
-        assert_eq!(SlipCoin::SOL.to_string(), "501");
+        assert_eq!(SlipCoin::BTC.to_string(), "0'");
+        assert_eq!(SlipCoin::ETH.to_string(), "60'");
+        assert_eq!(SlipCoin::XMR.to_string(), "128'");
+        assert_eq!(SlipCoin::SOL.to_string(), "501'");
     }
 }

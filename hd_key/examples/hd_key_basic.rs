@@ -1,4 +1,4 @@
-use walletd_hd_key::{HDKey, NetworkType};
+use walletd_hd_key::{HDKey, HDNetworkType};
 
 fn main() -> () {
     let keys = HDKey::new(
@@ -8,7 +8,7 @@ fn main() -> () {
             120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
             32, 33, 178, 30, 10, 204, 238,
         ],
-        NetworkType::MainNet,
+        HDNetworkType::MainNet,
     )
     .unwrap();
     println!("{:?}", keys);
