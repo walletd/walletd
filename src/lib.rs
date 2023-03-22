@@ -297,7 +297,8 @@ impl KeyPair {
                     .downcast_ref::<walletd_ethereum::BlockchainClient>()
                     .unwrap();
                 let fees = ethereum_client.gas_price().await?;
-                Ok(fees)
+                let fees_format = format!("Gas Price: {} ETH", fees.eth());
+                Ok(fees_format)
             }
             _ => Err(anyhow!(
                 "Blockchain client not currently implemented for {}",
@@ -440,11 +441,9 @@ impl KeyPair {
                 
                 let eth_client = ethereum_client.to_eth_client();
                 let tx_hash = H256::from_str(&txid)?;
-                let tx = eth_client.transaction_data_from_hash(tx_hash).await;
-                let tx_details = format!("{:#?}", tx);
-                let tx_string = EthClient::transaction_details_for_coin(tx).await;
-                
-                return Ok(tx_string?)
+                let tx_details = eth_client.transaction_data_from_hash(tx_hash).await?;
+                let tx_string = EthClient::transaction_details_for_coin(tx_details).await?;
+                return Ok(tx_string)
             }
             _ => {
                 return Err(anyhow!(
