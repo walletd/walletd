@@ -88,7 +88,7 @@ impl EthereumAmount {
 
 impl Display for EthereumAmount {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(f, "Ethereum Amount: {} ETH, {} wei", self.eth(), self.wei())?;
+        writeln!(f, "{} ETH ({} wei)", self.eth(), self.wei())?;
         Ok(())
     }
 }

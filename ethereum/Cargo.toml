@@ -23,3 +23,4 @@ tokio = { version = "1", features = ["full"] }
 web3 = "0.18.0"
 hex-literal = "0.3"
 thiserror = "1.0.38"
+prettytable-rs = "0.10.0"

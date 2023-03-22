@@ -4,7 +4,11 @@ use web3::contract::{Contract, Options};
 use web3::ethabi::Uint;
 use web3::helpers as w3h;
 use web3::transports::Http;
-use web3::types::{BlockId, BlockNumber, TransactionId, H160, H256, U256, U64};
+use web3::types::{BlockId, BlockNumber, Transaction, TransactionId, H160, H256, U256, U64};
+use crate::EthereumAmount;
+
+use prettytable::Table;
+use prettytable::row;
 
 // TODO(#70): Remove once we finish cleaning and refactoring
 #[allow(dead_code)]
@@ -132,6 +136,25 @@ impl EthClient {
                 tx.gas_price,
             );
         }
+    }
+
+
+    pub async fn transaction_details_for_coin(tx: Transaction) -> Result<String, anyhow::Error> {
+        let mut table = Table::new();
+        let eth_value = EthereumAmount::new_from_wei(tx.value); 
+        table.add_row(row!["Transaction Hash", tx.hash]);
+        table.add_row(row!["Amount", eth_value]);
+        table.add_row(row!["Block Number", tx.block_number.expect("Block number missing")]);
+        table.add_row(row!["Transaction Index Number", tx.transaction_index.expect("Transaction index missing")]);
+        table.add_row(row!["From Address", tx.from.expect("No from address")]);
+        table.add_row(row!["To Address", tx.to.expect("No to address")]);
+        table.add_row(row!["Gas Price", tx.gas_price.expect("No gas price")]);
+        table.add_row(row!["Gas", tx.gas]);
+        table.add_row(row!["Transaction Type", tx.transaction_type.expect("No transaction type")]);
+        table.add_row(row!["Maximum Gas Fee", tx.max_fee_per_gas.expect("No max fee per gas")]);
+        table.add_row(row!["Maximum priority fee per gas", tx.max_priority_fee_per_gas.expect("No max priority fee per gas")]);
+        let table_string = table.to_string();
+        Ok(table.to_string())
     }
 
     pub async fn get_smart_contract_tx_vec_from_block_hash(
