@@ -7,19 +7,21 @@ pub use ::walletd_monero_mnemonic::{
 };
 use anyhow::anyhow;
 pub use walletd_bitcoin::BitcoinAmount;
-use walletd_bitcoin::{BTransaction, BitcoinAddress, Blockstream};
+use walletd_bitcoin::{BTransaction, BitcoinAddress, BitcoinWallet, Blockstream};
 use walletd_coin_model::CryptoAmount;
 pub use walletd_coin_model::{BlockchainConnector, CryptoAddressGeneral, CryptoWallet};
 pub use walletd_ethereum::{EthereumAmount, EthereumFormat, EthereumWallet};
 use walletd_hd_key::{DerivePathComponent, HDNetworkType};
 pub use walletd_hd_key::{DeriveType, HDKey, SlipCoin};
-use walletd_monero::AddressType as MoneroFormat;
+use web3::types::H256;
 pub use {
     ::walletd_bip39, walletd_bitcoin, walletd_coin_model, walletd_ethereum, walletd_hd_key,
     walletd_monero, walletd_monero_mnemonic, walletd_solana,
 };
 pub mod crypto_coin;
 pub mod onboard;
+use std::str::FromStr;
+
 pub use crypto_coin::CryptoCoin;
 
 #[derive(PartialEq, Eq)]
@@ -122,13 +124,13 @@ impl KeyPair {
     }
 
     pub fn receive_address_for_coin(&self, coin_type: CryptoCoin) -> Result<String, anyhow::Error> {
-        let (purpose, account, index) = self.next_unused_account_and_address_index(coin_type)?;
-        let master_key = self.to_master_key();
-        let deriv_path = format!("m/{}/0'/{}/0/{}", purpose, account, index);
-
-        let derived_key = HDKey::derive(&master_key, deriv_path)?;
         match coin_type {
             CryptoCoin::BTC => {
+                let deriv_path = self.next_unused_deriv_path(coin_type)?;
+                let master_key = self.to_master_key();
+
+                let derived_key = HDKey::derive(&master_key, deriv_path)?;
+
                 let receive_address = BitcoinAddress::from_hd_key(
                     &derived_key,
                     walletd_bitcoin::AddressType::P2wpkh,
@@ -136,18 +138,18 @@ impl KeyPair {
                 return Ok(receive_address.public_address_string());
             }
             CryptoCoin::ETH => {
-                let receive_address =
-                    EthereumWallet::from_hd_key(&derived_key, EthereumFormat::Checksummed)?;
-                return Ok(receive_address.public_address_string());
+                for info in self.associated.iter() {
+                    if info.crypto_coin == coin_type {
+                        let wallet_address =  info.address.as_any().downcast_ref::<EthereumWallet>()
+                        .expect("Wallet with CryptoCoin::ETH should be able to be downcast to EthereumWallet struct");
+
+                        return Ok(wallet_address.public_address_string());
+                    }
+                }
+                return Err(anyhow!("No associated wallet found for coin type"));
             }
-            CryptoCoin::XMR => {
-                let receive_address = walletd_monero::MoneroWallet::from_hd_key(
-                    &derived_key,
-                    MoneroFormat::Standard,
-                )?;
-                return Ok(receive_address.public_address_string());
-            }
-            _ => return Err(anyhow!("Unsupported coin type")),
+
+            _ => return Err(anyhow!("Feature unsupported for coin type {}", coin_type)),
         }
     }
 
@@ -155,25 +157,17 @@ impl KeyPair {
     /// specified coin type given as purpose type, account index, and address
     /// index The value chosen is the one following the last used and
     /// imported address index for the specified coin type
-    pub fn next_unused_account_and_address_index(
-        &self,
-        coin_type: CryptoCoin,
-    ) -> Result<
-        (
-            DerivePathComponent,
-            DerivePathComponent,
-            DerivePathComponent,
-        ),
-        anyhow::Error,
-    > {
-        // first index is purpose, second is account, third is address
+    pub fn next_unused_deriv_path(&self, coin_type: CryptoCoin) -> Result<String, anyhow::Error> {
+        // first index is purpose, second is coins, third is account, fourth is address
         let mut previously_used: Vec<(
+            DerivePathComponent,
             DerivePathComponent,
             DerivePathComponent,
             DerivePathComponent,
         )> = Vec::new();
 
         let mut next_one_is: Vec<(
+            DerivePathComponent,
             DerivePathComponent,
             DerivePathComponent,
             DerivePathComponent,
@@ -188,10 +182,12 @@ impl KeyPair {
             }
             // else assuming that the coin type matches
             let purpose_derived = derived_info_list[1];
+            let coin_type_derived = derived_info_list[2];
             let account_index_derived = derived_info_list[3];
             let address_index_derived = derived_info_list[5];
             previously_used.push((
                 purpose_derived,
+                coin_type_derived,
                 account_index_derived,
                 address_index_derived,
             ));
@@ -202,28 +198,15 @@ impl KeyPair {
                 }
                 _ => return Err(anyhow!("Invalid address index")),
             };
-            next_one_is.push((purpose_derived, account_index_derived, next_address_index));
+            next_one_is.push((
+                purpose_derived,
+                coin_type_derived,
+                account_index_derived,
+                next_address_index,
+            ));
         }
         // now we have a list of all previously used addresses
 
-        // if the crypto coin is not BTC, return the last used address for the coin
-        if coin_type != CryptoCoin::BTC {
-            if previously_used.is_empty() {
-                return Ok((
-                    DerivePathComponent::IndexHardened(44),
-                    DerivePathComponent::IndexHardened(0),
-                    DerivePathComponent::IndexHardened(0),
-                ));
-            }
-            let last_used = previously_used.last().unwrap();
-            return Ok((
-                last_used.0.clone(),
-                last_used.1.clone(),
-                last_used.2.clone(),
-            ));
-        }
-
-        // if the crypto coin is BTC we need to return an unused address
         // now we need to find the next unused address
         // we well loop through the next_one_is list from the end to the beginning and
         // return the first one that is not in the previously_used list
@@ -236,16 +219,19 @@ impl KeyPair {
                 }
             }
             if !found {
-                return Ok(next_one.clone());
+                let next_d_path = format!(
+                    "m/{}/{}/{}/0/{}",
+                    next_one.0.to_string(),
+                    next_one.1.to_string(),
+                    next_one.2.to_string(),
+                    next_one.3.to_string(),
+                );
+                return Ok(next_d_path);
             }
         }
         // Case here is that we have not found any previously used addresses
         if previously_used.is_empty() {
-            return Ok((
-                DerivePathComponent::IndexHardened(44),
-                DerivePathComponent::IndexHardened(0),
-                DerivePathComponent::IndexHardened(0),
-            ));
+            return Err(anyhow!("No previously used addresses found"));
         }
         // if we get here return an error
         Err(anyhow!("Could not find the next unused address to use"))
@@ -376,7 +362,7 @@ impl KeyPair {
     pub async fn transactions_overview_for_coin(
         &self,
         coin_type: CryptoCoin,
-    ) -> Result<(Vec<String>, Vec<TransactionIdentifier>), anyhow::Error> {
+    ) -> Result<(String, Vec<TransactionIdentifier>), anyhow::Error> {
         let mut transaction_identifiers: Vec<TransactionIdentifier> = Vec::new();
         let blockchain_client =
             Self::initialize_blockchain_client(coin_type, self.network_type, None)?;
@@ -428,7 +414,7 @@ impl KeyPair {
         &self,
         coin_type: CryptoCoin,
         txid: String,
-        owners_address: String,
+        _owner_address: Option<String>,
     ) -> Result<String, anyhow::Error> {
         let blockchain_client =
             Self::initialize_blockchain_client(coin_type, self.network_type, None)?;
@@ -441,14 +427,81 @@ impl KeyPair {
                     .unwrap();
 
                 let tx = blockstream_client.transaction(&txid).await?;
+                let tx_details = format!("{:#?}", tx);
+                //let tx_details = tx.details(owner_address.unwrap_or_default())?;
 
-                let tx_details = tx.details(owners_address)?;
+                return Ok(tx_details);
+            }
+            CryptoCoin::ETH => {
+                let ethereum_client = blockchain_client
+                    .as_any()
+                    .downcast_ref::<walletd_ethereum::BlockchainClient>()
+                    .unwrap();
+                let eth_client = ethereum_client.to_eth_client();
+                let tx_hash = H256::from_str(&txid)?;
+                let tx = eth_client.transaction_data_from_hash(tx_hash).await;
+                let tx_details = format!("{:#?}", tx);
 
                 return Ok(tx_details);
             }
             _ => {
                 return Err(anyhow!(
-                    "Transactions overview not implemented for coin type {}",
+                    "Transactions details not implemented for coin type {}",
+                    coin_type
+                ))
+            }
+        }
+    }
+
+    pub async fn initiate_transfer(
+        &self,
+        coin_type: CryptoCoin,
+        send_to_address: &str,
+        send_amount: f64,
+    ) -> Result<String, anyhow::Error> {
+        let blockchain_client =
+            Self::initialize_blockchain_client(coin_type, self.network_type, None)?;
+
+        match coin_type {
+            CryptoCoin::BTC => {
+                let blockstream_client = blockchain_client
+                    .as_any()
+                    .downcast_ref::<Blockstream>()
+                    .unwrap();
+
+                let mut bitcoin_wallet = BitcoinWallet::new();
+                for info in self.associated.iter() {
+                    if info.crypto_coin == coin_type {
+                        bitcoin_wallet.add_address(info.address.as_any().downcast_ref::<BitcoinAddress>().expect("Wallet with CryptoCoin::BTC should be able to be downcast to BitcoinWallet struct"));
+                    }
+                }
+                let send_amount_btc = BitcoinAmount::new_from_btc(send_amount);
+                return bitcoin_wallet
+                    .transfer(blockstream_client, &send_amount_btc, send_to_address)
+                    .await;
+            }
+            CryptoCoin::ETH => {
+                for info in self.associated.iter() {
+                    if info.crypto_coin == coin_type {
+                        let eth_client = blockchain_client
+                            .as_any()
+                            .downcast_ref::<walletd_ethereum::BlockchainClient>()
+                            .unwrap();
+
+                        let wallet =  info.address.as_any().downcast_ref::<EthereumWallet>()
+                        .expect("Wallet with CryptoCoin::ETH should be able to be downcast to EthereumWallet struct");
+                        let send_amount_eth =
+                            EthereumAmount::new_from_main_unit_decimal_value(send_amount);
+                        return wallet
+                            .transfer(eth_client, &send_amount_eth, send_to_address)
+                            .await;
+                    }
+                }
+                return Err(anyhow!("No Ethereum wallet associated with this wallet"));
+            }
+            _ => {
+                return Err(anyhow!(
+                    "Initiate transfer not implemented for coin type {}",
                     coin_type
                 ))
             }
