@@ -66,7 +66,7 @@ pub trait CryptoWallet: Sized {
         client: &Self::BlockchainClient,
         send_amount: &Self::CryptoAmount,
         public_address: &str,
-    ) -> Result<(), anyhow::Error>;
+    ) -> Result<String, anyhow::Error>;
 
     fn crypto_type(&self) -> SlipCoin;
 

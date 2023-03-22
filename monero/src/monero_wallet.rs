@@ -229,7 +229,7 @@ impl CryptoWallet for MoneroWallet {
         blockchain_client: &Self::BlockchainClient,
         send_amount: &Self::CryptoAmount,
         public_address: &str,
-    ) -> Result<(), anyhow::Error> {
+    ) -> Result<String, anyhow::Error> {
         let receiver_address = Address::from_str(public_address)?;
         let send_amount_dest = TxDestinationEntry {
             amount: send_amount.as_piconero(),
@@ -299,10 +299,13 @@ impl CryptoWallet for MoneroWallet {
                 )
                 .await
             {
-                Ok(response) => println!("submit raw tx response: {}", response),
-                Err(e) => println!("Error: {}", e),
+                Ok(response) => {
+                    let tx_hash = response
+                        .as_str().expect("should be a string");
+                    Ok(tx_hash.to_string())
+                }
+                Err(e) => Err(anyhow!("Error: {}", e)),
             }
-            Ok(())
         } else {
             Err(anyhow!("Transaction is not valid"))
         }

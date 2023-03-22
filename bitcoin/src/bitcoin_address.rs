@@ -22,7 +22,7 @@ use crate::FeeEstimates;
 use crate::blockstream::{BTransaction, Blockstream, Input, InputType, Output, Utxo};
 use crate::BitcoinAmount;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BitcoinAddress {
     pub crypto_type: SlipCoin,
     pub address_info: Address,
@@ -73,7 +73,6 @@ impl CryptoWallet for BitcoinAddress {
             // this address properly
             _ => return Err(anyhow!("Currently not handling this Bitcoin address type")),
         };
-
         let public_address = address_info.to_string();
 
         Ok(Self {
@@ -160,10 +159,8 @@ impl CryptoWallet for BitcoinAddress {
         client: &Blockstream,
         send_amount: &BitcoinAmount,
         public_address: &str,
-    ) -> Result<(), anyhow::Error> {
-        println!("Going to attempt a transfer to address: {} from address: {} of amount: {} BTC ({} Sats)", public_address, self.public_address_string(),
-            &send_amount.btc(), &send_amount.satoshi());
-
+    ) -> Result<String, anyhow::Error> {
+       
         let receiver_view_wallet = Self::new_view_only(public_address)?;
 
         // first checking existing endpoints with blockstream
@@ -224,11 +221,9 @@ impl CryptoWallet for BitcoinAddress {
         )?;
 
         let transaction_hex = BTransaction::serialize(&transaction)?;
-        println!("Trying to post the transaction: {:?} with a txid (blockchain format): {} using transaction hex: {}",
-        &transaction, &transaction.txid_blockchain()?, &transaction_hex);
         let raw_transaction_hex: &'static str = Box::leak(transaction_hex.into_boxed_str());
-        client.post_a_transaction(raw_transaction_hex).await?;
-        Ok(())
+        let txid = client.post_a_transaction(raw_transaction_hex).await?;
+        Ok(txid)
     }
 
     fn address_by_index(
@@ -248,7 +243,7 @@ impl CryptoWallet for BitcoinAddress {
 }
 
 impl BitcoinAddress {
-    fn new_view_only(public_address: &str) -> Result<Self, anyhow::Error> {
+    pub fn new_view_only(public_address: &str) -> Result<Self, anyhow::Error> {
         let address_info = Address::from_str(public_address)?;
         let public_address = address_info.to_string();
         // Currently hardcoding to Mainnet, TODO(#82) handle other Bitcoin network
@@ -265,7 +260,7 @@ impl BitcoinAddress {
         })
     }
 
-    fn public_key(&self) -> Result<Vec<u8>, anyhow::Error> {
+    pub fn public_key(&self) -> Result<Vec<u8>, anyhow::Error> {
         if let Some(key) = self.public_key.clone() {
             Ok(hex::decode(key)?)
         } else {
@@ -354,12 +349,12 @@ impl BitcoinAddress {
         send_amount: &BitcoinAmount,
         inputs_available_tx_info: &[BTransaction],
         byte_fee: f64,
-    ) -> Result<(Vec<Input>, BitcoinAmount), anyhow::Error> {
+    ) -> Result<(Vec<Input>, BitcoinAmount, Vec<usize>), anyhow::Error> {
         // Sorting in reverse order of the value each UTXO (from highest UTXO value to
         // lowest), indices keeps track of the original indices after sort
         let mut indices = (0..utxo_available.len()).collect::<Vec<_>>();
         indices.sort_by_key(|&i| Reverse(&utxo_available[i].value));
-
+        let mut chosen_indices = Vec::new();
         let mut inputs: Vec<Input> = Vec::new();
         let min_goal_target = *send_amount * 1.5;
         let mut obtained_amount = BitcoinAmount { satoshi: 0 };
@@ -406,6 +401,7 @@ impl BitcoinAddress {
             }
 
             inputs.push(input);
+            chosen_indices.push(*ind);
 
             if obtained_amount > min_goal_target {
                 met_goal = true;
@@ -432,7 +428,7 @@ impl BitcoinAddress {
             };
             if change_amount > min_change_amount {
                 // Met the goal, return the inputs collected
-                Ok((inputs, set_fee))
+                Ok((inputs, set_fee, chosen_indices))
             }
             // initial change amount was not greater than the min_change_amount
             else {
@@ -481,18 +477,19 @@ impl BitcoinAddress {
                             }
                         }
                         inputs.push(input);
+                        chosen_indices.push(*ind);
 
                         if obtained_amount > min_goal_target {
-                            return Ok((inputs, set_fee));
+                            return Ok((inputs, set_fee, chosen_indices));
                         }
                     }
                     // even if could not get the change amount to be greater than the min change
                     // amount, still proceed by including the added inputs
-                    return Ok((inputs, set_fee));
+                    return Ok((inputs, set_fee, chosen_indices));
                 }
                 // even if could not get the change amount to be greater than the min change
                 // amount, still proceed
-                Ok((inputs, set_fee))
+                Ok((inputs, set_fee, chosen_indices))
             }
         } else {
             // did not meet goal (there are no more utxos to use to meet goal)
@@ -509,7 +506,7 @@ impl BitcoinAddress {
                 )?,
             };
             if obtained_amount > *send_amount + set_fee {
-                Ok((inputs, set_fee))
+                Ok((inputs, set_fee, chosen_indices))
             } else {
                 Err(anyhow!(
                     "Not enough funds to cover the send amount as well as the fee needed"
@@ -519,8 +516,8 @@ impl BitcoinAddress {
     }
 
     /// Builds a transaction with inputs and outputs, taking into account a fee
-    /// amount and a change amount Uses the rust-bitcoin library and
-    /// structs/functions
+    /// amount and a change amount.
+    /// Uses the rust-bitcoin library and structs/functions
     pub fn build_transaction(
         &self,
         fee_sat_per_byte: f64,
@@ -531,7 +528,7 @@ impl BitcoinAddress {
     ) -> Result<BTransaction, anyhow::Error> {
         println!("Building a Transaction");
         // choose inputs
-        let (mut inputs, fee_amount) = Self::choose_inputs_and_set_fee(
+        let (mut inputs, fee_amount, _chosen_inds) = Self::choose_inputs_and_set_fee(
             utxo_available,
             send_amount,
             inputs_available_tx_info,

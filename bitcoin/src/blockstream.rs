@@ -1,6 +1,5 @@
 use std::any::Any;
 
-use anyhow::anyhow;
 use async_trait::async_trait;
 use bitcoin::{Address, AddressType};
 use bitcoin_hashes::{sha256d, Hash};
@@ -18,6 +17,16 @@ use std::time::{UNIX_EPOCH, Duration};
 
 use crate::BitcoinAmount;
 
+use crate::BitcoinAddress;
+pub use bitcoin::{
+     EcdsaSighashType, Network, PrivateKey as BitcoinPrivateKey,
+    PublicKey as BitcoinPublicKey, Script,
+};
+use anyhow::anyhow;
+
+use bitcoin::blockdata::script::Builder;
+use ::secp256k1:: SecretKey;
+
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct BTransaction {
     pub txid: String,
@@ -33,30 +42,29 @@ pub struct BTransaction {
 
 
 impl BTransaction {
-    pub fn overview(transactions: Vec<BTransaction>, owners_addresses: Vec<String>) -> Result<Vec<String>, anyhow::Error> {
+    pub fn overview(transactions: Vec<BTransaction>, owners_addresses: Vec<String>) -> Result<String, anyhow::Error> {
+        // sort the transactions by the block_time
+        let mut transactions = transactions;
+        transactions.sort_by(|a, b| a.status.block_time.cmp(&b.status.block_time));
         if transactions.len() != owners_addresses.len() {
             return Err(anyhow!("transactions and owners_addresses should be of the same length"));
         }
-        let mut table_rows = Vec::new();
         let mut table = Table::new();
-        table.add_row(row!["Tx ID", "Amount (BTC)", "Fee Amount (BTC)", "To/From Address", "Status"]);
-        table_rows.push(table.to_string());
+        table.add_row(row!["Transaction ID", "Send Amount (BTC)", "Fee Amount (BTC)", "To/From Address", "Status", "Timestamp"]);
         for i in 0..transactions.len() {
-            let input_amount = BitcoinAmount::new_from_satoshi(transactions[i].vin.iter().fold(0, |acc, input| acc + input.prevout.value)).btc();
             let output_amount = BitcoinAmount::new_from_satoshi(transactions[i].vout.iter().fold(0, |acc, output| acc + output.value)).btc();
             let change_amount = BitcoinAmount::new_from_satoshi(transactions[i].vout.iter().filter(|output| output.scriptpubkey_address == owners_addresses[i]).fold(0, |acc, output| acc + output.value)).btc();
-            let amount = input_amount - output_amount + change_amount;
             let fee_amount = BitcoinAmount::new_from_satoshi(transactions[i].fee).btc();
+            let send_amount = output_amount - change_amount - fee_amount;
             let status_string = if transactions[i].status.confirmed {
                 format!("Complete, Confirmed in block {}", transactions[i].status.block_height)
             } else {
                 "Pending Confirmation".to_string()
             };
-            let mut table = Table::new();
-            table.add_row(row![transactions[i].txid, amount.to_string(), fee_amount.to_string(), owners_addresses[i], status_string]);
-            table_rows.push(table.to_string());
+            let timestamp = transactions[i].status.timestamp();
+            table.add_row(row![transactions[i].txid, send_amount.to_string(), fee_amount.to_string(), owners_addresses[i], status_string, timestamp]);
         }
-        Ok(table_rows)
+        Ok(table.to_string())
     }
 
     pub fn details(&self, owners_address: String) -> Result<String, anyhow::Error> {
@@ -95,6 +103,115 @@ impl BTransaction {
         }
         table_string.push_str(&table.to_string());
         Ok(table_string)
+    }
+
+
+     // TODO(AS): add doc here
+     pub fn prepare_transaction(
+        fee_sat_per_byte: f64,
+        utxo_available: &Vec<Utxo>,
+        inputs_available_tx_info: &[BTransaction],
+        send_amount: &BitcoinAmount,
+        receiver_view_wallet: &BitcoinAddress,
+        change_addr: Address
+    ) -> Result<(BTransaction, Vec<usize>), anyhow::Error> {
+        // choose inputs
+        let (inputs, fee_amount, chosen_indices)= BitcoinAddress::choose_inputs_and_set_fee(
+            utxo_available,
+            send_amount,
+            inputs_available_tx_info,
+            fee_sat_per_byte,
+        )?;
+        let inputs_amount = BitcoinAmount {
+            satoshi: inputs.iter().map(|x| x.prevout.value).sum(),
+        };
+        if inputs_amount < (*send_amount + fee_amount) {
+            return Err(anyhow!("Insufficient funds to send amount and cover fees"));
+        }
+
+      
+        let change_amount = inputs_amount - *send_amount - fee_amount;
+
+        // Create two outputs, one for the send amount and another for the change amount
+        // Hardcoding p2wpkh SegWit transaction option
+        // TODO(#83) right away need to add the scriptpubkey info
+        let mut outputs: Vec<Output> = Vec::new();
+        let mut output_send = Output {
+            ..Default::default()
+        };
+        output_send.value = send_amount.satoshi();
+        output_send.set_scriptpubkey_info(receiver_view_wallet.address_info())?;
+        outputs.push(output_send);
+        let mut output_change = Output {
+            ..Default::default()
+        };
+        output_change.value = change_amount.satoshi();
+        output_change.set_scriptpubkey_info(change_addr)?;
+        outputs.push(output_change);
+
+        let mut transaction = BTransaction {
+            ..Default::default()
+        };
+        transaction.version = 1;
+        transaction.locktime = 0;
+        transaction.vin = inputs;
+        transaction.vout = outputs.clone();
+        transaction.fee = fee_amount.satoshi();
+
+        Ok((transaction, chosen_indices))    
+    }
+
+
+    pub fn sign_tx(&self, keys_per_input: Vec<(BitcoinPrivateKey, BitcoinPublicKey)>) -> Result<Self, anyhow::Error> {
+        let mut inputs = self.vin.clone();
+        // Signing and unlocking the inputs
+        for (i, input) in inputs.iter_mut().enumerate() {
+            // hardcoded default to SIGHASH_ALL
+            let sighash_type = EcdsaSighashType::All;
+            let transaction_hash_for_input_with_sighash = self
+                .transaction_hash_for_signing_segwit_input_index(i, sighash_type.to_u32())?;
+            let private_key = &keys_per_input[i].0;
+            let public_key= &keys_per_input[i].1;
+            let secret_key = SecretKey::from_slice(private_key.to_bytes().as_slice())
+                .expect("32 bytes, within curve order");
+            let sig_with_hashtype = BitcoinAddress::signature_sighashall_for_trasaction_hash(
+                transaction_hash_for_input_with_sighash.to_string(),
+                secret_key,
+            )?;
+
+            // handle the different types of inputs based on previous locking script
+            let prevout_lockingscript_type = &input.prevout.scriptpubkey_type;
+            match prevout_lockingscript_type.as_str() {
+                "p2pkh" => {
+                    let script_sig = Builder::new()
+                        .push_slice(&hex::decode(sig_with_hashtype)?)
+                        .push_key(public_key)
+                        .into_script();
+                    input.scriptsig_asm = script_sig.asm();
+                    input.scriptsig = hex::encode(script_sig.as_bytes());
+                }
+                "p2sh" => {
+                    // TODO(#83) need to handle redeem scripts
+                    return Err(anyhow!("Not currently handling P2SH"));
+                }
+                "v0_p2wsh" => {
+                    // TODO(#83) need to handle redeem scripts
+                    return Err(anyhow!("Not currently handling v0_p2wsh"));
+                }
+                "v0_p2wpkh" => {
+                    // Need to specify witness data to unlock
+                    input.witness = vec![sig_with_hashtype, hex::encode(public_key.to_bytes())];
+                }
+                _ => {
+                    return Err(anyhow!(
+                        "Unidentified locking script type from previous output"
+                    ))
+                }
+            }
+        }
+        let mut signed_tx = self.clone();
+        signed_tx.vin = inputs;
+        Ok(signed_tx)
     }
 }
 
@@ -175,19 +292,29 @@ pub struct Status {
     pub block_time: u32,
 }
 
+impl Status {
+
+    pub fn timestamp(&self) -> String {
+        if self.confirmed {
+        // Creates a new SystemTime from the specified number of whole seconds
+        let d = UNIX_EPOCH + Duration::from_secs(self.block_time.into());
+        // Create DateTime from SystemTime
+        let datetime = DateTime::<Utc>::from(d);
+        // Formats the combined date and time with the specified format string.
+        datetime.format("%Y-%m-%d %H:%M:%S").to_string()
+        }
+        else {
+            "".to_string()
+        }
+    }
+}
 impl fmt::Display for Status {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
        let mut table = Table::new();
        table.add_row(row!["Confirmed: ", self.confirmed]);
          table.add_row(row!["Block Height: ", self.block_height]);
             table.add_row(row!["Block Hash: ", self.block_hash]);
-            // Creates a new SystemTime from the specified number of whole seconds
-    let d = UNIX_EPOCH + Duration::from_secs(1524885322);
-    // Create DateTime from SystemTime
-    let datetime = DateTime::<Utc>::from(d);
-    // Formats the combined date and time with the specified format string.
-    let timestamp_str = datetime.format("%Y-%m-%d %H:%M:%S.%f").to_string();
-                table.add_row(row!["Timestamp ", timestamp_str]);
+                table.add_row(row!["Timestamp ", self.timestamp()]);
                 write!(f, "{}", table)
     }
 }
@@ -991,8 +1118,6 @@ impl Blockstream {
         let trans_status = trans_resp.status();
         let trans_content = trans_resp.text().await?;
         if !trans_status.is_client_error() && !trans_status.is_server_error() {
-            println!("Successful in broadcasting the transaction");
-            println!("Posted txid: {}", trans_content);
             Ok(trans_content)
         } else {
             println!(

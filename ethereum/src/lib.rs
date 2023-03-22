@@ -51,6 +51,7 @@ use web3::types::{Address, TransactionParameters};
 use web3::Error;
 
 pub mod ethclient;
+pub use ethclient::EthClient;
 mod ethereum_amount;
 pub use ethereum_amount::EthereumAmount;
 
@@ -187,15 +188,13 @@ impl CryptoWallet for EthereumWallet {
     async fn transfer(
         &self,
         blockchain_client: &Self::BlockchainClient,
-        _send_amount: &Self::CryptoAmount,
+        send_amount: &Self::CryptoAmount,
         to_address: &str,
-    ) -> Result<(), anyhow::Error> {
+    ) -> Result<String, anyhow::Error> {
         // let mut send_string = send_amount;
         let to = Address::from_str(to_address)?;
-        let amount = _send_amount.wei();
-        println!("amount: {:#?}", amount);
-        println!("to_address: {:#?}", amount);
-
+        let amount = send_amount.wei();
+        
         let tx_object = TransactionParameters {
             to: Some(to),
             value: amount,
@@ -218,12 +217,9 @@ impl CryptoWallet for EthereumWallet {
             .eth
             .send_raw_transaction(signed.raw_transaction)
             .await?;
+        let hash = hex::encode(result.as_bytes());
 
-        println!(
-            "Tx succeeded: Hash: {:#?}, EtherScan address: https://goerli.etherscan.io/tx/{:#?}",
-            &result, &result
-        );
-        Ok(())
+        Ok(hash)
     }
 
     fn address_by_index(
@@ -372,6 +368,7 @@ impl CryptoAddressGeneral for EthereumWallet {
 pub struct BlockchainClient {
     client: web3::Web3<Http>,
     eth: Eth<Http>,
+    url: String,
 }
 
 impl BlockchainConnector for BlockchainClient {
@@ -383,6 +380,7 @@ impl BlockchainConnector for BlockchainClient {
         Ok(Self {
             client: web3,
             eth: web3_eth,
+            url: url.to_string(),
         })
     }
 
@@ -392,6 +390,11 @@ impl BlockchainConnector for BlockchainClient {
 }
 
 impl BlockchainClient {
+    
+    pub fn to_eth_client(&self) -> EthClient {
+        EthClient::new(&self.url)
+    }
+
     pub async fn balance(&self, address: web3::types::H160) -> Result<EthereumAmount, Error> {
         let balance = self.eth.balance(address, None).await?;
         Ok(EthereumAmount { wei: balance })

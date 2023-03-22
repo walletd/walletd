@@ -13,7 +13,8 @@ use thiserror::Error;
 
 use crate::rct_types::RctKey;
 use crate::{
-    mix_outs, public_key, KeyDerivation, KeyImage, MixAmountAndOuts, MoneroWallet, PublicKey,
+    mix_outs, public_key, KeyDerivation, KeyImage, MixAmountAndOuts, MoneroWallet,
+    PublicKey,
 };
 
 /// The number of fake outputs to request from the LWS
