@@ -6,7 +6,7 @@ use walletd_ethereum::*;
 // use hex_literal::hex;
 // use walletd_hd_key::HDKey;
 // use walletd_coin_model::CryptoWallet;
-use walletd_hd_key::NetworkType;
+use walletd_hd_key::HDNetworkType;
 
 // const GOERLI_TEST_ADDRESS: &str =
 // "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
@@ -25,7 +25,7 @@ async fn main() -> web3::Result<()> {
 
     let wallet = match EthereumWallet::from_mnemonic(
         &seed,
-        NetworkType::TestNet,
+        HDNetworkType::TestNet,
         EthereumFormat::Checksummed,
     ) {
         Ok(wallet) => Ok(wallet),

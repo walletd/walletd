@@ -2,7 +2,7 @@ extern crate walletd_bitcoin;
 
 use ::secp256k1::SecretKey;
 use hex;
-use walletd_bitcoin::{BTransaction, BitcoinWallet, Input, Output, Status};
+use walletd_bitcoin::{BTransaction, BitcoinAddress as BitcoinWallet, Input, Output, Status};
 
 fn main() {
     println!("Recreating an example found online here for testing/validation");

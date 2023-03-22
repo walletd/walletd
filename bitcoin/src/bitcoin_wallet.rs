@@ -38,19 +38,19 @@ impl BitcoinWallet {
     let fee_estimates: FeeEstimates = client.fee_estimates().await?;
     let confirmation_target: u32 = 6; // this variable specifies how many blocks need to include this transaction
                                       // before it's considered "confirmed"
-    let fee_sat_per_byte: f64;
+    
     let fee_map = &fee_estimates.0;
-    if !fee_map.is_empty() {
-        fee_sat_per_byte = fee_map
+    let fee_sat_per_byte = if !fee_map.is_empty() {
+        fee_map
             .get(confirmation_target.to_string().as_str())
             .expect("fee_map missing key")
             .as_f64()
-            .expect("Unable to convert to f64");
+            .expect("Unable to convert to f64")
         
         
     } else {
-        return Err(anyhow!("Did not get fee map"));
-    }
+        return Err(anyhow!("Did not get fee map"))
+    };
 
     // Build the transaction
     // Specify the inputs and outputs, the difference between the amount of the
