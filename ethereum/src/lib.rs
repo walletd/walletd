@@ -400,9 +400,9 @@ impl BlockchainClient {
         Ok(EthereumAmount { wei: balance })
     }
 
-    pub async fn gas_price(&self) -> Result<String, Error> {
+    pub async fn gas_price(&self) -> Result<EthereumAmount, Error> {
         let gas_price = self.eth.gas_price().await?;
-        Ok(gas_price.to_string())
+        Ok(EthereumAmount {wei: gas_price})
     }
 }
 

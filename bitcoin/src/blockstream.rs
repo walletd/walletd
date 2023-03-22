@@ -967,7 +967,7 @@ impl fmt::Display for FeeEstimates {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut table = Table::new();
         writeln!(f, "Fee Estimates")?;
-        table.add_row(row!["Confirmation Target", "Fee (sat/vB)"]);
+        table.add_row(row!["Confirmation Target (Blocks)", "Fee (sat/vB)"]);
         let mut keys = self.0.iter().map(|(a, _b)| a.parse::<u32>().expect("expecting that key should be able to be parsed as u32")).collect::<Vec<_>>();
         keys.sort();
         for key in keys {

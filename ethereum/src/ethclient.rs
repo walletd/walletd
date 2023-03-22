@@ -1,5 +1,6 @@
 // use std::io::Error;
 use thiserror::Error;
+use anyhow::anyhow;
 use web3::contract::{Contract, Options};
 use web3::ethabi::Uint;
 use web3::helpers as w3h;
@@ -94,19 +95,24 @@ impl EthClient {
     pub async fn transaction_data_from_hash(
         &self,
         transaction_hash: H256,
-    ) -> web3::types::Transaction {
-        let tx = match self
+    ) -> Result<web3::types::Transaction, anyhow::Error> {
+        match self
             .web3
             .eth()
             .transaction(TransactionId::Hash(transaction_hash))
-            .await
-        {
-            Ok(tx) => tx,
-            Err(error) => {
-                todo!();
+            .await {
+            Ok(tx) => {
+                if tx.is_none() {
+                    Err(anyhow!("Transaction not found"))
+                } else {
+                    Ok(tx.unwrap())
+                }
             }
-        };
-        tx.unwrap()
+            Err(error) => {
+                Err(anyhow!("Error: {:?}", error))
+            }
+        }
+        
     }
 
     // TODO(#70): Remove this after write-only functionality is finished
