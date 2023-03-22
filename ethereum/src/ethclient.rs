@@ -148,17 +148,33 @@ impl EthClient {
     pub async fn transaction_details_for_coin(tx: Transaction) -> Result<String, anyhow::Error> {
         let mut table = Table::new();
         let eth_value = EthereumAmount::new_from_wei(tx.value); 
-        table.add_row(row!["Transaction Hash", tx.hash]);
+        table.add_row(row!["Transaction Hash", format!("0x{:x}", tx.hash)]);
         table.add_row(row!["Amount", eth_value]);
-        table.add_row(row!["Block Number", tx.block_number.expect("Block number missing")]);
-        table.add_row(row!["Transaction Index Number", tx.transaction_index.expect("Transaction index missing")]);
-        table.add_row(row!["From Address", tx.from.expect("No from address")]);
-        table.add_row(row!["To Address", tx.to.expect("No to address")]);
-        table.add_row(row!["Gas Price", tx.gas_price.expect("No gas price")]);
+        if tx.block_number.is_some() {
+            table.add_row(row!["Block Number", tx.block_number.expect("Block number missing")]);
+        }
+        if tx.transaction_index.is_some() {
+            table.add_row(row!["Transaction Index Number", tx.transaction_index.expect("Transaction index missing")]);
+        }
+        if tx.from.is_some() {
+            table.add_row(row!["From Address", format!("0x{:x}", tx.from.expect("No from address"))]);
+        }
+        if tx.to.is_some() {
+            table.add_row(row!["To Address", format!("0x{:x}", tx.to.expect("No to address"))]);
+        }
+        if tx.gas_price.is_some() {
+            table.add_row(row!["Gas Price", tx.gas_price.expect("No gas price")]);
+        }
         table.add_row(row!["Gas", tx.gas]);
-        table.add_row(row!["Transaction Type", tx.transaction_type.expect("No transaction type")]);
-        table.add_row(row!["Maximum Gas Fee", tx.max_fee_per_gas.expect("No max fee per gas")]);
-        table.add_row(row!["Maximum priority fee per gas", tx.max_priority_fee_per_gas.expect("No max priority fee per gas")]);
+        if tx.transaction_type.is_some() {
+            table.add_row(row!["Transaction Type", tx.transaction_type.expect("No transaction type")]);
+        }
+        if tx.max_fee_per_gas.is_some() {
+            table.add_row(row!["Maximum Gas Fee", tx.max_fee_per_gas.expect("No max fee per gas")]);
+        }
+        if tx.max_priority_fee_per_gas.is_some() {
+            table.add_row(row!["Maximum priority fee per gas", tx.max_priority_fee_per_gas.expect("No max priority fee per gas")]);
+        }
         let table_string = table.to_string();
         Ok(table.to_string())
     }
