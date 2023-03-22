@@ -10,7 +10,7 @@ pub use walletd_bitcoin::BitcoinAmount;
 use walletd_bitcoin::{BTransaction, BitcoinAddress, BitcoinWallet, Blockstream};
 use walletd_coin_model::CryptoAmount;
 pub use walletd_coin_model::{BlockchainConnector, CryptoAddressGeneral, CryptoWallet};
-pub use walletd_ethereum::{EthereumAmount, EthereumFormat, EthereumWallet};
+pub use walletd_ethereum::{EthClient, EthereumAmount, EthereumFormat, EthereumWallet};
 use walletd_hd_key::{DerivePathComponent, HDNetworkType};
 pub use walletd_hd_key::{DeriveType, HDKey, SlipCoin};
 use web3::types::H256;
@@ -437,12 +437,14 @@ impl KeyPair {
                     .as_any()
                     .downcast_ref::<walletd_ethereum::BlockchainClient>()
                     .unwrap();
+                
                 let eth_client = ethereum_client.to_eth_client();
                 let tx_hash = H256::from_str(&txid)?;
                 let tx = eth_client.transaction_data_from_hash(tx_hash).await;
                 let tx_details = format!("{:#?}", tx);
-
-                return Ok(tx_details);
+                let tx_string = EthClient::transaction_details_for_coin(tx).await;
+                
+                return Ok(tx_string?)
             }
             _ => {
                 return Err(anyhow!(
