@@ -629,7 +629,7 @@ impl VecAssociatedInfo {
 
         while search_next_account {
             search_next_account = false;
-            // println!("account_index: {}", account_index);
+            // println!("searching account_index: {}", account_index);
             while current_gap < gap_limit {
                 for change_index in 0..2 {
                     let specify_deriv_path = format!(
@@ -640,7 +640,7 @@ impl VecAssociatedInfo {
                         change_index,
                         address_index
                     );
-                    let derived = bip32_master.derive(specify_deriv_path)?;
+                    let derived = bip32_master.derive(specify_deriv_path.clone())?;
                     let exists: bool;
                     match crypto_coin {
                         CryptoCoin::BTC => {
@@ -657,10 +657,9 @@ impl VecAssociatedInfo {
                                     address: Box::new(wallet),
                                     derived_info: Some(derived),
                                 });
-                                // println!("account_index: {}, address_index:
-                                // {}, previous transaction history: {}",
-                                // account_index, address_index, exists);
                             }
+                            println!("for deriv path: {}, previous transaction history: {}",
+                                &specify_deriv_path, exists);
                         }
                         // couldn't figure out how to check for past transaction history for
                         // ethereum and others, not implemented yet
