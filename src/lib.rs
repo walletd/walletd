@@ -377,11 +377,12 @@ impl KeyPair {
                 let mut all_transactions: Vec<BTransaction> = Vec::new();
                 let mut owners_addresses: Vec<String> = Vec::new();
                 let mut all_txids: Vec<String> = Vec::new();
-
+                let mut btc_wallet = BitcoinWallet::new();
                 for info in self.associated.iter() {
                     if info.crypto_coin == coin_type {
                         let wallet_address =  info.address.as_any().downcast_ref::<BitcoinAddress>()
                 .expect("Wallet with CryptoCoin::BTC should be able to be downcast to BitcoinWallet struct");
+                        btc_wallet.add_address(&wallet_address);
                         let public_address = wallet_address.public_address_string();
                         let transactions = blockstream_client.transactions(&public_address).await?;
                         for tx in transactions {
@@ -398,7 +399,8 @@ impl KeyPair {
                     }
                 }
 
-                let tx_overview = BTransaction::overview(all_transactions, owners_addresses)?;
+                let tx_overview =
+                    BTransaction::overview(btc_wallet, all_transactions, owners_addresses)?;
 
                 return Ok((tx_overview, transaction_identifiers));
             }
@@ -429,7 +431,7 @@ impl KeyPair {
 
                 let tx = blockstream_client.transaction(&txid).await?;
                 let tx_details = format!("{:#?}", tx);
-                //let tx_details = tx.details(owner_address.unwrap_or_default())?;
+                // let tx_details = tx.details(owner_address.unwrap_or_default())?;
 
                 return Ok(tx_details);
             }
@@ -438,12 +440,12 @@ impl KeyPair {
                     .as_any()
                     .downcast_ref::<walletd_ethereum::BlockchainClient>()
                     .unwrap();
-                
+
                 let eth_client = ethereum_client.to_eth_client();
                 let tx_hash = H256::from_str(&txid)?;
                 let tx_details = eth_client.transaction_data_from_hash(tx_hash).await?;
                 let tx_string = EthClient::transaction_details_for_coin(tx_details).await?;
-                return Ok(tx_string)
+                return Ok(tx_string);
             }
             _ => {
                 return Err(anyhow!(
@@ -657,8 +659,10 @@ impl VecAssociatedInfo {
                                     derived_info: Some(derived),
                                 });
                             }
-                            println!("for deriv path: {}, previous transaction history: {}",
-                                &specify_deriv_path, exists);
+                            println!(
+                                "for deriv path: {}, previous transaction history: {}",
+                                &specify_deriv_path, exists
+                            );
                         }
                         // couldn't figure out how to check for past transaction history for
                         // ethereum and others, not implemented yet
