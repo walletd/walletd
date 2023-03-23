@@ -6,8 +6,10 @@ use bitcoin_hashes::{sha256d, Hash};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use walletd_coin_model::BlockchainConnector;
+use crate::BitcoinWallet;
 use chrono::prelude::DateTime;
 use chrono::Utc;
+use walletd_coin_model::CryptoWallet;
 
 use prettytable::Table;
 use prettytable::row;
@@ -42,27 +44,49 @@ pub struct BTransaction {
 
 
 impl BTransaction {
-    pub fn overview(transactions: Vec<BTransaction>, owners_addresses: Vec<String>) -> Result<String, anyhow::Error> {
-        // sort the transactions by the block_time
+    pub fn overview(btc_wallet: BitcoinWallet, transactions: Vec<BTransaction>, owners_addresses: Vec<String>) -> Result<String, anyhow::Error> {
+        
+        // We need to know which addresses belong to our wallet
+        let our_addresses = btc_wallet.addresses().iter().map(|address| address.public_address_string()).collect::<Vec<String>>();
+        
         let mut transactions = transactions;
+        // sort the transactions by the block_time
         transactions.sort_by(|a, b| a.status.block_time.cmp(&b.status.block_time));
         if transactions.len() != owners_addresses.len() {
             return Err(anyhow!("transactions and owners_addresses should be of the same length"));
         }
         let mut table = Table::new();
-        table.add_row(row!["Transaction ID", "Send Amount (BTC)", "Fee Amount (BTC)", "To/From Address", "Status", "Timestamp"]);
+        // Don't list duplicate transactions (same txid) which may have been referenced using different addresses involved in the transaction
+        let mut seen_txids = Vec::new();
+        // Amount to display is the change in the running balance
+        table.add_row(row!["Transaction ID", "Amount (BTC)", "To/From Address", "Status", "Timestamp"]);
         for i in 0..transactions.len() {
-            let output_amount = BitcoinAmount::new_from_satoshi(transactions[i].vout.iter().fold(0, |acc, output| acc + output.value)).btc();
-            let change_amount = BitcoinAmount::new_from_satoshi(transactions[i].vout.iter().filter(|output| output.scriptpubkey_address == owners_addresses[i]).fold(0, |acc, output| acc + output.value)).btc();
-            let fee_amount = BitcoinAmount::new_from_satoshi(transactions[i].fee).btc();
-            let send_amount = output_amount - change_amount - fee_amount;
+            let our_inputs: Vec<Output> = transactions[i].vin.iter().filter(|input| our_addresses.contains(&input.prevout.scriptpubkey_address)).map(|x| x.prevout.clone()).collect();
+            let received_outputs: Vec<Output> = transactions[i].vout.iter().filter(|output| our_addresses.contains(&output.scriptpubkey_address)).map(|x| x.clone()).collect();
+            let received_amount = BitcoinAmount::new_from_satoshi(received_outputs.iter().fold(0, |acc, output| acc + output.value));
+            let sent_amount = BitcoinAmount::new_from_satoshi(our_inputs.iter().fold(0, |acc, output| acc + output.value));
+          
+            let amount_balance = if received_amount > sent_amount {
+                // this is situation when we are receiving money
+                (received_amount - sent_amount).btc()
+            }
+            else {
+                // this is the situation where we are sending money
+                (sent_amount - received_amount).btc() * -1.0
+            };
+
             let status_string = if transactions[i].status.confirmed {
-                format!("Complete, Confirmed in block {}", transactions[i].status.block_height)
+                "Confirmed".to_string()
             } else {
                 "Pending Confirmation".to_string()
             };
             let timestamp = transactions[i].status.timestamp();
-            table.add_row(row![transactions[i].txid, send_amount.to_string(), fee_amount.to_string(), owners_addresses[i], status_string, timestamp]);
+            
+            if seen_txids.contains(&transactions[i].txid) {
+                continue;
+            }
+            table.add_row(row![transactions[i].txid, amount_balance, owners_addresses[i], status_string, timestamp]);
+            seen_txids.push(transactions[i].txid.clone());
         }
         Ok(table.to_string())
     }
