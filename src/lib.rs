@@ -16,8 +16,8 @@ pub use walletd_hd_key::{DeriveType, HDKey, SlipCoin};
 use web3::types::H256;
 pub use {
     ::walletd_bip39, walletd_bitcoin, walletd_coin_model, walletd_ethereum, walletd_hd_key,
-    walletd_monero, walletd_monero_mnemonic, walletd_solana,
 };
+
 pub mod crypto_coin;
 pub mod onboard;
 use std::str::FromStr;
