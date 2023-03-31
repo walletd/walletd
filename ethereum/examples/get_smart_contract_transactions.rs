@@ -11,7 +11,7 @@
 // use walletd_hd_keys::NetworkType;
 use core::fmt::Error;
 
-use walletd_ethereum::ethclient::EthClient;
+use walletd_ethereum::EthClient;
 use web3::types::*;
 
 pub const INFURA_GOERLI_ENDPOINT: &str =

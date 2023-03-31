@@ -1,7 +1,7 @@
 // use std::str::FromStr;
 
 use walletd_bip39::{Language, Mnemonic, MnemonicHandler};
-use walletd_coin_model::crypto_wallet::CryptoWallet;
+
 use walletd_ethereum::*;
 // use hex_literal::hex;
 // use walletd_hd_key::HDKey;
@@ -27,6 +27,7 @@ async fn main() -> web3::Result<()> {
         &seed,
         HDNetworkType::TestNet,
         EthereumFormat::Checksummed,
+        None
     ) {
         Ok(wallet) => Ok(wallet),
         Err(e) => Err(e),

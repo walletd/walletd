@@ -7,15 +7,10 @@ use web3::helpers as w3h;
 use web3::transports::Http;
 use web3::types::{BlockId, BlockNumber, Transaction, TransactionId, H160, H256, U256, U64};
 use crate::EthereumAmount;
-
+use std::str::FromStr;
 use prettytable::Table;
 use prettytable::row;
 
-// TODO(#70): Remove once we finish cleaning and refactoring
-#[allow(dead_code)]
-pub fn print_type_of<T>(_: &T) {
-    println!("{}", std::any::type_name::<T>())
-}
 
 #[derive(Error, Debug)]
 #[allow(dead_code)]
@@ -84,18 +79,19 @@ impl EthClient {
     /// ```
     /// use std::str::FromStr;
     ///
-    /// use walletd_ethereum::ethclient::EthClient;
+    /// use walletd_ethereum::EthClient;
     /// use web3::types::H256;
     /// let tx_hash =
-    ///     H256::from_str("0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b")
-    ///         .unwrap();
-    /// let eth_client = EthClient::new(walletd_ethereum::INFURA_GOERLI_ENDPOINT);
+    ///     "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
+    /// let infura_goelri_endpoint_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
+    /// let eth_client = EthClient::new(infura_goelri_endpoint_url);
     /// let tx = eth_client.transaction_data_from_hash(tx_hash);
     /// ```
     pub async fn transaction_data_from_hash(
         &self,
-        transaction_hash: H256,
+        tx_hash: &str
     ) -> Result<web3::types::Transaction, anyhow::Error> {
+        let transaction_hash: H256 = H256::from_str(tx_hash)?;
         match self
             .web3
             .eth()

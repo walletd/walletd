@@ -9,13 +9,13 @@ use walletd_coin_model::BlockchainConnector;
 use crate::BitcoinWallet;
 use chrono::prelude::DateTime;
 use chrono::Utc;
-use walletd_coin_model::CryptoWallet;
 
 use prettytable::Table;
 use prettytable::row;
 use std::fmt;
 
 use std::time::{UNIX_EPOCH, Duration};
+use walletd_coin_model::CryptoAddress;
 
 use crate::BitcoinAmount;
 
@@ -27,7 +27,6 @@ pub use bitcoin::{
 use anyhow::anyhow;
 
 use bitcoin::blockdata::script::Builder;
-use ::secp256k1:: SecretKey;
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct BTransaction {
@@ -44,25 +43,33 @@ pub struct BTransaction {
 
 
 impl BTransaction {
-    pub fn overview(btc_wallet: BitcoinWallet, transactions: Vec<BTransaction>, owners_addresses: Vec<String>) -> Result<String, anyhow::Error> {
+    pub async fn overview(btc_wallet: BitcoinWallet) -> Result<String, anyhow::Error> {
         
         // We need to know which addresses belong to our wallet
-        let our_addresses = btc_wallet.addresses().iter().map(|address| address.public_address_string()).collect::<Vec<String>>();
-        
-        let mut transactions = transactions;
+        let our_addresses = btc_wallet.addresses().iter().map(|address| address.public_address()).collect::<Vec<String>>();
+        let blockchain_client = btc_wallet.blockchain_client()?;
+         let mut transactions: Vec<BTransaction> = Vec::new();
+         let mut owners_addresses = Vec::new();
+        for address in &our_addresses {
+            let txs = blockchain_client.transactions(address).await?;
+           
+            for tx in txs {
+                if transactions.iter().any(|x| x.txid == tx.txid) {
+                    continue
+                }
+                transactions.push(tx);
+                owners_addresses.push(address.clone());
+            }
+        }
+
         // sort the transactions by the block_time
         transactions.sort_by(|a, b| a.status.block_time.cmp(&b.status.block_time));
-        if transactions.len() != owners_addresses.len() {
-            return Err(anyhow!("transactions and owners_addresses should be of the same length"));
-        }
         let mut table = Table::new();
-        // Don't list duplicate transactions (same txid) which may have been referenced using different addresses involved in the transaction
-        let mut seen_txids = Vec::new();
         // Amount to display is the change in the running balance
         table.add_row(row!["Transaction ID", "Amount (BTC)", "To/From Address", "Status", "Timestamp"]);
         for i in 0..transactions.len() {
-            let our_inputs: Vec<Output> = transactions[i].vin.iter().filter(|input| our_addresses.contains(&input.prevout.scriptpubkey_address)).map(|x| x.prevout.clone()).collect();
-            let received_outputs: Vec<Output> = transactions[i].vout.iter().filter(|output| our_addresses.contains(&output.scriptpubkey_address)).map(|x| x.clone()).collect();
+            let our_inputs: Vec<Output> = transactions[i].vin.iter().filter(|input| owners_addresses.contains(&input.prevout.scriptpubkey_address)).map(|x| x.prevout.clone()).collect();
+            let received_outputs: Vec<Output> = transactions[i].vout.iter().filter(|output| owners_addresses.contains(&output.scriptpubkey_address)).cloned().collect();
             let received_amount = BitcoinAmount::new_from_satoshi(received_outputs.iter().fold(0, |acc, output| acc + output.value));
             let sent_amount = BitcoinAmount::new_from_satoshi(our_inputs.iter().fold(0, |acc, output| acc + output.value));
           
@@ -82,11 +89,9 @@ impl BTransaction {
             };
             let timestamp = transactions[i].status.timestamp();
             
-            if seen_txids.contains(&transactions[i].txid) {
-                continue;
-            }
+            
             table.add_row(row![transactions[i].txid, amount_balance, owners_addresses[i], status_string, timestamp]);
-            seen_txids.push(transactions[i].txid.clone());
+
         }
         Ok(table.to_string())
     }
@@ -196,11 +201,9 @@ impl BTransaction {
                 .transaction_hash_for_signing_segwit_input_index(i, sighash_type.to_u32())?;
             let private_key = &keys_per_input[i].0;
             let public_key= &keys_per_input[i].1;
-            let secret_key = SecretKey::from_slice(private_key.to_bytes().as_slice())
-                .expect("32 bytes, within curve order");
             let sig_with_hashtype = BitcoinAddress::signature_sighashall_for_trasaction_hash(
-                transaction_hash_for_input_with_sighash.to_string(),
-                secret_key,
+                &transaction_hash_for_input_with_sighash,
+                private_key
             )?;
 
             // handle the different types of inputs based on previous locking script
@@ -639,10 +642,7 @@ impl BTransaction {
             serialization.push_str(&hex::encode(value_encoded));
             let len_scriptpubkey = output.scriptpubkey.len();
             if len_scriptpubkey % 2 != 0 {
-                println!(
-                    "len_scriptpubkey: {}, {}",
-                    len_scriptpubkey, output.scriptpubkey
-                );
+                
                 return Err(anyhow!("Length of scriptpubkey should be a multiple of 2"));
             }
             let len_scriptpubkey_encoded =
@@ -952,9 +952,6 @@ pub struct Blockstream {
     pub url: String,
 }
 
-pub const BLOCKSTREAM_TESTNET_URL: &str = "https://blockstream.info/testnet/api";
-pub const BLOCKSTREAM_URL: &str = "https://blockstream.info/api";
-
 #[async_trait]
 impl BlockchainConnector for Blockstream {
     fn new(url: &str) -> Result<Self, anyhow::Error> {
@@ -964,23 +961,20 @@ impl BlockchainConnector for Blockstream {
         })
     }
 
-    async fn check_if_past_transactions_exist(
-        &self,
-        public_address: &str,
-    ) -> Result<bool, anyhow::Error> {
-        let transactions = self.transactions(public_address).await?;
-        if transactions.is_empty() {
-            // println!("No past transactions exist at address: {}", public_address);
-            return Ok(false);
-        } else {
-            // println!("Past transactions exist at address: {}", public_address);
-            return Ok(true);
-        }
-    }
-
     fn as_any(&self) -> &dyn Any {
         self
     }
+
+    fn url(&self) -> &str {
+        &self.url
+    }
+
+    async fn display_fee_estimates(&self) -> Result<String, anyhow::Error> {
+        let fee_estimates: FeeEstimates = self.fee_estimates().await?;
+        let fee_string = format!("{}", fee_estimates);
+        Ok(fee_string)
+    }
+
 }
 
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
@@ -1003,17 +997,28 @@ impl fmt::Display for FeeEstimates {
 }
 
 impl Blockstream {
-    // fetch the block height
+    pub async fn check_if_past_transactions_exist(
+        &self,
+        public_address: &str,
+    ) -> Result<bool, anyhow::Error> {
+        let transactions = self.transactions(public_address).await?;
+        if transactions.is_empty() {
+            Ok(false)
+        } else {
+            Ok(true)
+        }
+    }
+
+    /// Fetch the block height
     pub fn block_count(&self) -> Result<u64, anyhow::Error> {
         let body = reqwest::blocking::get(format!("{}/blocks/tip/height", self.url))
             .expect("Error getting block count")
             .text()?;
-        println!("body = {:?}", body);
         let block_count: u64 = body.parse()?;
         Ok(block_count)
     }
 
-    // fetch fee estimates from blockstream
+    /// Fetch fee estimates from blockstream
     pub async fn fee_estimates(&self) -> Result<FeeEstimates, anyhow::Error> {
         let body = reqwest::get(format!("{}/fee-estimates", self.url))
             .await?
@@ -1023,7 +1028,7 @@ impl Blockstream {
         Ok(fee_estimates)
     }
 
-    // fetch transactions from blockstream
+    /// Fetch transactions from blockstream
     pub async fn transactions(&self, address: &str) -> Result<Vec<BTransaction>, anyhow::Error> {
         let body = reqwest::get(format!("{}/address/{}/txs", self.url, address))
             .await?
@@ -1033,12 +1038,11 @@ impl Blockstream {
         BTransaction::new_transactions(transactions)
     }
 
-    // fetch mempool transactions from blockstream
+    /// Fetch mempool transactions from blockstream
     pub fn mempool_transactions(&self, address: &str) -> Result<Value, anyhow::Error> {
         let body = reqwest::blocking::get(format!("{}/address/{}/txs/mempool", self.url, address))
             .expect("Error getting transactions")
             .text();
-        println!("body = {:?}", body);
         let transactions = json!(&body?);
         Ok(transactions)
     }
@@ -1069,58 +1073,7 @@ impl Blockstream {
             .await?
             .text()
             .await?;
-        let _data = r#"{
-        "txid":"6249b166d78529e435628245034df9e4c81d9b34b4d12c5600527c96b6e0d8ce",
-        "version":1,
-        "locktime":0,
-        "vin":[
-          {
-            "txid":"4894c96e044bd6c278f927a220c42048602e4d8bfa888f5c35610b1c4643140d",
-            "vout":1,
-            "prevout":{
-              "scriptpubkey":"a914f7861160df5cce001291293dfba24923816fc7e987",
-              "scriptpubkey_asm":"OP_HASH160 OP_PUSHBYTES_20 f7861160df5cce001291293dfba24923816fc7e9 OP_EQUAL",
-              "scriptpubkey_type":"p2sh",
-              "scriptpubkey_address":"3QFoS8FPLCiVzzra4TPqVCq5ntpswP9Ey3",
-              "value":48713312
-            },
-            "scriptsig":"160014630cf4b24dbd691fef2bb3fa50605484632f611e",
-            "scriptsig_asm":"OP_PUSHBYTES_22 0014630cf4b24dbd691fef2bb3fa50605484632f611e",
-            "witness":[
-              "304402201e23c13611331720f5dfe2455b2d3c3b259d84cadc5e3de6e792a750978efeb8022006d3acad3c1c5b7e6227c80b71fee635f9303fd164b378c98a9fb3063105ff9201",
-              "025e7a3239de2b1dbde8d8ff5c0c620ac47bfd32e761f509c13424fe8481dbb98e"
-            ],
-            "is_coinbase":false,
-            "sequence":4294967295,
-            "inner_redeemscript_asm":"OP_0 OP_PUSHBYTES_20 630cf4b24dbd691fef2bb3fa50605484632f611e"
-          }
-        ],
-        "vout":[
-          {
-            "scriptpubkey":"a914b3efe280e64077202c171cc3fefb4bb02adc7d0687",
-            "scriptpubkey_asm":"OP_HASH160 OP_PUSHBYTES_20 b3efe280e64077202c171cc3fefb4bb02adc7d06 OP_EQUAL",
-            "scriptpubkey_type":"p2sh",
-            "scriptpubkey_address":"3J6SFNJSHq9k6k2Cwzdy6RMC1z3ubR1ot1",
-            "value":15632000
-          },
-          {
-            "scriptpubkey":"a91445a3f3cc49da0b67c969771b0b8ef76c45aaff2787",
-            "scriptpubkey_asm":"OP_HASH160 OP_PUSHBYTES_20 45a3f3cc49da0b67c969771b0b8ef76c45aaff27 OP_EQUAL",
-            "scriptpubkey_type":"p2sh",
-            "scriptpubkey_address":"383ExPThK2M5yZEtHXU1YcqehVBDxHKuWJ",
-            "value":33065280
-          }
-        ],
-        "size":247,
-        "weight":661,
-        "fee":16032,
-        "status":{
-          "confirmed":true,
-          "block_height":663393,
-          "block_hash":"0000000000000000000efbc1d707a0b95bc281c908ecf1f149d2d93ca8d6a175",
-          "block_time":1609181106
-        }
-      }"#;
+       
         let transaction_info: Value = serde_json::from_str(&body)?;
         let transaction: BTransaction = BTransaction::new_from_value(&transaction_info)?;
         Ok(transaction)
@@ -1144,15 +1097,15 @@ impl Blockstream {
         if !trans_status.is_client_error() && !trans_status.is_server_error() {
             Ok(trans_content)
         } else {
-            println!(
+            log::info!(
                 "trans_status.is_client_error(): {}",
                 trans_status.is_client_error()
             );
-            println!(
+            log::info!(
                 "trans_status.is_server_error(): {}",
                 trans_status.is_server_error()
             );
-            println!("trans_content: {}", trans_content);
+            log::info!("trans_content: {}", trans_content);
             Err(anyhow!("Error in broadcasting the transaction"))
         }
     }

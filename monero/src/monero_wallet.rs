@@ -29,7 +29,7 @@ use crate::transaction::{
     GetOutsEntry, PendingTransaction, Priority, SendTransaction, TxDestinationEntry,
 };
 use crate::{
-    Address, AddressType, CryptoWallet, CryptoAddressGeneral, HDKey, MoneroAmount,
+    Address, AddressType, CryptoWallet, CryptoWalletGeneral, HDKey, MoneroAmount,
     MoneroLWSConnection, MoneroPrivateKeys, MoneroPublicKeys, Network, HDNetworkType, PublicKey,
     Seed, SerializedArchive,
 };
@@ -309,14 +309,6 @@ impl CryptoWallet for MoneroWallet {
         } else {
             Err(anyhow!("Transaction is not valid"))
         }
-    }
-
-    fn address_by_index(
-        &self,
-        _bip32_master: &HDKey,
-        _index: usize,
-    ) -> Result<Box<dyn CryptoAddressGeneral>, anyhow::Error> {
-        Err(anyhow!("Not implemented"))
     }
 }
 

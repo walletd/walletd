@@ -4,35 +4,84 @@ use crate::FeeEstimates;
 use crate::BTransaction;
 use crate::Blockstream;
 use crate::blockstream::Utxo;
-use walletd_coin_model::CryptoWallet;
+use walletd_coin_model::{CryptoWallet, CryptoWalletGeneral, CryptoAmount};
+use walletd_hd_key::{HDKey, HDNetworkType, HDPurpose, HDPathIndex};
+use walletd_coin_model::CryptoAddress;
+use walletd_bip39::Seed;
+use std::any::Any;
+use std::fmt;
+
+use async_trait::async_trait;
+
 pub use bitcoin::{
     Address, AddressType, EcdsaSighashType, Network, PrivateKey as BitcoinPrivateKey,
     PublicKey as BitcoinPublicKey, Script,
 };
 use anyhow::anyhow;
 
-#[derive(Debug, Clone, Default)]
-pub struct BitcoinWallet(Vec<BitcoinAddress>);
+#[derive(Debug, Clone)]
+pub struct BitcoinWallet{
+    address_format: AddressType,
+    associated: Vec<AssociatedAddress>,
+    blockchain_client: Option<Blockstream>,
+    master_hd_key: Option<HDKey>,
+}
 
-impl BitcoinWallet {
-    pub fn new() -> Self {
-        Self(Vec::new())
-    }
-
-    pub fn add_address(&mut self, address: &BitcoinAddress) {
-        if self.0.contains(address) {
-            return;
-        }
-        self.0.push(address.clone());
-    }
-
-    pub fn addresses(&self) -> &[BitcoinAddress] {
-        &self.0
-    }
-
-    pub async fn transfer(&self, client: &Blockstream, send_amount: &BitcoinAmount, to_public_address: &str) -> Result<String, anyhow::Error> {
+impl Default for BitcoinWallet {
+    fn default() -> Self {
         
-    let receiver_view_wallet = BitcoinAddress::new_view_only(to_public_address)?;
+            Self{ 
+                associated: Vec::new(),
+                blockchain_client: None,
+                address_format: AddressType::P2wpkh,
+                master_hd_key: None,
+            }
+        
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct AssociatedAddress {
+    pub address: BitcoinAddress,
+    pub hd_key: HDKey,
+}
+
+impl AssociatedAddress {
+    pub fn new(address: BitcoinAddress, hd_key: HDKey) -> Self {
+        Self { address, hd_key }
+    }
+
+    pub fn address(&self) -> &BitcoinAddress {
+        &self.address
+    }
+
+    pub fn hd_key(&self) -> &HDKey {
+        &self.hd_key
+    }
+}
+
+#[async_trait]
+impl CryptoWallet for BitcoinWallet {
+    
+ type AddressFormat = AddressType;
+  type BlockchainClient = Blockstream;
+  type CryptoAmount = BitcoinAmount;
+  type MnemonicSeed = Seed;
+  type NetworkType = Network;
+
+  async fn balance(&self) -> Result<BitcoinAmount, anyhow::Error> {
+      let client = self.blockchain_client()?;
+      let mut total_balance = BitcoinAmount::new();
+      for addr in self.addresses() {
+          let balance = addr.balance(client).await?;
+          total_balance += balance;
+      }
+      Ok(total_balance)
+  }
+
+  async fn transfer(&self, send_amount: &BitcoinAmount, to_public_address: &str) -> Result<String, anyhow::Error> {
+    let client = self.blockchain_client()?;
+    let receiver_view_wallet = BitcoinAddress::from_public_address(to_public_address)?;
 
     // first checking existing endpoints with blockstream
     let fee_estimates: FeeEstimates = client.fee_estimates().await?;
@@ -60,7 +109,7 @@ impl BitcoinWallet {
     // Look through all the associated owned addresses for available utxos
     let mut available_utxos = Vec::new();
     for addr in self.addresses() {
-        let utxos = client.utxo(&addr.public_address_string()).await?;
+        let utxos = client.utxo(&addr.public_address()).await?;
         if utxos.is_empty() {
             available_utxos.push(vec![]);
         }
@@ -77,7 +126,7 @@ impl BitcoinWallet {
     let mut inputs_available: Vec<Utxo> = Vec::new();
     let mut inputs_available_tx_info: Vec<BTransaction> = Vec::new();
     let mut change_addr_set = false;
-    let mut change_addr = self.0[0].address_info();
+    let mut change_addr = self.associated[0].address().address_info();
 
     let mut keys_per_input: Vec<(BitcoinPrivateKey, BitcoinPublicKey)> = Vec::new();
     let mut utxo_addr_index = Vec::new();
@@ -85,7 +134,7 @@ impl BitcoinWallet {
         for utxo in utxos_i.iter() {
         if utxo.status.confirmed {
             if !change_addr_set {
-                change_addr = self.0[i].address_info();
+                change_addr = self.associated[i].address().address_info();
                 change_addr_set = true;
             }
             total_value_from_utxos += &utxo.value;
@@ -122,10 +171,8 @@ impl BitcoinWallet {
 
     for ind in chosen_indices {
         let index = utxo_addr_index[ind];
-        let private_key = BitcoinPrivateKey::from_wif(self.0[index].private_key.as_ref()
-        .expect("Private key data missing")
-        .as_str())?;
-        let public_key = BitcoinPublicKey::from_slice(&self.0[index].public_key()?)?;
+        let private_key = self.associated[index].address().private_key()?;
+        let public_key =  self.associated[index].address().public_key()?;
         let key_pair = (private_key, public_key);
         keys_per_input.push(key_pair);
     }
@@ -139,6 +186,196 @@ impl BitcoinWallet {
     Ok(tx_id)
     }
 
-   
+    fn set_blockchain_client(&mut self, client: Self::BlockchainClient) {
+        self.blockchain_client = Some(client);
+    }
+}
+
+impl BitcoinWallet {
+
+    pub fn add(&mut self, associated: &AssociatedAddress) {
+        if self.addresses().contains(&associated.address) {
+            return;
+        }
+        self.associated.push(associated.clone());
+    }
+
+    pub fn associated_info(&self) -> &[AssociatedAddress] {
+        &self.associated
+    } 
+
+    pub fn addresses(&self) -> Vec<BitcoinAddress> {
+        self.associated.iter().map(|x| x.address.clone()).collect()
+    }
+    
+    pub fn blockchain_client(&self) -> Result<&Blockstream, anyhow::Error> {
+        match &self.blockchain_client {
+            Some(client) => Ok(client),
+            None => Err(anyhow!("No blockchain client set")),
+        }
+    }
+
+
+    pub async fn from_hd_key(&mut self,
+        master_hd_key: &HDKey,
+        address_format: AddressType,
+        account_discovery: bool,
+    ) -> Result<(), anyhow::Error> {
+        self.master_hd_key = Some(master_hd_key.clone());
+        self.add_previously_used_addresses(master_hd_key, address_format, None, None, account_discovery).await?;
+        Ok(())        
+    }
+
+    pub async fn from_mnemonic(&mut self, mnemonic_seed: &Seed, hd_network_type: HDNetworkType, address_format: AddressType, account_discovery: bool) -> Result<(), anyhow::Error> {
+        
+        let master_hd_key = HDKey::new(mnemonic_seed.as_bytes(), hd_network_type)?;
+        self.from_hd_key(&master_hd_key, address_format, account_discovery).await
+    }
+
+    // Discovers previously used addresses by searching in sequential order based on master HDKey and a derivation type, 
+    // stopping discovery when gap limit (n consecutive addresses without transaction history) has been met.
+    // Only considers change index = 0 (the receiving/external chain) when
+    // considering the gap limit but if there is transaction history with
+    // change index = 1 it is added as an associated address.
+    // If account_discovery is false: it will only search for addresses in the first account (account_index = 0)
+     pub async fn add_previously_used_addresses(&mut self,
+         master_hd_key: &HDKey,
+         address_format: AddressType,
+         deriv_type_specified: Option<HDPurpose>,
+         gap_limit_specified: Option<usize>,
+         account_discovery: bool)
+        -> Result<(), anyhow::Error> {
+          let blockchain_client = self.blockchain_client()?.clone();
+          let gap_limit = gap_limit_specified.unwrap_or(20);
+
+          let deriv_type = match deriv_type_specified {
+                Some(deriv_type) => deriv_type,
+                None => HDPurpose::BIP84,
+          };
+          
+          let mut current_gap = 0;
+          let mut search_next_account = true;
+          let mut account_index = 0; 
+          let mut address_index = 0; 
+          
+          let coin_id = match master_hd_key.network() {
+            // These are the values for Bitcoin
+            HDNetworkType::MainNet => 0,
+            HDNetworkType::TestNet => 1,
+          };
+
+         while search_next_account {
+              search_next_account = false;
+              while current_gap < gap_limit {
+                  for change_index in 0..2 {
+                      let specify_deriv_path = deriv_type.full_deriv_path(coin_id, account_index, change_index, address_index);
+                      let derived = master_hd_key.derive(specify_deriv_path.clone())?;
+                      let address = BitcoinAddress::from_hd_key(&derived, address_format)?;
+                             let exists = blockchain_client
+                                 .check_if_past_transactions_exist(&address.public_address())
+                              .await?;
+                                
+                             log::info!(
+                                 "for deriv path: {}, previous transaction history: {}",
+                                 &specify_deriv_path, exists
+                             );
+                            println!("for deriv path: {}, previous transaction history: {}",
+                            &specify_deriv_path, exists
+                        );
+                         
+                     if exists {
+                          search_next_account = true;
+                          let associated = AssociatedAddress::new(address, derived);
+                          self.add(&associated);
+                      } else if change_index == 0 {
+                          current_gap += 1;
+                      }
+                  }
+                  address_index += 1;
+                }
+                if !account_discovery {
+                    break;
+                }
+                  account_index += 1;
+                  address_index = 0;
+                  current_gap = 0;
+            
+            }
+              Ok(())
+        
+          }
+
+        pub fn address_format(&self) -> AddressType {
+            self.address_format
+        }
+
+        pub fn master_hd_key(&self) -> Result<HDKey, anyhow::Error> {
+            match &self.master_hd_key {
+                Some(key) => Ok(key.clone()),
+                None => Err(anyhow!("No master HD key set")),
+            }
+        }
+
+        /// Considering only account 0, returns the next address corresponding to 1 + the max existing address index
+        /// Assumes use of the default derivation path type (BIP84) 
+        pub fn next_address(&self) -> Result<BitcoinAddress, anyhow::Error> {
+        let purpose = HDPurpose::BIP84.purpose();
+        let coin_type = match self.master_hd_key()?.network() {
+            HDNetworkType::MainNet => 0,
+            HDNetworkType::TestNet => 1,
+        };
+        let account = HDPathIndex::IndexHardened(0);
+        let mut max_address = 0;
+
+        for info in self.associated.iter() {
+            let deriv_path = info.hd_key().derivation_path();
+            let derived_info_list = HDKey::derive_path_str_to_info(&deriv_path)?;
+            let address_index_derived = derived_info_list[5].to_shortform_index();
+            if address_index_derived > max_address {
+                max_address = address_index_derived;
+            }
+        }
+        let next_deriv_path = format!("m/{}/{}'/{}/0/{}", purpose, coin_type, account, max_address + 1);
+        let next_hd_key = self.master_hd_key()?.derive(next_deriv_path)?;
+        BitcoinAddress::from_hd_key(&next_hd_key, self.address_format)
+    }
 
 } 
+
+impl fmt::Display for BitcoinWallet {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for address in self.associated.iter().map(|a| a.address()) {
+            writeln!(f, "{}", address)?;
+        }
+        Ok(())
+    }
+}
+
+impl CryptoWalletGeneral for BitcoinWallet {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn box_clone(&self) -> Box<dyn CryptoWalletGeneral> {
+        Box::new(self.clone())
+    }
+}
+
+
+impl TryInto<BitcoinWallet> for Box<dyn CryptoWalletGeneral> {
+    type Error = anyhow::Error;
+
+    fn try_into(self) -> Result<BitcoinWallet, Self::Error> {
+        match self.as_any().downcast_ref::<BitcoinWallet>() {
+            Some(wallet) => Ok(wallet.clone()),
+            None => Err(anyhow!("Could not downcast to BitcoinWallet")),
+        }
+    }
+}
+
+
+impl From<BitcoinWallet> for Box<dyn CryptoWalletGeneral> {
+    fn from(wallet: BitcoinWallet) -> Self {
+        Box::new(wallet)
+    }
+}

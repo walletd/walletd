@@ -1,22 +1,18 @@
-use core::fmt;
-use core::fmt::Display;
-use std::any::Any;
 use std::cmp::Reverse;
 use std::str::FromStr;
+use std::fmt;
 
-use ::secp256k1::{Message, PublicKey, Secp256k1, SecretKey};
+use ::secp256k1::{Message, Secp256k1, SecretKey};
 use anyhow::anyhow;
-use async_trait::async_trait;
 use base58::ToBase58;
 use bitcoin::blockdata::script::Builder;
 pub use bitcoin::{
-    Address, AddressType, EcdsaSighashType, Network, PrivateKey as BitcoinPrivateKey,
+    Address as AddressInfo, AddressType, EcdsaSighashType, Network, PrivateKey as BitcoinPrivateKey,
     PublicKey as BitcoinPublicKey, Script,
 };
 use sha2::{Digest, Sha256};
-use walletd_bip39::Seed;
-use walletd_coin_model::{CryptoWallet, CryptoAddressGeneral};
-use walletd_hd_key::{HDKey, HDNetworkType, SlipCoin};
+use walletd_coin_model::{CryptoAddress};
+use walletd_hd_key::{HDKey, HDNetworkType};
 use crate::FeeEstimates;
 
 use crate::blockstream::{BTransaction, Blockstream, Input, InputType, Output, Utxo};
@@ -24,172 +20,94 @@ use crate::BitcoinAmount;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BitcoinAddress {
-    pub crypto_type: SlipCoin,
-    pub address_info: Address,
-    pub public_address: String,
-    pub private_key: Option<String>,
-    pub public_key: Option<String>,
-    pub network: Network,
+    address_info: AddressInfo,
+    private_key: Option<BitcoinPrivateKey>,
+    public_key: Option<BitcoinPublicKey>,
+    network: Network,
 }
 
-#[async_trait]
-impl CryptoWallet for BitcoinAddress {
-    type AddressFormat = AddressType;
-    type BlockchainClient = Blockstream;
-    type CryptoAmount = BitcoinAmount;
-    type HDKeyInfo = HDKey;
-    type MnemonicSeed = Seed;
-    type NetworkType = Network;
+impl BitcoinAddress {
 
-    fn crypto_type(&self) -> SlipCoin {
-        SlipCoin::BTC
-    }
-
-    fn from_hd_key(hd_keys: &HDKey, address_type: AddressType) -> Result<Self, anyhow::Error> {
-        let public_key_bytes = &hd_keys
-            .extended_public_key
-            .expect("Public key data missing")
-            .to_vec();
-        let public_key = BitcoinPublicKey {
-            inner: bitcoin::secp256k1::PublicKey::from_slice(public_key_bytes)?,
-            compressed: true,
-        };
-
-        // TODO(#82): consider handling the other Bitcoin network types
-        let network: Network = match hd_keys.network {
+    pub fn from_hd_key(hd_key: &HDKey, address_format: AddressType) -> Result<Self, anyhow::Error> {
+         // TODO(#82): consider handling the other Bitcoin network types
+         let network: Network = match hd_key.network {
             HDNetworkType::MainNet => Network::Bitcoin,
             HDNetworkType::TestNet => Network::Testnet,
         };
+        let public_key_bytes = &hd_key
+            .extended_public_key
+            .expect("Public key data missing")
+            .to_bytes();
+        
+            let private_key_bytes = hd_key.extended_private_key().expect("Private key data missing").to_bytes();
+        let public_key = BitcoinPublicKey::from_slice(public_key_bytes)?;
+        let private_key = BitcoinPrivateKey::from_slice(&private_key_bytes, network)?;
+       
 
-        let address_info: Address = match address_type {
-            AddressType::P2pkh => Address::p2pkh(&public_key, network),
+        let address_info: AddressInfo = match address_format {
+            AddressType::P2pkh => AddressInfo::p2pkh(&public_key, network),
             // TODO(#83): Not sure about initializing this with an empty script, double check and
             // fix as necessary
-            AddressType::P2sh => Address::p2sh(&Script::new(), network)?,
-            AddressType::P2wpkh => Address::p2wpkh(&public_key, network)?,
+            AddressType::P2sh => AddressInfo::p2sh(&Script::new(), network)?,
+            AddressType::P2wpkh => AddressInfo::p2wpkh(&public_key, network)?,
             // TODO(#83): Again check the script::new() here and fix if needed
-            AddressType::P2wsh => Address::p2wsh(&Script::new(), network),
+            AddressType::P2wsh => AddressInfo::p2wsh(&Script::new(), network),
             // Currently not handling the AddressType::P2tr, fix if can understand how to create
             // this address properly
             _ => return Err(anyhow!("Currently not handling this Bitcoin address type")),
         };
-        let public_address = address_info.to_string();
-
+        
         Ok(Self {
-            crypto_type: SlipCoin::BTC,
             address_info,
-            public_address,
-            private_key: Some(hd_keys.to_wif()?),
-            public_key: Some(hd_keys.public_key()?),
+            private_key: Some(private_key),
+            public_key: Some(public_key),
             network,
         })
     }
 
-    fn from_mnemonic(
-        mnemonic_seed: &Seed,
-        network: Network,
-        address_type: AddressType,
-    ) -> Result<Self, anyhow::Error> {
-        let seed_bytes = mnemonic_seed.as_bytes();
-        let mut private_key_bytes = [0u8; 32];
-        private_key_bytes.copy_from_slice(&seed_bytes[0..32]);
-        let public_key_bytes = PublicKey::from_secret_key(
-            &Secp256k1::new(),
-            &SecretKey::from_slice(&private_key_bytes)?,
-        )
-        .serialize();
-
-        let public_key = BitcoinPublicKey {
-            inner: bitcoin::secp256k1::PublicKey::from_slice(&public_key_bytes)?,
-            compressed: true,
-        };
-
-        let address_info: Address = match address_type {
-            AddressType::P2pkh => Address::p2pkh(&public_key, network),
-            // TODO(#83): Not sure about initializing this with an empty script, double check and
-            // fix as necessary
-            AddressType::P2sh => Address::p2sh(&Script::new(), network)?,
-            AddressType::P2wpkh => Address::p2wpkh(&public_key, network)?,
-            // TODO(#83): Again check the script::new() here and fix if needed
-            AddressType::P2wsh => Address::p2wsh(&Script::new(), network),
-            // Currently not handling the AddressType::P2tr, fix if can understand how to create
-            // this address properly
-            _ => return Err(anyhow!("Currently not handling this Bitcoin address type")),
-        };
-
-        let network_prefix: u8 = match network {
-            Network::Bitcoin => 0x80,
-            Network::Testnet => 0xef,
-            _ => return Err(anyhow!("Currently not handling network {}", network)),
-        };
-
-        let public_address = address_info.to_string();
-
-        Ok(Self {
-            crypto_type: SlipCoin::BTC,
-            address_info,
-            public_address,
-            private_key: Some(Self::to_private_key_wif(
-                &private_key_bytes,
-                network_prefix,
-            )?),
-            public_key: Some(Self::to_public_key_hex(&public_key_bytes)?),
-            network,
-        })
-    }
-
-    fn public_address_string(&self) -> String {
-        self.public_address.clone()
-    }
-
-    async fn balance(
+    pub async fn balance(
         &self,
         blockchain_client: &Blockstream,
     ) -> Result<BitcoinAmount, anyhow::Error> {
         let utxo_info = blockchain_client
-            .utxo(self.public_address_string().as_str())
+            .utxo(&self.public_address())
             .await?;
         let amount = Self::confirmed_balance_from_utxo(utxo_info)?;
 
-        return Ok(amount);
+        Ok(amount)
     }
 
-    async fn transfer(
+    pub async fn transfer(
         &self,
         client: &Blockstream,
         send_amount: &BitcoinAmount,
         public_address: &str,
     ) -> Result<String, anyhow::Error> {
        
-        let receiver_view_wallet = Self::new_view_only(public_address)?;
+        let receiver_view_wallet = Self::from_public_address(public_address)?;
 
         // first checking existing endpoints with blockstream
         let fee_estimates: FeeEstimates = client.fee_estimates().await?;
         let confirmation_target: u32 = 6; // this variable specifies how many blocks need to include this transaction
                                           // before it's considered "confirmed"
-        let fee_sat_per_byte: f64;
         let fee_map = &fee_estimates.0;
-        if !fee_map.is_empty() {
-            fee_sat_per_byte = fee_map
+        let fee_sat_per_byte: f64 = if !fee_map.is_empty() {
+            fee_map
                 .get(confirmation_target.to_string().as_str())
                 .expect("fee_map missing key")
                 .as_f64()
-                .expect("Unable to convert to f64");
-            println!(
-                "fee_sat_per_vB for confirmation_target {} is {}",
-                confirmation_target, fee_sat_per_byte
-            );
+                .expect("Unable to convert to f64")
             
         } else {
             return Err(anyhow!("Did not get fee map"));
-        }
+        };
 
         // Build the transaction
         // Specify the inputs and outputs, the difference between the amount of the
         // inputs and the amount of the outputs is the transaction fee
         // Input(s) should cover the total amount
         // Inputs need to come from the utxo
-        let available_utxos = client.utxo(self.public_address_string().as_str()).await?;
+        let available_utxos = client.utxo(self.public_address().as_str()).await?;
 
         // sum total value with confirmed status, also count number of utxos with
         // confirmed status
@@ -226,57 +144,55 @@ impl CryptoWallet for BitcoinAddress {
         Ok(txid)
     }
 
-    fn address_by_index(
-        &self,
-        bip32_master: &HDKey,
-        index: usize,
-    ) -> Result<Box<dyn CryptoAddressGeneral>, anyhow::Error> {
-        let derived_key = HDKey::derive(
-            bip32_master,
-            format!("m/84'/0'/0'/0/{}", index),
-        )?;
-        Ok(Box::new(BitcoinAddress::from_hd_key(
-            &derived_key,
-            AddressType::P2wpkh,
-        )?))
+}
+
+impl CryptoAddress for BitcoinAddress {
+    fn public_address(&self) -> String {
+        self.address_info.to_string()
     }
 }
 
+
 impl BitcoinAddress {
-    pub fn new_view_only(public_address: &str) -> Result<Self, anyhow::Error> {
-        let address_info = Address::from_str(public_address)?;
-        let public_address = address_info.to_string();
+    pub fn from_public_address(public_address: &str) -> Result<Self, anyhow::Error> {
+        let address_info = AddressInfo::from_str(public_address)?;
         // Currently hardcoding to Mainnet, TODO(#82) handle other Bitcoin network
         // options
         let network = Network::Bitcoin;
 
         Ok(Self {
-            crypto_type: SlipCoin::BTC,
             address_info,
-            public_address,
             private_key: None,
             public_key: None,
             network,
         })
     }
 
-    pub fn public_key(&self) -> Result<Vec<u8>, anyhow::Error> {
-        if let Some(key) = self.public_key.clone() {
-            Ok(hex::decode(key)?)
+    pub fn public_key(&self) -> Result<BitcoinPublicKey, anyhow::Error> {
+        if let Some(key) = self.public_key {
+            Ok(key)
         } else {
             Err(anyhow!("Public Key not included"))
         }
     }
 
+    pub fn private_key(&self) -> Result<BitcoinPrivateKey, anyhow::Error> {
+        if let Some(key) = self.private_key {
+            Ok(key)
+        } else {
+            Err(anyhow!("Private Key not included"))
+        }
+    }
+
     pub fn signature_sighashall_for_trasaction_hash(
-        transaction_hash: String,
-        secret_key: SecretKey,
+        transaction_hash: &str,
+        private_key: &BitcoinPrivateKey,
     ) -> Result<String, anyhow::Error> {
         // hardcoded default to SIGHASH_ALL
         let sighash_type = EcdsaSighashType::All;
         let secp = Secp256k1::new();
         let message = Message::from_slice(&hex::decode(transaction_hash)?).expect("32 bytes");
-        let mut sig = secp.sign_ecdsa(&message, &secret_key);
+        let mut sig = secp.sign_ecdsa(&message, &SecretKey::from_slice(&private_key.to_bytes())?);
         sig.normalize_s();
         let mut sig_with_hashtype = sig.serialize_der().to_vec();
         sig_with_hashtype.push(sighash_type.to_u32().try_into()?);
@@ -526,7 +442,6 @@ impl BitcoinAddress {
         send_amount: &BitcoinAmount,
         receiver_view_wallet: &BitcoinAddress,
     ) -> Result<BTransaction, anyhow::Error> {
-        println!("Building a Transaction");
         // choose inputs
         let (mut inputs, fee_amount, _chosen_inds) = Self::choose_inputs_and_set_fee(
             utxo_available,
@@ -541,13 +456,13 @@ impl BitcoinAddress {
             return Err(anyhow!("Insufficient funds to send amount and cover fees"));
         }
 
-        println!(
+        log::info!(
             "inputs_amount: {} BTC, send_amount: {} BTC, fee_amount {} BTC",
             &inputs_amount.btc(),
             &send_amount.btc(),
             &fee_amount.btc()
         );
-        println!(
+        log::info!(
             "inputs_amount: {} sat, send_amount: {} sat, fee_amount {} sat",
             &inputs_amount.satoshi(),
             &send_amount.satoshi(),
@@ -587,17 +502,11 @@ impl BitcoinAddress {
             let sighash_type = EcdsaSighashType::All;
             let transaction_hash_for_input_with_sighash = transaction
                 .transaction_hash_for_signing_segwit_input_index(i, sighash_type.to_u32())?;
-            let private_key = BitcoinPrivateKey::from_wif(
-                self.private_key
-                    .as_ref()
-                    .expect("Private key data missing")
-                    .as_str(),
-            )?;
-            let secret_key = SecretKey::from_slice(private_key.to_bytes().as_slice())
-                .expect("32 bytes, within curve order");
+            let private_key = self.private_key
+                    .expect("Private key data missing");
             let sig_with_hashtype = Self::signature_sighashall_for_trasaction_hash(
-                transaction_hash_for_input_with_sighash.to_string(),
-                secret_key,
+                &transaction_hash_for_input_with_sighash,
+                &private_key
             )?;
 
             // handle the different types of inputs based on previous locking script
@@ -606,7 +515,7 @@ impl BitcoinAddress {
                 "p2pkh" => {
                     let script_sig = Builder::new()
                         .push_slice(&hex::decode(sig_with_hashtype)?)
-                        .push_key(&BitcoinPublicKey::from_slice(&self.public_key()?)?)
+                        .push_key(&self.public_key()?)
                         .into_script();
                     input.scriptsig_asm = script_sig.asm();
                     input.scriptsig = hex::encode(script_sig.as_bytes());
@@ -621,7 +530,7 @@ impl BitcoinAddress {
                 }
                 "v0_p2wpkh" => {
                     // Need to specify witness data to unlock
-                    input.witness = vec![sig_with_hashtype, hex::encode(self.public_key()?)];
+                    input.witness = vec![sig_with_hashtype, format!("{:x}", self.public_key()?.inner)];
                 }
                 _ => {
                     return Err(anyhow!(
@@ -646,7 +555,7 @@ impl BitcoinAddress {
         Ok(confirmed_balance)
     }
 
-    pub fn address_info(&self) -> Address {
+    pub fn address_info(&self) -> AddressInfo {
         self.address_info.clone()
     }
 
@@ -663,42 +572,11 @@ impl BitcoinAddress {
     }
 }
 
-impl Display for BitcoinAddress {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(f, "Bitcoin Wallet")?;
-        writeln!(f, " Network: {}", self.network)?;
-        writeln!(
-            f,
-            " Private Key: {}",
-            self.private_key.clone().unwrap_or_default()
-        )?;
-        writeln!(
-            f,
-            " Public Key: {}",
-            self.public_key.clone().unwrap_or_default()
-        )?;
-        writeln!(
-            f,
-            " Address Type: {}",
-            self.address_info
-                .address_type()
-                .expect("Expecting address type datas")
-        )?;
-        writeln!(f, " Public Address: {}", self.public_address)?;
-        Ok(())
-    }
-}
-
-impl CryptoAddressGeneral for BitcoinAddress {
-    fn crypto_type(&self) -> SlipCoin {
-        self.crypto_type
+impl fmt::Display for BitcoinAddress {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                write!(f, "{}", self.public_address())?;   
+            Ok(())
+        }
     }
 
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
 
-    fn box_clone(&self) -> Box<dyn CryptoAddressGeneral> {
-        Box::new(self.clone())
-    }
-}

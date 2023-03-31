@@ -38,7 +38,7 @@ impl PrivateKey {
     }
 
     /// Create a PrivateKey from a slice of a byte array.
-    /// First convers the byte array to a valid Scalar using
+    /// First convers the byte array to a valid Scalar using from_canonical_bytes
     /// Returns an error if the slice is not appropriate to be converted to a
     /// PrivateKey.
     pub fn from_slice(data: &[u8]) -> Result<PrivateKey, Error> {
