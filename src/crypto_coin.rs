@@ -3,45 +3,23 @@ use core::fmt::Display;
 use std::str::FromStr;
 
 use anyhow::anyhow;
+use walletd_hd_key::slip44::Symbol;
 
-#[derive(Default, PartialEq, Copy, Clone, Debug)]
+#[derive(Clone, Debug, Copy, PartialEq, Eq)]
 pub enum CryptoCoin {
-    // value is the coin type value in accordance with SLIP-0044: https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-    #[default]
-    BTC = 0,
-    ETH = 60,
-    XMR = 128,
-    SOL = 501,
+    BTC,
+    ETH,
+    // XMR = 128,
+    // SOL = 501,
 }
 
 impl CryptoCoin {
-    // Creates a new CryptoCoin based on the coin type value in accordance with
-    // SLIP-0044, assumes mainnet, throws error to be handled if testnet or
-    // unsupported type
-    pub fn new(value: usize) -> Result<Self, anyhow::Error> {
-        match value {
-            0 => Ok(Self::BTC),
-            60 => Ok(Self::ETH),
-            128 => Ok(Self::XMR),
-            501 => Ok(Self::SOL),
-            1 => Err(anyhow!("This value is for any testnet")),
-            _ => Err(anyhow!(
-                "Currently not supporting a CryptoCoin with a coin type value of {}",
-                value
-            )),
-        }
-    }
-
-    pub fn coin_type_mainnet(&self) -> usize {
-        *self as usize
-    }
-
     pub fn main_unit(&self) -> String {
         match self {
             Self::BTC => "BTC".to_string(),
             Self::ETH => "ETH".to_string(),
-            Self::SOL => "SOL".to_string(),
-            Self::XMR => "XMR".to_string(),
+            // Self::SOL => "SOL".to_string(),
+            // Self::XMR => "XMR".to_string(),
         }
     }
 
@@ -49,8 +27,8 @@ impl CryptoCoin {
         match self {
             Self::BTC => "satoshi".to_string(),
             Self::ETH => "wei".to_string(),
-            Self::SOL => "lamport".to_string(),
-            Self::XMR => "piconero".to_string(),
+            // Self::SOL => "lamport".to_string(),
+            // Self::XMR => "piconero".to_string(),
         }
     }
 }
@@ -64,8 +42,8 @@ impl FromStr for CryptoCoin {
         match coin_name.to_string().to_lowercase().as_str() {
             "btc" | "bitcoin" => Ok(Self::BTC),
             "eth" | "ethereum" | "ether" => Ok(Self::ETH),
-            "sol" | "solana" => Ok(Self::SOL),
-            "xmr" | "monero" => Ok(Self::XMR),
+            //"sol" | "solana" => Ok(Self::SOL),
+            //"xmr" | "monero" => Ok(Self::XMR),
             _ => Err(anyhow!("Current valid options are BTC, ETH, SOL, or XMR")),
         }
     }
@@ -76,9 +54,36 @@ impl Display for CryptoCoin {
         match self {
             Self::BTC => write!(f, "Bitcoin (BTC)")?,
             Self::ETH => write!(f, "Ethereum (ETH)")?,
-            Self::SOL => write!(f, "Solana (SOL)")?,
-            Self::XMR => write!(f, "Monero (XMR)")?,
+            // Self::SOL => write!(f, "Solana (SOL)")?,
+            // Self::XMR => write!(f, "Monero (XMR)")?,
         }
         Ok(())
+    }
+}
+
+impl TryFrom<Symbol> for CryptoCoin {
+    type Error = anyhow::Error;
+
+    fn try_from(value: Symbol) -> Result<Self, Self::Error> {
+        match value {
+            Symbol::BTC => Ok(CryptoCoin::BTC),
+            Symbol::ETH => Ok(CryptoCoin::ETH),
+            // Symbol::XMR => Ok(CryptoCoin::XMR),
+            // Symbol::SOL => Ok(CryptoCoin::SOL),
+            _ => Err(anyhow!("Unsupported coin type")),
+        }
+    }
+}
+
+impl TryInto<Symbol> for CryptoCoin {
+    type Error = anyhow::Error;
+
+    fn try_into(self) -> Result<Symbol, Self::Error> {
+        match self {
+            CryptoCoin::BTC => Ok(Symbol::BTC),
+            CryptoCoin::ETH => Ok(Symbol::ETH),
+            // CryptoCoin::XMR => Ok(Symbol::XMR),
+            // CryptoCoin::SOL => Ok(Symbol::SOL),
+        }
     }
 }
