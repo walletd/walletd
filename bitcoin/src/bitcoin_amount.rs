@@ -90,8 +90,12 @@ impl BitcoinAmount {
 }
 
 impl CryptoAmount for BitcoinAmount {
-    fn new_from_main_unit_decimal_value(value: f64) -> Self {
+    fn from_main_unit_decimal_value(value: f64) -> Self {
         Self::new_from_btc(value)
+    }
+
+    fn from_smallest_unit_integer_value(value: u64) -> Self {
+        Self::new_from_satoshi(value)
     }
 
     fn to_main_unit_decimal_value(&self) -> f64 {

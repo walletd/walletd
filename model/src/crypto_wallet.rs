@@ -1,27 +1,22 @@
 use std::any::Any;
 use std::fmt;
+use walletd_hd_key::HDKey;
+use crate::{BlockchainConnector, CryptoAmount};
 
 use async_trait::async_trait;
 
 #[async_trait]
-pub trait CryptoWallet: Sized {
+pub trait CryptoWallet: Sized + TryFrom<Box<dyn CryptoWalletGeneral>> {
     // TODO(#61): create custom error type for each coin
     // and add a new associated type here for Error
-    type MnemonicSeed;
-    type AddressFormat;
-    type CryptoAmount;
-    type BlockchainClient;
+    type CryptoAmount: CryptoAmount;
+    type BlockchainClient: BlockchainConnector;
     type NetworkType;
 
     fn set_blockchain_client(&mut self, client: Self::BlockchainClient);
+    fn blockchain_client(&self) -> Result<&Self::BlockchainClient, anyhow::Error>;
 
-    // TODO(AS): Refactor this to use a builder pattern, or some other way that will work for all coins
-    // fn from_mnemonic(mnemonic_seed: &Self::MnemonicSeed, network_type: HDNetworkType, address_format: Self::AddressFormat) -> Result<Self, anyhow::Error>;
-    
-    // fn from_hd_key(
-    //     hd_key: &HDKey,
-    //     address_format: Self::AddressFormat,
-    // ) -> Result<Self, anyhow::Error>;
+    fn new(master_key: &HDKey, blockchain_client: Option<Box<dyn BlockchainConnector>>) -> Result<Self, anyhow::Error>;
 
     async fn balance(
         &self,
@@ -32,6 +27,10 @@ pub trait CryptoWallet: Sized {
         send_amount: &Self::CryptoAmount,
         public_address: &str,
     ) -> Result<String, anyhow::Error>;
+
+    async fn sync(&mut self) -> Result<(), anyhow::Error>;
+
+    fn receive_address(&self) -> Result<String, anyhow::Error>;
 
 }
 

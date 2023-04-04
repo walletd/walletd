@@ -10,7 +10,9 @@ pub trait CryptoAmount: std::fmt::Display {
     /// The CryptoAmount is a wrapper around a floating point number and the default integer value stored is in the smallest unit of the coin.
     /// For example this would be satoshi for bitcoin, wei for ethereum, etc.
     /// The decimal value is the floating point number representation in the main unit of the coin, for example BTC, ETH, etc.
-    fn new_from_main_unit_decimal_value(value: f64) -> Self;
+    fn from_main_unit_decimal_value(value: f64) -> Self;
+
+    fn from_smallest_unit_integer_value(value: u64) -> Self;
 
     /// Returns the decimal value of the CryptoAmount, this is the floating point number representation in the main unit of the coin, for example BTC, ETH, etc.
     fn to_main_unit_decimal_value(&self) -> f64;
@@ -23,6 +25,6 @@ pub trait CryptoAmount: std::fmt::Display {
     where
         Self: Sized,
     {
-        Self::new_from_main_unit_decimal_value(0.0)
+        Self::from_main_unit_decimal_value(0.0)
     }
 }

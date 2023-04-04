@@ -7,6 +7,7 @@ use web3::transports::Http;
 use web3::Error;
 use crate::{EthereumAmount, EthClient};
 use async_trait::async_trait;
+use anyhow::anyhow;
 
 
 #[derive(Debug, Clone)]
@@ -44,6 +45,21 @@ impl BlockchainConnector for BlockchainClient {
         Ok(gas_price_string)
     }
 
+    fn box_clone(&self) -> Box<dyn BlockchainConnector> {
+        Box::new(self.clone())
+    }
+}
+
+
+impl TryInto <BlockchainClient> for Box<dyn BlockchainConnector> {
+    type Error = anyhow::Error;
+
+    fn try_into(self) -> Result<BlockchainClient, Self::Error> {
+        match self.as_any().downcast_ref::<BlockchainClient>() {
+            Some(blockstream) => Ok(blockstream.clone()),
+            None => Err(anyhow!("Could not convert BlockchainConnector to BlockchainClient")),
+        }
+    }
 }
 
 

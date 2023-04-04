@@ -5,7 +5,7 @@ use bitcoin::{Address, AddressType};
 use bitcoin_hashes::{sha256d, Hash};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use walletd_coin_model::BlockchainConnector;
+use walletd_coin_model::{BlockchainConnector, CryptoWallet};
 use crate::BitcoinWallet;
 use chrono::prelude::DateTime;
 use chrono::Utc;
@@ -975,6 +975,10 @@ impl BlockchainConnector for Blockstream {
         Ok(fee_string)
     }
 
+    fn box_clone(&self) -> Box<dyn BlockchainConnector> {
+        Box::new(self.clone())
+    }
+
 }
 
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
@@ -993,6 +997,17 @@ impl fmt::Display for FeeEstimates {
         }
         write!(f, "{}", table)?;
         Ok(())
+    }
+}
+
+impl TryInto <Blockstream> for Box<dyn BlockchainConnector> {
+    type Error = anyhow::Error;
+
+    fn try_into(self) -> Result<Blockstream, Self::Error> {
+        match self.as_any().downcast_ref::<Blockstream>() {
+            Some(blockstream) => Ok(blockstream.clone()),
+            None => Err(anyhow!("Could not convert BlockchainConnector to Blockstream")),
+        }
     }
 }
 

@@ -4,10 +4,11 @@ use crate::FeeEstimates;
 use crate::BTransaction;
 use crate::Blockstream;
 use crate::blockstream::Utxo;
-use walletd_coin_model::{CryptoWallet, CryptoWalletGeneral, CryptoAmount};
+use walletd_coin_model::{CryptoWallet, CryptoWalletGeneral, CryptoAmount, BlockchainConnector};
 use walletd_hd_key::{HDKey, HDNetworkType, HDPurpose, HDPathIndex};
 use walletd_coin_model::CryptoAddress;
 use walletd_bip39::Seed;
+use walletd_hd_key::slip44;
 use std::any::Any;
 use std::fmt;
 
@@ -18,6 +19,8 @@ pub use bitcoin::{
     PublicKey as BitcoinPublicKey, Script,
 };
 use anyhow::anyhow;
+
+const DEFAULT_PURPOSE: HDPurpose = HDPurpose::BIP84;
 
 #[derive(Debug, Clone)]
 pub struct BitcoinWallet{
@@ -63,11 +66,27 @@ impl AssociatedAddress {
 #[async_trait]
 impl CryptoWallet for BitcoinWallet {
     
- type AddressFormat = AddressType;
   type BlockchainClient = Blockstream;
   type CryptoAmount = BitcoinAmount;
-  type MnemonicSeed = Seed;
   type NetworkType = Network;
+
+  fn new(master_hd_key: &HDKey, blockchain_client: Option<Box<dyn BlockchainConnector>>) -> Result<Self, anyhow::Error> {
+        let derived = master_hd_key.derive(DEFAULT_PURPOSE.full_deriv_path( slip44::Coin::Bitcoin.id(), 0, 0, 0))?;
+        let address_format =  AddressType::P2wpkh;
+        let address = BitcoinAddress::from_hd_key(&derived, address_format)?;
+        let associated = AssociatedAddress::new(address, derived);
+        let mut wallet = Self {
+            master_hd_key: Some(master_hd_key.clone()),
+            ..Default::default()
+        };
+        
+        if let Some(client) = blockchain_client {
+            wallet.blockchain_client = Some(client.try_into()?);
+        }
+        wallet.add(&associated);
+        Ok(wallet)  
+    }
+
 
   async fn balance(&self) -> Result<BitcoinAmount, anyhow::Error> {
       let client = self.blockchain_client()?;
@@ -189,6 +208,23 @@ impl CryptoWallet for BitcoinWallet {
     fn set_blockchain_client(&mut self, client: Self::BlockchainClient) {
         self.blockchain_client = Some(client);
     }
+
+    async fn sync(&mut self) -> Result<(), anyhow::Error> {
+        self.add_previously_used_addresses(&self.master_hd_key()?, self.address_format(), None, None, false).await?;
+        Ok(())
+    }
+    
+    fn receive_address(&self) -> Result<String, anyhow::Error> {
+        let next_receive_address = self.next_address()?;
+        Ok(next_receive_address.public_address())
+    }
+
+    fn blockchain_client(&self) -> Result<&Blockstream, anyhow::Error> {
+        match &self.blockchain_client {
+            Some(client) => Ok(client),
+            None => Err(anyhow!("No blockchain client set")),
+        }
+    }
 }
 
 impl BitcoinWallet {
@@ -208,12 +244,7 @@ impl BitcoinWallet {
         self.associated.iter().map(|x| x.address.clone()).collect()
     }
     
-    pub fn blockchain_client(&self) -> Result<&Blockstream, anyhow::Error> {
-        match &self.blockchain_client {
-            Some(client) => Ok(client),
-            None => Err(anyhow!("No blockchain client set")),
-        }
-    }
+   
 
 
     pub async fn from_hd_key(&mut self,
@@ -362,11 +393,11 @@ impl CryptoWalletGeneral for BitcoinWallet {
 }
 
 
-impl TryInto<BitcoinWallet> for Box<dyn CryptoWalletGeneral> {
+impl TryFrom<Box<dyn CryptoWalletGeneral>> for BitcoinWallet {
     type Error = anyhow::Error;
 
-    fn try_into(self) -> Result<BitcoinWallet, Self::Error> {
-        match self.as_any().downcast_ref::<BitcoinWallet>() {
+    fn try_from(value: Box<dyn CryptoWalletGeneral>) -> Result<Self, Self::Error> {
+        match value.as_any().downcast_ref::<BitcoinWallet>() {
             Some(wallet) => Ok(wallet.clone()),
             None => Err(anyhow!("Could not downcast to BitcoinWallet")),
         }

@@ -5,7 +5,7 @@ use walletd_bip39::{Mnemonic, MnemonicHandler, MnemonicStyleBuilder};
 use web3::types::U256;
 
 use walletd_coin_model::BlockchainConnector;
-use walletd_ethereum::*;
+use walletd_ethereum::{EthereumAmount, EthereumFormat, EthereumWallet, EthBlockchainClient};
 use walletd_hd_key::HDNetworkType;
 use walletd_coin_model::CryptoWallet;
 
@@ -24,7 +24,7 @@ async fn main()  {
 
     println!("seed as bytes: {:?}", seed.as_bytes());
 
-    let blockchain_client = walletd_ethereum::BlockchainClient::new(
+    let blockchain_client = EthBlockchainClient::new(
         "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
     ).unwrap();
 

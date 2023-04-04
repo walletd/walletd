@@ -12,13 +12,12 @@ use async_trait::async_trait;
 use secp256k1::{PublicKey, SecretKey};
 use tiny_keccak::{Hasher, Keccak};
 use walletd_bip39::Seed;
-use walletd_coin_model::{CryptoWallet, CryptoWalletGeneral};
-use walletd_hd_key::{HDKey, HDNetworkType, HDPurpose};
+use walletd_coin_model::{CryptoWallet, CryptoWalletGeneral, BlockchainConnector};
+use walletd_hd_key::{HDKey, HDNetworkType, HDPurpose, slip44};
 use web3::types::{Address, TransactionParameters};
 
-use crate::{EthereumFormat, BlockchainClient, EthereumAmount};
+use crate::{EthereumFormat, EthBlockchainClient, EthereumAmount};
 
-const COIN_ID: u32 = 60;
 const DEFAULT_PURPOSE: HDPurpose = HDPurpose::BIP44;
 
 #[derive(Debug, Clone)]
@@ -135,17 +134,43 @@ pub struct EthereumWallet {
     private_key: Option<EthereumPrivateKey>,
     public_key: Option<EthereumPublicKey>,
     network: HDNetworkType,
-    blockchain_client: Option<BlockchainClient>,
+    blockchain_client: Option<EthBlockchainClient>,
     hd_key: Option<HDKey>,
 }
 
 #[async_trait]
 impl CryptoWallet for EthereumWallet {
-    type AddressFormat = EthereumFormat;
-    type BlockchainClient = BlockchainClient;
+    type BlockchainClient = EthBlockchainClient;
     type CryptoAmount = EthereumAmount;
-    type MnemonicSeed = Seed;
     type NetworkType = HDNetworkType;
+
+    fn new(master_hd_key: &HDKey, blockchain_client: Option<Box<dyn BlockchainConnector>>) -> Result<Self, anyhow::Error> {
+        let derived_key = master_hd_key.derive(DEFAULT_PURPOSE.full_deriv_path(slip44::Coin::from(slip44::Symbol::ETH).id(), 0, 0, 0))?;
+        let address_format = EthereumFormat::default();
+
+        let private_key = EthereumPrivateKey::from_slice(&derived_key
+            .extended_private_key()?.to_bytes())?;
+        let public_key =  EthereumPublicKey::from_slice(&derived_key
+            .extended_public_key()?.to_bytes())?;
+        let public_address = public_key.to_public_address(address_format)?;
+        
+        let mut wallet = EthereumWallet {
+            address_format,
+            public_address,
+            private_key: Some(private_key),
+            public_key: Some(public_key),
+            network: master_hd_key.network(),
+            hd_key: Some(master_hd_key.clone()),
+            blockchain_client: None,
+        };
+
+        let blockchain_client = match blockchain_client {
+            Some(blockchain_client) => Some(blockchain_client.try_into()?),
+            None => None,
+        };
+        wallet.blockchain_client = blockchain_client;
+        Ok(wallet)
+    }
 
     async fn balance(
         &self,
@@ -193,18 +218,28 @@ impl CryptoWallet for EthereumWallet {
     fn set_blockchain_client(&mut self, client: Self::BlockchainClient) {
         self.blockchain_client = Some(client);
     }
+
+    async fn sync(&mut self) -> Result<(), anyhow::Error> {
+        Ok(())
+    }
+
+    fn receive_address(&self) -> Result<String, anyhow::Error> {
+        Ok(self.public_address())
+    }
+
+    fn blockchain_client(&self) -> Result<&EthBlockchainClient, anyhow::Error> {
+        match &self.blockchain_client {
+            Some(client) => Ok(client),
+            None => Err(anyhow!("No blockchain client set")),
+        }
+    }
 }
 
 /// Technically speaking, an "EthereumWallet" is a public address, public key and
 /// private key
 impl EthereumWallet {
 
-    pub fn blockchain_client(&self) -> Result<&BlockchainClient, anyhow::Error> {
-        match &self.blockchain_client {
-            Some(client) => Ok(client),
-            None => Err(anyhow!("No blockchain client set")),
-        }
-    }
+   
     
     pub fn public_address(&self) -> String {
         self.public_address.clone()
@@ -215,7 +250,7 @@ impl EthereumWallet {
     }
 
     // TODO(AS): need to refactor from_hd_key and from_mnemonic when implementing a builder pattern
-    pub fn from_hd_key(hd_key: &HDKey, address_format: EthereumFormat, blockchain_client: Option<BlockchainClient>) -> Result<Self, anyhow::Error> {
+    pub fn from_hd_key(hd_key: &HDKey, address_format: EthereumFormat, blockchain_client: Option<EthBlockchainClient>) -> Result<Self, anyhow::Error> {
        
 
         let private_key = EthereumPrivateKey::from_slice(&hd_key
@@ -239,11 +274,11 @@ impl EthereumWallet {
         mnemonic_seed: &Seed,
         network_type: HDNetworkType,
         address_format: EthereumFormat,
-        blockchain_client: Option<BlockchainClient>,
+        blockchain_client: Option<EthBlockchainClient>,
     ) -> Result<Self, anyhow::Error> {
         let seed_bytes = mnemonic_seed.as_bytes();
         let master_hd_key = HDKey::new(seed_bytes, network_type)?;
-        let derived_key = master_hd_key.derive(DEFAULT_PURPOSE.full_deriv_path( COIN_ID, 0, 0, 0))?;
+        let derived_key = master_hd_key.derive(DEFAULT_PURPOSE.full_deriv_path(slip44::Coin::from(slip44::Symbol::ETH).id(), 0, 0, 0))?;
         Self::from_hd_key(&derived_key, address_format, blockchain_client)
     }
 
@@ -291,13 +326,13 @@ impl CryptoWalletGeneral for EthereumWallet {
     }
 }
 
-impl TryInto<EthereumWallet> for Box<dyn CryptoWalletGeneral> {
+impl TryFrom<Box<dyn CryptoWalletGeneral>> for EthereumWallet {
     type Error = anyhow::Error;
 
-    fn try_into(self) -> Result<EthereumWallet, Self::Error> {
-        match self.as_any().downcast_ref::<EthereumWallet>() {
+    fn try_from(value: Box<dyn CryptoWalletGeneral>) -> Result<Self, Self::Error> {
+        match value.as_any().downcast_ref::<EthereumWallet>() {
             Some(wallet) => Ok(wallet.clone()),
-            None => Err(anyhow!("Could not downcast to BitcoinWallet")),
+            None => Err(anyhow!("Could not downcast to EthereumWallet")),
         }
     }
 }
