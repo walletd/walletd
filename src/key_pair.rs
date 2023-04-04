@@ -1,39 +1,19 @@
 use ::walletd_bip39::Seed;
-use anyhow::anyhow;
-use walletd_bitcoin::{BTransaction, BitcoinAmount, BitcoinWallet, Blockstream};
-use walletd_coin_model::{BlockchainConnector, CryptoAddress, CryptoAmount, CryptoWallet};
-use walletd_ethereum::{EthClient, EthereumAmount, EthereumFormat, EthereumWallet};
+
+use walletd_coin_model::{BlockchainConnector, CryptoWallet};
 
 use walletd_hd_key::{HDKey, HDNetworkType};
 
-use crate::{CryptoCoin, VecAssociatedInfo};
-
-pub const BITCOIN_BLOCKSTREAM_TESTNET_URL: &str = "https://blockstream.info/testnet/api";
-pub const BITCOIN_BLOCKSTREAM_URL: &str = "https://blockstream.info/api";
-
-// TODO(AS): should we have these URLS here?
-// run ganache-cli
-//pub const URL: &str = "http://localhost:8545";
-
-// run ganache-cli to use localhost
-//pub const LOCALHOST_URL: &str = "http://localhost:8545";
-pub const ETH_INFURA_MAINNET_ENDPOINT: &str =
-    "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-//pub const ETH_INFURA_ROPSTEN_ENDPOINT: &str =
-//    "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-pub const ETH_INFURA_GOERLI_ENDPOINT: &str =
-    "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct KeyPair {
     pub style: MnemonicKeyPairType,
     pub mnemonic_seed: Seed,
     pub mnemonic_phrase: String,
     pub passphrase: Option<String>,
-    pub wallets: VecAssociatedInfo,
     pub network_type: HDNetworkType,
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub enum MnemonicKeyPairType {
     HDBip39,
 }
@@ -56,7 +36,6 @@ impl KeyPair {
             mnemonic_seed,
             mnemonic_phrase,
             passphrase,
-            wallets: VecAssociatedInfo::default(),
             network_type,
         }
     }
@@ -76,205 +55,27 @@ impl KeyPair {
         passphrase_str
     }
 
+    /// Returns the master HD key
     pub fn to_master_key(&self) -> HDKey {
         let seed = self.mnemonic_seed.as_bytes();
         HDKey::new(seed, self.network_type).expect("Failed to create master key")
     }
 
-    pub fn receive_address_for_coin(&self, coin_type: CryptoCoin) -> Result<String, anyhow::Error> {
-        let crypto_wallet = self.wallets.wallet_for_coin(coin_type)?;
-        match coin_type {
-            CryptoCoin::BTC => {
-                let wallet: BitcoinWallet = crypto_wallet.try_into()?;
-                let next_address = wallet.next_address()?;
-                Ok(next_address.public_address())
-            }
-            CryptoCoin::ETH => {
-                let wallet: EthereumWallet = crypto_wallet.try_into()?;
-                Ok(wallet.public_address())
-            }
-        }
+    /// Returns the HD network type
+    pub fn network_type(&self) -> HDNetworkType {
+        self.network_type
     }
 
-    pub async fn fees_for_coin(&self, coin_type: CryptoCoin) -> Result<String, anyhow::Error> {
-        let crypto_wallet = self.wallets.wallet_for_coin(coin_type)?;
-
-        match coin_type {
-            CryptoCoin::BTC => {
-                ((TryInto::<BitcoinWallet>::try_into(crypto_wallet.box_clone())?)
-                    .blockchain_client()?)
-                .display_fee_estimates()
-                .await
-            }
-            CryptoCoin::ETH => {
-                ((TryInto::<EthereumWallet>::try_into(crypto_wallet.box_clone())?)
-                    .blockchain_client()?)
-                .display_fee_estimates()
-                .await
-            }
-        }
-    }
-
-    pub async fn balance_for_coin(
+    /// Derives a wallet of the specified generic type T, given a blockchain client as an argument
+    /// T must implement the CryptoWallet trait
+    pub fn derive_wallet<T>(
         &self,
-        coin_type: CryptoCoin,
-    ) -> Result<(f64, u64), anyhow::Error> {
-        let wallet = self.wallets.wallet_for_coin(coin_type)?;
-        match coin_type {
-            CryptoCoin::BTC => {
-                let wallet: BitcoinWallet = wallet.try_into()?;
-                let balance = wallet.balance().await?;
-                return Ok((
-                    balance.to_main_unit_decimal_value(),
-                    balance.to_smallest_unit_integer_value(),
-                ));
-            }
-            CryptoCoin::ETH => {
-                let wallet: EthereumWallet = wallet.try_into()?;
-                let balance = wallet.balance().await?;
-                return Ok((
-                    balance.to_main_unit_decimal_value(),
-                    balance.to_smallest_unit_integer_value(),
-                ));
-            }
-        }
-    }
-
-    pub async fn sync_for_coin(&mut self, coin_type: CryptoCoin) -> Result<(), anyhow::Error> {
-        match self.wallets.wallet_for_coin(coin_type) {
-            Ok(wallet) => {
-                if coin_type == CryptoCoin::BTC {
-                    let mut wallet: BitcoinWallet = wallet.try_into()?;
-                    let master_hd_key =
-                        HDKey::new(self.mnemonic_seed.as_bytes(), self.network_type)?;
-                    wallet
-                        .add_previously_used_addresses(
-                            &master_hd_key,
-                            wallet.address_format(),
-                            None,
-                            None,
-                            false,
-                        )
-                        .await?;
-                    self.wallets.add_wallet(coin_type, Box::new(wallet))?;
-                }
-                // Not doing any syncing for searching newly used addresses for
-                // ETH
-            }
-            Err(_) => {
-                // Wallet not found, create it
-                match coin_type {
-                    CryptoCoin::BTC => {
-                        let mut wallet = BitcoinWallet::default();
-                        let url = match self.network_type {
-                            HDNetworkType::MainNet => BITCOIN_BLOCKSTREAM_URL,
-                            HDNetworkType::TestNet => BITCOIN_BLOCKSTREAM_TESTNET_URL,
-                        };
-
-                        let blockchain_client = Blockstream::new(url)?;
-                        wallet.set_blockchain_client(blockchain_client);
-
-                        wallet
-                            .from_mnemonic(
-                                &self.mnemonic_seed,
-                                self.network_type,
-                                wallet.address_format(),
-                                false,
-                            )
-                            .await?;
-
-                        self.wallets.add_wallet(coin_type, Box::new(wallet))?;
-                    }
-                    CryptoCoin::ETH => {
-                        let url = match self.network_type {
-                            HDNetworkType::MainNet => ETH_INFURA_MAINNET_ENDPOINT,
-                            HDNetworkType::TestNet => ETH_INFURA_GOERLI_ENDPOINT,
-                        };
-                        let address_format = EthereumFormat::Checksummed;
-                        let blockchain_client = walletd_ethereum::BlockchainClient::new(url)?;
-
-                        let wallet = EthereumWallet::from_mnemonic(
-                            &self.mnemonic_seed,
-                            self.network_type,
-                            address_format,
-                            Some(blockchain_client),
-                        )?;
-
-                        self.wallets.add_wallet(coin_type, Box::new(wallet))?;
-                    }
-                }
-            }
-        }
-        Ok(())
-    }
-
-    pub async fn transactions_overview_for_coin(
-        &self,
-        coin_type: CryptoCoin,
-    ) -> Result<String, anyhow::Error> {
-        // match coin_type {
-        match coin_type {
-            CryptoCoin::BTC => {
-                let wallet: BitcoinWallet = self.wallets.wallet_for_coin(coin_type)?.try_into()?;
-
-                let tx_overview = BTransaction::overview(wallet).await?;
-                return Ok(tx_overview);
-            }
-            CryptoCoin::ETH => {
-                return Err(anyhow!(
-                    "Transactions overview not available for coin type {}",
-                    coin_type
-                ))
-            }
-        }
-    }
-
-    pub async fn transaction_details_for_coin(
-        &self,
-        coin_type: CryptoCoin,
-        txid: String,
-        _owner_address: Option<String>,
-    ) -> Result<String, anyhow::Error> {
-        let crypto_wallet = self.wallets.wallet_for_coin(coin_type)?;
-
-        match coin_type {
-            CryptoCoin::BTC => {
-                let wallet: BitcoinWallet = crypto_wallet.try_into()?;
-                let blockchain_client = wallet.blockchain_client()?;
-                let tx = blockchain_client.transaction(&txid).await?;
-                let tx_details = format!("{:#?}", tx);
-                return Ok(tx_details);
-            }
-            CryptoCoin::ETH => {
-                let wallet: EthereumWallet = crypto_wallet.try_into()?;
-                let eth_client = wallet.blockchain_client()?.to_eth_client();
-
-                let tx_details = eth_client.transaction_data_from_hash(&txid).await?;
-                let tx_string = EthClient::transaction_details_for_coin(tx_details).await?;
-                return Ok(tx_string);
-            }
-        }
-    }
-
-    pub async fn initiate_transfer(
-        &self,
-        coin_type: CryptoCoin,
-        send_to_address: &str,
-        send_amount: f64,
-    ) -> Result<String, anyhow::Error> {
-        let crypto_wallet = self.wallets.wallet_for_coin(coin_type)?;
-
-        match coin_type {
-            CryptoCoin::BTC => {
-                let wallet: BitcoinWallet = crypto_wallet.try_into()?;
-                let send_amount_btc = BitcoinAmount::new_from_btc(send_amount);
-                return wallet.transfer(&send_amount_btc, send_to_address).await;
-            }
-            CryptoCoin::ETH => {
-                let wallet: EthereumWallet = crypto_wallet.try_into()?;
-                let send_amount_eth = EthereumAmount::new_from_eth(send_amount);
-                return wallet.transfer(&send_amount_eth, send_to_address).await;
-            }
-        }
+        blockchain_client: Box<dyn BlockchainConnector>,
+    ) -> Result<T, anyhow::Error>
+    where
+        T: CryptoWallet,
+    {
+        let wallet = T::new(&self.to_master_key(), Some(blockchain_client))?;
+        Ok(wallet)
     }
 }

@@ -11,6 +11,7 @@ path = "src/lib.rs"
 anyhow = "1.0.68"
 hex = { version = "0.4.2" }
 walletd_bip39 = {path = "./mnemonics/bip39"}
+walletd_mnemonic_model = {path = "./mnemonics/model"}
 walletd_coin_model = {path = "./coins/model"}
 walletd_bitcoin = {path = "./coins/bitcoin"}
 walletd_ethereum = {path = "./coins/ethereum"}
