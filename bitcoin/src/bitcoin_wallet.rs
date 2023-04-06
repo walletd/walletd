@@ -79,7 +79,7 @@ impl CryptoWallet for BitcoinWallet {
             master_hd_key: Some(master_hd_key.clone()),
             ..Default::default()
         };
-        
+
         if let Some(client) = blockchain_client {
             wallet.blockchain_client = Some(client.try_into()?);
         }
@@ -144,18 +144,14 @@ impl CryptoWallet for BitcoinWallet {
     let mut total_value_from_utxos = 0;
     let mut inputs_available: Vec<Utxo> = Vec::new();
     let mut inputs_available_tx_info: Vec<BTransaction> = Vec::new();
-    let mut change_addr_set = false;
-    let mut change_addr = self.associated[0].address().address_info();
+    let change_addr = self.next_change_address()?.address_info();
 
     let mut keys_per_input: Vec<(BitcoinPrivateKey, BitcoinPublicKey)> = Vec::new();
     let mut utxo_addr_index = Vec::new();
     for (i, utxos_i) in available_utxos.iter().enumerate() {
         for utxo in utxos_i.iter() {
         if utxo.status.confirmed {
-            if !change_addr_set {
-                change_addr = self.associated[i].address().address_info();
-                change_addr_set = true;
-            }
+            
             total_value_from_utxos += &utxo.value;
             let tx_info = client.transaction(utxo.txid.as_str()).await?;
             inputs_available.push(utxo.clone());
@@ -171,9 +167,6 @@ impl CryptoWallet for BitcoinWallet {
 
     if available_input_max < *send_amount {
         return Err(anyhow!("Insufficent funds"));
-    }
-    if !change_addr_set {
-        return Err(anyhow!("No change address set"))
     }
 
     let prepared = BTransaction::prepare_transaction(
@@ -245,8 +238,6 @@ impl BitcoinWallet {
     }
     
    
-
-
     pub async fn from_hd_key(&mut self,
         master_hd_key: &HDKey,
         address_format: AddressType,
@@ -368,6 +359,33 @@ impl BitcoinWallet {
         }
         let next_deriv_path = format!("m/{}/{}'/{}/0/{}", purpose, coin_type, account, max_address + 1);
         let next_hd_key = self.master_hd_key()?.derive(next_deriv_path)?;
+        BitcoinAddress::from_hd_key(&next_hd_key, self.address_format)
+    }
+
+    /// Considering only account 0, returns the next change address corresponding to 1 + the max existing chang address index
+    /// Assumes use of the default derivation path type (BIP84)
+    /// Change addresses are used for sending change back to the wallet and have a value of 1 instead of 0 in the derivation path for the change index
+    pub fn next_change_address(&self) -> Result<BitcoinAddress, anyhow::Error> {
+        let purpose = HDPurpose::BIP84.purpose();
+        let coin_type = match self.master_hd_key()?.network() {
+            HDNetworkType::MainNet => 0,
+            HDNetworkType::TestNet => 1,
+        };
+        let account = HDPathIndex::IndexHardened(0);
+        let mut max_address = 0;
+
+        for info in self.associated.iter() {
+            let deriv_path = info.hd_key().derivation_path();
+            let derived_info_list = HDKey::derive_path_str_to_info(&deriv_path)?;
+            let change_index_derived = derived_info_list[4].to_shortform_index();
+            let address_index_derived = derived_info_list[5].to_shortform_index();
+            if (change_index_derived == 1) & (address_index_derived > max_address) {
+                max_address = address_index_derived;
+            }
+        }
+
+        let next_deriv_path = format!("m/{}/{}'/{}/1/{}", purpose, coin_type, account, max_address + 1);
+        let next_hd_key = self.master_hd_key()?.derive(next_deriv_path)?;   
         BitcoinAddress::from_hd_key(&next_hd_key, self.address_format)
     }
 
