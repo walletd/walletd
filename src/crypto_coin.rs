@@ -74,16 +74,3 @@ impl TryFrom<Symbol> for CryptoCoin {
         }
     }
 }
-
-impl TryInto<Symbol> for CryptoCoin {
-    type Error = anyhow::Error;
-
-    fn try_into(self) -> Result<Symbol, Self::Error> {
-        match self {
-            CryptoCoin::BTC => Ok(Symbol::BTC),
-            CryptoCoin::ETH => Ok(Symbol::ETH),
-            // CryptoCoin::XMR => Ok(Symbol::XMR),
-            // CryptoCoin::SOL => Ok(Symbol::SOL),
-        }
-    }
-}

@@ -1,8 +1,8 @@
 use ::walletd_bip39::Seed;
 
-use walletd_coin_model::{BlockchainConnector, CryptoWallet};
+use crate::{BlockchainConnectorGeneral, CryptoWallet, CryptoWalletGeneral, HDKey, HDNetworkType};
 
-use walletd_hd_key::{HDKey, HDNetworkType};
+use crate::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct KeyPair {
@@ -26,11 +26,8 @@ impl KeyPair {
         passphrase_str: Option<&str>,
         network_type: HDNetworkType,
     ) -> Self {
-        let passphrase;
-        match passphrase_str {
-            Some(p) => passphrase = Some(p.to_string()),
-            None => passphrase = None,
-        }
+        let passphrase = passphrase_str.map(|p| p.to_string());
+
         Self {
             style,
             mnemonic_seed,
@@ -47,12 +44,7 @@ impl KeyPair {
 
     /// Returns passphrase as a Option<&str> type
     pub fn passphrase(&self) -> Option<&str> {
-        let passphrase_str;
-        match &self.passphrase {
-            Some(p) => passphrase_str = Some(p.as_str()),
-            None => passphrase_str = None,
-        }
-        passphrase_str
+        self.passphrase.as_deref()
     }
 
     /// Returns the master HD key
@@ -70,12 +62,15 @@ impl KeyPair {
     /// T must implement the CryptoWallet trait
     pub fn derive_wallet<T>(
         &self,
-        blockchain_client: Box<dyn BlockchainConnector>,
-    ) -> Result<T, anyhow::Error>
+        blockchain_client: Box<dyn BlockchainConnectorGeneral>,
+    ) -> Result<T, Error>
     where
         T: CryptoWallet,
+        T::ErrorType: std::fmt::Display,
+        <T as TryFrom<Box<dyn CryptoWalletGeneral>>>::Error: std::fmt::Display,
     {
-        let wallet = T::new(&self.to_master_key(), Some(blockchain_client))?;
+        let wallet = T::new(&self.to_master_key(), Some(blockchain_client))
+            .map_err(|e| Error::DeriveWallet(e.to_string()))?;
         Ok(wallet)
     }
 }
