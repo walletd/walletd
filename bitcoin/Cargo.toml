@@ -23,7 +23,7 @@ bech32 = { version = "0.9.1"}
 bitcoin = "0.29.2"
 bitcoin_hashes = "0.11.0"
 bitcoincore-rpc = "0.16.0"
-chrono = "0.4.24"
+time = { version = "0.3", features = ["macros", "formatting"] }
 hex = "0.4.3"
 log = "0.4.17"
 reqwest = { version = "0.11", features = ["blocking", "json"] }

@@ -7,14 +7,14 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use walletd_coin_model::{BlockchainConnector, CryptoWallet};
 use crate::BitcoinWallet;
-use chrono::prelude::DateTime;
-use chrono::Utc;
+
+use time::{OffsetDateTime, Duration};
+use time::format_description::well_known::Rfc2822;
 
 use prettytable::Table;
 use prettytable::row;
 use std::fmt;
 
-use std::time::{UNIX_EPOCH, Duration};
 use walletd_coin_model::CryptoAddress;
 
 use crate::BitcoinAmount;
@@ -87,7 +87,7 @@ impl BTransaction {
             } else {
                 "Pending Confirmation".to_string()
             };
-            let timestamp = transactions[i].status.timestamp();
+            let timestamp = transactions[i].status.timestamp()?;
             
             
             table.add_row(row![transactions[i].txid, amount_balance, owners_addresses[i], status_string, timestamp]);
@@ -321,27 +321,30 @@ pub struct Status {
 
 impl Status {
 
-    pub fn timestamp(&self) -> String {
+    pub fn timestamp(&self) -> Result<String, anyhow::Error> {
         if self.confirmed {
-        // Creates a new SystemTime from the specified number of whole seconds
-        let d = UNIX_EPOCH + Duration::from_secs(self.block_time.into());
-        // Create DateTime from SystemTime
-        let datetime = DateTime::<Utc>::from(d);
+        // Creates a timestamp from the specified number of whole seconds which have passed since the UNIX_EPOCH
+       match OffsetDateTime::UNIX_EPOCH.checked_add(Duration::new(self.block_time.into(), 0)) {
         // Formats the combined date and time with the specified format string.
-        datetime.format("%Y-%m-%d %H:%M:%S").to_string()
+        Some(timestamp) => {let formatted_timestamp = timestamp.format(&Rfc2822)?;
+        return Ok(formatted_timestamp)}
+        None => return Err(anyhow!("Overflow error when converting timestamp"))
+       }
+              
         }
         else {
-            "".to_string()
+            Ok("".to_string())
         }
     }
 }
+
 impl fmt::Display for Status {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
        let mut table = Table::new();
        table.add_row(row!["Confirmed: ", self.confirmed]);
          table.add_row(row!["Block Height: ", self.block_height]);
             table.add_row(row!["Block Hash: ", self.block_hash]);
-                table.add_row(row!["Timestamp ", self.timestamp()]);
+                table.add_row(row!["Timestamp ", self.timestamp().unwrap()]);
                 write!(f, "{}", table)
     }
 }
