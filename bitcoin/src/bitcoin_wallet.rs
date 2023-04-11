@@ -303,9 +303,7 @@ impl BitcoinWallet {
                                  "for deriv path: {}, previous transaction history: {}",
                                  &specify_deriv_path, exists
                              );
-                            println!("for deriv path: {}, previous transaction history: {}",
-                            &specify_deriv_path, exists
-                        );
+                    
                          
                      if exists {
                           search_next_account = true;
