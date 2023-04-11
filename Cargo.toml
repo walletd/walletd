@@ -1,7 +1,6 @@
 [workspace]
 members = [
     "bip39",
-    "monero",
     "model",
     "hd_key"
 ]

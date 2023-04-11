@@ -102,8 +102,8 @@ impl fmt::Display for HDNetworkType {
 }
 
 /// HDKey can be used to create a master key or derive child keys
-/// HDKey follows the BIP32 scheme: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
-/// HDKey also follows the purpose scheme described in BIP43: https://github.com/bitcoin/bips/blob/master/bip-0043.mediawiki
+/// HDKey follows the BIP32 scheme: <https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki>
+/// HDKey also follows the purpose scheme described in BIP43: <https://github.com/bitcoin/bips/blob/master/bip-0043.mediawiki>
 #[derive(Default, Clone, Debug, PartialEq)]
 pub struct HDKey {
     pub master_seed: Vec<u8>,
@@ -277,7 +277,7 @@ impl HDKey {
     }
 
     /// Convert extended private key to Wallet Import Format (WIF).
-    /// Using wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
+    /// Using wallet import format: <https://en.bitcoin.it/wiki/Wallet_import_format>
     pub fn to_wif(&self) -> Result<String, Error> {
         let mut private_key: Vec<u8> = Vec::new();
         match self.network {

@@ -12,7 +12,7 @@ fn main() -> () {
                                            // The default mnemonic type is Words12, if we don't specify anything for
                                            // mnemonic type we will get a 12 word mnemonic phrase here
     let mnemonic = Mnemonic::builder()
-        .set_passphrase(passphrase)
+        .with_passphrase(passphrase)
         .generate()
         .expect("should be valid mnemonic");
     println!("{}", mnemonic);

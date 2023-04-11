@@ -244,34 +244,34 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
         Self::default()
     }
 
-    fn set_seed(&mut self, seed: &Seed) -> Self {
+    fn with_seed(&mut self, seed: &Seed) -> &mut Self {
         self.seed = Some(seed.clone());
-        self.clone()
+        self
     }
 
-    fn set_phrase(&mut self, mnemonic_phrase: &str) -> Self {
+    fn with_phrase(&mut self, mnemonic_phrase: &str) -> &mut Self {
         self.mnemonic_phrase = Some(mnemonic_phrase.to_string());
-        self.clone()
+        self
     }
 
-    fn set_language(&mut self, language: Self::LanguageHandler) -> Self {
+    fn with_language(&mut self, language: Self::LanguageHandler) -> &mut Self {
         self.language = Some(language);
-        self.clone()
+        self
     }
 
-    fn set_passphrase(&mut self, passphrase: &str) -> Self {
+    fn with_passphrase(&mut self, passphrase: &str) -> &mut Self {
         self.passphrase = Some(passphrase.to_string());
-        self.clone()
+        self
     }
 
-    fn set_mnemonic_type(&mut self, mnemonic_type: Self::MnemonicTypeSpec) -> Self {
+    fn with_mnemonic_type(&mut self, mnemonic_type: Self::MnemonicTypeSpec) -> &mut Self {
         self.mnemonic_type = Some(mnemonic_type);
-        self.clone()
+        self
     }
 
-    fn detect_language(&mut self) -> Self {
+    fn detect_language(&mut self) -> &mut Self {
         self.language = None;
-        self.clone()
+        self
     }
 
     /// Restore a mnemonic struct from a specified phrase or seed.
@@ -404,6 +404,15 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
             self.passphrase.as_deref(),
         ))
     }
+
+    /// Build a mnemonic struct based on the specifications provided
+    fn build(&self) -> Result<Self::MnemonicStyle, Self::ErrorType> {
+        if self.mnemonic_phrase.is_some() {
+            self.restore()
+        } else {
+            self.generate()
+        }
+    }
 }
 
 impl Mnemonic {
@@ -506,7 +515,7 @@ mod tests {
     #[test]
     fn test_print() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
-        let mnemonic = Mnemonic::builder().set_phrase(phrase).restore().unwrap();
+        let mnemonic = Mnemonic::builder().with_phrase(phrase).build().unwrap();
         assert_eq!(mnemonic.phrase(), phrase);
         assert_eq!(mnemonic.language(), Language::English);
         assert_eq!(mnemonic.mnemonic_type(), MnemonicType::Words12);
@@ -515,9 +524,9 @@ mod tests {
     #[test]
     fn test_new_12_word() {
         let mnemonic = Mnemonic::builder()
-            .set_language(Language::English)
-            .set_mnemonic_type(MnemonicType::Words12)
-            .generate()
+            .with_language(Language::English)
+            .with_mnemonic_type(MnemonicType::Words12)
+            .build()
             .unwrap();
         assert_eq!(mnemonic.lang, Language::English);
         let phrase: Vec<&str> = mnemonic.phrase.split(' ').collect();
@@ -528,9 +537,9 @@ mod tests {
     #[test]
     fn test_new_24_word() {
         let mnemonic = Mnemonic::builder()
-            .set_language(Language::English)
-            .set_mnemonic_type(MnemonicType::Words24)
-            .generate()
+            .with_language(Language::English)
+            .with_mnemonic_type(MnemonicType::Words24)
+            .build()
             .unwrap();
         assert_eq!(mnemonic.lang, Language::English);
         let phrase: Vec<&str> = mnemonic.phrase.split(' ').collect();
@@ -541,9 +550,9 @@ mod tests {
     #[test]
     fn test_new_12_word_japanese() {
         let mnemonic = Mnemonic::builder()
-            .set_language(Language::Japanese)
-            .set_mnemonic_type(MnemonicType::Words12)
-            .generate()
+            .with_language(Language::Japanese)
+            .with_mnemonic_type(MnemonicType::Words12)
+            .build()
             .unwrap();
         assert_eq!(mnemonic.language(), Language::Japanese);
         let phrase: Vec<&str> = mnemonic.phrase.split(' ').collect();
@@ -554,7 +563,7 @@ mod tests {
     #[test]
     fn test_from_phrase() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
-        let mnemonic = Mnemonic::builder().set_phrase(phrase).restore().unwrap();
+        let mnemonic = Mnemonic::builder().with_phrase(phrase).build().unwrap();
         assert_eq!(mnemonic.phrase(), phrase);
         assert_eq!(mnemonic.language(), Language::English);
         assert_eq!(
@@ -577,7 +586,7 @@ mod tests {
         let mut mnemonic_builder = Mnemonic::builder();
         mnemonic_builder.language = None;
         mnemonic_builder.mnemonic_type = None;
-        let mnemonic = mnemonic_builder.set_phrase(phrase).restore().unwrap();
+        let mnemonic = mnemonic_builder.with_phrase(phrase).restore().unwrap();
         assert_eq!(mnemonic.phrase(), phrase);
         assert_eq!(mnemonic.language(), Language::English);
         assert_eq!(
@@ -599,9 +608,9 @@ mod tests {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
         let passphrase = "mypassphrase";
         let mnemonic = Mnemonic::builder()
-            .set_phrase(phrase)
-            .set_passphrase(passphrase)
-            .restore()
+            .with_phrase(phrase)
+            .with_passphrase(passphrase)
+            .build()
             .unwrap();
         assert_eq!(mnemonic.phrase(), phrase);
         assert_eq!(mnemonic.language(), Language::English);
@@ -614,28 +623,28 @@ mod tests {
     #[test]
     fn test_from_phrase_invalid_length() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry";
-        assert!(Mnemonic::builder().set_phrase(phrase).restore().is_err());
+        assert!(Mnemonic::builder().with_phrase(phrase).build().is_err());
     }
 
     #[test]
     fn test_from_phrase_invalid_word() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry invalid";
-        assert!(Mnemonic::builder().set_phrase(phrase).restore().is_err());
+        assert!(Mnemonic::builder().with_phrase(phrase).build().is_err());
     }
 
     #[test]
     fn test_from_phrase_empty_phrase() {
         let phrase: &str = "";
-        assert!(Mnemonic::builder().set_phrase(phrase).restore().is_err());
+        assert!(Mnemonic::builder().with_phrase(phrase).build().is_err());
     }
 
     #[test]
     fn test_error_conflicting_language_option() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
         let mnemonic = Mnemonic::builder()
-            .set_language(Language::French)
-            .set_phrase(phrase)
-            .restore();
+            .with_language(Language::French)
+            .with_phrase(phrase)
+            .build();
         assert!(mnemonic.is_err());
         assert!(matches!(
             mnemonic.unwrap_err(),
@@ -647,9 +656,9 @@ mod tests {
     fn test_error_conflicting_mnemonic_type() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
         let mnemonic = Mnemonic::builder()
-            .set_mnemonic_type(MnemonicType::Words15)
-            .set_phrase(phrase)
-            .restore();
+            .with_mnemonic_type(MnemonicType::Words15)
+            .with_phrase(phrase)
+            .build();
         assert!(mnemonic.is_err());
         assert_eq!(
             mnemonic.unwrap_err(),

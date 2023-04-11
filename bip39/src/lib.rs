@@ -11,12 +11,13 @@
 //! ```rust
 //! use walletd_bip39::{Language, Mnemonic, MnemonicHandler, MnemonicStyleBuilder, MnemonicType};
 //!
+//! # use std::error::Error;
+//! # fn main() -> Result<(), Box<dyn Error>> {
+//!
 //! // Create a new randomly generated mnemonic phrase
 //! let passphrase: &str = "mypassphrase";
-//! let mnemonic = Mnemonic::builder()
-//!     .set_passphrase(passphrase)
-//!     .generate()
-//!     .unwrap();
+//! let mnemonic = Mnemonic::builder().with_passphrase(passphrase).build()?;
+//!
 //! println!("phrase: {:?}", mnemonic);
 //!
 //! // Get the wallet seed
@@ -28,12 +29,15 @@
 //!     "outer ride neither foil glue number place usage ball shed dry point";
 //! let passphrase: &str = "mypassphrase";
 //! let restored_mnemonic = Mnemonic::builder()
-//!     .set_phrase(mnemonic_phrase)
-//!     .set_passphrase(passphrase)
-//!     .restore()
-//!     .unwrap();
+//!     .with_phrase(mnemonic_phrase)
+//!     .with_passphrase(passphrase)
+//!     .build()?;
+//!
 //! let seed = restored_mnemonic.to_seed();
 //! println!("seed as bytes: {:?}", seed.as_bytes());
+//!
+//! # Ok(())
+//! # }
 //! ```
 #![forbid(unsafe_code)]
 

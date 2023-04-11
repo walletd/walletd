@@ -7,9 +7,9 @@ use crate::Error;
 /// supported by the library.
 ///
 /// BIP32 is the default derivation scheme which uses a purpose value of 0'
-/// BIP44: https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki
-/// BIP49: https://github.com/bitcoin/bips/blob/master/bip-0049.mediawiki
-/// BIP84: https://github.com/bitcoin/bips/blob/master/bip-0084.mediawiki
+/// BIP44: <https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki>
+/// BIP49: <https://github.com/bitcoin/bips/blob/master/bip-0049.mediawiki>
+/// BIP84: <https://github.com/bitcoin/bips/blob/master/bip-0084.mediawiki>
 #[derive(Default, PartialEq, Eq, Copy, Clone, Debug)]
 pub enum HDPurpose {
     #[default]
