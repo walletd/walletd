@@ -1,6 +1,6 @@
 
 use thiserror::Error;
-use bitcoin::util::address::Error as BitcoinAddressError;
+use bitcoin::address::Error as BitcoinAddressError;
 
 
 /// Custom error type for this crate.
@@ -48,6 +48,9 @@ pub enum Error {
     /// Missing data
     #[error("Missing data: {0}")]
     MissingData(String),
+    /// Missing network type
+    #[error("Missing network type")]
+    MissingNetwork,
     /// Error converting to a type when parsing from a string
     #[error("Error converting to a type from a string: {0}")]
     FromStr(String),
@@ -59,7 +62,10 @@ pub enum Error {
     Secp256k1(#[from] secp256k1::Error),
     /// Bitcoin key error
     #[error("Bitcoin key error: {0}")]
-    BitcoinKey(#[from] bitcoin::util::key::Error),
+    BitcoinKey(#[from] bitcoin::key::Error),
+    /// Bitcoin PushBytesError
+    #[error("Bitcoin PushBytesError: {0}")]
+    BitcoinPushBytes(#[from] bitcoin::blockdata::script::PushBytesError),
     /// Error related to converting from or to a hex
     #[error("Hex error: {0}")]
     Hex(#[from] hex::FromHexError),
@@ -81,4 +87,5 @@ pub enum Error {
     /// Converts a format error from the time crate
     #[error("Error from time crate: {0}")]
     TimeFormat(#[from] time::error::Format),
+
 }

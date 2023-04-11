@@ -16,7 +16,7 @@ use crate::Error;
 use async_trait::async_trait;
 
 pub use bitcoin::{
-    Address, AddressType, EcdsaSighashType, Network, PrivateKey as BitcoinPrivateKey,
+    Address, AddressType, sighash::EcdsaSighashType, Network, PrivateKey as BitcoinPrivateKey,
     PublicKey as BitcoinPublicKey, Script,
 };
 
@@ -76,6 +76,7 @@ type ErrorType = Error;
         let address_format =  AddressType::P2wpkh;
         let address = BitcoinAddress::from_hd_key(&derived, address_format)?;
         let associated = AssociatedAddress::new(address, derived);
+       
         let mut wallet = Self {
             master_hd_key: Some(master_hd_key.clone()),
             ..Default::default()
@@ -101,7 +102,7 @@ type ErrorType = Error;
 
   async fn transfer(&self, send_amount: &BitcoinAmount, to_public_address: &str) -> Result<String, Error> {
     let client = self.blockchain_client()?;
-    let receiver_view_wallet = BitcoinAddress::from_public_address(to_public_address)?;
+    let receiver_view_wallet = BitcoinAddress::from_public_address(to_public_address, self.network()?)?;
 
     // first checking existing endpoints with blockstream
     let fee_estimates: FeeEstimates = client.fee_estimates().await?;
@@ -339,6 +340,13 @@ impl BitcoinWallet {
             }
         }
 
+        pub fn network(&self) -> Result<Network, Error> {
+           match self.master_hd_key()?.network() {
+                HDNetworkType::MainNet => Ok(Network::Bitcoin),
+                HDNetworkType::TestNet => Ok(Network::Testnet),
+           }
+        }
+
         /// Considering only account 0, returns the next address corresponding to 1 + the max existing address index
         /// Assumes use of the default derivation path type (BIP84) 
         pub fn next_address(&self) -> Result<BitcoinAddress, Error> {
@@ -390,6 +398,8 @@ impl BitcoinWallet {
         BitcoinAddress::from_hd_key(&next_hd_key, self.address_format)
     }
 
+
+
 } 
 
 impl fmt::Display for BitcoinWallet {
@@ -429,3 +439,5 @@ impl From<BitcoinWallet> for Box<dyn CryptoWalletGeneral> {
         Box::new(wallet)
     }
 }
+
+

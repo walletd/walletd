@@ -2,11 +2,12 @@ use std::cmp::Reverse;
 use std::str::FromStr;
 use std::fmt;
 
+use bitcoin::script::PushBytes;
 use ::secp256k1::{Message, Secp256k1, SecretKey};
 use base58::ToBase58;
 use bitcoin::blockdata::script::Builder;
 pub use bitcoin::{
-    Address as AddressInfo, AddressType, EcdsaSighashType, Network, PrivateKey as BitcoinPrivateKey,
+    Address as AddressInfo, AddressType, sighash::EcdsaSighashType, Network, PrivateKey as BitcoinPrivateKey,
     PublicKey as BitcoinPublicKey, Script,
 };
 use sha2::{Digest, Sha256};
@@ -46,12 +47,9 @@ impl BitcoinAddress {
 
         let address_info: AddressInfo = match address_format {
             AddressType::P2pkh => AddressInfo::p2pkh(&public_key, network),
-            // TODO(#83): Not sure about initializing this with an empty script, double check and
-            // fix as necessary
-            AddressType::P2sh => AddressInfo::p2sh(&Script::new(), network)?,
+            AddressType::P2sh => AddressInfo::p2sh(Script::empty(), network)?,
             AddressType::P2wpkh => AddressInfo::p2wpkh(&public_key, network)?,
-            // TODO(#83): Again check the script::new() here and fix if needed
-            AddressType::P2wsh => AddressInfo::p2wsh(&Script::new(), network),
+            AddressType::P2wsh => AddressInfo::p2wsh(Script::empty(), network),
             // Currently not handling the AddressType::P2tr, fix if can understand how to create
             // this address properly
             _ => return Err(Error::CurrentlyNotSupported("Currently not handling this Bitcoin address type".into())),
@@ -84,7 +82,7 @@ impl BitcoinAddress {
         public_address: &str,
     ) -> Result<String, Error> {
        
-        let receiver_view_wallet = Self::from_public_address(public_address)?;
+        let receiver_view_wallet = Self::from_public_address(public_address, self.network)?;
 
         // first checking existing endpoints with blockstream
         let fee_estimates: FeeEstimates = client.fee_estimates().await?;
@@ -154,12 +152,8 @@ impl CryptoAddress for BitcoinAddress {
 
 
 impl BitcoinAddress {
-    pub fn from_public_address(public_address: &str) -> Result<Self, Error> {
-        let address_info = AddressInfo::from_str(public_address)?;
-        // Currently hardcoding to Mainnet, TODO(#82) handle other Bitcoin network
-        // options
-        let network = Network::Bitcoin;
-
+    pub fn from_public_address(public_address: &str, network: Network) -> Result<Self, Error> {
+        let address_info = AddressInfo::from_str(public_address)?.require_network(network)?;
         Ok(Self {
             address_info,
             private_key: None,
@@ -186,7 +180,7 @@ impl BitcoinAddress {
 
     /// This function is used to return the signature with the option sighashall for a given transaction hash using a private key
     // TODO(AS): Consider refactoring this when refactoring the walletd_bitcoin crate
-    pub fn signature_sighashall_for_trasaction_hash(
+    pub fn signature_sighashall_for_transaction_hash(
         transaction_hash: &str,
         private_key: &BitcoinPrivateKey,
     ) -> Result<String, Error> {
@@ -505,20 +499,24 @@ impl BitcoinAddress {
                 .transaction_hash_for_signing_segwit_input_index(i, sighash_type.to_u32())?;
             let private_key = self.private_key
                     .expect("Private key data missing");
-            let sig_with_hashtype = Self::signature_sighashall_for_trasaction_hash(
+            let sig_with_hashtype = Self::signature_sighashall_for_transaction_hash(
                 &transaction_hash_for_input_with_sighash,
                 &private_key
             )?;
+
+            let sig_with_hashtype_vec = hex::decode(&sig_with_hashtype)?;
+            let sig_with_hashtype_bytes: &PushBytes = sig_with_hashtype_vec.as_slice().try_into()?;
 
             // handle the different types of inputs based on previous locking script
             let prevout_lockingscript_type = &input.prevout.scriptpubkey_type;
             match prevout_lockingscript_type.as_str() {
                 "p2pkh" => {
+                
                     let script_sig = Builder::new()
-                        .push_slice(&hex::decode(sig_with_hashtype)?)
+                        .push_slice(sig_with_hashtype_bytes)
                         .push_key(&self.public_key()?)
                         .into_script();
-                    input.scriptsig_asm = script_sig.asm();
+                    input.scriptsig_asm = script_sig.to_asm_string();
                     input.scriptsig = hex::encode(script_sig.as_bytes());
                 }
                 "p2sh" => {

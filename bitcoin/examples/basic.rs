@@ -120,7 +120,8 @@ fn main() {
                 .unwrap()[..], Network::Testnet,
         )
         .unwrap();
-    let first_signature = BitcoinWallet::signature_sighashall_for_trasaction_hash(
+
+    let first_signature = BitcoinWallet::signature_sighashall_for_transaction_hash(
         &sighash_for_input1,
         &secret_key1,
     )
@@ -142,7 +143,7 @@ fn main() {
         )
         .unwrap();
 
-    let second_signature = BitcoinWallet::signature_sighashall_for_trasaction_hash(
+    let second_signature = BitcoinWallet::signature_sighashall_for_transaction_hash(
         &sighash_for_input2,
         &secret_key2,
     )
@@ -163,7 +164,7 @@ fn main() {
                 .unwrap()[..], Network::Testnet
         )
         .unwrap();
-    let third_signature = BitcoinWallet::signature_sighashall_for_trasaction_hash(
+    let third_signature = BitcoinWallet::signature_sighashall_for_transaction_hash(
         &sighash_for_input3,
         &secret_key3,
     )

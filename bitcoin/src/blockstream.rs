@@ -1,6 +1,7 @@
 use std::any::Any;
 
 use async_trait::async_trait;
+use bitcoin::script::PushBytes;
 use bitcoin::{Address, AddressType};
 use bitcoin_hashes::{sha256d, Hash};
 use serde::{Deserialize, Serialize};
@@ -22,7 +23,7 @@ use crate::BitcoinAmount;
 
 use crate::BitcoinAddress;
 pub use bitcoin::{
-     EcdsaSighashType, Network, PrivateKey as BitcoinPrivateKey,
+     sighash::EcdsaSighashType, Network, PrivateKey as BitcoinPrivateKey,
     PublicKey as BitcoinPublicKey, Script,
 };
 
@@ -203,20 +204,23 @@ impl BTransaction {
                 .transaction_hash_for_signing_segwit_input_index(i, sighash_type.to_u32())?;
             let private_key = &keys_per_input[i].0;
             let public_key= &keys_per_input[i].1;
-            let sig_with_hashtype = BitcoinAddress::signature_sighashall_for_trasaction_hash(
+            let sig_with_hashtype = BitcoinAddress::signature_sighashall_for_transaction_hash(
                 &transaction_hash_for_input_with_sighash,
                 private_key
             )?;
 
+            let sig_with_hashtype_vec = hex::decode(&sig_with_hashtype)?;
+            let sig_with_hashtype_bytes: &PushBytes = sig_with_hashtype_vec.as_slice().try_into()?;
+            
             // handle the different types of inputs based on previous locking script
             let prevout_lockingscript_type = &input.prevout.scriptpubkey_type;
             match prevout_lockingscript_type.as_str() {
                 "p2pkh" => {
                     let script_sig = Builder::new()
-                        .push_slice(&hex::decode(sig_with_hashtype)?)
+                        .push_slice(sig_with_hashtype_bytes)
                         .push_key(public_key)
                         .into_script();
-                    input.scriptsig_asm = script_sig.asm();
+                    input.scriptsig_asm = script_sig.to_asm_string();
                     input.scriptsig = hex::encode(script_sig.as_bytes());
                 }
                 "p2sh" => {
@@ -888,7 +892,7 @@ impl Output {
             }
         }
         let script_pubkey = address_info.script_pubkey();
-        self.scriptpubkey_asm = script_pubkey.asm();
+        self.scriptpubkey_asm = script_pubkey.to_asm_string();
         self.scriptpubkey = hex::encode(script_pubkey.as_bytes());
         Ok(())
     }
