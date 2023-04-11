@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::Error;
+use crate::ParseMnemonicError;
 
 pub const ENTROPY_OFFSET: usize = 8;
 
@@ -73,14 +73,14 @@ impl MnemonicType {
     ///
     /// let mnemonic_type = MnemonicType::from_word_count(12).unwrap();
     /// ```
-    pub fn from_word_count(size: usize) -> Result<MnemonicType, Error> {
+    pub fn from_word_count(size: usize) -> Result<MnemonicType, ParseMnemonicError> {
         let mnemonic_type = match size {
             12 => MnemonicType::Words12,
             15 => MnemonicType::Words15,
             18 => MnemonicType::Words18,
             21 => MnemonicType::Words21,
             24 => MnemonicType::Words24,
-            _ => return Err(Error::InvalidNumberOfWords(size)),
+            _ => return Err(ParseMnemonicError::InvalidNumberOfWords(size)),
         };
 
         Ok(mnemonic_type)
@@ -97,14 +97,14 @@ impl MnemonicType {
     ///
     /// let mnemonic_type = MnemonicType::from_key_size(128).unwrap();
     /// ```
-    pub fn from_key_size(size: usize) -> Result<MnemonicType, Error> {
+    pub fn from_key_size(size: usize) -> Result<MnemonicType, ParseMnemonicError> {
         let mnemonic_type = match size {
             128 => MnemonicType::Words12,
             160 => MnemonicType::Words15,
             192 => MnemonicType::Words18,
             224 => MnemonicType::Words21,
             256 => MnemonicType::Words24,
-            _ => return Err(Error::InvalidNumberOfBits(size)),
+            _ => return Err(ParseMnemonicError::InvalidNumberOfBits(size)),
         };
 
         Ok(mnemonic_type)
@@ -117,7 +117,7 @@ impl MnemonicType {
     /// using [`MnemonicType::entropy_bits`][MnemonicType::entropy_bits()].
     ///
     /// Specifying a phrase that does not match one of the standard BIP39 phrase
-    /// lengths will return an `Error`
+    /// lengths will return an `ParseMnemonicError`
     ///
     /// # Example
     /// ```
@@ -131,7 +131,7 @@ impl MnemonicType {
     /// ```
     ///
     /// [MnemonicType::entropy_bits()]: ./enum.MnemonicType.html#method.entropy_bits
-    pub fn from_phrase(phrase: &str) -> Result<MnemonicType, Error> {
+    pub fn from_phrase(phrase: &str) -> Result<MnemonicType, ParseMnemonicError> {
         let word_count = phrase.split(' ').count();
 
         Self::from_word_count(word_count)

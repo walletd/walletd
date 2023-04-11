@@ -2,9 +2,9 @@ use thiserror::Error;
 
 use crate::MnemonicType;
 
-/// Custom error enum for the crate
+/// Custom error type for this crate
 #[derive(Error, Debug, PartialEq, Eq)]
-pub enum Error {
+pub enum ParseMnemonicError {
     /// Invalid word in mnemonic phrase
     #[error("Invalid word: word: {0} not found in wordlist for language: {1}")]
     InvalidWord(String, String),

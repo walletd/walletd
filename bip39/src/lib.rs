@@ -37,14 +37,14 @@
 //! ```
 #![forbid(unsafe_code)]
 
-mod errors;
+mod error;
 mod language;
 mod mnemonic;
 mod mnemonic_type;
 
 pub use walletd_mnemonic_model::{MnemonicHandler, MnemonicStyleBuilder, Seed};
 
-pub use self::errors::Error;
+pub use self::error::ParseMnemonicError;
 pub use self::language::Language;
 use self::language::WordList;
 pub use self::mnemonic::{Mnemonic, MnemonicBuilder};

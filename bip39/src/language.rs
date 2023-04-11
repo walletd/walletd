@@ -14,7 +14,7 @@ use std::str::FromStr;
 
 use walletd_mnemonic_model::LanguageHandler;
 
-use crate::Error;
+use crate::ParseMnemonicError;
 
 #[derive(Debug)]
 pub struct WordList {
@@ -70,10 +70,10 @@ impl WordList {
 
     /// Gets the index of a word in a language's wordlist, returns error if word
     /// is not found in wordlist for a language
-    pub fn get_index(&self, word: &str) -> Result<usize, Error> {
+    pub fn get_index(&self, word: &str) -> Result<usize, ParseMnemonicError> {
         match self.inner.iter().position(|element| element == &word) {
             Some(index) => Ok(index),
-            None => Err(Error::InvalidWord(
+            None => Err(ParseMnemonicError::InvalidWord(
                 word.to_string(),
                 self.language.to_string(),
             )),
@@ -82,7 +82,7 @@ impl WordList {
 
     /// If all words in the phrase are present in a language's wordlist, the
     /// language of the phrase is detected
-    pub fn detect_language(phrase: Vec<&str>) -> Result<Language, Error> {
+    pub fn detect_language(phrase: Vec<&str>) -> Result<Language, ParseMnemonicError> {
         let all_languages = enum_iterator::all::<Language>().collect::<Vec<_>>();
         for language in all_languages {
             let wordlist = WordList::new(language);
@@ -101,7 +101,7 @@ impl WordList {
                 return Ok(language);
             }
         }
-        Err(Error::InvalidPhraseLanguage(phrase.join(" ")))
+        Err(ParseMnemonicError::InvalidPhraseLanguage(phrase.join(" ")))
     }
 
     pub fn inner(&self) -> Vec<&'static str> {
@@ -133,7 +133,7 @@ pub enum Language {
 }
 
 impl FromStr for Language {
-    type Err = Error;
+    type Err = ParseMnemonicError;
 
     /// Converts a string to a Language.
     fn from_str(input: &str) -> Result<Language, Self::Err> {
@@ -148,7 +148,7 @@ impl FromStr for Language {
             "Korean" => Ok(Language::Korean),
             "Portuguese" => Ok(Language::Portuguese),
             "Spanish" => Ok(Language::Spanish),
-            _ => Err(Error::InvalidStrReprLang(input.into())),
+            _ => Err(ParseMnemonicError::InvalidStrReprLang(input.into())),
         }
     }
 }

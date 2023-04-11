@@ -11,7 +11,7 @@ use sha2::{Digest, Sha256, Sha512};
 use walletd_mnemonic_model::{MnemonicHandler, MnemonicStyleBuilder, Seed};
 
 use crate::mnemonic_type::ENTROPY_OFFSET;
-use crate::{Error, Language, MnemonicType, WordList};
+use crate::{Language, MnemonicType, ParseMnemonicError, WordList};
 
 /// The primary type in this crate, most tasks require creating or using one.
 ///
@@ -117,7 +117,7 @@ impl Mnemonic {
         language: Language,
         mnemonic_phrase: &str,
         provided_passphrase: Option<&str>,
-    ) -> Result<Seed, Error> {
+    ) -> Result<Seed, ParseMnemonicError> {
         let mut passphrase = "".to_string();
         if let Some(pass) = provided_passphrase {
             passphrase = pass.to_string();
@@ -141,7 +141,7 @@ impl Mnemonic {
 }
 
 impl MnemonicHandler for Mnemonic {
-    type ErrorType = Error;
+    type ErrorType = ParseMnemonicError;
     type LanguageHandler = Language;
     type MnemonicStyle = Self;
     type MnemonicStyleBuilder = MnemonicBuilder;
@@ -178,7 +178,7 @@ impl MnemonicHandler for Mnemonic {
         language: Language,
         phrase: &str,
         specified_passphrase: Option<&str>,
-    ) -> Result<Self, Error> {
+    ) -> Result<Self, ParseMnemonicError> {
         let mnemonic_type = MnemonicType::from_phrase(phrase)?;
         let seed = Mnemonic::create_seed(language, phrase, specified_passphrase)?;
 
@@ -234,7 +234,7 @@ impl MnemonicHandler for Mnemonic {
 }
 
 impl MnemonicStyleBuilder for MnemonicBuilder {
-    type ErrorType = Error;
+    type ErrorType = ParseMnemonicError;
     type LanguageHandler = Language;
     type MnemonicStyle = Mnemonic;
     type MnemonicTypeSpec = MnemonicType;
@@ -304,7 +304,7 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
     fn restore(&self) -> Result<Self::MnemonicStyle, Self::ErrorType> {
         // early return of an error if neither the passphrase nor seed were provided
         if self.mnemonic_phrase.is_none() && self.seed.is_none() {
-            return Err(Error::MissingInformation(
+            return Err(ParseMnemonicError::MissingInformation(
                 "phrase or seed must be provided to recover a mnemonic".to_owned(),
             ));
         }
@@ -315,7 +315,7 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
             let mnemonic_type = MnemonicType::from_phrase(&phrase)?;
             if let Some(specified_mnemonic_type) = self.mnemonic_type {
                 if mnemonic_type != specified_mnemonic_type {
-                    return Err(Error::MismatchInSpecificationVersusImplict {
+                    return Err(ParseMnemonicError::MismatchInSpecificationVersusImplict {
                         attribute: "mnemonic_type".to_string(),
                         spec: specified_mnemonic_type.to_string(),
                         implict: mnemonic_type.to_string(),
@@ -371,10 +371,10 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
                         mnemonic_type,
                     })
                 } else {
-                    Err(Error::MissingInformation("To recover a mnemonic phrase from a seed, a mnemonic type must be specified as well as the language".to_owned()))
+                    Err(ParseMnemonicError::MissingInformation("To recover a mnemonic phrase from a seed, a mnemonic type must be specified as well as the language".to_owned()))
                 }
             } else {
-                Err(Error::MissingInformation("To recover a mnemonic phrase from a seed, a language must be specified as well as the mnemonic type".to_owned()))
+                Err(ParseMnemonicError::MissingInformation("To recover a mnemonic phrase from a seed, a language must be specified as well as the mnemonic type".to_owned()))
             }
         }
     }
@@ -382,7 +382,7 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
     /// Generate a new mnemonic which follows given specifications
     fn generate(&self) -> Result<Self::MnemonicStyle, Self::ErrorType> {
         if self.language.is_none() {
-            return Err(Error::MissingInformation(
+            return Err(ParseMnemonicError::MissingInformation(
                 "language must be specified to generate a mnemonic".to_owned(),
             ));
         }
@@ -390,7 +390,7 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
             .language
             .expect("language should be present due to earlier checks");
         if self.mnemonic_type.is_none() {
-            return Err(Error::MissingInformation(
+            return Err(ParseMnemonicError::MissingInformation(
                 "mnemonic type must be specified to generate a mnemonic".to_owned(),
             ));
         }
@@ -408,16 +408,19 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
 
 impl Mnemonic {
     /// Converting entropy bytes to the mnemonic words, given a wordlist
-    fn bytes_to_words(entropy_bytes: &Vec<u8>, wordlist_info: &WordList) -> Result<String, Error> {
+    fn bytes_to_words(
+        entropy_bytes: &Vec<u8>,
+        wordlist_info: &WordList,
+    ) -> Result<String, ParseMnemonicError> {
         if entropy_bytes.len() % 4 != 0 {
-            return Err(Error::InvalidEntropy(
+            return Err(ParseMnemonicError::InvalidEntropy(
                 "Entropy must be a multiple of 4 bytes (32 bits) in length".to_owned(),
             ));
         }
         if (entropy_bytes.len() < 128 / ENTROPY_OFFSET)
             || (entropy_bytes.len() > 256 / ENTROPY_OFFSET)
         {
-            return Err(Error::InvalidEntropy(
+            return Err(ParseMnemonicError::InvalidEntropy(
                 "Entropy must be between 128 and 256 bits in length".to_owned(),
             ));
         }
@@ -463,7 +466,10 @@ impl Mnemonic {
     }
 
     /// Converts the words of a mnemonic phrase to the bytes representation
-    fn words_to_bytes(language: Language, mnemonic_phrase: &str) -> Result<Vec<u8>, Error> {
+    fn words_to_bytes(
+        language: Language,
+        mnemonic_phrase: &str,
+    ) -> Result<Vec<u8>, ParseMnemonicError> {
         let wordlist = WordList::new(language);
         let phrase: Vec<&str> = mnemonic_phrase.split(' ').collect();
         let word_count = phrase.len();
@@ -488,7 +494,7 @@ impl Mnemonic {
         let entropy_bytes = entropy[..entropy_bits].as_slice().to_vec();
         match *mnemonic_phrase == Self::bytes_to_words(&entropy_bytes, &wordlist)? {
             true => Ok(entropy_bytes),
-            false => Err(Error::InvalidMnemonicPhraseChecksum),
+            false => Err(ParseMnemonicError::InvalidMnemonicPhraseChecksum),
         }
     }
 }
@@ -631,7 +637,10 @@ mod tests {
             .set_phrase(phrase)
             .restore();
         assert!(mnemonic.is_err());
-        assert!(matches!(mnemonic.unwrap_err(), Error::InvalidWord(_, _)));
+        assert!(matches!(
+            mnemonic.unwrap_err(),
+            ParseMnemonicError::InvalidWord(_, _)
+        ));
     }
 
     #[test]
@@ -644,7 +653,7 @@ mod tests {
         assert!(mnemonic.is_err());
         assert_eq!(
             mnemonic.unwrap_err(),
-            Error::MismatchInSpecificationVersusImplict {
+            ParseMnemonicError::MismatchInSpecificationVersusImplict {
                 attribute: "mnemonic_type".to_string(),
                 spec: MnemonicType::Words15.to_string(),
                 implict: MnemonicType::Words12.to_string()

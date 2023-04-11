@@ -1,7 +1,7 @@
 use std::fmt::{self, Display};
 use std::str::FromStr;
 
-use anyhow::anyhow;
+use crate::Error;
 
 /// The DeriveType enum represents the different derivation path schemes
 /// supported by the library.
@@ -31,6 +31,11 @@ impl HDPurpose {
         }
     }
 
+    /// Returns a string specifying the derivation path, given the shorform
+    /// index values for the coin_id, account, change and address index This
+    /// function uses a hardened index for the coin id and acount and a
+    /// non-hardened index for the change and address index
+    // TODO(AS): Change or augment this to use the builder pattern
     pub fn full_deriv_path(&self, coin_id: u32, account: u32, change: u32, index: u32) -> String {
         format!(
             "m/{}/{}/{}/{}/{}",
@@ -44,15 +49,19 @@ impl HDPurpose {
 }
 
 impl FromStr for HDPurpose {
-    type Err = anyhow::Error;
+    type Err = Error;
 
-    fn from_str(s: &str) -> Result<Self, anyhow::Error> {
+    /// TODO(AS): allow parsing the character h the same as '
+    fn from_str(s: &str) -> Result<Self, Error> {
         match s {
             "0'" => Ok(HDPurpose::BIP32),
             "44'" => Ok(HDPurpose::BIP44),
             "49'" => Ok(HDPurpose::BIP49),
             "84'" => Ok(HDPurpose::BIP84),
-            _ => Err(anyhow!("Unknown purpose, unknown deriv type")),
+            _ => Err(Error::FromStr(format!(
+                "Unknown purpose, unknown deriv type {}",
+                s
+            ))),
         }
     }
 }
@@ -112,9 +121,9 @@ impl Display for HDPathIndex {
 }
 
 impl FromStr for HDPathIndex {
-    type Err = anyhow::Error;
+    type Err = Error;
 
-    fn from_str(s: &str) -> Result<Self, anyhow::Error> {
+    fn from_str(s: &str) -> Result<Self, Error> {
         if s == "m" {
             return Ok(HDPathIndex::Master);
         }
@@ -128,7 +137,9 @@ impl FromStr for HDPathIndex {
                 num.push(c);
             }
         }
-        let num: u32 = num.parse()?;
+        let num: u32 = num
+            .parse::<u32>()
+            .map_err(|e| Error::FromStr(e.to_string()))?;
         if is_hardened {
             Ok(HDPathIndex::IndexHardened(num))
         } else {

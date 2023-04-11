@@ -1,4 +1,3 @@
-use anyhow::anyhow;
 use base58::ToBase58;
 use hmac::{Hmac, Mac};
 use sha2::{Digest, Sha256, Sha512};
@@ -8,13 +7,13 @@ use std::str::FromStr;
 
 use ripemd::Ripemd160;
 
-use crate::{HDPathIndex, HDPurpose};
+use crate::{Error, HDPathIndex, HDPurpose};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ExtendedPrivateKey(secp256k1::SecretKey);
 
 impl ExtendedPrivateKey {
-    pub fn from_slice(data: &[u8]) -> Result<ExtendedPrivateKey, anyhow::Error> {
+    pub fn from_slice(data: &[u8]) -> Result<ExtendedPrivateKey, Error> {
         let secret_key = secp256k1::SecretKey::from_slice(data)?;
         Ok(ExtendedPrivateKey(secret_key))
     }
@@ -30,7 +29,7 @@ impl ExtendedPrivateKey {
         ))
     }
 
-    pub fn add_tweak(mut self, tweak: &secp256k1::Scalar) -> Result<Self, anyhow::Error> {
+    pub fn add_tweak(mut self, tweak: &secp256k1::Scalar) -> Result<Self, Error> {
         self = ExtendedPrivateKey(self.0.add_tweak(tweak)?);
         Ok(self)
     }
@@ -54,7 +53,7 @@ impl fmt::LowerHex for ExtendedPrivateKey {
 pub struct ExtendedPublicKey(secp256k1::PublicKey);
 
 impl ExtendedPublicKey {
-    pub fn from_slice(slice: &[u8]) -> Result<Self, anyhow::Error> {
+    pub fn from_slice(slice: &[u8]) -> Result<Self, Error> {
         Ok(Self(secp256k1::PublicKey::from_slice(slice)?))
     }
 
@@ -121,7 +120,7 @@ pub struct HDKey {
 
 impl HDKey {
     /// Create new master BIP32 node based on a seed
-    pub fn new(seed: &[u8], network_type: HDNetworkType) -> Result<Self, anyhow::Error> {
+    pub fn new(seed: &[u8], network_type: HDNetworkType) -> Result<Self, Error> {
         let mut mac: HmacSha512 = HmacSha512::new_from_slice(b"Bitcoin seed").unwrap(); // the "Bitcoin seed" string is specified in the bip32 protocol
         mac.update(seed);
         let hmac = mac.finalize().into_bytes();
@@ -147,17 +146,20 @@ impl HDKey {
     }
 
     /// Helper function to convert a derivation path string to a list of strings
-    pub fn derive_path_str_to_list(deriv_path: &str) -> Result<Vec<String>, anyhow::Error> {
+    pub fn derive_path_str_to_list(deriv_path: &str) -> Result<Vec<String>, Error> {
         let deriv_path_list: Vec<String> = deriv_path.split('/').map(|s| s.to_string()).collect();
         if deriv_path_list.is_empty() || deriv_path_list[0] != *"m" {
-            return Err(anyhow!("Derivation Path is Invalid"));
+            return Err(Error::Invalid(format!(
+                "Derivation Path {} is Invalid",
+                deriv_path
+            )));
         }
         Ok(deriv_path_list)
     }
 
     /// Helper function to convert a derivation path string to a list of
     /// DerivePathComponent
-    pub fn derive_path_str_to_info(deriv_path: &str) -> Result<Vec<HDPathIndex>, anyhow::Error> {
+    pub fn derive_path_str_to_info(deriv_path: &str) -> Result<Vec<HDPathIndex>, Error> {
         let mut deriv_path_info: Vec<HDPathIndex> = Vec::new();
         let deriv_path_list = Self::derive_path_str_to_list(deriv_path)?;
         for item in deriv_path_list {
@@ -172,7 +174,7 @@ impl HDKey {
     }
 
     /// Derives a HDKey following the specified derivation path
-    pub fn derive(&self, derivation_path: String) -> Result<Self, anyhow::Error> {
+    pub fn derive(&self, derivation_path: String) -> Result<Self, Error> {
         let deriv_path_str_list: Vec<&str> = derivation_path.split('/').collect();
         let deriv_path_info = Self::derive_path_str_to_info(&derivation_path)?;
         let mut deriv_path = self.derivation_path.clone();
@@ -188,19 +190,17 @@ impl HDKey {
             if parent_deriv_path_info.len() == 1 {
                 start_path_depth = 1;
             } else if parent_deriv_path_info.len() > deriv_path_info.len() {
-                return Err(anyhow!(
+                return Err(Error::Invalid(format!(
                     "Cannot derive {} path from {} path",
-                    derivation_path,
-                    deriv_path
-                ));
+                    derivation_path, deriv_path
+                )));
             } else {
                 for (i, item) in parent_deriv_path_info.iter().enumerate() {
                     if item != &deriv_path_info[i] {
-                        return Err(anyhow!(
+                        return Err(Error::Invalid(format!(
                             "Cannot derive {} path from {} path",
-                            derivation_path,
-                            deriv_path
-                        ));
+                            derivation_path, deriv_path
+                        )));
                     }
                 }
                 start_path_depth = parent_deriv_path_info.len();
@@ -227,9 +227,10 @@ impl HDKey {
                     mac.update(&full_num.to_be_bytes());
                 }
                 _ => {
-                    return Err(anyhow!(
-                        "Not handled, something is wrong with the derivation path specification"
-                    ))
+                    return Err(Error::Invalid(format!(
+                        "Not handled, something is wrong with the derivation path specification {}",
+                        item
+                    )))
                 }
             }
 
@@ -253,7 +254,10 @@ impl HDKey {
         let deriv_path_str_list: Vec<&str> = deriv_path.split('/').collect();
         let deriv_path_info = Self::derive_path_str_to_info(&derivation_path)?;
         if deriv_path_info.len() < 2 || deriv_path_info[0] != HDPathIndex::Master {
-            return Err(anyhow!("Invalid derivation path {}", deriv_path));
+            return Err(Error::Invalid(format!(
+                "Invalid derivation path {}",
+                deriv_path
+            )));
         }
         let deriv_type = HDPurpose::from_str(deriv_path_str_list[1])?;
 
@@ -274,7 +278,7 @@ impl HDKey {
 
     /// Convert extended private key to Wallet Import Format (WIF).
     /// Using wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
-    pub fn to_wif(&self) -> Result<String, anyhow::Error> {
+    pub fn to_wif(&self) -> Result<String, Error> {
         let mut private_key: Vec<u8> = Vec::new();
         match self.network {
             HDNetworkType::MainNet => private_key.push(0x80),
@@ -291,22 +295,22 @@ impl HDKey {
     /// Returns the extended private key
     /// # Errors
     /// Returns an error if the extended private key is missing
-    pub fn extended_private_key(&self) -> Result<ExtendedPrivateKey, anyhow::Error> {
+    pub fn extended_private_key(&self) -> Result<ExtendedPrivateKey, Error> {
         if let Some(private_key) = self.extended_private_key {
             Ok(private_key)
         } else {
-            Err(anyhow!("Missing private key"))
+            Err(Error::MissingPrivateKey)
         }
     }
 
     /// Returns the extended public key
     /// # Errors
     /// Returns an error if the extended public key is missing
-    pub fn extended_public_key(&self) -> Result<ExtendedPublicKey, anyhow::Error> {
+    pub fn extended_public_key(&self) -> Result<ExtendedPublicKey, Error> {
         if let Some(public_key) = self.extended_public_key {
             Ok(public_key)
         } else {
-            Err(anyhow!("Missing public key"))
+            Err(Error::MissingPublicKey)
         }
     }
 
@@ -351,7 +355,7 @@ impl HDKey {
     }
 
     /// Extended Private Key Serialization
-    pub fn extended_private_key_serialized(&self) -> Result<String, anyhow::Error> {
+    pub fn extended_private_key_serialized(&self) -> Result<String, Error> {
         if let Some(extended_private_key) = self.extended_private_key {
             let prefix = self.private_key_prefix()?;
             let mut result = [0u8; 82];
@@ -366,12 +370,12 @@ impl HDKey {
             result[78..82].copy_from_slice(sum);
             Ok(result.to_base58())
         } else {
-            Err(anyhow!("Cannot serialize extended private key because the extended private key value was not specified."))
+            Err(Error::CannotSerializeKey("Cannot serialize extended private key because the extended private key value was not specified.".into()))
         }
     }
 
     /// Extended Public Key Serialization
-    pub fn extended_public_key_serialized(&self) -> Result<String, anyhow::Error> {
+    pub fn extended_public_key_serialized(&self) -> Result<String, Error> {
         if let Some(extended_public_key) = self.extended_public_key {
             let prefix = self.public_key_prefix()?;
             let mut result = [0u8; 82];
@@ -386,12 +390,12 @@ impl HDKey {
             result[78..82].copy_from_slice(sum);
             Ok(result.to_base58())
         } else {
-            Err(anyhow!("Cannot serialize extended private key because the extended private key value was not specified."))
+            Err(Error::CannotSerializeKey("Cannot serialize extended private key because the extended private key value was not specified.".into()))
         }
     }
 
     /// Returns the private key prefix
-    fn private_key_prefix(&self) -> Result<[u8; 4], anyhow::Error> {
+    fn private_key_prefix(&self) -> Result<[u8; 4], Error> {
         if self.network == HDNetworkType::MainNet && (self.derivation_type == HDPurpose::BIP32)
             || (self.derivation_type == HDPurpose::BIP44)
         {
@@ -414,12 +418,14 @@ impl HDKey {
         {
             Ok([0x04, 0x5F, 0x18, 0xBC])
         } else {
-            Err(anyhow!("Prefix is not set up for this yet"))
+            Err(Error::CurrentlyNotSupported(
+                "Prefix is not set up for this yet".into(),
+            ))
         }
     }
 
     /// Returns the public key prefix
-    fn public_key_prefix(&self) -> Result<[u8; 4], anyhow::Error> {
+    fn public_key_prefix(&self) -> Result<[u8; 4], Error> {
         if self.network == HDNetworkType::MainNet && (self.derivation_type == HDPurpose::BIP32)
             || (self.derivation_type == HDPurpose::BIP44)
         {
@@ -442,7 +448,9 @@ impl HDKey {
         {
             Ok([0x04, 0x5F, 0x1C, 0xF6])
         } else {
-            Err(anyhow!("Prefix is not set up for this yet"))
+            Err(Error::CurrentlyNotSupported(
+                "Prefix is not set up for this yet".into(),
+            ))
         }
     }
 }
