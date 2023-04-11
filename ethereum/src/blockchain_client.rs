@@ -1,13 +1,12 @@
 
-
 use std::any::Any;
-use walletd_coin_model::BlockchainConnector;
+use walletd_coin_model::{BlockchainConnector, BlockchainConnectorGeneral};
 use web3::api::Eth;
 use web3::transports::Http;
-use web3::Error;
+use crate::Error;
 use crate::{EthereumAmount, EthClient};
 use async_trait::async_trait;
-use anyhow::anyhow;
+
 
 
 #[derive(Debug, Clone)]
@@ -19,7 +18,8 @@ pub struct BlockchainClient {
 
 #[async_trait]
 impl BlockchainConnector for BlockchainClient {
-    fn new(url: &str) -> Result<Self, anyhow::Error> {
+    type ErrorType = Error;
+    fn new(url: &str) -> Result<Self, Error> {
         let transport = web3::transports::Http::new(url)?;
         let web3 = web3::Web3::new(transport);
         let web3_eth = web3.eth();
@@ -34,34 +34,36 @@ impl BlockchainConnector for BlockchainClient {
         &self.url
     }
 
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
 
-    async fn display_fee_estimates(&self) -> Result<String, anyhow::Error> {
+    async fn display_fee_estimates(&self) -> Result<String, Error> {
         let gas_price = self.gas_price().await?;
         let gas_price_gwei = gas_price.eth() * 1_000_000_000f64;
         let gas_price_string = format!("Gas Price: {} Gwei ({} ETH)", gas_price_gwei, gas_price.eth());
         Ok(gas_price_string)
     }
+}
 
-    fn box_clone(&self) -> Box<dyn BlockchainConnector> {
+impl BlockchainConnectorGeneral for BlockchainClient {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn box_clone(&self) -> Box<dyn BlockchainConnectorGeneral> {
         Box::new(self.clone())
     }
 }
 
 
-impl TryInto <BlockchainClient> for Box<dyn BlockchainConnector> {
-    type Error = anyhow::Error;
+impl TryFrom <Box<dyn BlockchainConnectorGeneral>> for BlockchainClient {
+    type Error = Error;
 
-    fn try_into(self) -> Result<BlockchainClient, Self::Error> {
-        match self.as_any().downcast_ref::<BlockchainClient>() {
+    fn try_from(blockchain_connector: Box<dyn BlockchainConnectorGeneral>) -> Result<Self, Self::Error> {
+        match blockchain_connector.as_any().downcast_ref::<BlockchainClient>() {
             Some(blockstream) => Ok(blockstream.clone()),
-            None => Err(anyhow!("Could not convert BlockchainConnector to BlockchainClient")),
+            None => Err(Error::UnableToDowncastBlockchainConnector("Could not convert BlockchainConnector to BlockchainClient".into())),
         }
     }
 }
-
 
 impl BlockchainClient {
     

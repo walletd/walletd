@@ -38,6 +38,7 @@ pub mod transaction;
 pub mod varint;
 pub use varint::{VarInt, VarIntEncoding};
 
+
 pub struct BlockchainClient(pub reqwest::Client);
 
 impl BlockchainClient {

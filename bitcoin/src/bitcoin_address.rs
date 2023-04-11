@@ -3,7 +3,6 @@ use std::str::FromStr;
 use std::fmt;
 
 use ::secp256k1::{Message, Secp256k1, SecretKey};
-use anyhow::anyhow;
 use base58::ToBase58;
 use bitcoin::blockdata::script::Builder;
 pub use bitcoin::{
@@ -17,6 +16,7 @@ use crate::FeeEstimates;
 
 use crate::blockstream::{BTransaction, Blockstream, Input, InputType, Output, Utxo};
 use crate::BitcoinAmount;
+use crate::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BitcoinAddress {
@@ -28,7 +28,7 @@ pub struct BitcoinAddress {
 
 impl BitcoinAddress {
 
-    pub fn from_hd_key(hd_key: &HDKey, address_format: AddressType) -> Result<Self, anyhow::Error> {
+    pub fn from_hd_key(hd_key: &HDKey, address_format: AddressType) -> Result<Self, Error> {
          // TODO(#82): consider handling the other Bitcoin network types
          let network: Network = match hd_key.network {
             HDNetworkType::MainNet => Network::Bitcoin,
@@ -54,7 +54,7 @@ impl BitcoinAddress {
             AddressType::P2wsh => AddressInfo::p2wsh(&Script::new(), network),
             // Currently not handling the AddressType::P2tr, fix if can understand how to create
             // this address properly
-            _ => return Err(anyhow!("Currently not handling this Bitcoin address type")),
+            _ => return Err(Error::CurrentlyNotSupported("Currently not handling this Bitcoin address type".into())),
         };
         
         Ok(Self {
@@ -68,7 +68,7 @@ impl BitcoinAddress {
     pub async fn balance(
         &self,
         blockchain_client: &Blockstream,
-    ) -> Result<BitcoinAmount, anyhow::Error> {
+    ) -> Result<BitcoinAmount, Error> {
         let utxo_info = blockchain_client
             .utxo(&self.public_address())
             .await?;
@@ -82,7 +82,7 @@ impl BitcoinAddress {
         client: &Blockstream,
         send_amount: &BitcoinAmount,
         public_address: &str,
-    ) -> Result<String, anyhow::Error> {
+    ) -> Result<String, Error> {
        
         let receiver_view_wallet = Self::from_public_address(public_address)?;
 
@@ -99,7 +99,7 @@ impl BitcoinAddress {
                 .expect("Unable to convert to f64")
             
         } else {
-            return Err(anyhow!("Did not get fee map"));
+            return Err(Error::MissingFeeMap);
         };
 
         // Build the transaction
@@ -128,7 +128,7 @@ impl BitcoinAddress {
         };
 
         if available_input_max < *send_amount {
-            return Err(anyhow!("Insufficent funds"));
+            return Err(Error::InsufficientFunds("Insufficient funds".into()));
         }
         let transaction = self.build_transaction(
             fee_sat_per_byte,
@@ -154,7 +154,7 @@ impl CryptoAddress for BitcoinAddress {
 
 
 impl BitcoinAddress {
-    pub fn from_public_address(public_address: &str) -> Result<Self, anyhow::Error> {
+    pub fn from_public_address(public_address: &str) -> Result<Self, Error> {
         let address_info = AddressInfo::from_str(public_address)?;
         // Currently hardcoding to Mainnet, TODO(#82) handle other Bitcoin network
         // options
@@ -168,26 +168,28 @@ impl BitcoinAddress {
         })
     }
 
-    pub fn public_key(&self) -> Result<BitcoinPublicKey, anyhow::Error> {
+    pub fn public_key(&self) -> Result<BitcoinPublicKey, Error> {
         if let Some(key) = self.public_key {
             Ok(key)
         } else {
-            Err(anyhow!("Public Key not included"))
+            Err(Error::MissingPublicKey)
         }
     }
 
-    pub fn private_key(&self) -> Result<BitcoinPrivateKey, anyhow::Error> {
+    pub fn private_key(&self) -> Result<BitcoinPrivateKey, Error> {
         if let Some(key) = self.private_key {
             Ok(key)
         } else {
-            Err(anyhow!("Private Key not included"))
+            Err(Error::MissingPrivateKey)
         }
     }
 
+    /// This function is used to return the signature with the option sighashall for a given transaction hash using a private key
+    // TODO(AS): Consider refactoring this when refactoring the walletd_bitcoin crate
     pub fn signature_sighashall_for_trasaction_hash(
         transaction_hash: &str,
         private_key: &BitcoinPrivateKey,
-    ) -> Result<String, anyhow::Error> {
+    ) -> Result<String, Error> {
         // hardcoded default to SIGHASH_ALL
         let sighash_type = EcdsaSighashType::All;
         let secp = Secp256k1::new();
@@ -228,12 +230,13 @@ impl BitcoinAddress {
         Ok(signature)
     }
 
+    /// Estimates the fee for a transaction with the given number of inputs and outputs given the fee per byte, makes use of default sizes to estimate the size of the tranasaction and the corresponding fee
     pub fn estimate_fee_with_default_sizes(
         is_segwit: bool,
         num_inputs: usize,
         num_outputs: usize,
         byte_fee: f64,
-    ) -> Result<u64, anyhow::Error> {
+    ) -> Result<u64, Error> {
         const NONSEGWIT_DEFAULT_BYTES_PER_INPUT: usize = 148;
         const NONSEGWIT_DEFAULT_BYTES_PER_OUTPUT: usize = 34;
         const NONSEGWIT_DEFAULT_BYTES_BASE: usize = 10;
@@ -265,7 +268,7 @@ impl BitcoinAddress {
         send_amount: &BitcoinAmount,
         inputs_available_tx_info: &[BTransaction],
         byte_fee: f64,
-    ) -> Result<(Vec<Input>, BitcoinAmount, Vec<usize>), anyhow::Error> {
+    ) -> Result<(Vec<Input>, BitcoinAmount, Vec<usize>), Error> {
         // Sorting in reverse order of the value each UTXO (from highest UTXO value to
         // lowest), indices keeps track of the original indices after sort
         let mut indices = (0..utxo_available.len()).collect::<Vec<_>>();
@@ -424,9 +427,7 @@ impl BitcoinAddress {
             if obtained_amount > *send_amount + set_fee {
                 Ok((inputs, set_fee, chosen_indices))
             } else {
-                Err(anyhow!(
-                    "Not enough funds to cover the send amount as well as the fee needed"
-                ))
+                Err(Error::InsufficientFunds("Not enough funds to cover the send amount as well as the fee needed".into()))
             }
         }
     }
@@ -441,7 +442,7 @@ impl BitcoinAddress {
         inputs_available_tx_info: &[BTransaction],
         send_amount: &BitcoinAmount,
         receiver_view_wallet: &BitcoinAddress,
-    ) -> Result<BTransaction, anyhow::Error> {
+    ) -> Result<BTransaction, Error> {
         // choose inputs
         let (mut inputs, fee_amount, _chosen_inds) = Self::choose_inputs_and_set_fee(
             utxo_available,
@@ -453,7 +454,7 @@ impl BitcoinAddress {
             satoshi: inputs.iter().map(|x| x.prevout.value).sum(),
         };
         if inputs_amount < (*send_amount + fee_amount) {
-            return Err(anyhow!("Insufficient funds to send amount and cover fees"));
+            return Err(Error::InsufficientFunds("Insufficient funds to send amount and cover fees".into()));
         }
 
         log::info!(
@@ -522,20 +523,18 @@ impl BitcoinAddress {
                 }
                 "p2sh" => {
                     // TODO(#83) need to handle redeem scripts
-                    return Err(anyhow!("Not currently handling P2SH"));
+                    return Err(Error::CurrentlyNotSupported("Not currently handling P2SH".into()));
                 }
                 "v0_p2wsh" => {
                     // TODO(#83) need to handle redeem scripts
-                    return Err(anyhow!("Not currently handling v0_p2wsh"));
+                    return Err(Error::CurrentlyNotSupported("Not currently handling v0_p2wsh".into()));
                 }
                 "v0_p2wpkh" => {
                     // Need to specify witness data to unlock
                     input.witness = vec![sig_with_hashtype, format!("{:x}", self.public_key()?.inner)];
                 }
                 _ => {
-                    return Err(anyhow!(
-                        "Unidentified locking script type from previous output"
-                    ))
+                    return Err(Error::CurrentlyNotSupported("Unidentified locking script type from previous output".into()))
                 }
             }
         }
@@ -546,7 +545,7 @@ impl BitcoinAddress {
 
     pub fn confirmed_balance_from_utxo(
         utxo_info: Vec<Utxo>,
-    ) -> Result<BitcoinAmount, anyhow::Error> {
+    ) -> Result<BitcoinAmount, Error> {
         let mut satoshis: u64 = 0;
         for item in utxo_info {
             satoshis += item.value;

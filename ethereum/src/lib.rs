@@ -37,11 +37,6 @@
 use core::fmt;
 
 
-
-
-
-
-
 mod ethclient;
 pub use ethclient::EthClient;
 mod ethereum_amount;
@@ -50,6 +45,8 @@ mod ethereum_wallet;
 pub use ethereum_wallet::EthereumWallet;
 mod blockchain_client;
 pub use blockchain_client::BlockchainClient as EthBlockchainClient;
+mod error;
+pub use error::Error;
 
 #[derive(Default, Debug, Clone, Copy)]
 pub enum EthereumFormat {
@@ -71,9 +68,6 @@ impl fmt::Display for EthereumFormat {
 
 #[cfg(test)]
 mod tests {
-    
-    
-
     
     // TODO(AS): should not have unit tests which 
     // fn test_initialise_blockchain_client() {

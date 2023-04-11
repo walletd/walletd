@@ -1,6 +1,5 @@
-extern crate bitcoincore_rpc;
-extern crate reqwest;
-pub use bitcoin::AddressType;
+pub use bitcoin;
+
 use bitcoincore_rpc::bitcoin::{Block, BlockHash, Transaction, Txid};
 use bitcoincore_rpc::bitcoincore_rpc_json::GetBlockchainInfoResult;
 use bitcoincore_rpc::{Auth, Client, RpcApi};
@@ -15,6 +14,11 @@ mod blockstream;
 pub use blockstream::{
     BTransaction, Blockstream, Input, Output, Status, FeeEstimates,
 };
+mod error;
+pub use error::Error;
+
+
+// TODO(AS): Refine this, these constants can probably be 
 pub const USER: &str = "test";
 pub const PASS: &str = "test";
 
@@ -22,6 +26,7 @@ pub struct BlockchainClient {
     pub blockchain_client: Client,
 }
 
+// TODO(AS): Reconcile this with the Blockstream client, should have a way to get the block info and also have it associated with the wallet
 impl BlockchainClient {
     pub fn new(url: &str) -> Result<Self, anyhow::Error> {
         let client = Client::new(url, Auth::UserPass(USER.to_string(), PASS.to_string()))?;

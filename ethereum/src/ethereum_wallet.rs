@@ -7,14 +7,14 @@ use std::any::Any;
 use std::fmt::LowerHex;
 use std::str::FromStr;
 
-use anyhow::anyhow;
 use async_trait::async_trait;
 use secp256k1::{PublicKey, SecretKey};
 use tiny_keccak::{Hasher, Keccak};
 use walletd_bip39::Seed;
-use walletd_coin_model::{CryptoWallet, CryptoWalletGeneral, BlockchainConnector};
+use walletd_coin_model::{CryptoWallet, CryptoWalletGeneral, BlockchainConnectorGeneral};
 use walletd_hd_key::{HDKey, HDNetworkType, HDPurpose, slip44};
 use web3::types::{Address, TransactionParameters};
+use crate::Error;
 
 use crate::{EthereumFormat, EthBlockchainClient, EthereumAmount};
 
@@ -28,7 +28,7 @@ impl EthereumPrivateKey {
         self.0.serialize_secret()
     }
 
-    pub fn from_slice(bytes: &[u8]) -> Result<Self, anyhow::Error> {
+    pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
         let secret_key = SecretKey::from_slice(bytes)?;
         Ok(EthereumPrivateKey(secret_key))
     }
@@ -57,14 +57,14 @@ impl EthereumPublicKey {
         self.0.serialize()
     }
 
-    pub fn from_slice(bytes: &[u8]) -> Result<Self, anyhow::Error> {
+    pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
         let public_key = PublicKey::from_slice(bytes)?;
         Ok(EthereumPublicKey(public_key))
     }
 
     pub fn to_public_address(&self,
         address_format: EthereumFormat,
-    ) -> Result<String, anyhow::Error> {
+    ) -> Result<String, Error> {
         let public_key_full = self.0;
 
         match address_format {
@@ -140,11 +140,12 @@ pub struct EthereumWallet {
 
 #[async_trait]
 impl CryptoWallet for EthereumWallet {
+    type ErrorType = Error;
     type BlockchainClient = EthBlockchainClient;
     type CryptoAmount = EthereumAmount;
     type NetworkType = HDNetworkType;
 
-    fn new(master_hd_key: &HDKey, blockchain_client: Option<Box<dyn BlockchainConnector>>) -> Result<Self, anyhow::Error> {
+    fn new(master_hd_key: &HDKey, blockchain_client: Option<Box<dyn BlockchainConnectorGeneral>>) -> Result<Self, Error> {
         let derived_key = master_hd_key.derive(DEFAULT_PURPOSE.full_deriv_path(slip44::Coin::from(slip44::Symbol::ETH).id(), 0, 0, 0))?;
         let address_format = EthereumFormat::default();
 
@@ -174,9 +175,9 @@ impl CryptoWallet for EthereumWallet {
 
     async fn balance(
         &self,
-    ) -> Result<Self::CryptoAmount, anyhow::Error> {
+    ) -> Result<Self::CryptoAmount, Error> {
         let blockchain_client = self.blockchain_client()?;
-        let address = web3::types::H160::from_str(&self.public_address())?;
+        let address = web3::types::H160::from_str(&self.public_address()).map_err(|e| (Error::FromStr(e.to_string())))?;
         let balance = blockchain_client.balance(address).await?;
         Ok(balance)
     }
@@ -185,9 +186,9 @@ impl CryptoWallet for EthereumWallet {
         &self,
         send_amount: &Self::CryptoAmount,
         to_address: &str,
-    ) -> Result<String, anyhow::Error> {
+    ) -> Result<String, Error> {
         let blockchain_client = self.blockchain_client()?;
-        let to = Address::from_str(to_address)?;
+        let to = Address::from_str(to_address).map_err(|e| Error::FromStr(e.to_string()))?;
         let amount = send_amount.wei();
         
         let tx_object = TransactionParameters {
@@ -219,18 +220,18 @@ impl CryptoWallet for EthereumWallet {
         self.blockchain_client = Some(client);
     }
 
-    async fn sync(&mut self) -> Result<(), anyhow::Error> {
+    async fn sync(&mut self) -> Result<(), Error> {
         Ok(())
     }
 
-    fn receive_address(&self) -> Result<String, anyhow::Error> {
+    fn receive_address(&self) -> Result<String, Error> {
         Ok(self.public_address())
     }
 
-    fn blockchain_client(&self) -> Result<&EthBlockchainClient, anyhow::Error> {
+    fn blockchain_client(&self) -> Result<&EthBlockchainClient, Error> {
         match &self.blockchain_client {
             Some(client) => Ok(client),
-            None => Err(anyhow!("No blockchain client set")),
+            None => Err(Error::MissingBlockchainClient),
         }
     }
 }
@@ -250,7 +251,7 @@ impl EthereumWallet {
     }
 
     // TODO(AS): need to refactor from_hd_key and from_mnemonic when implementing a builder pattern
-    pub fn from_hd_key(hd_key: &HDKey, address_format: EthereumFormat, blockchain_client: Option<EthBlockchainClient>) -> Result<Self, anyhow::Error> {
+    pub fn from_hd_key(hd_key: &HDKey, address_format: EthereumFormat, blockchain_client: Option<EthBlockchainClient>) -> Result<Self, Error> {
        
 
         let private_key = EthereumPrivateKey::from_slice(&hd_key
@@ -275,35 +276,35 @@ impl EthereumWallet {
         network_type: HDNetworkType,
         address_format: EthereumFormat,
         blockchain_client: Option<EthBlockchainClient>,
-    ) -> Result<Self, anyhow::Error> {
+    ) -> Result<Self, Error> {
         let seed_bytes = mnemonic_seed.as_bytes();
         let master_hd_key = HDKey::new(seed_bytes, network_type)?;
         let derived_key = master_hd_key.derive(DEFAULT_PURPOSE.full_deriv_path(slip44::Coin::from(slip44::Symbol::ETH).id(), 0, 0, 0))?;
         Self::from_hd_key(&derived_key, address_format, blockchain_client)
     }
 
-    pub fn public_key(&self) -> Result<EthereumPublicKey, anyhow::Error> {
+    pub fn public_key(&self) -> Result<EthereumPublicKey, Error> {
 
         if let Some(key) = self.public_key.clone() {
             Ok(key)
         } else {
-            Err(anyhow!("Public Key not included"))
+            Err(Error::MissingPublicKey)
         }
     }
 
-    pub fn private_key(&self) -> Result<EthereumPrivateKey, anyhow::Error> {
+    pub fn private_key(&self) -> Result<EthereumPrivateKey, Error> {
         if let Some(key) = self.private_key.clone() {
             Ok(key)
         } else {
-            Err(anyhow!("Private Key not included"))
+            Err(Error::MissingPrivateKey)
         }
     }
 
-    pub fn hd_key(&self) -> Result<HDKey, anyhow::Error> {
+    pub fn hd_key(&self) -> Result<HDKey, Error> {
         if let Some(key) = self.hd_key.clone() {
             Ok(key)
         } else {
-            Err(anyhow!("HD Key not included"))
+            Err(Error::MissingMasterHDKey)
         }
     }
 
@@ -327,12 +328,12 @@ impl CryptoWalletGeneral for EthereumWallet {
 }
 
 impl TryFrom<Box<dyn CryptoWalletGeneral>> for EthereumWallet {
-    type Error = anyhow::Error;
+    type Error = Error where Error: std::fmt::Display;
 
     fn try_from(value: Box<dyn CryptoWalletGeneral>) -> Result<Self, Self::Error> {
         match value.as_any().downcast_ref::<EthereumWallet>() {
             Some(wallet) => Ok(wallet.clone()),
-            None => Err(anyhow!("Could not downcast to EthereumWallet")),
+            None => Err(Error::UnableToDowncastWallet),
         }
     }
 }

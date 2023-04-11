@@ -14,3 +14,4 @@ sha2 = { version = "0.10.6", default-features = false }
 base58 = { version = "0.2.0" }
 hex = { version = "0.4.2" }
 walletd_hd_key = {path = "../../mnemonics/hd_key"}
+thiserror = "1.0.40"

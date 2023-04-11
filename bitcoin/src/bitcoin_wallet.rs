@@ -4,13 +4,14 @@ use crate::FeeEstimates;
 use crate::BTransaction;
 use crate::Blockstream;
 use crate::blockstream::Utxo;
-use walletd_coin_model::{CryptoWallet, CryptoWalletGeneral, CryptoAmount, BlockchainConnector};
+use walletd_coin_model::{CryptoWallet, CryptoWalletGeneral, CryptoAmount, BlockchainConnectorGeneral};
 use walletd_hd_key::{HDKey, HDNetworkType, HDPurpose, HDPathIndex};
 use walletd_coin_model::CryptoAddress;
 use walletd_bip39::Seed;
 use walletd_hd_key::slip44;
 use std::any::Any;
 use std::fmt;
+use crate::Error;
 
 use async_trait::async_trait;
 
@@ -18,7 +19,6 @@ pub use bitcoin::{
     Address, AddressType, EcdsaSighashType, Network, PrivateKey as BitcoinPrivateKey,
     PublicKey as BitcoinPublicKey, Script,
 };
-use anyhow::anyhow;
 
 const DEFAULT_PURPOSE: HDPurpose = HDPurpose::BIP84;
 
@@ -65,12 +65,13 @@ impl AssociatedAddress {
 
 #[async_trait]
 impl CryptoWallet for BitcoinWallet {
-    
+
+type ErrorType = Error;
   type BlockchainClient = Blockstream;
   type CryptoAmount = BitcoinAmount;
   type NetworkType = Network;
 
-  fn new(master_hd_key: &HDKey, blockchain_client: Option<Box<dyn BlockchainConnector>>) -> Result<Self, anyhow::Error> {
+  fn new(master_hd_key: &HDKey, blockchain_client: Option<Box<dyn BlockchainConnectorGeneral>>) -> Result<Self, Self::Error> {
         let derived = master_hd_key.derive(DEFAULT_PURPOSE.full_deriv_path( slip44::Coin::Bitcoin.id(), 0, 0, 0))?;
         let address_format =  AddressType::P2wpkh;
         let address = BitcoinAddress::from_hd_key(&derived, address_format)?;
@@ -88,7 +89,7 @@ impl CryptoWallet for BitcoinWallet {
     }
 
 
-  async fn balance(&self) -> Result<BitcoinAmount, anyhow::Error> {
+  async fn balance(&self) -> Result<BitcoinAmount, Error> {
       let client = self.blockchain_client()?;
       let mut total_balance = BitcoinAmount::new();
       for addr in self.addresses() {
@@ -98,7 +99,7 @@ impl CryptoWallet for BitcoinWallet {
       Ok(total_balance)
   }
 
-  async fn transfer(&self, send_amount: &BitcoinAmount, to_public_address: &str) -> Result<String, anyhow::Error> {
+  async fn transfer(&self, send_amount: &BitcoinAmount, to_public_address: &str) -> Result<String, Error> {
     let client = self.blockchain_client()?;
     let receiver_view_wallet = BitcoinAddress::from_public_address(to_public_address)?;
 
@@ -117,7 +118,7 @@ impl CryptoWallet for BitcoinWallet {
         
         
     } else {
-        return Err(anyhow!("Did not get fee map"))
+        return Err(Error::MissingFeeMap)
     };
 
     // Build the transaction
@@ -166,7 +167,7 @@ impl CryptoWallet for BitcoinWallet {
     };
 
     if available_input_max < *send_amount {
-        return Err(anyhow!("Insufficent funds"));
+        return Err(Error::InsufficientFunds("Insufficent funds".into()));
     }
 
     let prepared = BTransaction::prepare_transaction(
@@ -202,20 +203,20 @@ impl CryptoWallet for BitcoinWallet {
         self.blockchain_client = Some(client);
     }
 
-    async fn sync(&mut self) -> Result<(), anyhow::Error> {
+    async fn sync(&mut self) -> Result<(), Error> {
         self.add_previously_used_addresses(&self.master_hd_key()?, self.address_format(), None, None, false).await?;
         Ok(())
     }
     
-    fn receive_address(&self) -> Result<String, anyhow::Error> {
+    fn receive_address(&self) -> Result<String, Error> {
         let next_receive_address = self.next_address()?;
         Ok(next_receive_address.public_address())
     }
 
-    fn blockchain_client(&self) -> Result<&Blockstream, anyhow::Error> {
+    fn blockchain_client(&self) -> Result<&Blockstream, Error> {
         match &self.blockchain_client {
             Some(client) => Ok(client),
-            None => Err(anyhow!("No blockchain client set")),
+            None => Err(Error::MissingBlockchainClient),
         }
     }
 }
@@ -242,13 +243,13 @@ impl BitcoinWallet {
         master_hd_key: &HDKey,
         address_format: AddressType,
         account_discovery: bool,
-    ) -> Result<(), anyhow::Error> {
+    ) -> Result<(), Error> {
         self.master_hd_key = Some(master_hd_key.clone());
         self.add_previously_used_addresses(master_hd_key, address_format, None, None, account_discovery).await?;
         Ok(())        
     }
 
-    pub async fn from_mnemonic(&mut self, mnemonic_seed: &Seed, hd_network_type: HDNetworkType, address_format: AddressType, account_discovery: bool) -> Result<(), anyhow::Error> {
+    pub async fn from_mnemonic(&mut self, mnemonic_seed: &Seed, hd_network_type: HDNetworkType, address_format: AddressType, account_discovery: bool) -> Result<(), Error> {
         
         let master_hd_key = HDKey::new(mnemonic_seed.as_bytes(), hd_network_type)?;
         self.from_hd_key(&master_hd_key, address_format, account_discovery).await
@@ -266,7 +267,7 @@ impl BitcoinWallet {
          deriv_type_specified: Option<HDPurpose>,
          gap_limit_specified: Option<usize>,
          account_discovery: bool)
-        -> Result<(), anyhow::Error> {
+        -> Result<(), Error> {
           let blockchain_client = self.blockchain_client()?.clone();
           let gap_limit = gap_limit_specified.unwrap_or(20);
 
@@ -331,16 +332,16 @@ impl BitcoinWallet {
             self.address_format
         }
 
-        pub fn master_hd_key(&self) -> Result<HDKey, anyhow::Error> {
+        pub fn master_hd_key(&self) -> Result<HDKey, Error> {
             match &self.master_hd_key {
                 Some(key) => Ok(key.clone()),
-                None => Err(anyhow!("No master HD key set")),
+                None => Err(Error::MissingMasterHDKey),
             }
         }
 
         /// Considering only account 0, returns the next address corresponding to 1 + the max existing address index
         /// Assumes use of the default derivation path type (BIP84) 
-        pub fn next_address(&self) -> Result<BitcoinAddress, anyhow::Error> {
+        pub fn next_address(&self) -> Result<BitcoinAddress, Error> {
         let purpose = HDPurpose::BIP84.purpose();
         let coin_type = match self.master_hd_key()?.network() {
             HDNetworkType::MainNet => 0,
@@ -365,7 +366,7 @@ impl BitcoinWallet {
     /// Considering only account 0, returns the next change address corresponding to 1 + the max existing chang address index
     /// Assumes use of the default derivation path type (BIP84)
     /// Change addresses are used for sending change back to the wallet and have a value of 1 instead of 0 in the derivation path for the change index
-    pub fn next_change_address(&self) -> Result<BitcoinAddress, anyhow::Error> {
+    pub fn next_change_address(&self) -> Result<BitcoinAddress, Error> {
         let purpose = HDPurpose::BIP84.purpose();
         let coin_type = match self.master_hd_key()?.network() {
             HDNetworkType::MainNet => 0,
@@ -412,12 +413,12 @@ impl CryptoWalletGeneral for BitcoinWallet {
 
 
 impl TryFrom<Box<dyn CryptoWalletGeneral>> for BitcoinWallet {
-    type Error = anyhow::Error;
+    type Error = Error;
 
     fn try_from(value: Box<dyn CryptoWalletGeneral>) -> Result<Self, Self::Error> {
         match value.as_any().downcast_ref::<BitcoinWallet>() {
             Some(wallet) => Ok(wallet.clone()),
-            None => Err(anyhow!("Could not downcast to BitcoinWallet")),
+            None => Err(Error::UnableToDowncastWallet),
         }
     }
 }

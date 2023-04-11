@@ -1,24 +1,31 @@
 use async_trait::async_trait;
 use std::any::Any;
-use anyhow::anyhow;
+use std::fmt;
+use crate::Error;
 
 
 #[async_trait]
 pub trait BlockchainConnector: {
-    fn new(url: &str) -> Result<Self, anyhow::Error>
+    type ErrorType: std::error::Error + fmt::Display + Send + Sync + 'static;
+
+    fn new(url: &str) -> Result<Self, Self::ErrorType>
     where
         Self: Sized;
-    fn as_any(&self) -> &dyn Any;
+
     fn url(&self) -> &str;
-    async fn display_fee_estimates(&self) -> Result<String, anyhow::Error>;
-    fn box_clone(&self) -> Box<dyn BlockchainConnector>;
+    async fn display_fee_estimates(&self) -> Result<String, Self::ErrorType>;
 
     fn builder() -> BlockchainConnectorBuilder<Self>
     where
-        Self: Sized + Clone
+        Self: Sized + Clone + BlockchainConnectorGeneral
     {
         BlockchainConnectorBuilder::new()
     }
+}
+
+pub trait BlockchainConnectorGeneral {
+    fn as_any(&self) -> &dyn Any;
+    fn box_clone(&self) -> Box<dyn BlockchainConnectorGeneral>;
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -34,7 +41,7 @@ pub struct BlockchainConnectorBuilder<T> where T: BlockchainConnector + Clone {
 }
 
 
-impl<T> BlockchainConnectorBuilder<T> where T: BlockchainConnector + Clone {   
+impl<T> BlockchainConnectorBuilder<T> where T: BlockchainConnector + BlockchainConnectorGeneral + Clone {   
 
     pub fn new() -> Self {
         Self { url: None, connector_type: None}
@@ -50,7 +57,7 @@ impl<T> BlockchainConnectorBuilder<T> where T: BlockchainConnector + Clone {
         self.clone()
     }
 
-    pub fn build(&mut self) -> Result<Box<dyn BlockchainConnector>, anyhow::Error> {
+    pub fn build(&mut self) -> Result<Box<dyn BlockchainConnectorGeneral>, Error> {
         match &self.connector_type {
             Some(ConnectorType::BTC(connector) | ConnectorType::ETH(connector)) => {
                 Ok(connector.box_clone())
@@ -58,16 +65,14 @@ impl<T> BlockchainConnectorBuilder<T> where T: BlockchainConnector + Clone {
             None => {
                     match self.url {
                     Some(ref url) => {
-                        let client = T::new(url)?;
+                        let client = T::new(url).map_err(|e| Error::BlockchainConnectorBuilder(e.to_string()))?;
                         let client_gen = client.box_clone();
                     Ok(client_gen)
                 }
-                    None => Err(anyhow!("BlockchainConnectorBuilder: url not set")),
+                    None => Err(Error::BlockchainConnectorBuilder("url not set".into())),
                 }
 
             }
         }
-
     }
-
 }

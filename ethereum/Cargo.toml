@@ -13,7 +13,6 @@ walletd_bip39 = {path = "../../mnemonics/bip39"}
 walletd_coin_model = {path = "../model/"}
 walletd_hd_key = {path = "../../mnemonics/hd_key"}
 
-anyhow = "1.0.68"
 async-trait = "0.1.60"
 hex = "0.4.3"
 keccak-hash = "0.10.0"

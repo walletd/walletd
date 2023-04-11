@@ -1,6 +1,5 @@
 // use std::io::Error;
-use thiserror::Error;
-use anyhow::anyhow;
+
 use web3::contract::{Contract, Options};
 use web3::ethabi::Uint;
 use web3::helpers as w3h;
@@ -10,27 +9,7 @@ use crate::EthereumAmount;
 use std::str::FromStr;
 use prettytable::Table;
 use prettytable::row;
-
-
-#[derive(Error, Debug)]
-#[allow(dead_code)]
-pub enum Error {
-    // Failed to initialise ethclient
-    #[error("Failed to initialise EthClient")]
-    EthClientInit,
-    #[error("Failed to retrieve data for transaction")]
-    TxResponse,
-    #[error("Failed to retrieve block data")]
-    BlockResponse,
-    #[error("Failed when processing a block to find smart contract transactions")]
-    SmartContractFilter,
-    #[error("An error was encountered while trying to retrieve a tx from a tx hash")]
-    GetTx,
-    #[error("Error: {0}")]
-    FromAnyhow(#[from] anyhow::Error),
-    #[error("Error from web3: {0}]")]
-    FromWeb3(#[from] web3::Error),
-}
+use crate::Error;
 
 #[allow(dead_code)]
 pub enum TransportType {
@@ -90,8 +69,8 @@ impl EthClient {
     pub async fn transaction_data_from_hash(
         &self,
         tx_hash: &str
-    ) -> Result<web3::types::Transaction, anyhow::Error> {
-        let transaction_hash: H256 = H256::from_str(tx_hash)?;
+    ) -> Result<web3::types::Transaction, Error> {
+        let transaction_hash: H256 = H256::from_str(tx_hash).map_err(|e| Error::FromStr(e.to_string()))?;
         match self
             .web3
             .eth()
@@ -99,13 +78,13 @@ impl EthClient {
             .await {
             Ok(tx) => {
                 if tx.is_none() {
-                    Err(anyhow!("Transaction not found"))
+                    Err(Error::TxResponse(format!("Transaction with tx_hash {} not found", tx_hash)))
                 } else {
                     Ok(tx.unwrap())
                 }
             }
             Err(error) => {
-                Err(anyhow!("Error: {:?}", error))
+                Err(Error::TxResponse(error.to_string()))
             }
         }
         
@@ -141,7 +120,7 @@ impl EthClient {
     }
 
 
-    pub async fn transaction_details_for_coin(tx: Transaction) -> Result<String, anyhow::Error> {
+    pub async fn transaction_details_for_coin(tx: Transaction) -> Result<String, Error> {
         let mut table = Table::new();
         let eth_value = EthereumAmount::new_from_wei(tx.value); 
         table.add_row(row!["Transaction Hash", format!("0x{:x}", tx.hash)]);
@@ -175,6 +154,8 @@ impl EthClient {
         Ok(table.to_string())
     }
 
+
+    // TODO(AS): refactor this function to follow rust naming conventions and handl result
     pub async fn get_smart_contract_tx_vec_from_block_hash(
         &self,
         block: &web3::types::Block<H256>,
@@ -187,8 +168,8 @@ impl EthClient {
                 .await
             {
                 Ok(Some(tx)) => Ok(tx),
-                Err(error) => Err(Error::TxResponse),
-                _ => Err(Error::TxResponse),
+                Ok(None) => Err(Error::TxResponse(format!("Transaction hash {} not found", transaction_hash))),
+                Err(error) => Err(Error::TxResponse(error.to_string())),
             };
 
             match tx.unwrap().to {
@@ -237,10 +218,11 @@ impl EthClient {
                 .await
             {
                 Ok(tx) => Ok(tx),
-                Err(error) => Err(Error::TxResponse),
-                _ => Err(Error::TxResponse),
+                Err(error) => Err(Error::TxResponse(error.to_string())),
+                Ok(None) => Err(Error::TxResponse(format!("Transaction hash {} not found", transaction_hash))),
             };
             println!("transaction data {:#?}", tx);
+            // TODO(AS): refactor this to uncomment this section or handle the way needeed for first public release version
             // let smart_contract_addr = match tx.unwrap().to {
             //     Some(addr) => match &self.web3.eth().code(addr,
             // None).await {         Ok(code) => {
