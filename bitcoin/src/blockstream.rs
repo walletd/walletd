@@ -1025,6 +1025,17 @@ impl TryFrom <Box<dyn BlockchainConnectorGeneral>> for Blockstream {
     }
 }
 
+impl TryFrom <&Box<dyn BlockchainConnectorGeneral>> for Blockstream {
+    type Error = Error;
+
+    fn try_from(blockchain_connector: &Box<dyn BlockchainConnectorGeneral>) -> Result<Self, Self::Error> {
+        match blockchain_connector.as_any().downcast_ref::<Blockstream>() {
+            Some(blockstream) => Ok(blockstream.clone()),
+            None =>  Err(Error::UnableToDowncastBlockchainConnector("Could not convert BlockchainConnector to Blockstream".into())),
+        }
+    }
+}
+
 
 impl Blockstream {
     pub async fn check_if_past_transactions_exist(

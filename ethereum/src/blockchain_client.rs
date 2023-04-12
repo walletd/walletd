@@ -65,6 +65,16 @@ impl TryFrom <Box<dyn BlockchainConnectorGeneral>> for BlockchainClient {
     }
 }
 
+impl TryFrom <&Box<dyn BlockchainConnectorGeneral>> for BlockchainClient {
+    type Error = Error;
+
+    fn try_from(blockchain_connector: &Box<dyn BlockchainConnectorGeneral>) -> Result<Self, Self::Error> {
+        match blockchain_connector.as_any().downcast_ref::<BlockchainClient>() {
+            Some(blockstream) => Ok(blockstream.clone()),
+            None => Err(Error::UnableToDowncastBlockchainConnector("Could not convert BlockchainConnector to BlockchainClient".into())),
+        }
+    }
+}
 impl BlockchainClient {
     
     pub fn to_eth_client(&self) -> EthClient {

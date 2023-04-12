@@ -51,6 +51,9 @@ pub enum Error {
     /// Missing network type
     #[error("Missing network type")]
     MissingNetwork,
+    /// Unable to import wallet, missing info to import a specific wallet
+    #[error("Unable to import wallet: {0}")]
+    UnableToImportWallet(String),
     /// Error converting to a type when parsing from a string
     #[error("Error converting to a type from a string: {0}")]
     FromStr(String),

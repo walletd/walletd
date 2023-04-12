@@ -5,7 +5,7 @@ mod crypto_amount;
 mod blockchain_connector; 
 mod error;
 
-pub use crypto_wallet::{CryptoWallet, CryptoWalletGeneral};
+pub use crypto_wallet::{CryptoWallet, CryptoWalletGeneral, CryptoWalletBuilder};
 pub use crypto_address::CryptoAddress;
 pub use crypto_amount::CryptoAmount;
 pub use error::Error;

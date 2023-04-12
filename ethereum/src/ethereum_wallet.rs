@@ -11,14 +11,13 @@ use async_trait::async_trait;
 use secp256k1::{PublicKey, SecretKey};
 use tiny_keccak::{Hasher, Keccak};
 use walletd_bip39::Seed;
-use walletd_coin_model::{CryptoWallet, CryptoWalletGeneral, BlockchainConnectorGeneral};
-use walletd_hd_key::{HDKey, HDNetworkType, HDPurpose, slip44};
+use walletd_coin_model::{CryptoWallet, CryptoWalletGeneral, BlockchainConnectorGeneral, CryptoWalletBuilder};
+use walletd_hd_key::{HDKey, HDNetworkType, HDPurpose, slip44, HDPath, HDPathBuilder};
 use web3::types::{Address, TransactionParameters};
 use crate::Error;
 
 use crate::{EthereumFormat, EthBlockchainClient, EthereumAmount};
 
-const DEFAULT_PURPOSE: HDPurpose = HDPurpose::BIP44;
 
 #[derive(Debug, Clone)]
 pub struct EthereumPrivateKey(SecretKey);
@@ -124,7 +123,124 @@ impl LowerHex for EthereumPublicKey {
     }
 }
 
+pub struct EthereumWalletBuilder {
+    /// The address format used to generate the wallet, if the address format is not specified the default is used
+    address_format: EthereumFormat,
+    /// The master HD key used to import the wallet
+    master_hd_key: Option<HDKey>,
+    /// The blockchain client used to connect to the blockchain, if the blockchain client is not provided the wallet will be created without an associated blockchain client 
+    /// and the blockchain client can be set later using the `set_blockchain_client` method
+    blockchain_client: Option<Box<dyn BlockchainConnectorGeneral>>,
+    /// The mnemonic seed used to import the wallet, if the mnemonic seed is not provided, the master_hd_key must be provided
+    /// If the master_hd_key is provided, the mnemonic seed will be ignored
+    mnemonic_seed: Option<Seed>,
+    /// The specified network type to use, if the master_hd_key is provided, the network type will be inferred from the master_hd_key and this network_type will be ignored
+    network_type: HDNetworkType,
+    /// Specifiyng a HDPathBuilder allows for customizing the derivation path used including which indices are hardened and will override the default
+    /// The default HDPathBuilder uses hardened indices for the purpose, coin type, account ,and non-hardened indices for the change and address indices
+    /// The default HDPathBuilder is `m/44'/60'/0'/0/0`
+    hd_path_builder: HDPathBuilder,
+}
 
+impl Default for EthereumWalletBuilder {
+    fn default() -> Self {
+    
+    let mut hd_path_builder = HDPathBuilder::default();
+    hd_path_builder.with_purpose(Self::default_hd_purpose().to_shortform_num()).with_coin_type(slip44::Coin::from(slip44::Symbol::ETH).id());
+        Self {
+            address_format: EthereumFormat::Checksummed,
+            master_hd_key: None,
+            blockchain_client: None,
+            mnemonic_seed: None,
+            network_type: HDNetworkType::MainNet,
+            hd_path_builder,
+        }
+    }
+}
+
+
+impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
+
+    fn new() -> Self {
+       Self::default()
+    }
+
+    fn build(&self) -> Result<EthereumWallet, <EthereumWallet as CryptoWallet>::ErrorType> {
+        let master_hd_key = match (&self.master_hd_key, &self.mnemonic_seed) {
+            (None, None) => {
+                return Err(Error::UnableToImportWallet("Neither the master HD key nor the mnemonic seed was provided".to_string()))},
+            (Some(key), _) => key.clone(),
+            (None, Some(seed)) => {
+                HDKey::new_master(seed.clone(), self.network_type)?
+            }
+        }; 
+
+        let hd_purpose_num = self.hd_path_builder.purpose.unwrap_or(Self::default_hd_purpose().to_shortform_num());
+        let coin_type_id = slip44::Coin::Ether.id();
+        let mut hd_path_builder = HDPath::builder();
+        hd_path_builder.with_purpose(hd_purpose_num).with_purpose_hardened(true).with_coin_type(coin_type_id).with_coin_type_hardened(true);
+
+        let derived_key = master_hd_key.derive(hd_path_builder.build().to_string())?;
+        let private_key = EthereumPrivateKey::from_slice(&derived_key
+                    .extended_private_key()?.to_bytes())?;
+        let public_key =  EthereumPublicKey::from_slice(&derived_key
+            .extended_public_key()?.to_bytes())?;
+        let public_address = public_key.to_public_address(self.address_format)?;
+
+        let mut wallet = EthereumWallet { address_format: self.address_format, public_address, private_key: Some(private_key), public_key: Some(public_key), network: master_hd_key.network(), blockchain_client: None, master_hd_key: Some(master_hd_key) };
+        if let Some(blockchain_client) = &self.blockchain_client {
+                    wallet.blockchain_client = Some(blockchain_client.try_into()?);
+            
+        };
+        Ok(wallet)
+    }
+
+    /// Allows specification of the master HD key for the wallet
+    fn with_master_hd_key(&mut self, master_hd_key: HDKey) -> &mut Self {
+        self.master_hd_key = Some(master_hd_key);
+        self
+    }
+
+    /// Allows specification of the address format for the wallet
+    fn with_address_format(&mut self, address_format: EthereumFormat) -> &mut Self {
+        self.address_format = address_format;
+        self
+    }
+
+    /// Allows specification of the blockchain client for the wallet
+    fn with_blockchain_client(&mut self, blockchain_client: Box<dyn BlockchainConnectorGeneral>) -> &mut Self {
+        self.blockchain_client = Some(blockchain_client);
+        self
+    }
+
+    /// Allows specification of the mnemonic seed for the wallet
+    fn with_mnemonic_seed(&mut self, mnemonic_seed: Seed) -> &mut Self {
+        self.mnemonic_seed = Some(mnemonic_seed);
+        self
+    }
+
+    /// Allows specification of the network type for the wallet, the default is HDNetworkType::MainNet
+    fn with_network_type(&mut self, network_type: HDNetworkType) -> &mut Self {
+        self.network_type = network_type;
+        self
+    }
+
+    fn with_hd_path_builder(&mut self, hd_path_builder: HDPathBuilder) -> &mut Self {
+        self.hd_path_builder = hd_path_builder;
+        self
+        
+    }
+
+    
+
+}
+
+
+impl EthereumWalletBuilder {
+    fn default_hd_purpose() ->  HDPurpose {
+        HDPurpose::BIP44
+    }
+}
 
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
@@ -135,7 +251,7 @@ pub struct EthereumWallet {
     public_key: Option<EthereumPublicKey>,
     network: HDNetworkType,
     blockchain_client: Option<EthBlockchainClient>,
-    hd_key: Option<HDKey>,
+    master_hd_key: Option<HDKey>,
 }
 
 #[async_trait]
@@ -144,33 +260,12 @@ impl CryptoWallet for EthereumWallet {
     type BlockchainClient = EthBlockchainClient;
     type CryptoAmount = EthereumAmount;
     type NetworkType = HDNetworkType;
+    type WalletBuilder = EthereumWalletBuilder;
+    type AddressFormat = EthereumFormat;
 
-    fn new(master_hd_key: &HDKey, blockchain_client: Option<Box<dyn BlockchainConnectorGeneral>>) -> Result<Self, Error> {
-        let derived_key = master_hd_key.derive(DEFAULT_PURPOSE.full_deriv_path(slip44::Coin::from(slip44::Symbol::ETH).id(), 0, 0, 0))?;
-        let address_format = EthereumFormat::default();
 
-        let private_key = EthereumPrivateKey::from_slice(&derived_key
-            .extended_private_key()?.to_bytes())?;
-        let public_key =  EthereumPublicKey::from_slice(&derived_key
-            .extended_public_key()?.to_bytes())?;
-        let public_address = public_key.to_public_address(address_format)?;
-        
-        let mut wallet = EthereumWallet {
-            address_format,
-            public_address,
-            private_key: Some(private_key),
-            public_key: Some(public_key),
-            network: master_hd_key.network(),
-            hd_key: Some(master_hd_key.clone()),
-            blockchain_client: None,
-        };
-
-        let blockchain_client = match blockchain_client {
-            Some(blockchain_client) => Some(blockchain_client.try_into()?),
-            None => None,
-        };
-        wallet.blockchain_client = blockchain_client;
-        Ok(wallet)
+    fn builder() -> Self::WalletBuilder {
+        EthereumWalletBuilder::new()
     }
 
     async fn balance(
@@ -240,47 +335,12 @@ impl CryptoWallet for EthereumWallet {
 /// private key
 impl EthereumWallet {
 
-   
-    
     pub fn public_address(&self) -> String {
         self.public_address.clone()
     }
 
     pub fn network(&self) -> HDNetworkType {
         self.network
-    }
-
-    // TODO(AS): need to refactor from_hd_key and from_mnemonic when implementing a builder pattern
-    pub fn from_hd_key(hd_key: &HDKey, address_format: EthereumFormat, blockchain_client: Option<EthBlockchainClient>) -> Result<Self, Error> {
-       
-
-        let private_key = EthereumPrivateKey::from_slice(&hd_key
-            .extended_private_key()?.to_bytes())?;
-        let public_key =  EthereumPublicKey::from_slice(&hd_key
-            .extended_public_key()?.to_bytes())?;
-        let public_address = public_key.to_public_address(address_format)?;
-
-        Ok(Self {
-            address_format,
-            public_address,
-            private_key: Some(private_key),
-            public_key: Some(public_key),
-            network: hd_key.network,
-            hd_key: Some(hd_key.clone()),
-            blockchain_client,
-        })
-    }
-
-    pub fn from_mnemonic(
-        mnemonic_seed: &Seed,
-        network_type: HDNetworkType,
-        address_format: EthereumFormat,
-        blockchain_client: Option<EthBlockchainClient>,
-    ) -> Result<Self, Error> {
-        let seed_bytes = mnemonic_seed.as_bytes();
-        let master_hd_key = HDKey::new(seed_bytes, network_type)?;
-        let derived_key = master_hd_key.derive(DEFAULT_PURPOSE.full_deriv_path(slip44::Coin::from(slip44::Symbol::ETH).id(), 0, 0, 0))?;
-        Self::from_hd_key(&derived_key, address_format, blockchain_client)
     }
 
     pub fn public_key(&self) -> Result<EthereumPublicKey, Error> {
@@ -301,7 +361,7 @@ impl EthereumWallet {
     }
 
     pub fn hd_key(&self) -> Result<HDKey, Error> {
-        if let Some(key) = self.hd_key.clone() {
+        if let Some(key) = self.master_hd_key.clone() {
             Ok(key)
         } else {
             Err(Error::MissingMasterHDKey)

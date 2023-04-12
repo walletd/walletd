@@ -17,6 +17,9 @@ pub enum Error {
     /// Missing master HD key
     #[error("No master HD key set")]
     MissingMasterHDKey,
+    /// Unable to import wallet, missing info to import a specific wallet
+    #[error("Unable to import wallet: {0}")]
+    UnableToImportWallet(String),
     /// Error downcasting to EthereumWallet
     #[error("Could not downcast to EthereumWallet")]
     UnableToDowncastWallet,
@@ -41,14 +44,19 @@ pub enum Error {
     /// Error from the walletd_hd_key crate
     #[error("Error from walletd_hd_key: {0}")]
     WalletdHDKey(#[from] walletd_hd_key::Error),
-    #[error("Failed to initialise EthClient")]
+    /// Error when trying to initialize EthClient
+    #[error("Failed to initialize EthClient")]
     EthClientInit,
+    /// Error related to a transaaction
     #[error("Failed to retrieve data for transaction: {0}")]
     TxResponse(String),
+    /// Error related to block data
     #[error("Failed to retrieve block data")]
     BlockResponse,
+    /// Error related to a smart contract filter
     #[error("Failed when processing a block to find smart contract transactions")]
     SmartContractFilter,
+    /// Error when trying to retrieve a transaction from a transaction hash
     #[error("An error was encountered while trying to retrieve a tx from a tx hash")]
     GetTx,
 }

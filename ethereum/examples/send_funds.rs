@@ -4,10 +4,9 @@
 use walletd_bip39::{Mnemonic, MnemonicHandler, MnemonicStyleBuilder};
 use web3::types::U256;
 
-use walletd_coin_model::BlockchainConnector;
-use walletd_ethereum::{EthereumAmount, EthereumFormat, EthereumWallet, EthBlockchainClient};
+use walletd_coin_model::{BlockchainConnector, CryptoWallet, CryptoWalletBuilder};
+use walletd_ethereum::{EthereumAmount, EthereumWallet, EthBlockchainClient};
 use walletd_hd_key::HDNetworkType;
-use walletd_coin_model::CryptoWallet;
 
 const GOERLI_TEST_ADDRESS: &str =
 "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
@@ -18,7 +17,7 @@ async fn main()  {
     let mnemonic_phrase: &str =
         "joy tail arena mix other envelope diary achieve short nest true vocal";
     let restored_mnemonic =
-        Mnemonic::builder().set_phrase(mnemonic_phrase).detect_language().restore().unwrap();
+        Mnemonic::builder().with_phrase(mnemonic_phrase).detect_language().build().unwrap();
 
     let seed = restored_mnemonic.to_seed();
 
@@ -29,10 +28,10 @@ async fn main()  {
     ).unwrap();
 
     println!("blockchain_client: {:?}", &blockchain_client);
-    let wallet = EthereumWallet::from_mnemonic(
-        &seed,
-        HDNetworkType::TestNet,
-        EthereumFormat::Checksummed, Some(blockchain_client)).unwrap();
+
+    let wallet = EthereumWallet::builder().with_mnemonic_seed(
+        seed).with_network_type(
+        HDNetworkType::TestNet).with_blockchain_client(Box::new(blockchain_client)).build().unwrap();
 
     // This example now assumes that the wallet has been funded with some testnet ETH 
     println!("wallet: {:#?}", &wallet);
