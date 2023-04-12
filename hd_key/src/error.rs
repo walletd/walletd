@@ -24,4 +24,10 @@ pub enum Error {
     /// Error returned from secp256k1
     #[error("Secp256k1 error: {0}")]
     Secp256k1(#[from] secp256k1::Error),
+    /// Error related to HmacSha512
+    #[error("HmacSha512 error: {0}")]
+    HmacSha512(String),
+    /// Error from index out of range
+    #[error("Index out of range: {index} > {max}")]
+    IndexOutOfRange { index: usize, max: usize },
 }

@@ -8,6 +8,8 @@ name = "walletd_hd_key"
 path = "src/lib.rs"
 
 [dependencies]
+
+walletd_mnemonic_model = { path = "../model" }
 base58 = { version = "0.2.0" }
 hex = { version = "0.4.2" }
 hmac = { version = "0.12.1" }

@@ -7,7 +7,7 @@ use std::str::FromStr;
 
 use ripemd::Ripemd160;
 
-use crate::{Error, HDPathIndex, HDPurpose};
+use crate::{Error, HDPath, HDPathIndex, HDPurpose, Seed};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ExtendedPrivateKey(secp256k1::SecretKey);
@@ -104,11 +104,11 @@ impl fmt::Display for HDNetworkType {
 /// HDKey can be used to create a master key or derive child keys
 /// HDKey follows the BIP32 scheme: <https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki>
 /// HDKey also follows the purpose scheme described in BIP43: <https://github.com/bitcoin/bips/blob/master/bip-0043.mediawiki>
-#[derive(Default, Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct HDKey {
-    pub master_seed: Vec<u8>,
-    pub derivation_path: String,
-    pub derivation_type: HDPurpose,
+    pub master_seed: Seed,
+    pub derivation_path: HDPath,
+    pub derivation_purpose: HDPurpose,
     pub chain_code: [u8; 32],
     pub depth: u8,
     pub parent_fingerprint: [u8; 4],
@@ -119,10 +119,23 @@ pub struct HDKey {
 }
 
 impl HDKey {
-    /// Create new master BIP32 node based on a seed
-    pub fn new(seed: &[u8], network_type: HDNetworkType) -> Result<Self, Error> {
-        let mut mac: HmacSha512 = HmacSha512::new_from_slice(b"Bitcoin seed").unwrap(); // the "Bitcoin seed" string is specified in the bip32 protocol
-        mac.update(seed);
+    /// Create new master node for a HD wallet based on a seed
+    /// Follows the method described in BIP32: <https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki> to convert the seed to the master node extended private and public keys
+    /// Multiple purpose types can be derived from the master node using the
+    /// `HDPurpose` type
+    ///
+    /// # Arguments
+    /// * `seed` - The seed to use to create the master node
+    /// * `network_type` - The network type to use for the master node
+    ///
+    /// # Errors
+    /// If this function encounters an error, it will return an `Error` type,
+    /// this can happen if the seed is invalid or an error is encounted when
+    /// specifiying the extended private key and extended public key
+    pub fn new_master(seed: Seed, network_type: HDNetworkType) -> Result<Self, Error> {
+        let mut mac: HmacSha512 = HmacSha512::new_from_slice(b"Bitcoin seed")
+            .map_err(|e| Error::HmacSha512(e.to_string()))?; // the "Bitcoin seed" string is specified in the bip32 protocol
+        mac.update(seed.as_bytes());
         let hmac = mac.finalize().into_bytes();
 
         let mut extended_private_key_bytes = [0u8; 32];
@@ -133,39 +146,32 @@ impl HDKey {
         let extended_public_key = ExtendedPublicKey::from_private_key(&extended_private_key);
 
         Ok(Self {
-            master_seed: seed.to_vec(),
+            master_seed: seed,
             chain_code,
             extended_private_key: Some(extended_private_key),
             extended_public_key: Some(extended_public_key),
             depth: 0,
             parent_fingerprint: [0u8; 4],
-            derivation_path: "m".into(),
+            derivation_path: HDPath::from_str("m")?,
             network: network_type,
-            ..Default::default()
+            child_index: 0,
+            derivation_purpose: HDPurpose::default(),
         })
     }
 
-    /// Helper function to convert a derivation path string to a list of strings
-    pub fn derive_path_str_to_list(deriv_path: &str) -> Result<Vec<String>, Error> {
-        let deriv_path_list: Vec<String> = deriv_path.split('/').map(|s| s.to_string()).collect();
-        if deriv_path_list.is_empty() || deriv_path_list[0] != *"m" {
-            return Err(Error::Invalid(format!(
-                "Derivation Path {} is Invalid",
-                deriv_path
-            )));
-        }
-        Ok(deriv_path_list)
-    }
-
-    /// Helper function to convert a derivation path string to a list of
-    /// DerivePathComponent
-    pub fn derive_path_str_to_info(deriv_path: &str) -> Result<Vec<HDPathIndex>, Error> {
-        let mut deriv_path_info: Vec<HDPathIndex> = Vec::new();
-        let deriv_path_list = Self::derive_path_str_to_list(deriv_path)?;
-        for item in deriv_path_list {
-            deriv_path_info.push(HDPathIndex::from_str(&item)?);
-        }
-        Ok(deriv_path_info)
+    /// Returns a new HDKey from a seed, network type and derivation path
+    /// The HDKey returned will be the child key derived from the master node
+    /// specified from the seed using the derivation path
+    ///
+    /// # Errors
+    /// Returns an Error type with further details if the seed is invalid or the
+    /// derivation path is invalid
+    pub fn new(
+        seed: Seed,
+        network_type: HDNetworkType,
+        derivation_path: String,
+    ) -> Result<Self, Error> {
+        Self::new_master(seed, network_type)?.derive(derivation_path)
     }
 
     /// Hashes a byte array using the SHA256 algorithm
@@ -173,11 +179,17 @@ impl HDKey {
         Ripemd160::digest(Sha256::digest(bytes).as_slice()).to_vec()
     }
 
-    /// Derives a HDKey following the specified derivation path
+    /// Derives a HDKey following the specified derivation path relative to the
+    /// HDKey given as the self parameter # Arguments
+    /// * `derivation_path` - A string representing the derivation path to be
+    ///   used
+    /// # Errors
+    /// * `Error::Invalid`- If the derivation path is invalid
+    /// * `Error::FromStr` - If a component of the derivation path is invalid
     pub fn derive(&self, derivation_path: String) -> Result<Self, Error> {
-        let deriv_path_str_list: Vec<&str> = derivation_path.split('/').collect();
-        let deriv_path_info = Self::derive_path_str_to_info(&derivation_path)?;
-        let mut deriv_path = self.derivation_path.clone();
+        let new_deriv_path = HDPath::from_str(&derivation_path)?;
+        let new_deriv_path_info = new_deriv_path.to_vec();
+        let parent_deriv_path = self.derivation_path.to_vec();
         let mut private_key = self.extended_private_key.expect("Missing private key");
         let mut chain_code = self.chain_code;
         let mut parent_fingerprint = [0u8; 4];
@@ -185,29 +197,28 @@ impl HDKey {
         let mut depth = self.depth;
         let mut child_index = self.child_index;
         let mut start_path_depth = 0;
-        if deriv_path_info.contains(&HDPathIndex::Master) {
-            let parent_deriv_path_info = Self::derive_path_str_to_info(&deriv_path)?;
-            if parent_deriv_path_info.len() == 1 {
+        if new_deriv_path_info.contains(&HDPathIndex::Master) {
+            if parent_deriv_path.len() == 1 {
                 start_path_depth = 1;
-            } else if parent_deriv_path_info.len() > deriv_path_info.len() {
+            } else if parent_deriv_path.len() > new_deriv_path_info.len() {
                 return Err(Error::Invalid(format!(
                     "Cannot derive {} path from {} path",
-                    derivation_path, deriv_path
+                    derivation_path, self.derivation_path
                 )));
             } else {
-                for (i, item) in parent_deriv_path_info.iter().enumerate() {
-                    if item != &deriv_path_info[i] {
+                for (i, item) in parent_deriv_path.iter().enumerate() {
+                    if item != &new_deriv_path_info[i] {
                         return Err(Error::Invalid(format!(
                             "Cannot derive {} path from {} path",
-                            derivation_path, deriv_path
+                            derivation_path, self.derivation_path
                         )));
                     }
                 }
-                start_path_depth = parent_deriv_path_info.len();
+                start_path_depth = parent_deriv_path.len();
             }
         }
-
-        for (i, item) in deriv_path_info[start_path_depth..].iter().enumerate() {
+        let mut deriv_path: HDPath = parent_deriv_path[0..start_path_depth].to_vec().into();
+        for item in new_deriv_path_info[start_path_depth..].iter() {
             let parent_public_key = ExtendedPublicKey::from_private_key(&private_key);
 
             let mut mac = HmacSha512::new_from_slice(&chain_code).unwrap();
@@ -219,7 +230,7 @@ impl HDKey {
                     mac.update(&num.to_be_bytes());
                 }
                 HDPathIndex::IndexHardened(num) => {
-                    let full_num = HDPathIndex::hardened_full_index(*num);
+                    let full_num = HDPathIndex::hardened_full_num(*num);
                     child_index = full_num;
                     mac.update(&[0u8]);
 
@@ -245,21 +256,22 @@ impl HDKey {
 
             parent_fingerprint.copy_from_slice(&Self::hash160(&parent_public_key.to_bytes())[0..4]);
 
-            let index_repr = "/".to_owned() + deriv_path_str_list[i + 1];
-            deriv_path.push_str(&index_repr);
             parent_private_key = private_key;
             depth += 1;
+            deriv_path.push(*item);
         }
 
-        let deriv_path_str_list: Vec<&str> = deriv_path.split('/').collect();
-        let deriv_path_info = Self::derive_path_str_to_info(&derivation_path)?;
-        if deriv_path_info.len() < 2 || deriv_path_info[0] != HDPathIndex::Master {
+        if deriv_path.len() < 2 || deriv_path.at(0)? != HDPathIndex::Master {
             return Err(Error::Invalid(format!(
                 "Invalid derivation path {}",
                 deriv_path
             )));
         }
-        let deriv_type = HDPurpose::from_str(deriv_path_str_list[1])?;
+
+        let deriv_purpose_type = match deriv_path.purpose() {
+            Ok(purpose) => purpose,
+            Err(_) => self.derivation_purpose,
+        };
 
         let derived_bip32 = Self {
             chain_code,
@@ -268,10 +280,10 @@ impl HDKey {
             depth,
             parent_fingerprint,
             derivation_path: deriv_path,
-            derivation_type: deriv_type,
             child_index,
             master_seed: self.master_seed.clone(),
             network: self.network,
+            derivation_purpose: deriv_purpose_type,
         };
         Ok(derived_bip32)
     }
@@ -315,18 +327,13 @@ impl HDKey {
     }
 
     /// Returns the master seed
-    pub fn master_seed(&self) -> Vec<u8> {
+    pub fn master_seed(&self) -> Seed {
         self.master_seed.clone()
     }
 
     /// Returns the derivation path
-    pub fn derivation_path(&self) -> String {
+    pub fn derivation_path(&self) -> HDPath {
         self.derivation_path.clone()
-    }
-
-    /// Returns the derivation type
-    pub fn derivation_type(&self) -> HDPurpose {
-        self.derivation_type
     }
 
     /// Returns the chain code
@@ -394,28 +401,32 @@ impl HDKey {
         }
     }
 
+    fn purpose(&self) -> HDPurpose {
+        match self.derivation_path.purpose() {
+            Ok(purpose) => purpose,
+            Err(_) => self.derivation_purpose,
+        }
+    }
+
     /// Returns the private key prefix
     fn private_key_prefix(&self) -> Result<[u8; 4], Error> {
-        if self.network == HDNetworkType::MainNet && (self.derivation_type == HDPurpose::BIP32)
-            || (self.derivation_type == HDPurpose::BIP44)
+        let purpose = self.purpose();
+
+        if self.network == HDNetworkType::MainNet && (purpose == HDPurpose::BIP32)
+            || (purpose == HDPurpose::BIP44)
         {
             Ok([0x04, 0x88, 0xAD, 0xE4])
-        } else if self.network == HDNetworkType::TestNet
-            && (self.derivation_type == HDPurpose::BIP32)
-            || (self.derivation_type == HDPurpose::BIP44)
+        } else if self.network == HDNetworkType::TestNet && (purpose == HDPurpose::BIP32)
+            || (purpose == HDPurpose::BIP44)
         {
             Ok([0x04, 0x35, 0x83, 0x94])
-        } else if self.network == HDNetworkType::MainNet && self.derivation_type == HDPurpose::BIP49
-        {
+        } else if self.network == HDNetworkType::MainNet && purpose == HDPurpose::BIP49 {
             Ok([0x04, 0x9D, 0x78, 0x78])
-        } else if self.network == HDNetworkType::TestNet && self.derivation_type == HDPurpose::BIP49
-        {
+        } else if self.network == HDNetworkType::TestNet && purpose == HDPurpose::BIP49 {
             Ok([0x04, 0x4A, 0x4E, 0x28])
-        } else if self.network == HDNetworkType::MainNet && self.derivation_type == HDPurpose::BIP84
-        {
+        } else if self.network == HDNetworkType::MainNet && purpose == HDPurpose::BIP84 {
             Ok([0x04, 0xB2, 0x43, 0x0C])
-        } else if self.network == HDNetworkType::TestNet && self.derivation_type == HDPurpose::BIP84
-        {
+        } else if self.network == HDNetworkType::TestNet && purpose == HDPurpose::BIP84 {
             Ok([0x04, 0x5F, 0x18, 0xBC])
         } else {
             Err(Error::CurrentlyNotSupported(
@@ -426,26 +437,22 @@ impl HDKey {
 
     /// Returns the public key prefix
     fn public_key_prefix(&self) -> Result<[u8; 4], Error> {
-        if self.network == HDNetworkType::MainNet && (self.derivation_type == HDPurpose::BIP32)
-            || (self.derivation_type == HDPurpose::BIP44)
+        let purpose = self.purpose();
+        if self.network == HDNetworkType::MainNet && (purpose == HDPurpose::BIP32)
+            || (purpose == HDPurpose::BIP44)
         {
             Ok([0x04, 0x88, 0xB2, 0x1E])
-        } else if self.network == HDNetworkType::TestNet
-            && (self.derivation_type == HDPurpose::BIP32)
-            || (self.derivation_type == HDPurpose::BIP44)
+        } else if self.network == HDNetworkType::TestNet && (purpose == HDPurpose::BIP32)
+            || (purpose == HDPurpose::BIP44)
         {
             Ok([0x04, 0x35, 0x87, 0xCF])
-        } else if self.network == HDNetworkType::MainNet && self.derivation_type == HDPurpose::BIP49
-        {
+        } else if self.network == HDNetworkType::MainNet && purpose == HDPurpose::BIP49 {
             Ok([0x04, 0x9D, 0x7C, 0xB2])
-        } else if self.network == HDNetworkType::TestNet && self.derivation_type == HDPurpose::BIP49
-        {
+        } else if self.network == HDNetworkType::TestNet && purpose == HDPurpose::BIP49 {
             Ok([0x04, 0x4A, 0x52, 0x62])
-        } else if self.network == HDNetworkType::MainNet && self.derivation_type == HDPurpose::BIP84
-        {
+        } else if self.network == HDNetworkType::MainNet && purpose == HDPurpose::BIP84 {
             Ok([0x04, 0xB2, 0x47, 0x46])
-        } else if self.network == HDNetworkType::TestNet && self.derivation_type == HDPurpose::BIP84
-        {
+        } else if self.network == HDNetworkType::TestNet && purpose == HDPurpose::BIP84 {
             Ok([0x04, 0x5F, 0x1C, 0xF6])
         } else {
             Err(Error::CurrentlyNotSupported(
@@ -463,18 +470,18 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let keys = HDKey::new(
-            &[
+        let keys = HDKey::new_master(
+            Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
-            ],
+            ]),
             HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(
-            keys.master_seed,
+            keys.master_seed.as_bytes().to_vec(),
             vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
@@ -482,7 +489,7 @@ mod tests {
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238
             ]
         );
-        assert_eq!(keys.derivation_path, "m".to_string());
+        assert_eq!(keys.derivation_path, HDPath::from_str("m").unwrap());
         assert_eq!(
             keys.chain_code,
             [
@@ -508,18 +515,17 @@ mod tests {
         );
         assert_eq!(keys.child_index, 0);
         assert_eq!(keys.network, HDNetworkType::MainNet);
-        assert_eq!(keys.derivation_type, HDPurpose::BIP32);
     }
 
     #[test]
     fn test_wif() {
-        let keys = HDKey::new(
-            &[
+        let keys = HDKey::new_master(
+            Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
-            ],
+            ]),
             HDNetworkType::MainNet,
         )
         .unwrap();
@@ -531,13 +537,13 @@ mod tests {
 
     #[test]
     fn test_private_key() {
-        let keys = HDKey::new(
-            &[
+        let keys = HDKey::new_master(
+            Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
-            ],
+            ]),
             HDNetworkType::TestNet,
         )
         .unwrap();
@@ -549,13 +555,13 @@ mod tests {
 
     #[test]
     fn test_private_key_0x() {
-        let keys = HDKey::new(
-            &[
+        let keys = HDKey::new_master(
+            Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
-            ],
+            ]),
             HDNetworkType::TestNet,
         )
         .unwrap();
@@ -567,13 +573,13 @@ mod tests {
 
     #[test]
     fn test_public_key() {
-        let keys = HDKey::new(
-            &[
+        let keys = HDKey::new_master(
+            Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
-            ],
+            ]),
             HDNetworkType::MainNet,
         )
         .unwrap();
@@ -585,13 +591,13 @@ mod tests {
 
     #[test]
     fn test_public_key_0x() {
-        let keys = HDKey::new(
-            &[
+        let keys = HDKey::new_master(
+            Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
-            ],
+            ]),
             HDNetworkType::TestNet,
         )
         .unwrap();
@@ -616,31 +622,33 @@ mod tests {
 
     #[test]
     fn test_derived_from_master() {
-        let master_key = HDKey::new(
-            &[
+        let master_key = HDKey::new_master(
+            Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
-            ],
+            ]),
             HDNetworkType::MainNet,
         )
         .unwrap();
+        let dpath = HDPath::builder()
+            .with_purpose(HDPurpose::BIP44.to_shortform_num())
+            .with_coin_type(Coin::from(Symbol::ETH).id())
+            .build()
+            .to_string();
 
-        let derived_key = master_key
-            .derive(HDPurpose::BIP44.full_deriv_path(Coin::from(Symbol::ETH).id(), 0, 0, 0))
-            .unwrap();
+        let derived_key = master_key.derive(dpath).unwrap();
         assert_eq!(
             derived_key,
             HDKey {
-                master_seed: [
+                master_seed: Seed::new(vec![
                     162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                     249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55,
                     235, 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155,
                     86, 102, 57, 122, 195, 32, 33, 178, 30, 10, 204, 238
-                ]
-                .to_vec(),
-                derivation_path: "m/44'/60'/0'/0/0".to_string(),
+                ]),
+                derivation_path: HDPath::from_str("m/44'/60'/0'/0/0").unwrap(),
                 chain_code: [
                     109, 150, 159, 21, 145, 38, 169, 238, 94, 27, 158, 36, 221, 164, 167, 226, 84,
                     253, 81, 90, 210, 254, 84, 178, 233, 164, 217, 131, 149, 75, 168, 105
@@ -663,20 +671,20 @@ mod tests {
                 ),
                 child_index: 0,
                 network: HDNetworkType::MainNet,
-                derivation_type: HDPurpose::BIP44
+                derivation_purpose: HDPurpose::BIP44,
             }
         );
     }
 
     #[test]
     fn test_serialization_extended_private_key() {
-        let keys = HDKey::new(
-            &[
+        let keys = HDKey::new_master(
+            Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
-            ],
+            ]),
             HDNetworkType::MainNet,
         )
         .unwrap();
@@ -685,13 +693,13 @@ mod tests {
 
     #[test]
     fn test_serialization_extended_public_key() {
-        let keys = HDKey::new(
-            &[
+        let keys = HDKey::new_master(
+            Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
-            ],
+            ]),
             HDNetworkType::MainNet,
         )
         .unwrap();

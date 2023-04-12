@@ -66,6 +66,18 @@ impl fmt::UpperHex for Seed {
     }
 }
 
+impl From<Vec<u8>> for Seed {
+    fn from(bytes: Vec<u8>) -> Self {
+        Seed::new(bytes)
+    }
+}
+
+impl From<&[u8]> for Seed {
+    fn from(bytes: &[u8]) -> Self {
+        Seed::new(bytes.to_vec())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
