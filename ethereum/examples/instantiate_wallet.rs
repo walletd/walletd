@@ -4,6 +4,7 @@ use walletd_bip39::{Language, Mnemonic, MnemonicHandler};
 use walletd_hd_key::HDNetworkType;
 use walletd_ethereum::EthereumWallet;
 use walletd_coin_model::{CryptoWallet, CryptoWalletBuilder};
+use walletd_coin_model::BlockchainConnector;
 
 // const GOERLI_TEST_ADDRESS: &str =
 // "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";

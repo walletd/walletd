@@ -5,7 +5,7 @@ use walletd_bip39::{Mnemonic, MnemonicHandler, MnemonicStyleBuilder};
 use web3::types::U256;
 
 use walletd_coin_model::{BlockchainConnector, CryptoWallet, CryptoWalletBuilder};
-use walletd_ethereum::{EthereumAmount, EthereumWallet, EthBlockchainClient};
+use walletd_ethereum::{EthereumAmount, EthereumWallet, EthClient};
 use walletd_hd_key::HDNetworkType;
 
 const GOERLI_TEST_ADDRESS: &str =
@@ -23,7 +23,7 @@ async fn main()  {
 
     println!("seed as bytes: {:?}", seed.as_bytes());
 
-    let blockchain_client = EthBlockchainClient::new(
+    let blockchain_client = EthClient::new(
         "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
     ).unwrap();
 

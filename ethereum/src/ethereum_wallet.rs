@@ -15,8 +15,9 @@ use walletd_coin_model::{CryptoWallet, CryptoWalletGeneral, BlockchainConnectorG
 use walletd_hd_key::{HDKey, HDNetworkType, HDPurpose, slip44, HDPath, HDPathBuilder};
 use web3::types::{Address, TransactionParameters};
 use crate::Error;
+use crate::EthClient;
 
-use crate::{EthereumFormat, EthBlockchainClient, EthereumAmount};
+use crate::{EthereumFormat, EthereumAmount};
 
 
 #[derive(Debug, Clone)]
@@ -243,21 +244,20 @@ impl EthereumWalletBuilder {
 }
 
 #[derive(Debug, Clone)]
-#[allow(dead_code)]
 pub struct EthereumWallet {
     address_format: EthereumFormat,
     public_address: String,
     private_key: Option<EthereumPrivateKey>,
     public_key: Option<EthereumPublicKey>,
     network: HDNetworkType,
-    blockchain_client: Option<EthBlockchainClient>,
+    blockchain_client: Option<EthClient>,
     master_hd_key: Option<HDKey>,
 }
 
 #[async_trait]
 impl CryptoWallet for EthereumWallet {
     type ErrorType = Error;
-    type BlockchainClient = EthBlockchainClient;
+    type BlockchainClient = EthClient;
     type CryptoAmount = EthereumAmount;
     type NetworkType = HDNetworkType;
     type WalletBuilder = EthereumWalletBuilder;
@@ -296,7 +296,7 @@ impl CryptoWallet for EthereumWallet {
         
         // sign the tx
         let signed = blockchain_client
-            .client()
+            .web3()
             .accounts()
             .sign_transaction(tx_object, &secret_key)
             .await?;
@@ -323,7 +323,7 @@ impl CryptoWallet for EthereumWallet {
         Ok(self.public_address())
     }
 
-    fn blockchain_client(&self) -> Result<&EthBlockchainClient, Error> {
+    fn blockchain_client(&self) -> Result<&EthClient, Error> {
         match &self.blockchain_client {
             Some(client) => Ok(client),
             None => Err(Error::MissingBlockchainClient),

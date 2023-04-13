@@ -1,5 +1,4 @@
-// use std::io::Error;
-
+use std::any::Any;
 use web3::contract::{Contract, Options};
 use web3::ethabi::Uint;
 use web3::helpers as w3h;
@@ -10,6 +9,8 @@ use std::str::FromStr;
 use prettytable::Table;
 use prettytable::row;
 use crate::Error;
+use walletd_coin_model::{BlockchainConnector, BlockchainConnectorGeneral};
+use async_trait::async_trait;
 
 #[allow(dead_code)]
 pub enum TransportType {
@@ -20,33 +21,26 @@ pub enum TransportType {
 #[derive(Clone, Debug)]
 #[allow(dead_code)]
 pub struct EthClient {
-    transport: web3::transports::Http,
-    // TODO: (#52) - Change ethclient.web3 being public for current examples when smart contracts
-    // are worked on again
-    pub web3: web3::Web3<web3::transports::Http>,
-    endpoint: String, // Do we actually need this?
+    web3: web3::Web3<web3::transports::Http>,
+    endpoint: String,
 }
 #[allow(unused)]
 impl EthClient {
-    pub fn new(endpoint: &str) -> Self {
-        // TODO(#71): Change transport to support web sockets
-        let transport = web3::transports::Http::new(endpoint).unwrap();
-        let web3 = web3::Web3::new(transport.clone());
-        Self {
-            transport,
-            web3,
-            endpoint: endpoint.to_string(), // web3 uses an &str for endpoint
-        }
+    
+    pub fn web3(&self) -> web3::Web3<web3::transports::Http> {
+        self.web3.clone()
+    }
+
+    pub fn eth(&self) -> web3::api::Eth<web3::transports::Http> {
+        self.web3.eth()
     }
 
     pub async fn balance(
         &self,
         address: H160,
-        block_number: Option<BlockNumber>,
-    ) -> Result<U256, web3::Error> {
-        // let address_as_h160 = hex!(address);
-        // let address = web3::types::H160::from_str(address)?;
-        self.web3.eth().balance(address, None).await
+    ) -> Result<EthereumAmount, Error> {
+        let balance = self.web3.eth().balance(address, None).await?;
+        Ok(EthereumAmount { wei: balance })
     }
 
     /// Gets a transaction given a specific tx hash
@@ -59,11 +53,12 @@ impl EthClient {
     /// use std::str::FromStr;
     ///
     /// use walletd_ethereum::EthClient;
+    /// use walletd_coin_model::BlockchainConnector;
     /// use web3::types::H256;
     /// let tx_hash =
     ///     "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
     /// let infura_goelri_endpoint_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-    /// let eth_client = EthClient::new(infura_goelri_endpoint_url);
+    /// let eth_client = EthClient::new(infura_goelri_endpoint_url).unwrap();
     /// let tx = eth_client.transaction_data_from_hash(tx_hash);
     /// ```
     pub async fn transaction_data_from_hash(
@@ -321,11 +316,11 @@ impl EthClient {
         )
     }
 
-    /// Get the current price of gas in wei
-    pub async fn gas_price(&self) -> web3::Result<u64> {
+    /// Get the current price of gas
+    pub async fn gas_price(&self) -> Result<EthereumAmount, Error> { 
         // getting gas price
         let gas_price = self.web3.eth().gas_price().await?;
-        Ok(gas_price.as_u64())
+        Ok(EthereumAmount {wei: gas_price})
     }
 
     /// Get the latest block number for the current network chain
@@ -389,3 +384,71 @@ impl EthClient {
         Ok(output_block_data)
     }
 }
+
+
+#[async_trait]
+impl BlockchainConnector for EthClient {
+
+    type ErrorType = Error;
+
+    fn new(endpoint: &str) -> Result<Self, Error> {
+        // TODO(#71): Change transport to support web sockets
+        let transport = web3::transports::Http::new(endpoint)?;
+        let web3 = web3::Web3::new(transport);
+        Ok(Self {
+            web3,
+            endpoint: endpoint.to_string(), // web3 uses an &str for endpoint
+        })
+    }
+
+    fn url(&self) -> &str {
+        &self.endpoint
+    }
+
+
+    async fn display_fee_estimates(&self) -> Result<String, Error> {
+        let gas_price = self.gas_price().await?;
+        let gas_price_gwei = gas_price.eth() * 1_000_000_000f64;
+        let gas_price_string = format!("Gas Price: {} Gwei ({} ETH)", gas_price_gwei, gas_price.eth());
+        Ok(gas_price_string)
+    }
+
+}
+
+
+    impl BlockchainConnectorGeneral for EthClient {
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+    
+        fn box_clone(&self) -> Box<dyn BlockchainConnectorGeneral> {
+            Box::new(self.clone())
+        }
+    }
+
+
+
+
+    impl TryFrom <Box<dyn BlockchainConnectorGeneral>> for EthClient {
+        type Error = Error;
+    
+        fn try_from(blockchain_connector: Box<dyn BlockchainConnectorGeneral>) -> Result<Self, Self::Error> {
+            match blockchain_connector.as_any().downcast_ref::<EthClient>() {
+                Some(blockstream) => Ok(blockstream.clone()),
+                None => Err(Error::UnableToDowncastBlockchainConnector("Could not convert BlockchainConnector to BlockchainClient".into())),
+            }
+        }
+    }
+    
+    impl TryFrom <&Box<dyn BlockchainConnectorGeneral>> for EthClient {
+        type Error = Error;
+    
+        fn try_from(blockchain_connector: &Box<dyn BlockchainConnectorGeneral>) -> Result<Self, Self::Error> {
+            match blockchain_connector.as_any().downcast_ref::<EthClient>() {
+                Some(blockstream) => Ok(blockstream.clone()),
+                None => Err(Error::UnableToDowncastBlockchainConnector("Could not convert BlockchainConnector to BlockchainClient".into())),
+            }
+        }
+    }
+
+

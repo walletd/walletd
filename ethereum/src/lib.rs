@@ -43,10 +43,9 @@ mod ethereum_amount;
 pub use ethereum_amount::EthereumAmount;
 mod ethereum_wallet;
 pub use ethereum_wallet::EthereumWallet;
-mod blockchain_client;
-pub use blockchain_client::BlockchainClient as EthBlockchainClient;
 mod error;
 pub use error::Error;
+pub use web3;
 
 #[derive(Default, Debug, Clone, Copy)]
 pub enum EthereumFormat {

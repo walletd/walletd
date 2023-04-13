@@ -13,13 +13,13 @@ use core::fmt::Error;
 
 use walletd_ethereum::EthClient;
 use web3::types::*;
+use walletd_coin_model::BlockchainConnector;
 
 pub const INFURA_GOERLI_ENDPOINT: &str =
     "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 #[tokio::main]
 async fn main() {
-    // let transport = web3::transports::Http::new(&INFURA_GOERLI_ENDPOINT);
-    let eth_client = EthClient::new(&INFURA_GOERLI_ENDPOINT.to_string());
+    let eth_client = EthClient::new(&INFURA_GOERLI_ENDPOINT.to_string()).unwrap();
     let bn = "8455626";
     let block_data = EthClient::block_data_from_numeric_string(&eth_client, &bn)
         .await
@@ -29,7 +29,6 @@ async fn main() {
     eth_client.smart_contract_transactions(&block_data).await;
     for transaction_hash in &block_data.transactions {
         let tx = match eth_client
-            .web3
             .eth()
             .transaction(TransactionId::Hash(*transaction_hash))
             .await
@@ -40,7 +39,7 @@ async fn main() {
         };
         // println!("transaction data {:#?}", tx);
         let _smart_contract_addr = match tx.unwrap().to {
-            Some(addr) => match eth_client.web3.eth().code(addr, None).await {
+            Some(addr) => match eth_client.eth().code(addr, None).await {
                 Ok(code) => {
                     if code == web3::types::Bytes::from([]) {
                         // "Empty code, skipping
