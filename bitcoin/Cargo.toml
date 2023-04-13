@@ -20,8 +20,7 @@ anyhow = "1.0.68"
 async-trait = "0.1.60"
 base58 = { version = "0.2.0" }
 bitcoin = "0.30.0"
-bitcoin_hashes = "0.11.0"
-bitcoincore-rpc = "0.16.0"
+bitcoin_hashes = "0.12.0"
 time = { version = "0.3", features = ["macros", "formatting"] }
 hex = "0.4.3"
 log = "0.4.17"
