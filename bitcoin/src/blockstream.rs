@@ -33,14 +33,23 @@ use crate::Error;
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct BTransaction {
+    #[serde(default)]
     pub txid: String,
+    #[serde(default)]
     pub version: i32,
+    #[serde(default)]
     pub locktime: u32,
+    #[serde(default)]
     pub vin: Vec<Input>,
+    #[serde(default)]
     pub vout: Vec<Output>,
+    #[serde(default)]
     pub size: u64,
+    #[serde(default)]
     pub weight: u64,
+    #[serde(default)]
     pub fee: u64,
+    #[serde(default)]
     pub status: Status,
 }
 
@@ -248,11 +257,17 @@ impl BTransaction {
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct Output {
+    #[serde(default)]
     pub scriptpubkey: String,
+    #[serde(default)]
     pub scriptpubkey_asm: String,
+    #[serde(default)]
     pub scriptpubkey_type: String,
+    #[serde(default)]
     pub scriptpubkey_address: String,
+    #[serde(default)]
     pub pubkeyhash: String,
+    #[serde(default)]
     pub value: u64,
 }
 
@@ -281,14 +296,23 @@ impl fmt::Display for Output {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Input {
+    #[serde(default)]
     pub txid: String,
+    #[serde(default)]
     pub vout: u32,
+    #[serde(default)]
     pub prevout: Output,
+    #[serde(default)]
     pub scriptsig: String,
+    #[serde(default)]
     pub scriptsig_asm: String,
+    #[serde(default)]
     pub witness: Vec<String>,
+    #[serde(default)]
     pub is_coinbase: bool,
+    #[serde(default)]
     pub sequence: u32,
+    #[serde(default)]
     pub inner_redeemscript_asm: String,
 }
 
@@ -317,9 +341,13 @@ impl fmt::Display for Input {
 
 #[derive(Serialize, Deserialize, Default, Clone, Debug)]
 pub struct Status {
+    #[serde(default)]
     pub confirmed: bool,
+    #[serde(default)]
     pub block_height: u32,
+    #[serde(default)]
     pub block_hash: String,
+    #[serde(default)]
     pub block_time: u32,
 }
 
@@ -355,9 +383,13 @@ impl fmt::Display for Status {
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct Utxo {
+    #[serde(default)]
     pub status: Status,
+    #[serde(default)]
     pub txid: String,
+    #[serde(default)]
     pub value: u64,
+    #[serde(default)]
     pub vout: u32,
 }
 
@@ -407,78 +439,6 @@ impl InputType {
 }
 
 impl BTransaction {
-    pub fn new_from_value(transaction_info: &Value) -> Result<BTransaction, Error> {
-        let mut transaction = BTransaction {
-            ..Default::default()
-        };
-        // TODO(AS): there is probably a better way to deserialize this
-        if let Value::Object(object) = transaction_info {
-            for obj_item in object {
-                if obj_item.0 == "txid" {
-                    transaction.txid = serde_json::from_value(obj_item.1.clone())?;
-                } else if obj_item.0 == "version" {
-                    transaction.version = serde_json::from_value(obj_item.1.clone())?;
-                } else if obj_item.0 == "locktime" {
-                    transaction.locktime = serde_json::from_value(obj_item.1.clone())?;
-                } else if obj_item.0 == "vin" {
-                    transaction.vin = Input::new_vector_from_value(obj_item.1)?;
-                } else if obj_item.0 == "vout" {
-                    transaction.vout = Output::new_vector_from_value(obj_item.1)?;
-                } else if obj_item.0 == "size" {
-                    transaction.size = serde_json::from_value(obj_item.1.clone())?;
-                } else if obj_item.0 == "weight" {
-                    transaction.weight = serde_json::from_value(obj_item.1.clone())?;
-                } else if obj_item.0 == "fee" {
-                    transaction.fee = serde_json::from_value(obj_item.1.clone())?;
-                } else if obj_item.0 == "status" {
-                    transaction.status = Status::new_from_value(obj_item.1)?;
-                }
-            }
-            return Ok(transaction);
-        }
-        Err(Error::TransactionInfoUnavailable)
-    }
-
-    pub fn new_transactions(transactions_info: Value) -> Result<Vec<Self>, Error> {
-        let mut all_transactions_info: Vec<BTransaction> = Vec::new();
-        if transactions_info.is_array() {
-            if let Value::Array(vec) = transactions_info {
-                for item in vec.iter() {
-                    let mut transaction_info = BTransaction {
-                        ..Default::default()
-                    };
-                    if let Value::Object(map) = item {
-                        for map_item in map {
-                            if map_item.0 == "status" {
-                                transaction_info.status = Status::new_from_value(map_item.1)?;
-                            } else if map_item.0 == "fee" {
-                                transaction_info.fee = serde_json::from_value(map_item.1.clone())?;
-                            } else if map_item.0 == "locktime" {
-                                transaction_info.locktime =
-                                    serde_json::from_value(map_item.1.clone())?;
-                            } else if map_item.0 == "size" {
-                                transaction_info.size = serde_json::from_value(map_item.1.clone())?;
-                            } else if map_item.0 == "txid" {
-                                transaction_info.txid = serde_json::from_value(map_item.1.clone())?;
-                            } else if map_item.0 == "version" {
-                                transaction_info.version =
-                                    serde_json::from_value(map_item.1.clone())?;
-                            } else if map_item.0 == "vin" {
-                                transaction_info.vin = Input::new_vector_from_value(map_item.1)?;
-                            } else if map_item.0 == "vout" {
-                                transaction_info.vout = Output::new_vector_from_value(map_item.1)?;
-                            } else if map_item.0 == "weight" {
-                                transaction_info.weight =
-                                    serde_json::from_value(map_item.1.clone())?;
-                            }
-                        }
-                        all_transactions_info.push(transaction_info);
-                    }
-                }
-            }
-        }
-        Ok(all_transactions_info)
-    }
 
     pub fn transaction_hash_for_signing_segwit_input_index(
         &self,
@@ -788,95 +748,7 @@ impl Default for Input {
     }
 }
 
-impl Input {
-    pub fn new_from_value(input_info: &Value) -> Result<Input, Error> {
-        let mut input = Input {
-            ..Default::default()
-        };
-        if let Value::Object(object) = input_info {
-            for obj_item in object {
-                if obj_item.0 == "txid" {
-                    input.txid = serde_json::from_value(obj_item.1.clone())?;
-                } else if obj_item.0 == "vout" {
-                    input.vout = serde_json::from_value(obj_item.1.clone())?;
-                } else if obj_item.0 == "prevout" {
-                    input.prevout = Output::new_from_value(obj_item.1)?;
-                } else if obj_item.0 == "scriptsig" {
-                    input.scriptsig = serde_json::from_value(obj_item.1.clone())?;
-                } else if obj_item.0 == "scriptsig_asm" {
-                    input.scriptsig_asm = serde_json::from_value(obj_item.1.clone())?;
-                } else if obj_item.0 == "witness" {
-                    input.witness = serde_json::from_value(obj_item.1.clone())?;
-                } else if obj_item.0 == "is_coinbase" {
-                    input.is_coinbase = serde_json::from_value(obj_item.1.clone())?;
-                } else if obj_item.0 == "sequence" {
-                    input.sequence = serde_json::from_value(obj_item.1.clone())?;
-                } else if obj_item.0 == "inner_redeemscript_asm" {
-                    input.inner_redeemscript_asm = serde_json::from_value(obj_item.1.clone())?;
-                }
-            }
-            Ok(input)
-        } else {
-            Err(Error::MissingData("Input info is not there".into()))
-        }
-    }
-
-    pub fn new_vector_from_value(vin_info: &Value) -> Result<Vec<Input>, Error> {
-        let mut vinputs: Vec<Input> = Vec::new();
-        if vin_info.is_array() {
-            if let Value::Array(vec) = vin_info {
-                for item in vec.iter() {
-                    let input_info: Input = Input::new_from_value(item)?;
-                    vinputs.push(input_info);
-                }
-            }
-            Ok(vinputs)
-        } else {
-            Err(Error::MissingData("Info not there for vector of Input".into()))
-        }
-    }
-}
-
 impl Output {
-    pub fn new_from_value(output_info: &Value) -> Result<Output, Error> {
-        let mut output = Output {
-            ..Default::default()
-        };
-        if let Value::Object(object) = output_info {
-            for obj_item in object {
-                if obj_item.0 == "scriptpubkey" {
-                    output.scriptpubkey = serde_json::from_value(obj_item.1.clone())?;
-                } else if obj_item.0 == "scriptpubkey_asm" {
-                    output.scriptpubkey_asm = serde_json::from_value(obj_item.1.clone())?;
-                } else if obj_item.0 == "scriptpubkey_type" {
-                    output.scriptpubkey_type = serde_json::from_value(obj_item.1.clone())?;
-                } else if obj_item.0 == "scriptpubkey_address" {
-                    output.scriptpubkey_address = serde_json::from_value(obj_item.1.clone())?;
-                } else if obj_item.0 == "value" {
-                    output.value = serde_json::from_value(obj_item.1.clone())?;
-                }
-            }
-            Ok(output)
-        } else {
-            Err(Error::MissingData("Info not availabe for Output".into()))
-        }
-    }
-
-    pub fn new_vector_from_value(vout_info: &Value) -> Result<Vec<Output>, Error> {
-        let mut voutputs: Vec<Output> = Vec::new();
-        if vout_info.is_array() {
-            if let Value::Array(vec) = vout_info {
-                for item in vec.iter() {
-                    let output_info: Output = Output::new_from_value(item)?;
-                    voutputs.push(output_info);
-                }
-            }
-            Ok(voutputs)
-        } else {
-            Err(Error::MissingData("Info not there for vector of Output".into()))
-        }
-    }
-
     pub fn set_scriptpubkey_info(&mut self, address_info: Address) -> Result<(), Error> {
         self.scriptpubkey_address = address_info.to_string();
         let address_type = address_info.address_type().expect("address type missing");
@@ -898,61 +770,6 @@ impl Output {
     }
 }
 
-impl Status {
-    pub fn new_from_value(status_info: &Value) -> Result<Status, Error> {
-        let mut status = Status {
-            ..Default::default()
-        };
-        if let Value::Object(object) = status_info {
-            for obj_item in object {
-                if obj_item.0 == "confirmed" {
-                    status.confirmed = serde_json::from_value(obj_item.1.clone())?;
-                } else if obj_item.0 == "block_height" {
-                    status.block_height = serde_json::from_value(obj_item.1.clone())?;
-                } else if obj_item.0 == "block_hash" {
-                    status.block_hash = serde_json::from_value(obj_item.1.clone())?;
-                } else if obj_item.0 == "block_time" {
-                    status.block_time = serde_json::from_value(obj_item.1.clone())?;
-                }
-            }
-            Ok(status)
-        } else {
-            Err(Error::MissingData("status info not available".into()))
-        }
-    }
-}
-
-impl Utxo {
-    pub fn new_utxos(utxo_info: Value) -> Result<Vec<Utxo>, Error> {
-        let mut all_utxo_info: Vec<Utxo> = Vec::new();
-        if utxo_info.is_array() {
-            if let Value::Array(vec) = utxo_info {
-                for item in vec.iter() {
-                    let mut utxo: Utxo = Utxo {
-                        ..Default::default()
-                    };
-                    if let Value::Object(map) = item {
-                        for map_item in map {
-                            if map_item.0 == "status" {
-                                utxo.status = Status::new_from_value(map_item.1)?;
-                            } else if map_item.0 == "txid" {
-                                utxo.txid = serde_json::from_value(map_item.1.clone())?;
-                            } else if map_item.0 == "value" {
-                                utxo.value = serde_json::from_value(map_item.1.clone())?;
-                            } else if map_item.0 == "vout" {
-                                utxo.vout = serde_json::from_value(map_item.1.clone())?;
-                            }
-                        }
-                    }
-                    all_utxo_info.push(utxo);
-                }
-            }
-            Ok(all_utxo_info)
-        } else {
-            Err(Error::MissingData("utxo_info was not array value".into()))
-        }
-    }
-}
 #[derive(Clone, Default, Debug)]
 pub struct Blockstream {
     pub client: reqwest::Client,
@@ -1075,8 +892,8 @@ impl Blockstream {
             .await?
             .text()
             .await?;
-        let transactions: Value = serde_json::from_str(&body)?;
-        BTransaction::new_transactions(transactions)
+        let transactions: Vec<BTransaction>= serde_json::from_str(&body)?;
+        Ok(transactions)
     }
 
     /// Fetch mempool transactions from blockstream
@@ -1095,8 +912,8 @@ impl Blockstream {
             .text()
             .await?;
 
-        let utxo: Value = serde_json::from_str(&body)?;
-        Utxo::new_utxos(utxo)
+        let utxos: Vec<Utxo> = serde_json::from_str(&body)?;
+        Ok(utxos)
     }
 
     pub async fn get_raw_transaction_hex(&self, txid: &str) -> Result<String, Error> {
@@ -1115,8 +932,7 @@ impl Blockstream {
             .text()
             .await?;
        
-        let transaction_info: Value = serde_json::from_str(&body)?;
-        let transaction: BTransaction = BTransaction::new_from_value(&transaction_info)?;
+        let transaction: BTransaction = serde_json::from_str(&body)?;
         Ok(transaction)
     }
 
