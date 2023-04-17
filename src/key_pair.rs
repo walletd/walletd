@@ -1,6 +1,9 @@
 use ::walletd_bip39::Seed;
 
-use crate::{BlockchainConnectorGeneral, CryptoWallet, CryptoWalletGeneral, HDKey, HDNetworkType};
+use crate::{
+    BlockchainConnectorGeneral, CryptoWallet, CryptoWalletBuilder, CryptoWalletGeneral, HDKey,
+    HDNetworkType,
+};
 
 use crate::Error;
 
@@ -49,8 +52,8 @@ impl KeyPair {
 
     /// Returns the master HD key
     pub fn to_master_key(&self) -> HDKey {
-        let seed = self.mnemonic_seed.as_bytes();
-        HDKey::new(seed, self.network_type).expect("Failed to create master key")
+        HDKey::new_master(self.mnemonic_seed.to_owned(), self.network_type)
+            .expect("Failed to create master key")
     }
 
     /// Returns the HD network type
@@ -66,10 +69,14 @@ impl KeyPair {
     ) -> Result<T, Error>
     where
         T: CryptoWallet,
+        T::WalletBuilder: CryptoWalletBuilder<T>,
         T::ErrorType: std::fmt::Display,
         <T as TryFrom<Box<dyn CryptoWalletGeneral>>>::Error: std::fmt::Display,
     {
-        let wallet = T::new(&self.to_master_key(), Some(blockchain_client))
+        let wallet: T = T::builder()
+            .with_master_hd_key(self.to_master_key())
+            .with_blockchain_client(blockchain_client)
+            .build()
             .map_err(|e| Error::DeriveWallet(e.to_string()))?;
         Ok(wallet)
     }
