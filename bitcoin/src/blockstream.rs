@@ -1,3 +1,6 @@
+//! This module contains the implementation of the handling getting information to and from the bitcoin blockchain using the Blockstream Esplora JSON over HTTP API <https://github.com/Blockstream/esplora/blob/master/API.md>
+//! 
+//! 
 use std::any::Any;
 
 use async_trait::async_trait;
@@ -27,31 +30,45 @@ pub use bitcoin::{
 
 use crate::Error;
 
+/// Represents a Bitcoin transaction in the format with the data fields returned by Blockstream
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct BTransaction {
     #[serde(default)]
+    /// Txid
     pub txid: String,
     #[serde(default)]
+    /// Version
     pub version: i32,
     #[serde(default)]
+    /// Locktime
     pub locktime: u32,
     #[serde(default)]
+    /// Vector of Inputs
     pub vin: Vec<Input>,
     #[serde(default)]
+    /// Vector of Outputs
     pub vout: Vec<Output>,
     #[serde(default)]
+    /// Size 
     pub size: u64,
     #[serde(default)]
+    /// Weight
     pub weight: u64,
     #[serde(default)]
+    /// Fee
     pub fee: u64,
     #[serde(default)]
+    /// Status
     pub status: Status,
 }
 
 
 impl BTransaction {
-    pub async fn overview(btc_wallet: BitcoinWallet) -> Result<String, Error> {
+
+    /// Returns a string representation of the transaction history of the given wallet
+    /// # Errors
+    /// If this function encounters an error, it will return an `Error` variant.
+   pub async fn overview(btc_wallet: BitcoinWallet) -> Result<String, Error> {
         
         // We need to know which addresses belong to our wallet
         let our_addresses = btc_wallet.addresses().iter().map(|address| address.public_address()).collect::<Vec<String>>();
@@ -78,8 +95,8 @@ impl BTransaction {
         for i in 0..transactions.len() {
             let our_inputs: Vec<Output> = transactions[i].vin.iter().filter(|input| owners_addresses.contains(&input.prevout.scriptpubkey_address)).map(|x| x.prevout.clone()).collect();
             let received_outputs: Vec<Output> = transactions[i].vout.iter().filter(|output| owners_addresses.contains(&output.scriptpubkey_address)).cloned().collect();
-            let received_amount = BitcoinAmount::new_from_satoshi(received_outputs.iter().fold(0, |acc, output| acc + output.value));
-            let sent_amount = BitcoinAmount::new_from_satoshi(our_inputs.iter().fold(0, |acc, output| acc + output.value));
+            let received_amount = BitcoinAmount::from_satoshi(received_outputs.iter().fold(0, |acc, output| acc + output.value));
+            let sent_amount = BitcoinAmount::from_satoshi(our_inputs.iter().fold(0, |acc, output| acc + output.value));
           
             let amount_balance = if received_amount > sent_amount {
                 // this is situation when we are receiving money
@@ -104,61 +121,29 @@ impl BTransaction {
         Ok(table.to_string())
     }
 
-    pub fn details(&self, owners_address: String) -> Result<String, Error> {
-        let mut table_string = String::new();
-        let mut table = Table::new();
-        table.add_row(row!["Tx ID", self.txid]);
-        table_string.push_str(&table.to_string());
-        table = Table::new();
-        table.add_row(row!["Status", self.status]);
-        table_string.push_str(&table.to_string());
-        let input_amount = BitcoinAmount::new_from_satoshi(self.vin.iter().fold(0, |acc, input| acc + input.prevout.value)).btc();
-        let output_amount = BitcoinAmount::new_from_satoshi(self.vout.iter().fold(0, |acc, output| acc + output.value)).btc();
-        let change_amount = BitcoinAmount::new_from_satoshi(self.vout.iter().filter(|output| output.scriptpubkey_address == owners_address).fold(0, |acc, output| acc + output.value)).btc();
-        let amount = input_amount - output_amount + change_amount;
-        let fee_amount = BitcoinAmount::new_from_satoshi(self.fee).btc();
-        table = Table::new();
-        table.add_row(row!["Amount: ", amount.to_string()]);
-        table.add_row(row!["Fee Amount: ", fee_amount.to_string()]);
-        table.add_row(row!["To/From Address: ", owners_address]);
-        table.add_row(row!["Version", self.version]);
-        table.add_row(row!["Locktime", self.locktime]);
-        table.add_row(row!["Size", self.size]);
-        table.add_row(row!["Weight", self.weight]);
-        table_string.push_str(&table.to_string());
-        
-        table = Table::new();
-        table.add_row(row!["Inputs"]);
-        for input in &self.vin {
-            table.add_row(row![input.to_string()]);
-        }
-        table_string.push_str(&table.to_string());
-        table = Table::new();
-        table.add_row(row!["Outputs"]);
-        for output in &self.vout {
-            table.add_row(row![output.to_string()]);
-        }
-        table_string.push_str(&table.to_string());
-        Ok(table_string)
-    }
-
-
 
 }
 
+/// Represents a Bitcoin transaction out in the format with the data fields returned by Blockstream
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct Output {
     #[serde(default)]
+    /// ScriptPubKey
     pub scriptpubkey: String,
     #[serde(default)]
+    /// ScriptPubKey ASM
     pub scriptpubkey_asm: String,
     #[serde(default)]
+    /// ScriptPubKey Type
     pub scriptpubkey_type: String,
     #[serde(default)]
+    /// ScriptPubKey Address
     pub scriptpubkey_address: String,
     #[serde(default)]
+    /// PubKeyHash
     pub pubkeyhash: String,
     #[serde(default)]
+    /// Value in Satoshis
     pub value: u64,
 }
 
@@ -180,30 +165,40 @@ impl fmt::Display for Output {
         if !self.pubkeyhash.is_empty() {
             table.add_row(row!["PubKeyHash", self.pubkeyhash]);
         }
-        table.add_row(row!["Value (BTC)", BitcoinAmount::new_from_satoshi(self.value).btc()]);
+        table.add_row(row!["Value (BTC)", BitcoinAmount::from_satoshi(self.value).btc()]);
         write!(f, "{}", table)
     }
 }
 
+/// Represents a Bitcoin transaction input in the format with the data fields returned by Blockstream
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Input {
     #[serde(default)]
+    /// Tx ID
     pub txid: String,
     #[serde(default)]
+    /// Index of the output that this input represents from the previous transaction
     pub vout: u32,
     #[serde(default)]
+    /// Previous output
     pub prevout: Output,
     #[serde(default)]
+    /// ScriptSig
     pub scriptsig: String,
     #[serde(default)]
+    /// ScriptSig ASM
     pub scriptsig_asm: String,
     #[serde(default)]
+    /// Witness 
     pub witness: Vec<String>,
     #[serde(default)]
+    /// Is coinbase 
     pub is_coinbase: bool,
     #[serde(default)]
+    /// Sequence
     pub sequence: u32,
     #[serde(default)]
+    /// Inner RedeemScript
     pub inner_redeemscript_asm: String,
 }
 
@@ -211,7 +206,7 @@ impl fmt::Display for Input {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut table = Table::new();
         table.add_row(row!["Input Tx ID", self.txid]);
-        table.add_row(row!["Amount (BTC)", BitcoinAmount::new_from_satoshi(self.vout as u64).btc()]);
+        table.add_row(row!["Amount (BTC)", BitcoinAmount::from_satoshi(self.vout as u64).btc()]);
         if !self.scriptsig.is_empty() {
             table.add_row(row!["ScriptSig", self.scriptsig]);
         }
@@ -230,20 +225,25 @@ impl fmt::Display for Input {
     }
 }
 
+/// Represents the Status of a Bitcoin transaction in the format with the data fields returned by Blockstream
 #[derive(Serialize, Deserialize, Default, Clone, Debug)]
 pub struct Status {
     #[serde(default)]
+    /// Confirmed
     pub confirmed: bool,
     #[serde(default)]
+    /// Block Height
     pub block_height: u32,
     #[serde(default)]
+    /// Block Hash
     pub block_hash: String,
     #[serde(default)]
+    /// Block Time
     pub block_time: u32,
 }
 
 impl Status {
-
+    /// Returns the timestamp based on the block_time data as a string formatted as RFC2822
     pub fn timestamp(&self) -> Result<String, Error> {
         if self.confirmed {
         // Creates a timestamp from the specified number of whole seconds which have passed since the UNIX_EPOCH
@@ -272,18 +272,24 @@ impl fmt::Display for Status {
     }
 }
 
+/// Represents a Bitcoin UTXO (Unspent Transaction Output) in the format with the data fields returned by Blockstream
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct Utxo {
     #[serde(default)]
+    /// Status of the UTXO
     pub status: Status,
     #[serde(default)]
+    /// Txid associated with the UTXO
     pub txid: String,
     #[serde(default)]
+    /// Value in satoshis
     pub value: u64,
     #[serde(default)]
+    /// The index of the output in the associated transaction
     pub vout: u32,
 }
 
+/// A wrapper around a vector of Utxo objects.
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct Utxos(pub Vec<Utxo>);
 
@@ -320,16 +326,24 @@ impl Utxos {
     }
 }
 
+/// Enum of possible input types.
 pub enum InputType {
+    /// Pay to public key hash.
     P2pkh,
+    /// Pay to script hash.
     P2sh,
+    /// Pay to witness script hash.
     P2wsh,
+    /// Pay to witness public key hash.
     P2wpkh,
+    /// Pay to script hash nested in witness script hash.
     P2sh2Wpkh,
+    /// Pay to script hash nested in witness public key hash.
     P2sh2Wsh,
 }
 
 impl InputType {
+    /// Returns the input type of the given UTXO.
     pub fn new(utxo_prevout: &Output) -> Result<Self, Error> {
         match utxo_prevout.scriptpubkey_type.as_str() {
             "p2pkh" => Ok(InputType::P2pkh),
@@ -355,6 +369,7 @@ impl InputType {
         }
     }
 
+    /// Returns whether the input type is segwit or not.
     pub fn is_segwit(&self) -> bool {
         match self {
             InputType::P2pkh | InputType::P2sh => false,
@@ -366,7 +381,7 @@ impl InputType {
 }
 
 impl BTransaction {
-
+    /// Calculates a transaction hash for signing a segwit input with a given index
     pub fn transaction_hash_for_signing_segwit_input_index(
         &self,
         index: usize,
@@ -626,6 +641,7 @@ impl BTransaction {
         Ok(hex::encode(ntxid))
     }
 
+    /// Returns a string that is the reverse byte order string representation of the input hex string
     pub fn hex_reverse_byte_order(hex_string: &String) -> Result<String, Error> {
         let len = hex_string.len();
         if len % 2 != 0 {
@@ -641,6 +657,7 @@ impl BTransaction {
         Ok(encoded)
     }
 
+    /// Returns the variable length integer encoding of the input number
     pub fn variable_length_integer_encoding(num: usize) -> Result<Vec<u8>, Error> {
         if num < 0xFD {
             Ok(vec![num as u8])
@@ -676,6 +693,7 @@ impl Default for Input {
 }
 
 impl Output {
+    /// Sets the scriptpubkey info for the output based on the address
     pub fn set_scriptpubkey_info(&mut self, address_info: Address) -> Result<(), Error> {
         self.scriptpubkey_address = address_info.to_string();
         let address_type = address_info.address_type().expect("address type missing");
@@ -697,9 +715,12 @@ impl Output {
     }
 }
 
+/// Blockstream is a connector to the Blockstream API
 #[derive(Clone, Default, Debug)]
 pub struct Blockstream {
+    /// The client used to make requests to the API
     pub client: reqwest::Client,
+    /// The url of the API
     pub url: String,
 }
 
@@ -739,6 +760,7 @@ impl BlockchainConnectorGeneral for Blockstream {
 
 }
 
+/// FeeEstimates is a wrapper around the fee estimates returned by the Blockstream API
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
 pub struct FeeEstimates(pub serde_json::Map<String, Value>);
 
@@ -782,6 +804,8 @@ impl TryFrom <&Box<dyn BlockchainConnectorGeneral>> for Blockstream {
 
 
 impl Blockstream {
+    /// Checks if the given address has had an past transactions, returns true if it has and false if it has not
+    /// Errors if the address is invalid or if the API returns an error
     pub async fn check_if_past_transactions_exist(
         &self,
         public_address: &str,

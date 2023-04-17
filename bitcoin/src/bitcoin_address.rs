@@ -1,12 +1,11 @@
 use std::fmt;
 use std::str::FromStr;
 
-use base58::ToBase58;
 pub use bitcoin::{
     sighash::EcdsaSighashType, Address as AddressInfo, AddressType, Network,
     PrivateKey as BitcoinPrivateKey, PublicKey as BitcoinPublicKey, Script,
 };
-use sha2::{Digest, Sha256};
+
 use walletd_coin_model::CryptoAddress;
 use walletd_hd_key::{HDKey, HDNetworkType};
 
@@ -144,22 +143,11 @@ impl BitcoinAddress {
         }
     }
 
-    
+    /// Returns the address info related to this BitcoinAddress
     pub fn address_info(&self) -> AddressInfo {
         self.address_info.clone()
     }
 
-    pub fn public_address_p2pkh_from_public_key(public_key: &[u8]) -> String {
-        // p2pkh format
-        let mut address = [0u8; 25];
-
-        address[0] = 0x00;
-        address[1..21].copy_from_slice(&HDKey::hash160(public_key));
-
-        let checksum = &(Sha256::digest(Sha256::digest(&address[0..21]).as_slice()).to_vec())[0..4];
-        address[21..25].copy_from_slice(checksum);
-        address.to_base58()
-    }
 }
 
 impl fmt::Display for BitcoinAddress {

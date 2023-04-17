@@ -25,6 +25,7 @@ pub use bitcoin::{
 
 const DEFAULT_GAP_LIMIT: usize = 20;
 
+/// Represents a Bitcoin wallet which can have mulitple BitcoinAddress structs associated with it which are derived from a single master HD key.
 #[derive(Debug, Clone)]
 pub struct BitcoinWallet{
     address_format: AddressType,
@@ -323,10 +324,12 @@ impl BitcoinWallet {
         
           }
 
+        /// Returns the address format
         pub fn address_format(&self) -> AddressType {
             self.address_format
         }
 
+        /// Returns the master HDKey, if it exists otherwise returns an error
         pub fn master_hd_key(&self) -> Result<HDKey, Error> {
             match &self.master_hd_key {
                 Some(key) => Ok(key.clone()),
@@ -334,6 +337,7 @@ impl BitcoinWallet {
             }
         }
 
+        /// Returns the network based on the master HDKey
         pub fn network(&self) -> Result<Network, Error> {
            match self.master_hd_key()?.network() {
                 HDNetworkType::MainNet => Ok(Network::Bitcoin),
@@ -487,6 +491,7 @@ impl BitcoinWallet {
             Ok(signature)
         }
 
+        /// Signs a transaction with the provided private keys and returns the signed transaction
         pub fn sign_tx(tx: &BTransaction, keys_per_input: Vec<(BitcoinPrivateKey, BitcoinPublicKey)>) -> Result<BTransaction, Error> {
             let mut inputs = tx.vin.clone();
             // Signing and unlocking the inputs
@@ -1064,7 +1069,5 @@ mod tests {
         assert_eq!(builder.mnemonic_seed, None);
         assert_eq!(builder.network_type, Network::Bitcoin);
     }
-
-
 }
 

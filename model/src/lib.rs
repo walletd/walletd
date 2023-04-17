@@ -1,3 +1,7 @@
+//! # WalletD Coin Model Library
+//! 
+//! This library provides common traits, functionality, and interfaces that are used by other walletd libraries that are specific to a particular cryptocurrency.
+#![warn(missing_docs)]
 
 mod crypto_address;
 mod crypto_wallet;

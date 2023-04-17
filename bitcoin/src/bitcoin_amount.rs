@@ -4,8 +4,10 @@ use std::ops;
 
 use walletd_coin_model::CryptoAmount;
 
+/// BitcoinAmount contains a field representing the amount of satoshis in the amount. It also has functions to convert to and from the main unit (BTC) and the smallest unit (satoshi). 
 #[derive(Default, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct BitcoinAmount {
+    /// The number of satoshis (u64) in the amount
     pub satoshi: u64,
 }
 
@@ -69,21 +71,25 @@ impl ops::Div for BitcoinAmount {
 
 impl BitcoinAmount {
 
-    pub fn new_from_btc(btc_amount: f64) -> Self {
+    /// Returns a BitcoinAmount struct from a decimal value representing the amount in BTC
+    pub fn from_btc(btc_amount: f64) -> Self {
         let satoshi = (btc_amount * 100_000_000.0) as u64; // 100 million satoshis per bitcoin
         Self { satoshi }
     }
 
-    pub fn new_from_satoshi(satoshi_amount: u64) -> Self {
+    /// Returns a BitcoinAmount struct from an integer value representing the amount in satoshis
+    pub fn from_satoshi(satoshi_amount: u64) -> Self {
         Self {
             satoshi: satoshi_amount,
         }
     }
 
+    /// Returns the amount in BTC as a f64
     pub fn btc(&self) -> f64 {
         self.satoshi as f64 / 100_000_000.0 // 100 million satoshis per bitcoin
     }
 
+    /// Returns the amount in satoshis as a u64
     pub fn satoshi(&self) -> u64 {
         self.satoshi
     }
@@ -91,11 +97,11 @@ impl BitcoinAmount {
 
 impl CryptoAmount for BitcoinAmount {
     fn from_main_unit_decimal_value(value: f64) -> Self {
-        Self::new_from_btc(value)
+        Self::from_btc(value)
     }
 
     fn from_smallest_unit_integer_value(value: u64) -> Self {
-        Self::new_from_satoshi(value)
+        Self::from_satoshi(value)
     }
 
     fn to_main_unit_decimal_value(&self) -> f64 {

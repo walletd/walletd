@@ -18,23 +18,27 @@ pub enum TransportType {
     WebSockets,
 }
 
+
+/// EthClient is a blockchain connector for Ethereum, it contains a web3 instance using a HTTP transport
 #[derive(Clone, Debug)]
 #[allow(dead_code)]
 pub struct EthClient {
     web3: web3::Web3<web3::transports::Http>,
     endpoint: String,
 }
+
 #[allow(unused)]
 impl EthClient {
-    
+    /// Returns the web3 instance
     pub fn web3(&self) -> web3::Web3<web3::transports::Http> {
         self.web3.clone()
     }
-
+    /// Returns the eth instance from the web3 instance
     pub fn eth(&self) -> web3::api::Eth<web3::transports::Http> {
         self.web3.eth()
     }
 
+    /// Rerutns the balance of an address as an EthereumAmount
     pub async fn balance(
         &self,
         address: H160,
@@ -114,10 +118,10 @@ impl EthClient {
         }
     }
 
-
-    pub async fn transaction_details_for_coin(tx: Transaction) -> Result<String, Error> {
+    /// Returns transaction details for a given transaction as a formatted string
+    pub async fn transaction_details(tx: Transaction) -> Result<String, Error> {
         let mut table = Table::new();
-        let eth_value = EthereumAmount::new_from_wei(tx.value); 
+        let eth_value = EthereumAmount::from_wei(tx.value); 
         table.add_row(row!["Transaction Hash", format!("0x{:x}", tx.hash)]);
         table.add_row(row!["Amount", eth_value]);
         if tx.block_number.is_some() {
@@ -150,7 +154,7 @@ impl EthClient {
     }
 
 
-    // TODO(AS): refactor this function to follow rust naming conventions and handl result
+    ///  Prints out info on a smart contract transaction from a block hash
     pub async fn get_smart_contract_tx_vec_from_block_hash(
         &self,
         block: &web3::types::Block<H256>,
@@ -342,8 +346,8 @@ impl EthClient {
         Ok(output_block_data)
     }
 
-    // Gets current chain's block using a specified block number. This requires an
-    // instance of web3's U64, not Rust's u64
+    /// Gets current chain's block using a specified block number. This requires an
+    /// instance of web3's U64, not Rust's u64
     // TODO:(#73) - when using U64,
     // no transaction data returned by Web3's block struct. This appears to be a bug
     // in Web3
@@ -364,8 +368,8 @@ impl EthClient {
         Ok(output_block_data)
     }
 
-    // Gets current chain's latest block number by passing it a string (eg
-    // "80000".to_string())
+    /// Gets current chain's latest block number by passing it a string (eg
+    /// "80000".to_string())
     pub async fn block_data_from_numeric_string(
         &self,
         block_id: &str,

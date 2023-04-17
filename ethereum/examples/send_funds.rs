@@ -39,7 +39,7 @@ async fn main()  {
     println!("balance: {:?}", &wallet.balance().await.unwrap());
 
     let sa = U256::from(10000);
-    let send_amount = EthereumAmount::new_from_wei(sa);
+    let send_amount = EthereumAmount::from_wei(sa);
     println!("send_amount: {:?}", &send_amount);
 
     let tx_hash = wallet.transfer(

@@ -2,8 +2,7 @@
 
 
 
-
-// TODO(AS): make these functions less verbosely named
+/// The CryptoAmount trait provides a common interface handling crypto amounts. It provides functions to convert to and from the main unit and the smallest unit of the coin.
 pub trait CryptoAmount: std::fmt::Display {
     /// In the units of main "big" unit (a floating point number, not an integer
     /// subdivision) using decimal value, for bitcoin BTC, ethereum ETH, etc.
@@ -12,6 +11,7 @@ pub trait CryptoAmount: std::fmt::Display {
     /// The decimal value is the floating point number representation in the main unit of the coin, for example BTC, ETH, etc.
     fn from_main_unit_decimal_value(value: f64) -> Self;
 
+    /// Creates a new CryptoAmount from the smallest unit of the coin, for example satoshi for bitcoin, wei for ethereum, etc.
     fn from_smallest_unit_integer_value(value: u64) -> Self;
 
     /// Returns the decimal value of the CryptoAmount, this is the floating point number representation in the main unit of the coin, for example BTC, ETH, etc.

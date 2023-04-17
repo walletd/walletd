@@ -243,6 +243,7 @@ impl EthereumWalletBuilder {
     }
 }
 
+/// The EthereumWallet struct contains the information needed to interact with an Ethereum wallet with a single public address associated with it.
 #[derive(Debug, Clone)]
 pub struct EthereumWallet {
     address_format: EthereumFormat,
@@ -334,15 +335,22 @@ impl CryptoWallet for EthereumWallet {
 /// Technically speaking, an "EthereumWallet" is a public address, public key and
 /// private key
 impl EthereumWallet {
+    /// Returns the address format used by the wallet
+    pub fn address_format(&self) -> EthereumFormat {
+        self.address_format
+    }
 
+    /// Returns the public address of the wallet
     pub fn public_address(&self) -> String {
         self.public_address.clone()
     }
 
+    /// Returns the network type used by the wallet
     pub fn network(&self) -> HDNetworkType {
         self.network
     }
 
+    /// Returns the public key of the wallet
     pub fn public_key(&self) -> Result<EthereumPublicKey, Error> {
 
         if let Some(key) = self.public_key.clone() {
@@ -352,6 +360,7 @@ impl EthereumWallet {
         }
     }
 
+    /// Returns the private key of the wallet if it exists, otherwise returns an error
     pub fn private_key(&self) -> Result<EthereumPrivateKey, Error> {
         if let Some(key) = self.private_key.clone() {
             Ok(key)
@@ -360,7 +369,8 @@ impl EthereumWallet {
         }
     }
 
-    pub fn hd_key(&self) -> Result<HDKey, Error> {
+    /// Returns the master HD key of the wallet if it exists, otherwise returns an error
+    pub fn master_hd_key(&self) -> Result<HDKey, Error> {
         if let Some(key) = self.master_hd_key.clone() {
             Ok(key)
         } else {
