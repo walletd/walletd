@@ -53,10 +53,6 @@ impl ops::Mul<f64> for BitcoinAmount {
         }
 
         let as_u64 = result as u64;
-        
-        if as_u64 > u64::MAX || as_u64 < u64::MIN {
-            return Err(Error::Overflow(format!("Overflow in u64 when multiplying {} by {}", self.satoshi, rhs)));
-        }
 
         Ok(Self {
             satoshi: as_u64
