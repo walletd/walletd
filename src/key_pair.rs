@@ -7,21 +7,31 @@ use crate::{
 
 use crate::Error;
 
+/// The struct holds info about a mnemonic type and the associated seed and phrase as well as the network type.
+/// It enables the creation of a HD wallet from a mnemonic phrase that could be used with multiple cryptocurrencies.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct KeyPair {
+    /// The style of the mnemonic phrase
     pub style: MnemonicKeyPairType,
+    /// The mnemonic seed (derived from the mnemonic phrase as well as the optional passphrase)
     pub mnemonic_seed: Seed,
+    /// The mnemonic phrase
     pub mnemonic_phrase: String,
+    /// The optional passphrase
     pub passphrase: Option<String>,
+    /// The HD network type
     pub network_type: HDNetworkType,
 }
 
+/// The MnemonicKeyPairType enum is used to specify the type of mnemonic phrase
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub enum MnemonicKeyPairType {
+    /// The mnemonic phrase is a BIP39 phrase and is affiliated with a HD wallet
     HDBip39,
 }
 
 impl KeyPair {
+    /// Creates a new KeyPair struct
     pub fn new(
         mnemonic_seed: Seed,
         mnemonic_phrase: String,

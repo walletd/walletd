@@ -5,30 +5,29 @@ use std::str::FromStr;
 use anyhow::anyhow;
 use walletd_hd_key::slip44::Symbol;
 
+/// An enum representing the different crypto coins that are supported by WalletD
 #[derive(Clone, Debug, Copy, PartialEq, Eq)]
 pub enum CryptoCoin {
+    /// Bitcoin
     BTC,
+    /// Ethereum
     ETH,
-    // XMR = 128,
-    // SOL = 501,
 }
 
 impl CryptoCoin {
+    /// Returns the coin's symbol as string which also represents the main unit of the coin's value
     pub fn main_unit(&self) -> String {
         match self {
             Self::BTC => "BTC".to_string(),
             Self::ETH => "ETH".to_string(),
-            // Self::SOL => "SOL".to_string(),
-            // Self::XMR => "XMR".to_string(),
         }
     }
 
+    /// Returns the fundamental unit of the coin's value as string, this is the name of the smallest indivisible unit of the coin's value
     pub fn fundamental_unit(&self) -> String {
         match self {
             Self::BTC => "satoshi".to_string(),
             Self::ETH => "wei".to_string(),
-            // Self::SOL => "lamport".to_string(),
-            // Self::XMR => "piconero".to_string(),
         }
     }
 }
@@ -42,9 +41,7 @@ impl FromStr for CryptoCoin {
         match coin_name.to_string().to_lowercase().as_str() {
             "btc" | "bitcoin" => Ok(Self::BTC),
             "eth" | "ethereum" | "ether" => Ok(Self::ETH),
-            //"sol" | "solana" => Ok(Self::SOL),
-            //"xmr" | "monero" => Ok(Self::XMR),
-            _ => Err(anyhow!("Current valid options are BTC, ETH, SOL, or XMR")),
+            _ => Err(anyhow!("Current valid options are BTC or ETH")),
         }
     }
 }
@@ -54,8 +51,6 @@ impl Display for CryptoCoin {
         match self {
             Self::BTC => write!(f, "Bitcoin (BTC)")?,
             Self::ETH => write!(f, "Ethereum (ETH)")?,
-            // Self::SOL => write!(f, "Solana (SOL)")?,
-            // Self::XMR => write!(f, "Monero (XMR)")?,
         }
         Ok(())
     }
