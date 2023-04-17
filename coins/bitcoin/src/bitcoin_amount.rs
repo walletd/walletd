@@ -47,8 +47,19 @@ impl ops::Mul<f64> for BitcoinAmount {
     type Output = Result<Self, Error>;
 
     fn mul(self, rhs: f64) -> Self::Output {
+        let result = self.satoshi as f64 * rhs;
+        if result > f64::MAX  || result < f64::MIN {
+            return Err(Error::Overflow(format!("Overflow in f64 when multiplying {} by {}", self.satoshi, rhs)));
+        }
+
+        let as_u64 = result as u64;
+        
+        if as_u64 > u64::MAX || as_u64 < u64::MIN {
+            return Err(Error::Overflow(format!("Overflow in u64 when multiplying {} by {}", self.satoshi, rhs)));
+        }
+
         Ok(Self {
-            satoshi: ((self.satoshi as f64) * rhs) as u64,
+            satoshi: as_u64
         })
     }
 }
