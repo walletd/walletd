@@ -18,24 +18,29 @@ impl ops::Add<Self> for EthereumAmount {
 
     fn add(self, rhs: Self) -> Result<Self, Error> {
         Ok(Self {
-            wei: self.wei.checked_add(rhs.wei).ok_or(Error::Overflow(format!(
-                "Overflow in U256 when adding {} to {}",
-                self.wei, rhs.wei
-            )))?,
+            wei: self
+                .wei
+                .checked_add(rhs.wei)
+                .ok_or(Error::Overflow(format!(
+                    "Overflow in U256 when adding {} to {}",
+                    self.wei, rhs.wei
+                )))?,
         })
     }
 }
-
 
 impl ops::Sub for EthereumAmount {
     type Output = Result<Self, Error>;
 
     fn sub(self, rhs: Self) -> Result<Self, Error> {
         Ok(Self {
-            wei: self.wei.checked_sub(rhs.wei).ok_or(Error::Overflow(format!(
-                "Overflow in U256 when subtracting {} from {}",
-                self.wei, rhs.wei
-            )))?,
+            wei: self
+                .wei
+                .checked_sub(rhs.wei)
+                .ok_or(Error::Overflow(format!(
+                    "Overflow in U256 when subtracting {} from {}",
+                    self.wei, rhs.wei
+                )))?,
         })
     }
 }
@@ -45,13 +50,14 @@ impl ops::Mul<u64> for EthereumAmount {
 
     fn mul(self, rhs: u64) -> Self::Output {
         let result = self.wei * rhs;
-       
-        if result> U256::MAX  {
-            return Err(Error::Overflow(format!("Overflow in U256 when multiplying {} by {}", self.wei, rhs)));
+
+        if result > U256::MAX {
+            return Err(Error::Overflow(format!(
+                "Overflow in U256 when multiplying {} by {}",
+                self.wei, rhs
+            )));
         }
-        Ok( Self {
-            wei: result,
-        })
+        Ok(Self { wei: result })
     }
 }
 impl ops::Mul for EthereumAmount {
@@ -59,10 +65,13 @@ impl ops::Mul for EthereumAmount {
 
     fn mul(self, rhs: Self) -> Self::Output {
         Ok(Self {
-            wei: self.wei.checked_mul(rhs.wei).ok_or(Error::Overflow(format!(
-                "Overflow in U256 when multiplying {} by {}",
-                self.wei, rhs.wei
-            )))?,
+            wei: self
+                .wei
+                .checked_mul(rhs.wei)
+                .ok_or(Error::Overflow(format!(
+                    "Overflow in U256 when multiplying {} by {}",
+                    self.wei, rhs.wei
+                )))?,
         })
     }
 }
@@ -72,10 +81,13 @@ impl ops::Div for EthereumAmount {
 
     fn div(self, rhs: Self) -> Self::Output {
         Ok(Self {
-            wei: self.wei.checked_div(rhs.wei).ok_or(Error::Overflow(format!(
-                "Overflow in U256 when dividing {} by {}",
-                self.wei, rhs.wei
-            )))?,
+            wei: self
+                .wei
+                .checked_div(rhs.wei)
+                .ok_or(Error::Overflow(format!(
+                    "Overflow in U256 when dividing {} by {}",
+                    self.wei, rhs.wei
+                )))?,
         })
     }
 }

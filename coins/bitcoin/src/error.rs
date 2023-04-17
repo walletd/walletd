@@ -90,5 +90,5 @@ pub enum Error {
     TimeFormat(#[from] time::error::Format),
     /// Error due to overflow
     #[error("Overflow error: {0}")]
-    Overflow(String)
+    Overflow(String),
 }

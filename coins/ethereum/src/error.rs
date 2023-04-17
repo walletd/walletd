@@ -59,5 +59,5 @@ pub enum Error {
     GetTx,
     /// Error due to overflow
     #[error("Overflow error: {0}")]
-    Overflow(String)
+    Overflow(String),
 }
