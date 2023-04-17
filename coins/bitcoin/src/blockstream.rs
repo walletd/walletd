@@ -31,7 +31,7 @@ pub use bitcoin::{
 use crate::Error;
 
 /// Represents a Bitcoin transaction in the format with the data fields returned by Blockstream
-#[derive(Serialize, Deserialize, Default, Debug, Clone)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq, Eq)]
 pub struct BTransaction {
     #[serde(default)]
     /// Txid
@@ -149,7 +149,7 @@ impl BTransaction {
 }
 
 /// Represents a Bitcoin transaction out in the format with the data fields returned by Blockstream
-#[derive(Serialize, Deserialize, Default, Debug, Clone)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq, Eq)]
 pub struct Output {
     #[serde(default)]
     /// ScriptPubKey
@@ -198,7 +198,7 @@ impl fmt::Display for Output {
 }
 
 /// Represents a Bitcoin transaction input in the format with the data fields returned by Blockstream
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Input {
     #[serde(default)]
     /// Tx ID
@@ -256,7 +256,7 @@ impl fmt::Display for Input {
 }
 
 /// Represents the Status of a Bitcoin transaction in the format with the data fields returned by Blockstream
-#[derive(Serialize, Deserialize, Default, Clone, Debug)]
+#[derive(Serialize, Deserialize, Default, Clone, Debug, PartialEq, Eq)]
 pub struct Status {
     #[serde(default)]
     /// Confirmed
@@ -973,6 +973,7 @@ impl Blockstream {
 mod tests {
     use mockito::Server;
     use serde_json::{Number, Value};
+    use serde_json::json;
     use super::*;
 
 
@@ -1035,11 +1036,141 @@ mod tests {
         assert_eq!(fee_estimates.0, expected_fee_map);
     }
 
-    // TODO(AS): delete this function, just using it when writing the mock tests
-    async fn getting_actual_data() {
-        let blockstreamm_test_url = "https://blockstream.info/testnet/api";
-        let bs = Blockstream::new(blockstreamm_test_url).unwrap();
-        let fee_estimates = bs.fee_estimates().await.unwrap();
-        println!("fee_estimates: {:#?}", fee_estimates);
-    }
+
+#[tokio::test]
+async fn test_transactions() {
+    let mut server = Server::new();
+    let mut expected_transactions_data: Vec<BTransaction> = Vec::new();
+    let transactions1 = BTransaction {
+        txid: "0de137bb9523540d1114986111e5e2d307473fa716b766be896055282c91e8fe".into(),
+        version: 2,
+        locktime: 0,
+        vin: vec![
+            Input {
+                txid: "db9fc9977b23d8f3cb157baf6a9695a45bbffa792474b280111a89b7302be832".into(),
+                vout: 0,
+                prevout: Output {
+                    scriptpubkey: "00140124f01c8a411b6f21704dc5f2cf496b3826f1dd".into(),
+                    scriptpubkey_asm: "OP_0 OP_PUSHBYTES_20 0124f01c8a411b6f21704dc5f2cf496b3826f1dd".into(),
+                    scriptpubkey_type: "v0_p2wpkh".into(),
+                    scriptpubkey_address: "tb1qqyj0q8y2gydk7gtsfhzl9n6fdvuzduwaqa7jcn".into(),
+                    pubkeyhash: "".into(),
+                    value: 1000,
+                },
+                scriptsig: "".into(),
+                scriptsig_asm: "".into(),
+                witness: vec![
+                    "30440220595a94acfcaf2a5ba06504b9ee04fce791049d10f9364e09c5fd1bdc7cbc977102201ceea8f3d8a983ee002734c92a1b0f2bd82d0c583e4d14160c31f3533aff550701".into(),
+                    "02491a70fdf8e1ed02e53a59ea9063a089c41b5ac807f1aea5575575d8b9862199".into(),
+                ],
+                is_coinbase: false,
+                sequence: 4294967293,
+                inner_redeemscript_asm: "".into(),
+            },
+        ],
+        vout: vec![
+            Output {
+                scriptpubkey: "00146b03a1d003f6dbc5391695403ba3b276f518197a".into(),
+                scriptpubkey_asm: "OP_0 OP_PUSHBYTES_20 6b03a1d003f6dbc5391695403ba3b276f518197a".into(),
+                scriptpubkey_type: "v0_p2wpkh".into(),
+                scriptpubkey_address: "tb1qdvp6r5qr7mdu2wgkj4qrhgajwm63sxt6yekult".into(),
+                pubkeyhash: "".into(),
+                value: 887,
+            },
+        ],
+        size: 191,
+        weight: 437,
+        fee: 113,
+        status: Status {
+            confirmed: true,
+            block_height: 2425244,
+            block_hash: "00000000747fd5d926d1b1f80f340c26b34fda84ae565728642968dfb5f8fe7b".into(),
+            block_time: 1679364907,
+        },
+    };
+
+    expected_transactions_data.push(transactions1);
+    
+    let transaction2 = BTransaction {
+        txid: "db9fc9977b23d8f3cb157baf6a9695a45bbffa792474b280111a89b7302be832".into(),
+        version: 2,
+        locktime: 2425214,
+        vin: vec![
+            Input {
+                txid: "389294def199edcac49c70300584c3c8dfba29176b4ffa937e10ca296a993d8e".into(),
+                vout: 1,
+                prevout: Output {
+                    scriptpubkey: "0014964eb65874d710c3442bea7490e0950786f789e5".into(),
+                    scriptpubkey_asm: "OP_0 OP_PUSHBYTES_20 964eb65874d710c3442bea7490e0950786f789e5".into(),
+                    scriptpubkey_type: "v0_p2wpkh".into(),
+                    scriptpubkey_address: "tb1qje8tvkr56ugvx3ptaf6fpcy4q7r00z0932kpdm".into(),
+                    pubkeyhash: "".into(),
+                    value: 11499616,
+                },
+                scriptsig: "".into(),
+                scriptsig_asm: "".into(),
+                witness: vec![
+                    "3044022069a338775b081b88fd006e3ff11cc270b5278878b8ff803ff49f94d72d89f33a02205c95eda4dd5228442b957b866fa4039b03cab5aeac89df65ba748825dab9b4c301".into(),
+                    "03164ce1ac7319b66f8815f07d5b7519e5cb8c43a4b3fbd78fdb6ab5022ffa17de".into(),
+                ],
+                is_coinbase: false,
+                sequence: 4294967294,
+                inner_redeemscript_asm: "".into(),
+            },
+        ],
+        vout: vec![
+            Output {
+                scriptpubkey: "00140124f01c8a411b6f21704dc5f2cf496b3826f1dd".into(),
+                scriptpubkey_asm: "OP_0 OP_PUSHBYTES_20 0124f01c8a411b6f21704dc5f2cf496b3826f1dd".into(),
+                scriptpubkey_type: "v0_p2wpkh".into(),
+                scriptpubkey_address: "tb1qqyj0q8y2gydk7gtsfhzl9n6fdvuzduwaqa7jcn".into(),
+                pubkeyhash: "".into(),
+                value: 1000,
+            },
+            Output {
+                scriptpubkey: "0014e3ca5697c2d865b5db9fa9334fed52a6881d3ad3".into(),
+                scriptpubkey_asm: "OP_0 OP_PUSHBYTES_20 e3ca5697c2d865b5db9fa9334fed52a6881d3ad3".into(),
+                scriptpubkey_type: "v0_p2wpkh".into(),
+                scriptpubkey_address: "tb1qu099d97zmpjmtkul4ye5lm2j56yp6wknfdf8pz".into(),
+                pubkeyhash: "".into(),
+                value: 11498475,
+            },
+        ],
+        size: 222,
+        weight: 561,
+        fee: 141,
+        status: Status {
+            confirmed: true,
+            block_height: 2425215,
+            block_hash: "000000000000ad213a39c328183ed2803a23e5198a80a7aa2a8feb53c1ee67b8".into(),
+            block_time: 1679342982,
+        },
+    };
+    expected_transactions_data.push(transaction2);
+    let for_address = "tb1qqyj0q8y2gydk7gtsfhzl9n6fdvuzduwaqa7jcn";
+
+    let json_data_str = json!(expected_transactions_data).to_string();
+    let get_path = format!("/address/{}/txs", for_address);
+    server.mock("GET", get_path.as_str())
+    .with_status(200)
+    .with_header("content-type", "application/json")
+    .with_body(&json_data_str)
+    .create();
+
+    let bs = Blockstream::new(&server.url()).unwrap();
+    let transactions_data = bs.transactions(for_address).await;
+    let transactions_data = transactions_data.unwrap();
+    assert_eq!(transactions_data, expected_transactions_data);
+
+}
+
+    // // TODO(AS): delete this function, just using it when writing the mock tests
+    // #[tokio::test]
+    // async fn getting_actual_data() {
+    //     let blockstreamm_test_url = "https://blockstream.info/testnet/api";
+    //     let bs = Blockstream::new(blockstreamm_test_url).unwrap();
+    //     let for_addresss = "tb1qqyj0q8y2gydk7gtsfhzl9n6fdvuzduwaqa7jcn";
+    //     let transaction_data = bs.transactions(for_addresss).await.unwrap();
+    //     println!("transaction data: {:#?}", transaction_data);
+    // }
 }
