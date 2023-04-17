@@ -1,13 +1,15 @@
+use crate::{BlockchainConnector, BlockchainConnectorGeneral, CryptoAmount};
 use std::any::Any;
 use std::fmt;
-use walletd_hd_key::{HDPathBuilder, HDKey, Seed};
-use crate::{BlockchainConnector, BlockchainConnectorGeneral, CryptoAmount};
+use walletd_hd_key::{HDKey, HDPathBuilder, Seed};
 
 use async_trait::async_trait;
 
 /// CryptoWallet is a trait that provides common functionality for a crypto wallet. It provides functions to get the balance, send and receive transactions, and sync the wallet with the blockchain.
 #[async_trait]
-pub trait CryptoWallet: Sized + TryFrom<Box<dyn CryptoWalletGeneral>> + CryptoWalletGeneral + Clone {
+pub trait CryptoWallet:
+    Sized + TryFrom<Box<dyn CryptoWalletGeneral>> + CryptoWalletGeneral + Clone
+{
     /// ErrorType is the type of error that is returned by the CryptoWallet
     type ErrorType: std::error::Error + fmt::Display + Send + Sync + 'static;
     /// CryptoAmount is the type of amount that is used by the CryptoWallet to represent amounts of cryptocurrency
@@ -27,9 +29,7 @@ pub trait CryptoWallet: Sized + TryFrom<Box<dyn CryptoWalletGeneral>> + CryptoWa
     fn blockchain_client(&self) -> Result<&Self::BlockchainClient, Self::ErrorType>;
 
     /// Returns the balance of the CryptoWallet as a CryptoAmount
-    async fn balance(
-        &self,
-    ) -> Result<Self::CryptoAmount, Self::ErrorType>;
+    async fn balance(&self) -> Result<Self::CryptoAmount, Self::ErrorType>;
 
     /// Sends a transaction from the CryptoWallet to a given public address with a given amount
     async fn transfer(
@@ -46,22 +46,22 @@ pub trait CryptoWallet: Sized + TryFrom<Box<dyn CryptoWalletGeneral>> + CryptoWa
 
     /// Returns a builder for the CryptoWallet that can be used to build a CryptoWallet with custom options
     fn builder() -> Self::WalletBuilder;
-    
 }
-
 
 /// CryptoWalletGeneral is a general trait that can work with any struct that implements the CryptoWallet trait
 pub trait CryptoWalletGeneral: fmt::Display {
     /// Returns a dyn Any reference to the CrypotowalletGeneral
     fn as_any(&self) -> &dyn Any;
 
-    /// Returns a clone in a box type 
+    /// Returns a clone in a box type
     fn box_clone(&self) -> Box<dyn CryptoWalletGeneral>;
 }
 
 /// CryptoWalletBuilder is a trait that provides a common interface for building a CryptoWallet
-pub trait CryptoWalletBuilder<T> where T: CryptoWallet + CryptoWalletGeneral + Clone {
-    
+pub trait CryptoWalletBuilder<T>
+where
+    T: CryptoWallet + CryptoWalletGeneral + Clone,
+{
     /// Constructs a new CryptoWalletBuilder
     fn new() -> Self;
     /// Builds a CryptoWallet from the CryptoWalletBuilder
@@ -79,4 +79,3 @@ pub trait CryptoWalletBuilder<T> where T: CryptoWallet + CryptoWalletGeneral + C
     /// Specifies the network type for the CryptoWalletBuilder
     fn with_network_type(&mut self, network_type: T::NetworkType) -> &mut Self;
 }
-

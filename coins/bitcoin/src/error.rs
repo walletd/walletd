@@ -1,7 +1,5 @@
-
-use thiserror::Error;
 use bitcoin::address::Error as BitcoinAddressError;
-
+use thiserror::Error;
 
 /// Custom error type for this crate.
 #[derive(Error, Debug)]
@@ -37,7 +35,7 @@ pub enum Error {
     #[error("Transaction info not available")]
     TransactionInfoUnavailable,
     /// Error broadcasting transaction
-    #[error("Error in broadcasting the transaction: {0}")] 
+    #[error("Error in broadcasting the transaction: {0}")]
     BroadcastTransaction(String),
     /// Error with the transaction id hash
     #[error("Txid error: {0}")]
@@ -74,8 +72,8 @@ pub enum Error {
     Hex(#[from] hex::FromHexError),
     /// Error from trying to convert from/to an int or usigned int
     #[error("Error converting from/to int: {0}")]
-    TryFromInt(#[from] std::num::TryFromIntError),  
-    /// Error from serde_json 
+    TryFromInt(#[from] std::num::TryFromIntError),
+    /// Error from serde_json
     #[error("Error converting from/to json: {0}")]
     SerdeJson(#[from] serde_json::Error),
     /// Error from reqwest
@@ -90,5 +88,4 @@ pub enum Error {
     /// Converts a format error from the time crate
     #[error("Error from time crate: {0}")]
     TimeFormat(#[from] time::error::Format),
-
 }

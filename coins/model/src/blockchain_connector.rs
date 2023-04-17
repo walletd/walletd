@@ -1,12 +1,11 @@
+use crate::Error;
 use async_trait::async_trait;
 use std::any::Any;
 use std::fmt;
-use crate::Error;
-
 
 /// BlockchainConnector trait is used to connect to a blockchain and send and receive information to and from the blockchain.
 #[async_trait]
-pub trait BlockchainConnector: {
+pub trait BlockchainConnector {
     /// ErrorType is the type of error that is returned by the BlockchainConnector
     type ErrorType: std::error::Error + fmt::Display + Send + Sync + 'static;
 
@@ -24,7 +23,7 @@ pub trait BlockchainConnector: {
     /// Returns the builder that can be used to build a BlockchainConnector with custom options
     fn builder() -> BlockchainConnectorBuilder<Self>
     where
-        Self: Sized + Clone + BlockchainConnectorGeneral
+        Self: Sized + Clone + BlockchainConnectorGeneral,
     {
         BlockchainConnectorBuilder::new()
     }
@@ -35,13 +34,16 @@ pub trait BlockchainConnectorGeneral {
     /// Returns a dyn Any reference to the BlockchainConnector
     fn as_any(&self) -> &dyn Any;
 
-    /// Returns a clone in a box type 
+    /// Returns a clone in a box type
     fn box_clone(&self) -> Box<dyn BlockchainConnectorGeneral>;
 }
 
 /// ConnectorType is an enum that represents the type of connector that is being used, the different enum variants are meant to bue used with different cryptocurrency types and the generic type T is meant to be a specific struct that implements the BlockchainConnector trait
 #[derive(Debug, Clone, Copy)]
-pub enum ConnectorType<T> where T: BlockchainConnector + Clone {
+pub enum ConnectorType<T>
+where
+    T: BlockchainConnector + Clone,
+{
     /// BTC is a variant that represents a connector that is used to connect to a Bitcoin blockchain
     BTC(T),
     /// ETH is a variant that represents a connector that is used to connect to an Ethereum blockchain
@@ -50,17 +52,24 @@ pub enum ConnectorType<T> where T: BlockchainConnector + Clone {
 
 /// BlockchainConnectorBuilder is a builder that can be used to build a BlockchainConnector with custom options
 #[derive(Debug, Clone, Default)]
-pub struct BlockchainConnectorBuilder<T> where T: BlockchainConnector + Clone {
+pub struct BlockchainConnectorBuilder<T>
+where
+    T: BlockchainConnector + Clone,
+{
     url: Option<String>,
     connector_type: Option<ConnectorType<T>>,
 }
 
-
-
-impl<T> BlockchainConnectorBuilder<T> where T: BlockchainConnector + BlockchainConnectorGeneral + Clone {   
-    /// new creates a new BlockchainConnectorBuilder with default options (no url and no connector type specified) 
+impl<T> BlockchainConnectorBuilder<T>
+where
+    T: BlockchainConnector + BlockchainConnectorGeneral + Clone,
+{
+    /// new creates a new BlockchainConnectorBuilder with default options (no url and no connector type specified)
     pub fn new() -> Self {
-        Self { url: None, connector_type: None}
+        Self {
+            url: None,
+            connector_type: None,
+        }
     }
 
     /// set_url sets the url of the BlockchainConnectorBuilder
@@ -82,17 +91,15 @@ impl<T> BlockchainConnectorBuilder<T> where T: BlockchainConnector + BlockchainC
             Some(ConnectorType::BTC(connector) | ConnectorType::ETH(connector)) => {
                 Ok(connector.box_clone())
             }
-            None => {
-                    match self.url {
-                    Some(ref url) => {
-                        let client = T::new(url).map_err(|e| Error::BlockchainConnectorBuilder(e.to_string()))?;
-                        let client_gen = client.box_clone();
+            None => match self.url {
+                Some(ref url) => {
+                    let client = T::new(url)
+                        .map_err(|e| Error::BlockchainConnectorBuilder(e.to_string()))?;
+                    let client_gen = client.box_clone();
                     Ok(client_gen)
                 }
-                    None => Err(Error::BlockchainConnectorBuilder("url not set".into())),
-                }
-
-            }
+                None => Err(Error::BlockchainConnectorBuilder("url not set".into())),
+            },
         }
     }
 }

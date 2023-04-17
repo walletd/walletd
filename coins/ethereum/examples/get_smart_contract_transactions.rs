@@ -11,9 +11,9 @@
 // use walletd_hd_keys::NetworkType;
 use core::fmt::Error;
 
+use walletd_coin_model::BlockchainConnector;
 use walletd_ethereum::EthClient;
 use web3::types::*;
-use walletd_coin_model::BlockchainConnector;
 
 pub const INFURA_GOERLI_ENDPOINT: &str =
     "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";

@@ -4,7 +4,7 @@ use std::ops;
 
 use walletd_coin_model::CryptoAmount;
 
-/// BitcoinAmount contains a field representing the amount of satoshis in the amount. It also has functions to convert to and from the main unit (BTC) and the smallest unit (satoshi). 
+/// BitcoinAmount contains a field representing the amount of satoshis in the amount. It also has functions to convert to and from the main unit (BTC) and the smallest unit (satoshi).
 #[derive(Default, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct BitcoinAmount {
     /// The number of satoshis (u64) in the amount
@@ -70,7 +70,6 @@ impl ops::Div for BitcoinAmount {
 }
 
 impl BitcoinAmount {
-
     /// Returns a BitcoinAmount struct from a decimal value representing the amount in BTC
     pub fn from_btc(btc_amount: f64) -> Self {
         let satoshi = (btc_amount * 100_000_000.0) as u64; // 100 million satoshis per bitcoin

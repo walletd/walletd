@@ -1,12 +1,12 @@
 extern crate walletd_bitcoin;
 
 use hex;
-use walletd_bitcoin::{BitcoinWallet, BitcoinPrivateKey, Network};
 use walletd_bitcoin::blockstream::{BTransaction, Input, Output, Status};
+use walletd_bitcoin::{BitcoinPrivateKey, BitcoinWallet, Network};
 fn main() {
     println!("Recreating an example found online here for testing/validation");
     // Comparing with example: https://medium.com/coinmonks/creating-and-signing-a-segwit-transaction-from-scratch-ec98577b526a
-    
+
     // the legacy input
     let input1 = Input{
       txid: "d1a92ad68a031c5324981aa920152bd16975686905db41e3fc9d51c7ff4a20ed".to_string(),
@@ -115,15 +115,14 @@ fn main() {
     let secret_key1 =
         BitcoinPrivateKey::from_slice(
             &hex::decode("DBFF11E0F2F1AA5089465A591C5E523D1CA92668DED893155CDFABC94CC14E30")
-                .unwrap()[..], Network::Testnet,
+                .unwrap()[..],
+            Network::Testnet,
         )
         .unwrap();
 
-    let first_signature = BitcoinWallet::signature_sighashall_for_transaction_hash(
-        &sighash_for_input1,
-        &secret_key1,
-    )
-    .unwrap();
+    let first_signature =
+        BitcoinWallet::signature_sighashall_for_transaction_hash(&sighash_for_input1, &secret_key1)
+            .unwrap();
     println!("first_signature: {}", first_signature);
 
     let for_input2 = &transaction
@@ -137,15 +136,14 @@ fn main() {
     let secret_key2 =
         BitcoinPrivateKey::from_slice(
             &hex::decode("26F85CE8B2C635AD92F6148E4443FE415F512F3F29F44AB0E2CBDA819295BBD5")
-                .unwrap()[..], Network::Testnet
+                .unwrap()[..],
+            Network::Testnet,
         )
         .unwrap();
 
-    let second_signature = BitcoinWallet::signature_sighashall_for_transaction_hash(
-        &sighash_for_input2,
-        &secret_key2,
-    )
-    .unwrap();
+    let second_signature =
+        BitcoinWallet::signature_sighashall_for_transaction_hash(&sighash_for_input2, &secret_key2)
+            .unwrap();
     println!("second_signature: {}", second_signature);
 
     let for_input3 = &transaction
@@ -159,14 +157,13 @@ fn main() {
     let secret_key3 =
         BitcoinPrivateKey::from_slice(
             &hex::decode("D9172189D7700FDFB4B6A5C4A83990EAEAFE455441B7D43FF85678EB93AC2713")
-                .unwrap()[..], Network::Testnet
+                .unwrap()[..],
+            Network::Testnet,
         )
         .unwrap();
-    let third_signature = BitcoinWallet::signature_sighashall_for_transaction_hash(
-        &sighash_for_input3,
-        &secret_key3,
-    )
-    .unwrap();
+    let third_signature =
+        BitcoinWallet::signature_sighashall_for_transaction_hash(&sighash_for_input3, &secret_key3)
+            .unwrap();
     println!("third_signature: {}", second_signature);
 
     // adding signing info to the transaction

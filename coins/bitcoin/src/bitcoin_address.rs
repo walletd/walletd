@@ -9,7 +9,7 @@ pub use bitcoin::{
 use walletd_coin_model::CryptoAddress;
 use walletd_hd_key::{HDKey, HDNetworkType};
 
-use crate::blockstream::{Blockstream};
+use crate::blockstream::Blockstream;
 use crate::BitcoinAmount;
 use crate::Error;
 
@@ -113,7 +113,6 @@ impl BitcoinAddress {
         }
     }
 
-
     /// Estimates the fee for a transaction with the given number of inputs and outputs given the fee per byte, makes use of default sizes to estimate the size of the tranasaction and the corresponding fee
     pub fn estimate_fee_with_default_sizes(
         is_segwit: bool,
@@ -147,7 +146,6 @@ impl BitcoinAddress {
     pub fn address_info(&self) -> AddressInfo {
         self.address_info.clone()
     }
-
 }
 
 impl fmt::Display for BitcoinAddress {

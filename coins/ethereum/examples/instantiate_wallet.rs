@@ -1,10 +1,10 @@
 extern crate walletd_ethereum;
 
 use walletd_bip39::{Language, Mnemonic, MnemonicHandler};
-use walletd_hd_key::HDNetworkType;
-use walletd_ethereum::EthereumWallet;
-use walletd_coin_model::{CryptoWallet, CryptoWalletBuilder};
 use walletd_coin_model::BlockchainConnector;
+use walletd_coin_model::{CryptoWallet, CryptoWalletBuilder};
+use walletd_ethereum::EthereumWallet;
+use walletd_hd_key::HDNetworkType;
 
 // const GOERLI_TEST_ADDRESS: &str =
 // "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
@@ -21,7 +21,10 @@ async fn main() -> web3::Result<()> {
 
     println!("seed as bytes: {:?}", seed.as_bytes());
 
-    let wallet = match EthereumWallet::builder().with_mnemonic_seed(seed).with_network_type(HDNetworkType::TestNet).build() 
+    let wallet = match EthereumWallet::builder()
+        .with_mnemonic_seed(seed)
+        .with_network_type(HDNetworkType::TestNet)
+        .build()
     {
         Ok(wallet) => Ok(wallet),
         Err(e) => Err(e),
