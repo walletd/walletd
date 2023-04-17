@@ -8,7 +8,7 @@ use async_trait::async_trait;
 use bitcoin::{Address, AddressType};
 use bitcoin_hashes::{sha256d, Hash};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::Value;
 use walletd_coin_model::BlockchainConnectorGeneral;
 use walletd_coin_model::{BlockchainConnector, CryptoWallet};
 
@@ -917,13 +917,12 @@ impl Blockstream {
     }
 
     /// Fetch raw transaction hex from blockstream for a given txid
-    pub async fn get_raw_transaction_hex(&self, txid: &str) -> Result<String, Error> {
-        let body = reqwest::get(format!("{}/tx/{}/raw", self.url, txid))
+    pub async fn raw_transaction_hex(&self, txid: &str) -> Result<String, Error> {
+        let body = reqwest::get(format!("{}/tx/{}/hex", self.url, txid))
             .await?
             .text()
             .await?;
-        let raw_transaction_hex = json!(&body);
-        Ok(raw_transaction_hex.to_string())
+        Ok(body)
     }
 
     /// Fetch transaction info
@@ -972,8 +971,7 @@ impl Blockstream {
 #[cfg(test)]
 mod tests {
     use mockito::Server;
-    use serde_json::{Number, Value};
-    use serde_json::json;
+    use serde_json::{Number, Value, json};
     use super::*;
 
 
@@ -1271,6 +1269,21 @@ async fn test_fetch_utxos() {
     
 }
 
+#[tokio::test]
+async fn test_raw_transaction_hex() {
+    let expected_tx_hex = "01000000000101d716b50967b96ac283a30b7a26408a5c95d7c08f05be660c1ce6cc0c576df4230100000000ffffffff02c8000000000000001600149256addb3be5642253216d68d90e9ace732d60b15c010000000000001600144074db37babb2ac2a6ad993219c09b2ffd4e39b002483045022100896671a10bbeab473d62afb52d287b7bf7509c88ad2fdccca9bc7299cbf678b3022041c489f0f4ff42e21bb5745f42fe257558533d944bf1e308071be557188697610121037ff20be5933c3093c6c57456c0fc829ef6101c960c59ee82d2d194bcd3883ee200000000";
+    let for_txid = "4497bea5ea7784b6f188256fb7ecfb6108a4b8060aa9ed87d1cea5732c3eedba";
+    let get_path = format!("/tx/{}/hex", for_txid);
+    let mut server = Server::new();
+    server.mock("GET", get_path.as_str())
+    .with_status(200)
+    .with_header("content-type", "application/json")
+    .with_body(&expected_tx_hex)
+    .create();
+    let bs = Blockstream::new(&server.url()).unwrap();
+    let raw_tx_hex= bs.raw_transaction_hex(for_txid).await.unwrap();
+    assert_eq!(raw_tx_hex, expected_tx_hex);
+}
 
 
     // TODO(AS): delete this function, just using it when writing the mock tests
@@ -1278,8 +1291,8 @@ async fn test_fetch_utxos() {
     // async fn getting_actual_data() {
     //     let blockstreamm_test_url = "https://blockstream.info/testnet/api";
     //     let bs = Blockstream::new(blockstreamm_test_url).unwrap();
-    //     let for_address = "tb1qjft2mkemu4jzy5epd45djr56eeej6c932rlt75";
-    //     let utxos= bs.utxo(for_address).await.unwrap();
-    //     println!("utxos: {:#?}", utxos);
+    //     let for_txid = "4497bea5ea7784b6f188256fb7ecfb6108a4b8060aa9ed87d1cea5732c3eedba";
+    //     let raw_tx_hex= bs.raw_transaction_hex(for_txid).await.unwrap();
+    //     println!("raw_tx_hex: {:#?}", raw_tx_hex);
     // }
 }
