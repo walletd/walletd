@@ -1,0 +1,31 @@
+[package]
+name = "walletd_bip39"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+authors = ["The WalletD Team"]
+description = "BIP39 mnemonic implementation for walletd"
+homepage = "https://walletd.org/"
+repository = "https://github.com/walletd/walletd"
+readme = "README.md"
+categories = ["cryptography::cryptocurrencies"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "walletd_bip39"
+path = "src/lib.rs"
+
+[dependencies]
+walletd_mnemonic_model = {path = "../model"}
+
+bitvec = { version = "0.17.4" }
+curve25519-dalek = { version = "2.1.0" }
+enum-iterator = "1.2.0"
+hex = { version = "0.4.2" }
+hmac = { version = "0.7.0" }
+libsecp256k1 = { version = "0.7.0", default-features = false, features = ["hmac"] }
+pbkdf2 = { version = "0.3.0", features=["parallel"], default-features = false }
+rand = { version = "0.7" }
+sha2 = { version = "0.8", default-features = false }
+thiserror = "1.0.29"
