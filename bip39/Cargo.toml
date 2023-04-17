@@ -2,6 +2,13 @@
 name = "walletd_bip39"
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+authors = ["The WalletD Team"]
+description = "BIP39 mnemonic implementation for walletd"
+homepage = "https://walletd.org/"
+repository = "https://github.com/walletd/walletd"
+readme = "README.md"
+categories = ["cryptography::cryptocurrencies"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
