@@ -897,11 +897,11 @@ impl Blockstream {
     }
 
     /// Fetch mempool transactions from blockstream
-    pub fn mempool_transactions(&self, address: &str) -> Result<Value, Error> {
+    pub fn mempool_transactions(&self, address: &str) -> Result<Vec<BTransaction>, Error> {
         let body = reqwest::blocking::get(format!("{}/address/{}/txs/mempool", self.url, address))
             .expect("Error getting transactions")
             .text();
-        let transactions = json!(&body?);
+        let transactions: Vec<BTransaction> = serde_json::from_str(&body?)?;
         Ok(transactions)
     }
 
@@ -1158,19 +1158,93 @@ async fn test_transactions() {
     .create();
 
     let bs = Blockstream::new(&server.url()).unwrap();
-    let transactions_data = bs.transactions(for_address).await;
-    let transactions_data = transactions_data.unwrap();
+    let transactions_data = bs.transactions(for_address).await.unwrap();
     assert_eq!(transactions_data, expected_transactions_data);
 
 }
 
-    // // TODO(AS): delete this function, just using it when writing the mock tests
-    // #[tokio::test]
-    // async fn getting_actual_data() {
-    //     let blockstreamm_test_url = "https://blockstream.info/testnet/api";
-    //     let bs = Blockstream::new(blockstreamm_test_url).unwrap();
-    //     let for_addresss = "tb1qqyj0q8y2gydk7gtsfhzl9n6fdvuzduwaqa7jcn";
-    //     let transaction_data = bs.transactions(for_addresss).await.unwrap();
-    //     println!("transaction data: {:#?}", transaction_data);
-    // }
+
+fn test_mnempool_transactions() {
+    let mut server = Server::new();
+    let mut expected_mempool_transactions: Vec<BTransaction> = vec![
+        BTransaction {
+            txid: "816452a6a65d7533b54fbf1d03fe61ddaa9c856e5d0d1ae2a6b6bb152bd5adcd".into(),
+            version: 1,
+            locktime: 0,
+            vin: vec![
+                Input {
+                    txid: "5b45205471cd757a328dfb836352a9b46e0a42c221f846d4b89782ec42312eb5".into(),
+                    vout: 0,
+                    prevout: Output {
+                        scriptpubkey: "00148760df7716cc8d8e397ff2807428e6cad0f4af34".into(),
+                        scriptpubkey_asm: "OP_0 OP_PUSHBYTES_20 8760df7716cc8d8e397ff2807428e6cad0f4af34".into(),
+                        scriptpubkey_type: "v0_p2wpkh".into(),
+                        scriptpubkey_address: "tb1qsasd7ackejxcuwtl72q8g28xetg0fte533qwgu".into(),
+                        pubkeyhash: "".into(),
+                        value: 1983973,
+                    },
+                    scriptsig: "".into(),
+                    scriptsig_asm: "".into(),
+                    witness: vec![
+                        "304402203c6f05a7dad9555d09f9bc09a2365d6d8b9a2e93a1f851a8f56fd9c8ebba42c3022045757a946d0b1dce709b5a284f3c06f7428825a1eb2fb2765614599853cd1a4001".into(),
+                        "03bb22bd262849923e41677615fd73401d4d72c57537994d84e62fff5f718199e0".into(),
+                    ],
+                    is_coinbase: false,
+                    sequence: 4294967295,
+                    inner_redeemscript_asm: "".into(),
+                },
+            ],
+            vout: vec![
+                Output {
+                    scriptpubkey: "0014b835437e21844019b74a9b8d825624feb1b16099".into(),
+                    scriptpubkey_asm: "OP_0 OP_PUSHBYTES_20 b835437e21844019b74a9b8d825624feb1b16099".into(),
+                    scriptpubkey_type: "v0_p2wpkh".into(),
+                    scriptpubkey_address: "tb1qhq65xl3ps3qpnd62nwxcy43yl6cmzcyekg965v".into(),
+                    pubkeyhash: "".into(),
+                    value: 200,
+                },
+                Output {
+                    scriptpubkey: "001419f6ec5cca3c958777199fa674e49a89595e5535".into(),
+                    scriptpubkey_asm: "OP_0 OP_PUSHBYTES_20 19f6ec5cca3c958777199fa674e49a89595e5535".into(),
+                    scriptpubkey_type: "v0_p2wpkh".into(),
+                    scriptpubkey_address: "tb1qr8mwchx28j2cwacen7n8fey639v4u4f4gvc8z3".into(),
+                    pubkeyhash: "".into(),
+                    value: 1983547,
+                },
+            ],
+            size: 222,
+            weight: 561,
+            fee: 226,
+            status: Status {
+                confirmed: false,
+                block_height: 0,
+                block_hash: "".into(),
+                block_time: 0,
+            },
+        },
+    ];
+    let json_data_str = json!(expected_mempool_transactions).to_string();
+    
+    let for_address = "tb1qhq65xl3ps3qpnd62nwxcy43yl6cmzcyekg965v";
+    let get_path = format!("/address/{}/txs/mempool", for_address);
+    server.mock("GET", get_path.as_str())
+    .with_status(200)
+    .with_header("content-type", "application/json")
+    .with_body(&json_data_str)
+    .create();
+
+    let bs = Blockstream::new(&server.url()).unwrap();
+    let transactions_data = bs.mempool_transactions(for_address).unwrap();
+    assert_eq!(transactions_data, expected_mempool_transactions);
+}
+
+    // TODO(AS): delete this function, just using it when writing the mock tests
+    #[test]
+    fn getting_actual_data() {
+        let blockstreamm_test_url = "https://blockstream.info/testnet/api";
+        let bs = Blockstream::new(blockstreamm_test_url).unwrap();
+        let for_address = "tb1qhq65xl3ps3qpnd62nwxcy43yl6cmzcyekg965v";
+        let transaction_data = bs.mempool_transactions(for_address).unwrap();
+        println!("transaction data: {:#?}", transaction_data);
+    }
 }
