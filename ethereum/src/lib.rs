@@ -67,39 +67,31 @@ impl fmt::Display for EthereumFormat {
 
 #[cfg(test)]
 mod tests {
-    
-    // TODO(AS): should not have unit tests which 
-    // fn test_initialise_blockchain_client() {
-    //     let url = "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-    //     let client = BlockchainClient::new(url);
-    //     assert_eq!(client.is_ok(), true);
-    // }
+    use super::*;
+    use walletd_coin_model::{CryptoWallet, CryptoWalletBuilder};
+    use walletd_bip39::{Mnemonic, MnemonicHandler, Language, MnemonicStyleBuilder, Seed};
+    use walletd_hd_key::HDNetworkType;
+    use std::str::FromStr;
 
-    // TODO(AS): something is off in this test, need to fix it
-    // #[test]
-    // fn test_wallet_instantiation_from_mnemonic() {
-    //     let mnemonic_phrase: &str =
-    //         "outer ride neither foil glue number place usage ball shed dry point";
-    //     let passphrase: Option<&str> = Some("mypassphrase");
-    //     let restored_mnemonic =
-    //         Mnemonic::from_phrase(Language::English, mnemonic_phrase, passphrase).unwrap();
-    //     let seed = restored_mnemonic.to_seed();
+    #[test]
+    fn test_wallet_instantiation_from_mnemonic_seed() {
 
-    //     let wallet = EthereumWallet::from_mnemonic(
-    //         &seed,
-    //         HDNetworkType::TestNet,
-    //         EthereumFormat::Checksummed, None
-    //     ).unwrap();
-    //     assert_eq!(
-    //         &wallet.public_address(),
-    //         "0xba57086A5CF8295449B9014D9ca3de538D70f665"
-    //     );
-    //     assert_eq!(
-    //         format!("{:#x}", &wallet.private_key().unwrap()),
-    //         "0x3c536b023d71d81e6abc58b0b91c64caff8bb08fabf0c9f3cf948a9f3a494e8e"
-    //     );
-    //     assert_eq!(wallet.network(), HDNetworkType::TestNet);
-    // }
+        let seed_hex = "a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee";
+        let seed = Seed::from_str(seed_hex).unwrap();
+        let wallet = EthereumWallet::builder().with_mnemonic_seed(
+            seed).with_network_type(
+            HDNetworkType::TestNet).build().unwrap();
+        
+        assert_eq!(
+            &wallet.public_address(),
+            "0x6EEb11eA2905fEe101f72BF94F792dbc2dfB42B7"
+        );
+        assert_eq!(
+            format!("{:#x}", &wallet.private_key().unwrap()),
+            "0xa5dcdaefa08013092ca37d3f60d46f27510df8777a3a7dd6a1b9f373352caa75"
+        );
+        assert_eq!(wallet.network(), HDNetworkType::TestNet);
+    }
 }
 
 
