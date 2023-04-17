@@ -1,6 +1,7 @@
 use core::fmt;
 use core::fmt::Display;
 use std::ops;
+use crate::Error;
 
 use walletd_coin_model::CryptoAmount;
 
@@ -12,60 +13,53 @@ pub struct BitcoinAmount {
 }
 
 impl ops::Add<Self> for BitcoinAmount {
-    type Output = Self;
+    type Output = Result<Self, Error>;
 
-    fn add(self, rhs: Self) -> Self {
-        Self {
-            satoshi: self.satoshi + rhs.satoshi,
-        }
+    fn add(self, rhs: Self) -> Result<Self, Error>{
+        Ok(Self {
+            satoshi: self.satoshi.checked_add(rhs.satoshi).ok_or(Error::Overflow(format!("Overflow in u64 when adding {} to {}", self.satoshi, rhs.satoshi)))?,
+        })
     }
 }
 
-impl ops::AddAssign for BitcoinAmount {
-    fn add_assign(&mut self, other: Self) {
-        *self = Self {
-            satoshi: self.satoshi + other.satoshi,
-        }
-    }
-}
 
 impl ops::Sub for BitcoinAmount {
-    type Output = Self;
+    type Output = Result<Self, Error>;
 
-    fn sub(self, rhs: Self) -> Self {
-        Self {
-            satoshi: self.satoshi - rhs.satoshi,
-        }
+    fn sub(self, rhs: Self) -> Result<Self, Error> {
+        Ok(Self {
+            satoshi: self.satoshi.checked_sub(rhs.satoshi).ok_or(Error::Overflow(format!("Overflow in u64 when subtracting {} from {}", self.satoshi, rhs.satoshi)))?,
+        })
     }
 }
 
 impl ops::Mul for BitcoinAmount {
-    type Output = Self;
+    type Output = Result<Self, Error>;
 
     fn mul(self, rhs: Self) -> Self::Output {
-        Self {
-            satoshi: self.satoshi * rhs.satoshi,
-        }
+        Ok(Self {
+            satoshi: self.satoshi.checked_mul(rhs.satoshi).ok_or(Error::Overflow(format!("Overflow in u64 when multiplying {} by {}", self.satoshi, rhs.satoshi)))?,
+        })
     }
 }
 
 impl ops::Mul<f64> for BitcoinAmount {
-    type Output = Self;
+    type Output = Result<Self, Error>;
 
     fn mul(self, rhs: f64) -> Self::Output {
-        Self {
+        Ok(Self {
             satoshi: ((self.satoshi as f64) * rhs) as u64,
-        }
+        })
     }
 }
 
 impl ops::Div for BitcoinAmount {
-    type Output = Self;
+    type Output = Result<Self, Error>;
 
     fn div(self, rhs: Self) -> Self::Output {
-        Self {
-            satoshi: self.satoshi / rhs.satoshi,
-        }
+        Ok(Self {
+            satoshi: self.satoshi.checked_div(rhs.satoshi).ok_or(Error::Overflow(format!("Overflow in u64 when dividing {} by {}", self.satoshi, rhs.satoshi)))?,
+        })
     }
 }
 

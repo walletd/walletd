@@ -123,10 +123,10 @@ impl BTransaction {
 
             let amount_balance = if received_amount > sent_amount {
                 // this is situation when we are receiving money
-                (received_amount - sent_amount).btc()
+                (received_amount - sent_amount)?.btc()
             } else {
                 // this is the situation where we are sending money
-                (sent_amount - received_amount).btc() * -1.0
+                (sent_amount - received_amount)?.btc() * -1.0
             };
 
             let status_string = if transactions[i].status.confirmed {

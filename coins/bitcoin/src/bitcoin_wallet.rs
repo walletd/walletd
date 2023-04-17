@@ -87,7 +87,7 @@ impl CryptoWallet for BitcoinWallet {
         let mut total_balance = BitcoinAmount::new();
         for addr in self.addresses() {
             let balance = addr.balance(client).await?;
-            total_balance += balance;
+            total_balance = (total_balance + balance)?;
         }
         Ok(total_balance)
     }
@@ -595,7 +595,7 @@ impl BitcoinWallet {
         indices.sort_by_key(|&i| Reverse(&utxo_available[i].value));
         let mut chosen_indices = Vec::new();
         let mut inputs: Vec<Input> = Vec::new();
-        let min_goal_target = *send_amount * 1.5;
+        let min_goal_target = (*send_amount * 1.5)?;
         let mut obtained_amount = BitcoinAmount { satoshi: 0 };
         let mut met_goal = false;
         let mut segwit_transaction = false;
@@ -609,7 +609,7 @@ impl BitcoinWallet {
             let value = BitcoinAmount {
                 satoshi: utxo.value,
             };
-            obtained_amount += value;
+            obtained_amount = (obtained_amount + value)?;
             let mut input = Input {
                 ..Default::default()
             };
@@ -649,7 +649,7 @@ impl BitcoinWallet {
         }
 
         if met_goal {
-            let change_and_fee_amount = obtained_amount - *send_amount;
+            let change_and_fee_amount = (obtained_amount - *send_amount)?;
             // estimate fee
             let num_inputs = inputs.len();
             let num_outputs = 2; // one output to send, one output for change
@@ -661,7 +661,7 @@ impl BitcoinWallet {
                     byte_fee,
                 )?,
             };
-            let change_amount = change_and_fee_amount - set_fee;
+            let change_amount = (change_and_fee_amount - set_fee)?;
             let min_change_amount = BitcoinAmount {
                 satoshi: Self::estimate_fee_with_default_sizes(segwit_transaction, 1, 0, byte_fee)?,
             };
@@ -674,8 +674,8 @@ impl BitcoinWallet {
                 // Are any other utxos available?
                 if inputs.len() < utxo_available.len() {
                     // Add more until change amount will be greater than min_change_amount
-                    let wanted_extra = min_change_amount - change_amount;
-                    let min_goal_target = obtained_amount + wanted_extra;
+                    let wanted_extra = (min_change_amount - change_amount)?;
+                    let min_goal_target = (obtained_amount + wanted_extra)?;
                     let start = inputs.len();
                     for ind in &indices[start..] {
                         let utxo = &utxo_available[*ind];
@@ -686,7 +686,7 @@ impl BitcoinWallet {
                         let value = BitcoinAmount {
                             satoshi: utxo.value,
                         };
-                        obtained_amount += value;
+                        obtained_amount = (obtained_amount + value)?;
                         let mut input = Input {
                             ..Default::default()
                         };
@@ -744,7 +744,7 @@ impl BitcoinWallet {
                     byte_fee,
                 )?,
             };
-            if obtained_amount > *send_amount + set_fee {
+            if obtained_amount > (*send_amount + set_fee)? {
                 Ok((inputs, set_fee, chosen_indices))
             } else {
                 Err(Error::InsufficientFunds(
@@ -814,13 +814,13 @@ impl BitcoinWallet {
         let inputs_amount = BitcoinAmount {
             satoshi: inputs.iter().map(|x| x.prevout.value).sum(),
         };
-        if inputs_amount < (*send_amount + fee_amount) {
+        if inputs_amount < (*send_amount + fee_amount)? {
             return Err(Error::InsufficientFunds(
                 "Insufficient funds to send amount and cover fees".into(),
             ));
         }
 
-        let change_amount = inputs_amount - *send_amount - fee_amount;
+        let change_amount = ((inputs_amount - *send_amount)? - fee_amount)?;
 
         // Create two outputs, one for the send amount and another for the change amount
         // Hardcoding p2wpkh SegWit transaction option
