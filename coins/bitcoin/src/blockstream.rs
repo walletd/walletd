@@ -946,8 +946,7 @@ impl Blockstream {
             .post(format!("{}/tx", self.url))
             .body(raw_transaction_hex)
             .send()
-            .await
-            .expect("Transaction failed to be posted");
+            .await?;
 
         let trans_status = trans_resp.status();
         let trans_content = trans_resp.text().await?;
@@ -970,16 +969,16 @@ impl Blockstream {
 
 #[cfg(test)]
 mod tests {
-    use mockito::Server;
-    use serde_json::{Number, Value, json};
     use super::*;
-
+    use mockito::Server;
+    use serde_json::{json, Number, Value};
 
     #[test]
     fn test_block_count() {
         let mut server = Server::new();
         let expected_blockcount = 773876;
-        server.mock("GET", "/blocks/tip/height")
+        server
+            .mock("GET", "/blocks/tip/height")
             .with_status(200)
             .with_header("content-type", "text/plain")
             .with_body(expected_blockcount.to_string())
@@ -994,36 +993,121 @@ mod tests {
     async fn test_fee_estimates() {
         let mut server = Server::new();
         let mut expected_fee_map = serde_json::Map::new();
-        expected_fee_map.insert(String::from("1"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("10"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("1008"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("11"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("12"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("13"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("14"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("144"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("15"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("16"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("17"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("18"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("19"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("2"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("20"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("21"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("22"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("23"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("24"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("25"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("3"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("4"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("5"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("504"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("6"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("7"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("8"), Value::Number(Number::from_f64(1.0).unwrap()));
-        expected_fee_map.insert(String::from("9"), Value::Number(Number::from_f64(1.0).unwrap()));
-        
-        server.mock("GET", "/fee-estimates")
+        expected_fee_map.insert(
+            String::from("1"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("10"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("1008"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("11"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("12"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("13"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("14"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("144"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("15"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("16"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("17"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("18"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("19"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("2"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("20"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("21"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("22"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("23"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("24"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("25"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("3"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("4"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("5"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("504"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("6"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("7"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("8"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+        expected_fee_map.insert(
+            String::from("9"),
+            Value::Number(Number::from_f64(1.0).unwrap()),
+        );
+
+        server
+            .mock("GET", "/fee-estimates")
             .with_status(200)
             .with_header("content-type", "application/json")
             .with_body(&Value::Object(expected_fee_map.clone()).to_string())
@@ -1034,12 +1118,11 @@ mod tests {
         assert_eq!(fee_estimates.0, expected_fee_map);
     }
 
-
-#[tokio::test]
-async fn test_transactions() {
-    let mut server = Server::new();
-    let mut expected_transactions_data: Vec<BTransaction> = Vec::new();
-    let transactions1 = BTransaction {
+    #[tokio::test]
+    async fn test_transactions() {
+        let mut server = Server::new();
+        let mut expected_transactions_data: Vec<BTransaction> = Vec::new();
+        let transactions1 = BTransaction {
         txid: "0de137bb9523540d1114986111e5e2d307473fa716b766be896055282c91e8fe".into(),
         version: 2,
         locktime: 0,
@@ -1087,9 +1170,9 @@ async fn test_transactions() {
         },
     };
 
-    expected_transactions_data.push(transactions1);
-    
-    let transaction2 = BTransaction {
+        expected_transactions_data.push(transactions1);
+
+        let transaction2 = BTransaction {
         txid: "db9fc9977b23d8f3cb157baf6a9695a45bbffa792474b280111a89b7302be832".into(),
         version: 2,
         locktime: 2425214,
@@ -1144,27 +1227,27 @@ async fn test_transactions() {
             block_time: 1679342982,
         },
     };
-    expected_transactions_data.push(transaction2);
-    let for_address = "tb1qqyj0q8y2gydk7gtsfhzl9n6fdvuzduwaqa7jcn";
+        expected_transactions_data.push(transaction2);
+        let for_address = "tb1qqyj0q8y2gydk7gtsfhzl9n6fdvuzduwaqa7jcn";
 
-    let json_data_str = json!(expected_transactions_data).to_string();
-    let get_path = format!("/address/{}/txs", for_address);
-    server.mock("GET", get_path.as_str())
-    .with_status(200)
-    .with_header("content-type", "application/json")
-    .with_body(&json_data_str)
-    .create();
+        let json_data_str = json!(expected_transactions_data).to_string();
+        let get_path = format!("/address/{}/txs", for_address);
+        server
+            .mock("GET", get_path.as_str())
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(&json_data_str)
+            .create();
 
-    let bs = Blockstream::new(&server.url()).unwrap();
-    let transactions_data = bs.transactions(for_address).await.unwrap();
-    assert_eq!(transactions_data, expected_transactions_data);
+        let bs = Blockstream::new(&server.url()).unwrap();
+        let transactions_data = bs.transactions(for_address).await.unwrap();
+        assert_eq!(transactions_data, expected_transactions_data);
+    }
 
-}
-
-#[test]
-fn test_mnempool_transactions() {
-    let mut server = Server::new();
-    let expected_mempool_transactions: Vec<BTransaction> = vec![
+    #[test]
+    fn test_mnempool_transactions() {
+        let mut server = Server::new();
+        let expected_mempool_transactions: Vec<BTransaction> = vec![
         BTransaction {
             txid: "816452a6a65d7533b54fbf1d03fe61ddaa9c856e5d0d1ae2a6b6bb152bd5adcd".into(),
             version: 1,
@@ -1221,73 +1304,71 @@ fn test_mnempool_transactions() {
             },
         },
     ];
-    let json_data_str = json!(expected_mempool_transactions).to_string();
-    
-    let for_address = "tb1qhq65xl3ps3qpnd62nwxcy43yl6cmzcyekg965v";
-    let get_path = format!("/address/{}/txs/mempool", for_address);
-    server.mock("GET", get_path.as_str())
-    .with_status(200)
-    .with_header("content-type", "application/json")
-    .with_body(&json_data_str)
-    .create();
+        let json_data_str = json!(expected_mempool_transactions).to_string();
 
-    let bs = Blockstream::new(&server.url()).unwrap();
-    let transactions_data = bs.mempool_transactions(for_address).unwrap();
-    assert_eq!(transactions_data, expected_mempool_transactions);
-}
+        let for_address = "tb1qhq65xl3ps3qpnd62nwxcy43yl6cmzcyekg965v";
+        let get_path = format!("/address/{}/txs/mempool", for_address);
+        server
+            .mock("GET", get_path.as_str())
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(&json_data_str)
+            .create();
 
+        let bs = Blockstream::new(&server.url()).unwrap();
+        let transactions_data = bs.mempool_transactions(for_address).unwrap();
+        assert_eq!(transactions_data, expected_mempool_transactions);
+    }
 
-#[tokio::test]
-async fn test_fetch_utxos() {
-    let expected_utxos = Utxos(
-        vec![
-            Utxo {
-                status: Status {
-                    confirmed: true,
-                    block_height: 2425463,
-                    block_hash: "00000000000000139a0ce10a0ec62ff754023f25b887157d6b422688d1784fd9".into(),
-                    block_time: 1679524580,
-                },
-                txid: "4497bea5ea7784b6f188256fb7ecfb6108a4b8060aa9ed87d1cea5732c3eedba".into(),
-                value: 200,
-                vout: 0,
+    #[tokio::test]
+    async fn test_fetch_utxos() {
+        let expected_utxos = Utxos(vec![Utxo {
+            status: Status {
+                confirmed: true,
+                block_height: 2425463,
+                block_hash: "00000000000000139a0ce10a0ec62ff754023f25b887157d6b422688d1784fd9"
+                    .into(),
+                block_time: 1679524580,
             },
-        ],
-    );
-    let for_address = "tb1qjft2mkemu4jzy5epd45djr56eeej6c932rlt75";
-    let json_data_str = json!(expected_utxos).to_string();
-    let get_path = format!("/address/{}/utxo", for_address);
-    let mut server = Server::new();
-    server.mock("GET", get_path.as_str())
-    .with_status(200)
-    .with_header("content-type", "application/json")
-    .with_body(&json_data_str)
-    .create();
-    let bs = Blockstream::new(&server.url()).unwrap();
-    let utxos= bs.utxo(for_address).await.unwrap();
-    assert_eq!(utxos, expected_utxos);   
-    
-}
+            txid: "4497bea5ea7784b6f188256fb7ecfb6108a4b8060aa9ed87d1cea5732c3eedba".into(),
+            value: 200,
+            vout: 0,
+        }]);
+        let for_address = "tb1qjft2mkemu4jzy5epd45djr56eeej6c932rlt75";
+        let json_data_str = json!(expected_utxos).to_string();
+        let get_path = format!("/address/{}/utxo", for_address);
+        let mut server = Server::new();
+        server
+            .mock("GET", get_path.as_str())
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(&json_data_str)
+            .create();
+        let bs = Blockstream::new(&server.url()).unwrap();
+        let utxos = bs.utxo(for_address).await.unwrap();
+        assert_eq!(utxos, expected_utxos);
+    }
 
-#[tokio::test]
-async fn test_raw_transaction_hex() {
-    let expected_tx_hex = "01000000000101d716b50967b96ac283a30b7a26408a5c95d7c08f05be660c1ce6cc0c576df4230100000000ffffffff02c8000000000000001600149256addb3be5642253216d68d90e9ace732d60b15c010000000000001600144074db37babb2ac2a6ad993219c09b2ffd4e39b002483045022100896671a10bbeab473d62afb52d287b7bf7509c88ad2fdccca9bc7299cbf678b3022041c489f0f4ff42e21bb5745f42fe257558533d944bf1e308071be557188697610121037ff20be5933c3093c6c57456c0fc829ef6101c960c59ee82d2d194bcd3883ee200000000";
-    let for_txid = "4497bea5ea7784b6f188256fb7ecfb6108a4b8060aa9ed87d1cea5732c3eedba";
-    let get_path = format!("/tx/{}/hex", for_txid);
-    let mut server = Server::new();
-    server.mock("GET", get_path.as_str())
-    .with_status(200)
-    .with_header("content-type", "application/json")
-    .with_body(&expected_tx_hex)
-    .create();
-    let bs = Blockstream::new(&server.url()).unwrap();
-    let raw_tx_hex= bs.raw_transaction_hex(for_txid).await.unwrap();
-    assert_eq!(raw_tx_hex, expected_tx_hex);
-}
+    #[tokio::test]
+    async fn test_raw_transaction_hex() {
+        let expected_tx_hex = "01000000000101d716b50967b96ac283a30b7a26408a5c95d7c08f05be660c1ce6cc0c576df4230100000000ffffffff02c8000000000000001600149256addb3be5642253216d68d90e9ace732d60b15c010000000000001600144074db37babb2ac2a6ad993219c09b2ffd4e39b002483045022100896671a10bbeab473d62afb52d287b7bf7509c88ad2fdccca9bc7299cbf678b3022041c489f0f4ff42e21bb5745f42fe257558533d944bf1e308071be557188697610121037ff20be5933c3093c6c57456c0fc829ef6101c960c59ee82d2d194bcd3883ee200000000";
+        let for_txid = "4497bea5ea7784b6f188256fb7ecfb6108a4b8060aa9ed87d1cea5732c3eedba";
+        let get_path = format!("/tx/{}/hex", for_txid);
+        let mut server = Server::new();
+        server
+            .mock("GET", get_path.as_str())
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(&expected_tx_hex)
+            .create();
+        let bs = Blockstream::new(&server.url()).unwrap();
+        let raw_tx_hex = bs.raw_transaction_hex(for_txid).await.unwrap();
+        assert_eq!(raw_tx_hex, expected_tx_hex);
+    }
 
-#[tokio::test]
-async fn test_transaction() {
-    let expected_tx = BTransaction {
+    #[tokio::test]
+    async fn test_transaction() {
+        let expected_tx = BTransaction {
         txid: "4497bea5ea7784b6f188256fb7ecfb6108a4b8060aa9ed87d1cea5732c3eedba".into(),
         version: 1,
         locktime: 0,
@@ -1343,29 +1424,39 @@ async fn test_transaction() {
         },
     };
 
-    let for_txid = "4497bea5ea7784b6f188256fb7ecfb6108a4b8060aa9ed87d1cea5732c3eedba";
-    let get_path = format!("/tx/{}", for_txid);
-    let json_data_str = json!(expected_tx).to_string();
-    let mut server = Server::new();
-    server.mock("GET", get_path.as_str())
-    .with_status(200)
-    .with_header("content-type", "application/json")
-    .with_body(&json_data_str)
-    .create();
-    let bs = Blockstream::new(&server.url()).unwrap();
-    let tx = bs.transaction(for_txid).await.unwrap();
-    assert_eq!(tx, expected_tx);
+        let for_txid = "4497bea5ea7784b6f188256fb7ecfb6108a4b8060aa9ed87d1cea5732c3eedba";
+        let get_path = format!("/tx/{}", for_txid);
+        let json_data_str = json!(expected_tx).to_string();
+        let mut server = Server::new();
+        server
+            .mock("GET", get_path.as_str())
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(&json_data_str)
+            .create();
+        let bs = Blockstream::new(&server.url()).unwrap();
+        let tx = bs.transaction(for_txid).await.unwrap();
+        assert_eq!(tx, expected_tx);
+    }
 
-}
+    #[tokio::test]
+    async fn test_post_a_transaction() {
+        let raw_tx_data = "0100000000010141e5cc0928a3083bd6ea84b2955f1f5a01d6f7d5a0ff6dd797ba2d54f7fcd5bf0100000000ffffffff0201000000000000001600144074db37babb2ac2a6ad993219c09b2ffd4e39b09ae21d00000000001600143cb8f6ff881c210d051b562ab7cfff2ef53e2dda02473044022050a97fe6f89bcb995160507621a2a329f5d6de286758f63a57298ee562e0ec1e02206042ebc9e77dd7a38f197b85a8edc5018a0ce0422c4131b5d9ca5b0504de9e33012103d2f1f1b5b0915a302472d2a25a405641fbeca00ef7a5261252e28b7336bec61900000000";
+        let mut server = Server::new();
+        server
+            .mock("POST", "/tx")
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(raw_tx_data)
+            .with_body_from_request(|_request| {
+                "c9ec56ecc714e2ec33d51519c647d6adb8469afcbd4b2a6a8052c7db29a00da2".into()
+            })
+            .create();
 
-
-    // TODO(AS): delete this function, just using it when writing the mock tests
-    // #[tokio::test]
-    // async fn getting_actual_data() {
-    //     let blockstreamm_test_url = "https://blockstream.info/testnet/api";
-    //     let bs = Blockstream::new(blockstreamm_test_url).unwrap();
-    //     let for_txid = "4497bea5ea7784b6f188256fb7ecfb6108a4b8060aa9ed87d1cea5732c3eedba";
-    //     let tx = bs.transaction(for_txid).await.unwrap();
-    //     println!("tx: {:#?}", tx);
-    // }
+        let expected_txid = "c9ec56ecc714e2ec33d51519c647d6adb8469afcbd4b2a6a8052c7db29a00da2";
+        // check that the txid is correct
+        let bs = Blockstream::new(&server.url()).unwrap();
+        let txid = bs.post_a_transaction(raw_tx_data).await.unwrap();
+        assert_eq!(txid, expected_txid);
+    }
 }
