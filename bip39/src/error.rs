@@ -29,8 +29,14 @@ pub enum ParseMnemonicError {
     /// Mismatch in what was specified for the mnemonic struct versus what was
     /// implictly derived from other specifications
     MismatchInSpecificationVersusImplict {
+        /// The attribute that was specified, something like language or
+        /// mnemonic type
         attribute: String,
+        /// The specification that was given
         spec: String,
+        /// The implict specification that was derived from other
+        /// specifications, and error is due to conflit between the implicit and
+        /// explicit specification
         implict: String,
     },
     /// Invalid checksum for mnemonic phrase

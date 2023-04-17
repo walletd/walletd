@@ -3,19 +3,25 @@ use std::str::FromStr;
 
 use crate::Error;
 
-/// The DeriveType enum represents the different derivation path schemes
+/// This enum represents the different derivation path schemes
 /// supported by the library.
 ///
 /// BIP32 is the default derivation scheme which uses a purpose value of 0'
-/// BIP44: <https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki>
-/// BIP49: <https://github.com/bitcoin/bips/blob/master/bip-0049.mediawiki>
-/// BIP84: <https://github.com/bitcoin/bips/blob/master/bip-0084.mediawiki>
+/// BIP44 uses 44': <https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki>
+/// BIP49 uses 49': <https://github.com/bitcoin/bips/blob/master/bip-0049.mediawiki>
+/// BIP84 uses 84': <https://github.com/bitcoin/bips/blob/master/bip-0084.mediawiki>
+/// The [`HDPathBuilder`] struct can be used to set a default purpose value to
+/// use with particular cryptocurrency implementation.
 #[derive(Default, PartialEq, Eq, Copy, Clone, Debug)]
 pub enum HDPurpose {
     #[default]
+    /// BIP32 is the default derivation scheme which uses a purpose value of 0'
     BIP32,
+    /// BIP44 uses a purpose value of 44'
     BIP44,
+    /// BIP49 uses a purpose value of 49'
     BIP49,
+    /// BIP84 uses a purpose value of 84'
     BIP84,
 }
 
@@ -36,8 +42,8 @@ impl HDPurpose {
 
     /// Returns a string specifying the derivation path, given the shorform
     /// index values for the coin_id, account, change and address index.
-    /// Thi function uses a hardened index for the purpose, coin id and account
-    /// and a non-hardened index for the change and address index
+    /// This function uses a hardened index for the purpose, coin id and account
+    /// and a non-hardened index for the change and address index.
     pub fn default_path_specify(
         &self,
         coin_id: u32,
@@ -108,8 +114,10 @@ impl fmt::Display for HDPurpose {
     }
 }
 
-/// The HDPathIndex distinguishes between the different derivation path
+/// This enum distinguishes between the different derivation path
 /// components.
+///
+/// The [`HDPath`] struct contains a vector of these values.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum HDPathIndex {
     /// Master index is the root of the derivation tree, it is represented as m
@@ -127,23 +135,27 @@ pub enum HDPathIndex {
 
 impl HDPathIndex {
     /// Convert to the full number used to represent a hardend index from the
-    /// number used in the derivation path string accompanied by ' to indicate
-    /// hardened
+    /// shortform number used in the derivation path string accompanied by '
+    /// to indicate hardened
     pub fn hardened_full_num(num: u32) -> u32 {
         num + (1 << 31)
     }
 
     /// Convert from the full number used represent a hardened index to the
-    /// number when accompanied by ' indicates a hardened index
+    /// shortform number which when accompanied by ' indicates a hardened
+    /// index
     pub fn hardened_shortform_num(full_num: u32) -> u32 {
         full_num - (1 << 31)
     }
 
-    /// Returns the short form value of index, for master type always returns 0,
+    /// Returns the short form value of index.
+    /// For master type always returns 0,
     /// for hardened index returns the short form value without the hardened
     /// indicator, the value here for hardened index is not the same as the full
     /// index number which is used in the calculation but rather the short form
     /// value used in the derivation string when accompanied by the ' indicator
+    /// For non-hardened index returns the the shortform number and full number
+    /// are the same.
     pub fn to_shortform_num(&self) -> u32 {
         match self {
             HDPathIndex::Master => 0,
@@ -230,23 +242,20 @@ impl FromStr for HDPathIndex {
     }
 }
 
+/// This struct contains vector of [`HDPathIndex`] to represent a derivation
+/// path.
 #[derive(Default, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct HDPath {
     path: Vec<HDPathIndex>,
 }
 
 impl HDPath {
-    /// Creates a new HDPath from a string representation of the path
-    /// # Arguments
-    /// * `path` - the string representation of the path
-    /// # Errors
-    /// * `Error::FromStr` - if the path string component describing an index is
-    ///   invalid
+    /// Creates a new [`HDPath`] from a string representation of the path.
     pub fn new(path: &str) -> Result<Self, Error> {
         HDPath::from_str(path)
     }
 
-    /// Pushes a new HDPathIndex to the path
+    /// Pushes a new [`HDPathIndex`] to the path
     pub fn push(&mut self, index: HDPathIndex) {
         self.path.push(index);
     }
@@ -257,10 +266,7 @@ impl HDPath {
     }
 
     /// Helper function to convert a derivation path string to a list of strings
-    /// # Arguments
-    /// * `deriv_path` - the derivation path string
-    /// # Errors
-    /// * `Error::Invalid` - if the derivation path string is invalid
+    /// Returns [`Error`] if the path is empty or does not start with "m"
     pub fn derive_path_str_to_list(deriv_path: &str) -> Result<Vec<String>, Error> {
         let deriv_path_list: Vec<String> = deriv_path.split('/').map(|s| s.to_string()).collect();
         if deriv_path_list.is_empty() || deriv_path_list[0] != *"m" {
@@ -272,17 +278,14 @@ impl HDPath {
         Ok(deriv_path_list)
     }
 
-    /// Returns the vector of HDPathIndex
+    /// Returns the underlying vector of [`HDPathIndex`]
     pub fn to_vec(&self) -> Vec<HDPathIndex> {
         self.path.clone()
     }
 
     /// Helper function to convert a derivation path string to a vector of
-    /// HDPathIndex # Arguments
-    /// * `deriv_path` - the derivation path string
-    /// # Errors
-    /// * `Error::FromStr` - if the path string component describing an index is
-    ///   invalid
+    /// [`HDPathIndex`]
+    /// Returns an [`Error`] variant if the derivation path string is invalid
     pub fn derive_path_str_to_info(deriv_path: &str) -> Result<Vec<HDPathIndex>, Error> {
         let mut deriv_path_info: Vec<HDPathIndex> = Vec::new();
         let deriv_path_list = Self::derive_path_str_to_list(deriv_path)?;
@@ -389,6 +392,9 @@ impl From<Vec<HDPathIndex>> for HDPath {
     }
 }
 
+/// [`HDPathBuilder`] is a builder for the [`HDPath`], it allows specification
+/// of the standard full path and also which component are hardened. The default
+/// implementation uses the standard format for the full path.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HDPathBuilder {
     /// purpose shortform index value, default is None, it should be specified
@@ -507,26 +513,31 @@ impl HDPathBuilder {
         self
     }
 
+    /// Set the purpose index to None
     pub fn set_purpose_none(&mut self) -> &mut Self {
         self.purpose = None;
         self
     }
 
+    /// Set the coin_type index to None
     pub fn set_coin_type_none(&mut self) -> &mut Self {
         self.coin_type = None;
         self
     }
 
+    /// Set the account index to None
     pub fn set_account_none(&mut self) -> &mut Self {
         self.account = None;
         self
     }
 
+    /// Set the change index to None
     pub fn set_change_none(&mut self) -> &mut Self {
         self.change = None;
         self
     }
 
+    /// Set the address_index index to None
     pub fn set_address_index_none(&mut self) -> &mut Self {
         self.address_index = None;
         self

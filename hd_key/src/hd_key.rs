@@ -9,19 +9,24 @@ use ripemd::Ripemd160;
 
 use crate::{Error, HDPath, HDPathIndex, HDPurpose, Seed};
 
+/// This struct is a wrapper around the secp256k1::SecretKey
+/// struct to be used with HDKey
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ExtendedPrivateKey(secp256k1::SecretKey);
 
 impl ExtendedPrivateKey {
+    /// Creates a new ExtendedPrivateKey from a slice of bytes
     pub fn from_slice(data: &[u8]) -> Result<ExtendedPrivateKey, Error> {
         let secret_key = secp256k1::SecretKey::from_slice(data)?;
         Ok(ExtendedPrivateKey(secret_key))
     }
 
+    /// Returns the bytes of the ExtendedPrivateKey
     pub fn to_bytes(&self) -> [u8; 32] {
         *self.0.as_ref()
     }
 
+    /// Converts the ExtendedPrivateKey to an ExtendedPublicKey
     pub fn to_public_key(&self) -> ExtendedPublicKey {
         ExtendedPublicKey(secp256k1::PublicKey::from_secret_key(
             &secp256k1::Secp256k1::new(),
@@ -29,6 +34,7 @@ impl ExtendedPrivateKey {
         ))
     }
 
+    /// Adds a tweak to the underlying private key
     pub fn add_tweak(mut self, tweak: &secp256k1::Scalar) -> Result<Self, Error> {
         self = ExtendedPrivateKey(self.0.add_tweak(tweak)?);
         Ok(self)
@@ -49,18 +55,23 @@ impl fmt::LowerHex for ExtendedPrivateKey {
     }
 }
 
+/// The ExtendedPublicKey struct is a wrapper around the secp256k1::PublicKey
+/// struct to be used with HDKey
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ExtendedPublicKey(secp256k1::PublicKey);
 
 impl ExtendedPublicKey {
+    /// Creates a new ExtendedPublicKey from a slice of bytes
     pub fn from_slice(slice: &[u8]) -> Result<Self, Error> {
         Ok(Self(secp256k1::PublicKey::from_slice(slice)?))
     }
 
+    /// Creates a new ExtendedPublicKey from an ExtendedPrivateKey
     pub fn from_private_key(private_key: &ExtendedPrivateKey) -> Self {
         private_key.to_public_key()
     }
 
+    /// Converts the ExtendedPublicKey to bytes
     pub fn to_bytes(&self) -> [u8; 33] {
         self.0.serialize()
     }
@@ -80,14 +91,17 @@ impl fmt::LowerHex for ExtendedPublicKey {
     }
 }
 
-/// The NetworkType enum represents the different network types supported by the
+/// This enum represents the different network types supported by the
 /// library.
 ///
-/// MainNet is the default.
+/// MainNet is the default which is used for the production network.
+/// TestNet is used for any development or test network.
 #[derive(Default, PartialEq, Eq, Copy, Clone, Debug)]
 pub enum HDNetworkType {
     #[default]
+    /// MainNet used for the production network
     MainNet,
+    /// TestNet used for any development or test network
     TestNet,
 }
 
@@ -101,28 +115,43 @@ impl fmt::Display for HDNetworkType {
     }
 }
 
-/// HDKey can be used to create a master key or derive child keys
+/// This struct can be used to represent and create a master key or derive child
+/// keys.
+///
 /// HDKey follows the BIP32 scheme: <https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki>
 /// HDKey also follows the purpose scheme described in BIP43: <https://github.com/bitcoin/bips/blob/master/bip-0043.mediawiki>
+/// The [`HDPurpose`] enum supports the following purpose types: BIP32, BIP44,
+/// BIP49, and BIP84.
 #[derive(Clone, Debug, PartialEq)]
 pub struct HDKey {
+    /// The seed used to create the master node
     pub master_seed: Seed,
+    /// The derivation path of the HDKey
     pub derivation_path: HDPath,
+    /// The derivation purpose associated with the HDKey
     pub derivation_purpose: HDPurpose,
+    /// The chain code
     pub chain_code: [u8; 32],
+    /// The depth used
     pub depth: u8,
+    /// The fingerprint of the parent key
     pub parent_fingerprint: [u8; 4],
+    /// The extended private key
     pub extended_private_key: Option<ExtendedPrivateKey>,
+    /// The extended public key
     pub extended_public_key: Option<ExtendedPublicKey>,
+    /// The child index value
     pub child_index: u32,
+    /// The network type
     pub network: HDNetworkType,
 }
 
 impl HDKey {
     /// Create new master node for a HD wallet based on a seed
+    ///
     /// Follows the method described in BIP32: <https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki> to convert the seed to the master node extended private and public keys
     /// Multiple purpose types can be derived from the master node using the
-    /// `HDPurpose` type
+    /// [`HDPurpose`] type
     ///
     /// # Arguments
     /// * `seed` - The seed to use to create the master node
@@ -159,12 +188,13 @@ impl HDKey {
         })
     }
 
-    /// Returns a new HDKey from a seed, network type and derivation path
-    /// The HDKey returned will be the child key derived from the master node
-    /// specified from the seed using the derivation path
+    /// Returns a new [`HDKey`] from a seed ([`Seed`]), network type
+    /// ([`HDNetworkType`]) and derivation path string.
     ///
-    /// # Errors
-    /// Returns an Error type with further details if the seed is invalid or the
+    /// The HDKey returned will be the child key derived from the master node
+    /// specified from the seed using the derivation path.
+    ///
+    /// Returns an [`Error`] with further details if the seed is invalid or the
     /// derivation path is invalid
     pub fn new(
         seed: Seed,
@@ -175,17 +205,12 @@ impl HDKey {
     }
 
     /// Hashes a byte array using the SHA256 algorithm
-    pub fn hash160(bytes: &[u8]) -> Vec<u8> {
+    fn hash160(bytes: &[u8]) -> Vec<u8> {
         Ripemd160::digest(Sha256::digest(bytes).as_slice()).to_vec()
     }
 
-    /// Derives a HDKey following the specified derivation path relative to the
-    /// HDKey given as the self parameter # Arguments
-    /// * `derivation_path` - A string representing the derivation path to be
-    ///   used
-    /// # Errors
-    /// * `Error::Invalid`- If the derivation path is invalid
-    /// * `Error::FromStr` - If a component of the derivation path is invalid
+    /// Derives and returns a [`HDKey`] following the specified derivation path
+    /// from the [`HDKey`] given as the self parameter as the parent key.
     pub fn derive(&self, derivation_path: String) -> Result<Self, Error> {
         let new_deriv_path = HDPath::from_str(&derivation_path)?;
         let new_deriv_path_info = new_deriv_path.to_vec();
@@ -288,8 +313,10 @@ impl HDKey {
         Ok(derived_bip32)
     }
 
-    /// Convert extended private key to Wallet Import Format (WIF).
-    /// Using wallet import format: <https://en.bitcoin.it/wiki/Wallet_import_format>
+    /// Convert the [`ExtendedPrivateKey`] associated with the [`HDKey`] to a
+    /// Wallet Import Format (WIF). Using wallet import format: <https://en.bitcoin.it/wiki/Wallet_import_format>
+    /// Returns an [`Error`] if the extended private key is missing or another
+    /// error is encountered.
     pub fn to_wif(&self) -> Result<String, Error> {
         let mut private_key: Vec<u8> = Vec::new();
         match self.network {

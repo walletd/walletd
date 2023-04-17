@@ -29,5 +29,10 @@ pub enum Error {
     HmacSha512(String),
     /// Error from index out of range
     #[error("Index out of range: {index} > {max}")]
-    IndexOutOfRange { index: usize, max: usize },
+    IndexOutOfRange {
+        /// Index that was requested
+        index: usize,
+        /// Maximum index that is allowed
+        max: usize,
+    },
 }

@@ -1,16 +1,17 @@
 use std::fmt;
 use std::str::FromStr;
 
-/// The secret value used to derive HD wallet addresses from a
-/// [`Mnemonic`][Mnemonic] phrase.
+/// Stores the secret value which can be used to derive a hierarchical
+/// deterministic wallet.
 ///
-/// To get the raw byte value use [`Seed::as_bytes()`][Seed::as_bytes()]. These
-/// can be used to derive HD wallet addresses using another crate (deriving HD
-/// wallet addresses is outside the scope of this crate and the BIP39 standard).
+/// The seed bytes are usually derived from a mnemonic phrase and an optional
+/// passphrase following a specified protocol.
 ///
-/// [Mnemonic]: ./mnemonic/struct.Mnemonic.html
-/// [Seed]: ./seed/struct.Seed.html
-/// [Seed::as_bytes()]: ./seed/struct.Seed.html#method.as_bytes
+/// To get the raw byte value use [`as_bytes()`](Self::as_bytes)
+///
+/// This struct can be used to derive HD wallet addresses using another library
+/// (deriving HD wallet addresses is outside the scope of the
+/// walletd_mnemonic_model crate and the BIP39 standard).
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Seed {
     bytes: Vec<u8>,

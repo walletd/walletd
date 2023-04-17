@@ -1,3 +1,4 @@
+//! This library provides a common interface for handling mnemonics
 pub use hex;
 
 pub mod seed;

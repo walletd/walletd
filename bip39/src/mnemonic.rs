@@ -13,7 +13,7 @@ use walletd_mnemonic_model::{MnemonicHandler, MnemonicStyleBuilder, Seed};
 use crate::mnemonic_type::ENTROPY_OFFSET;
 use crate::{Language, MnemonicType, ParseMnemonicError, WordList};
 
-/// The primary type in this crate, most tasks require creating or using one.
+/// Struct representing a Bip39 mnemonic.
 ///
 /// To create a *new* [`Mnemonic`][Mnemonic] from a randomly generated key, call
 /// [`Mnemonic::new()`][Mnemonic::new()].

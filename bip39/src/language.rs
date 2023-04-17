@@ -111,24 +111,33 @@ impl WordList {
 
 /// The choice of language for a mnemonic phrase not only determines the words
 /// used, but also has an impact on the binary value of each word when the
-/// ['Mnemonic'][Mnemonic] is converted into a ['Seed'][Seed].
+/// [`Mnemonic`](crate::Mnemonic) is converted into a [`Seed`](crate::Seed).
 ///
 /// English is the only officially supported language, the rest are provided for
 /// convenience.
 ///
-/// [Mnemonic]: ./mnemonic/struct.Mnemonic.html
-/// [Seed]: ./seed/struct.Seed.html
+/// The wordlists for each language are taken from the BIP39 repo: <https://github.com/bitcoin/bips/tree/master/bip-0039>
 #[derive(Debug, Clone, Copy, PartialEq, Eq, enum_iterator::Sequence)]
 pub enum Language {
+    /// English, this is the only officially supported language
     English,
+    /// Chinese Simplified
     ChineseSimplified,
+    /// Chinese Traditional
     ChineseTraditional,
+    /// Czech
     Czech,
+    /// French
     French,
+    /// Italian
     Italian,
+    /// Japanese
     Japanese,
+    /// Korean
     Korean,
+    /// Portuguese
     Portuguese,
+    /// Spanish
     Spanish,
 }
 

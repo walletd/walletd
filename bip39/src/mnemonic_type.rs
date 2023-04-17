@@ -33,10 +33,15 @@ pub const ENTROPY_OFFSET: usize = 8;
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum MnemonicType {
     //  ... = (entropy_bits << ...)   | checksum_bits
+    /// 12 word mnemonic phrase
     Words12 = (128 << ENTROPY_OFFSET) | 4,
+    /// 15 word mnemonic phrase
     Words15 = (160 << ENTROPY_OFFSET) | 5,
+    /// 18 word mnemonic phrase
     Words18 = (192 << ENTROPY_OFFSET) | 6,
+    /// 21 word mnemonic phrase
     Words21 = (224 << ENTROPY_OFFSET) | 7,
+    /// 24 word mnemonic phrase
     Words24 = (256 << ENTROPY_OFFSET) | 8,
 }
 
