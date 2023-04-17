@@ -305,7 +305,7 @@ impl fmt::Display for Status {
 }
 
 /// Represents a Bitcoin UTXO (Unspent Transaction Output) in the format with the data fields returned by Blockstream
-#[derive(Serialize, Deserialize, Default, Debug, Clone)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq, Eq)]
 pub struct Utxo {
     #[serde(default)]
     /// Status of the UTXO
@@ -322,7 +322,7 @@ pub struct Utxo {
 }
 
 /// A wrapper around a vector of Utxo objects.
-#[derive(Serialize, Deserialize, Default, Debug, Clone)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq, Eq)]
 pub struct Utxos(pub Vec<Utxo>);
 
 impl Utxos {
@@ -1166,7 +1166,7 @@ async fn test_transactions() {
 #[test]
 fn test_mnempool_transactions() {
     let mut server = Server::new();
-    let mut expected_mempool_transactions: Vec<BTransaction> = vec![
+    let expected_mempool_transactions: Vec<BTransaction> = vec![
         BTransaction {
             txid: "816452a6a65d7533b54fbf1d03fe61ddaa9c856e5d0d1ae2a6b6bb152bd5adcd".into(),
             version: 1,
@@ -1239,14 +1239,47 @@ fn test_mnempool_transactions() {
 }
 
 
+#[tokio::test]
+async fn test_fetch_utxos() {
+    let expected_utxos = Utxos(
+        vec![
+            Utxo {
+                status: Status {
+                    confirmed: true,
+                    block_height: 2425463,
+                    block_hash: "00000000000000139a0ce10a0ec62ff754023f25b887157d6b422688d1784fd9".into(),
+                    block_time: 1679524580,
+                },
+                txid: "4497bea5ea7784b6f188256fb7ecfb6108a4b8060aa9ed87d1cea5732c3eedba".into(),
+                value: 200,
+                vout: 0,
+            },
+        ],
+    );
+    let for_address = "tb1qjft2mkemu4jzy5epd45djr56eeej6c932rlt75";
+    let json_data_str = json!(expected_utxos).to_string();
+    let get_path = format!("/address/{}/utxo", for_address);
+    let mut server = Server::new();
+    server.mock("GET", get_path.as_str())
+    .with_status(200)
+    .with_header("content-type", "application/json")
+    .with_body(&json_data_str)
+    .create();
+    let bs = Blockstream::new(&server.url()).unwrap();
+    let utxos= bs.utxo(for_address).await.unwrap();
+    assert_eq!(utxos, expected_utxos);   
+    
+}
+
+
 
     // TODO(AS): delete this function, just using it when writing the mock tests
-    #[tokio::test]
-    async fn getting_actual_data() {
-        let blockstreamm_test_url = "https://blockstream.info/testnet/api";
-        let bs = Blockstream::new(blockstreamm_test_url).unwrap();
-        let for_address = "tb1qjft2mkemu4jzy5epd45djr56eeej6c932rlt75";
-        let utxos= bs.utxo(for_address).await.unwrap();
-        println!("utxos: {:#?}", utxos);
-    }
+    // #[tokio::test]
+    // async fn getting_actual_data() {
+    //     let blockstreamm_test_url = "https://blockstream.info/testnet/api";
+    //     let bs = Blockstream::new(blockstreamm_test_url).unwrap();
+    //     let for_address = "tb1qjft2mkemu4jzy5epd45djr56eeej6c932rlt75";
+    //     let utxos= bs.utxo(for_address).await.unwrap();
+    //     println!("utxos: {:#?}", utxos);
+    // }
 }
