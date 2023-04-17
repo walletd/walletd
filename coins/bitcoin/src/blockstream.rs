@@ -1285,6 +1285,79 @@ async fn test_raw_transaction_hex() {
     assert_eq!(raw_tx_hex, expected_tx_hex);
 }
 
+#[tokio::test]
+async fn test_transaction() {
+    let expected_tx = BTransaction {
+        txid: "4497bea5ea7784b6f188256fb7ecfb6108a4b8060aa9ed87d1cea5732c3eedba".into(),
+        version: 1,
+        locktime: 0,
+        vin: vec![
+            Input {
+                txid: "23f46d570ccce61c0c66be058fc0d7955c8a40267a0ba383c26ab96709b516d7".into(),
+                vout: 1,
+                prevout: Output {
+                    scriptpubkey: "00144074db37babb2ac2a6ad993219c09b2ffd4e39b0".into(),
+                    scriptpubkey_asm: "OP_0 OP_PUSHBYTES_20 4074db37babb2ac2a6ad993219c09b2ffd4e39b0".into(),
+                    scriptpubkey_type: "v0_p2wpkh".into(),
+                    scriptpubkey_address: "tb1qgp6dkda6hv4v9f4dnyepnsym9l75uwds4fq3n8".into(),
+                    pubkeyhash: "".into(),
+                    value: 774,
+                },
+                scriptsig: "".into(),
+                scriptsig_asm: "".into(),
+                witness: vec![
+                    "3045022100896671a10bbeab473d62afb52d287b7bf7509c88ad2fdccca9bc7299cbf678b3022041c489f0f4ff42e21bb5745f42fe257558533d944bf1e308071be5571886976101".into(),
+                    "037ff20be5933c3093c6c57456c0fc829ef6101c960c59ee82d2d194bcd3883ee2".into(),
+                ],
+                is_coinbase: false,
+                sequence: 4294967295,
+                inner_redeemscript_asm: "".into(),
+            },
+        ],
+        vout: vec![
+            Output {
+                scriptpubkey: "00149256addb3be5642253216d68d90e9ace732d60b1".into(),
+                scriptpubkey_asm: "OP_0 OP_PUSHBYTES_20 9256addb3be5642253216d68d90e9ace732d60b1".into(),
+                scriptpubkey_type: "v0_p2wpkh".into(),
+                scriptpubkey_address: "tb1qjft2mkemu4jzy5epd45djr56eeej6c932rlt75".into(),
+                pubkeyhash: "".into(),
+                value: 200,
+            },
+            Output {
+                scriptpubkey: "00144074db37babb2ac2a6ad993219c09b2ffd4e39b0".into(),
+                scriptpubkey_asm: "OP_0 OP_PUSHBYTES_20 4074db37babb2ac2a6ad993219c09b2ffd4e39b0".into(),
+                scriptpubkey_type: "v0_p2wpkh".into(),
+                scriptpubkey_address: "tb1qgp6dkda6hv4v9f4dnyepnsym9l75uwds4fq3n8".into(),
+                pubkeyhash: "".into(),
+                value: 348,
+            },
+        ],
+        size: 223,
+        weight: 562,
+        fee: 226,
+        status: Status {
+            confirmed: true,
+            block_height: 2425463,
+            block_hash: "00000000000000139a0ce10a0ec62ff754023f25b887157d6b422688d1784fd9".into(),
+            block_time: 1679524580,
+        },
+    };
+
+    let for_txid = "4497bea5ea7784b6f188256fb7ecfb6108a4b8060aa9ed87d1cea5732c3eedba";
+    let get_path = format!("/tx/{}", for_txid);
+    let json_data_str = json!(expected_tx).to_string();
+    let mut server = Server::new();
+    server.mock("GET", get_path.as_str())
+    .with_status(200)
+    .with_header("content-type", "application/json")
+    .with_body(&json_data_str)
+    .create();
+    let bs = Blockstream::new(&server.url()).unwrap();
+    let tx = bs.transaction(for_txid).await.unwrap();
+    assert_eq!(tx, expected_tx);
+
+}
+
 
     // TODO(AS): delete this function, just using it when writing the mock tests
     // #[tokio::test]
@@ -1292,7 +1365,7 @@ async fn test_raw_transaction_hex() {
     //     let blockstreamm_test_url = "https://blockstream.info/testnet/api";
     //     let bs = Blockstream::new(blockstreamm_test_url).unwrap();
     //     let for_txid = "4497bea5ea7784b6f188256fb7ecfb6108a4b8060aa9ed87d1cea5732c3eedba";
-    //     let raw_tx_hex= bs.raw_transaction_hex(for_txid).await.unwrap();
-    //     println!("raw_tx_hex: {:#?}", raw_tx_hex);
+    //     let tx = bs.transaction(for_txid).await.unwrap();
+    //     println!("tx: {:#?}", tx);
     // }
 }
