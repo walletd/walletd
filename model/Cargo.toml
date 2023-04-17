@@ -2,6 +2,13 @@
 name = "walletd_coin_model"
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+authors = ["The WalletD Team"]
+description = "WalletD coin model"
+homepage = "https://walletd.org/"
+repository = "https://github.com/walletd/walletd"
+readme = "README.md"
+categories = ["cryptography::cryptocurrencies"]
 
 [lib]
 name = "walletd_coin_model"
