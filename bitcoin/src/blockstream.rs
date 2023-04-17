@@ -1,7 +1,6 @@
 use std::any::Any;
 
 use async_trait::async_trait;
-use bitcoin::script::PushBytes;
 use bitcoin::{Address, AddressType};
 use bitcoin_hashes::{sha256d, Hash};
 use serde::{Deserialize, Serialize};
@@ -21,13 +20,10 @@ use walletd_coin_model::CryptoAddress;
 
 use crate::BitcoinAmount;
 
-use crate::BitcoinAddress;
 pub use bitcoin::{
      sighash::EcdsaSighashType, Network, PrivateKey as BitcoinPrivateKey,
     PublicKey as BitcoinPublicKey, Script,
 };
-
-use bitcoin::blockdata::script::Builder;
 
 use crate::Error;
 
@@ -147,112 +143,7 @@ impl BTransaction {
     }
 
 
-     // TODO(AS): add doc here
-     pub fn prepare_transaction(
-        fee_sat_per_byte: f64,
-        utxo_available: &Vec<Utxo>,
-        inputs_available_tx_info: &[BTransaction],
-        send_amount: &BitcoinAmount,
-        receiver_view_wallet: &BitcoinAddress,
-        change_addr: Address
-    ) -> Result<(BTransaction, Vec<usize>), Error> {
-        // choose inputs
-        let (inputs, fee_amount, chosen_indices)= BitcoinAddress::choose_inputs_and_set_fee(
-            utxo_available,
-            send_amount,
-            inputs_available_tx_info,
-            fee_sat_per_byte,
-        )?;
-        let inputs_amount = BitcoinAmount {
-            satoshi: inputs.iter().map(|x| x.prevout.value).sum(),
-        };
-        if inputs_amount < (*send_amount + fee_amount) {
-            return Err(Error::InsufficientFunds("Insufficient funds to send amount and cover fees".into()));
-        }
 
-      
-        let change_amount = inputs_amount - *send_amount - fee_amount;
-
-        // Create two outputs, one for the send amount and another for the change amount
-        // Hardcoding p2wpkh SegWit transaction option
-        // TODO(#83) right away need to add the scriptpubkey info
-        let mut outputs: Vec<Output> = Vec::new();
-        let mut output_send = Output {
-            ..Default::default()
-        };
-        output_send.value = send_amount.satoshi();
-        output_send.set_scriptpubkey_info(receiver_view_wallet.address_info())?;
-        outputs.push(output_send);
-        let mut output_change = Output {
-            ..Default::default()
-        };
-        output_change.value = change_amount.satoshi();
-        output_change.set_scriptpubkey_info(change_addr)?;
-        outputs.push(output_change);
-
-        let mut transaction = BTransaction {
-            ..Default::default()
-        };
-        transaction.version = 1;
-        transaction.locktime = 0;
-        transaction.vin = inputs;
-        transaction.vout = outputs.clone();
-        transaction.fee = fee_amount.satoshi();
-
-        Ok((transaction, chosen_indices))    
-    }
-
-
-    pub fn sign_tx(&self, keys_per_input: Vec<(BitcoinPrivateKey, BitcoinPublicKey)>) -> Result<Self, Error> {
-        let mut inputs = self.vin.clone();
-        // Signing and unlocking the inputs
-        for (i, input) in inputs.iter_mut().enumerate() {
-            // hardcoded default to SIGHASH_ALL
-            let sighash_type = EcdsaSighashType::All;
-            let transaction_hash_for_input_with_sighash = self
-                .transaction_hash_for_signing_segwit_input_index(i, sighash_type.to_u32())?;
-            let private_key = &keys_per_input[i].0;
-            let public_key= &keys_per_input[i].1;
-            let sig_with_hashtype = BitcoinAddress::signature_sighashall_for_transaction_hash(
-                &transaction_hash_for_input_with_sighash,
-                private_key
-            )?;
-
-            let sig_with_hashtype_vec = hex::decode(&sig_with_hashtype)?;
-            let sig_with_hashtype_bytes: &PushBytes = sig_with_hashtype_vec.as_slice().try_into()?;
-            
-            // handle the different types of inputs based on previous locking script
-            let prevout_lockingscript_type = &input.prevout.scriptpubkey_type;
-            match prevout_lockingscript_type.as_str() {
-                "p2pkh" => {
-                    let script_sig = Builder::new()
-                        .push_slice(sig_with_hashtype_bytes)
-                        .push_key(public_key)
-                        .into_script();
-                    input.scriptsig_asm = script_sig.to_asm_string();
-                    input.scriptsig = hex::encode(script_sig.as_bytes());
-                }
-                "p2sh" => {
-                    // TODO(#83) need to handle redeem scripts
-                    return Err(Error::CurrentlyNotSupported("Not currently handling P2SH".into()));
-                }
-                "v0_p2wsh" => {
-                    // TODO(#83) need to handle redeem scripts
-                    return Err(Error::CurrentlyNotSupported("Not currently handling v0_p2wsh".into()));
-                }
-                "v0_p2wpkh" => {
-                    // Need to specify witness data to unlock
-                    input.witness = vec![sig_with_hashtype, hex::encode(public_key.to_bytes())];
-                }
-                _ => {
-                    return Err(Error::CurrentlyNotSupported("Unidentified locking script type from previous output".into()))
-                }
-            }
-        }
-        let mut signed_tx = self.clone();
-        signed_tx.vin = inputs;
-        Ok(signed_tx)
-    }
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
@@ -391,6 +282,42 @@ pub struct Utxo {
     pub value: u64,
     #[serde(default)]
     pub vout: u32,
+}
+
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
+pub struct Utxos(pub Vec<Utxo>);
+
+impl Utxos {
+    
+    /// Creates a new Utxos empty vector.
+    pub fn new() -> Self {
+        Utxos(Vec::new())
+    }
+
+    /// Returns whether the Uxtos vector is empty or not.
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
+    /// Returns an iterator to the underlying vector.
+    pub fn iter(&self) -> std::slice::Iter<Utxo> {
+        self.0.iter()
+    }
+
+    /// Returns sum of all Utxos in the vector as a BitcoinAmount.
+    pub fn sum(&self) -> Result<BitcoinAmount, Error> {
+        let mut satoshis: u64 = 0;
+        for item in self.iter() {
+            satoshis += item.value;
+        }
+        let confirmed_balance = BitcoinAmount { satoshi: satoshis };
+        Ok(confirmed_balance)
+    }
+
+    /// Pushes a Utxo to the Utxos vector.
+    pub fn push(&mut self, utxo: Utxo) {
+        self.0.push(utxo);
+    }
 }
 
 pub enum InputType {
@@ -906,16 +833,17 @@ impl Blockstream {
     }
 
     /// Fetch UTXOs from blockstream
-    pub async fn utxo(&self, address: &str) -> Result<Vec<Utxo>, Error> {
+    pub async fn utxo(&self, address: &str) -> Result<Utxos, Error> {
         let body = reqwest::get(format!("{}/address/{}/utxo", self.url, address))
             .await?
             .text()
             .await?;
 
-        let utxos: Vec<Utxo> = serde_json::from_str(&body)?;
+        let utxos: Utxos = serde_json::from_str(&body)?;
         Ok(utxos)
     }
 
+    /// Fetch raw transaction hex from blockstream for a given txid
     pub async fn get_raw_transaction_hex(&self, txid: &str) -> Result<String, Error> {
         let body = reqwest::get(format!("{}/tx/{}/raw", self.url, txid))
             .await?

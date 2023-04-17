@@ -1,10 +1,8 @@
 extern crate walletd_bitcoin;
 
-
-
 use hex;
-use walletd_bitcoin::{BTransaction, BitcoinAddress as BitcoinWallet, Input, Output, Status, BitcoinPrivateKey, Network};
-
+use walletd_bitcoin::{BitcoinWallet, BitcoinPrivateKey, Network};
+use walletd_bitcoin::blockstream::{BTransaction, Input, Output, Status};
 fn main() {
     println!("Recreating an example found online here for testing/validation");
     // Comparing with example: https://medium.com/coinmonks/creating-and-signing-a-segwit-transaction-from-scratch-ec98577b526a
