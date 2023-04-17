@@ -1,0 +1,29 @@
+[package]
+name = "walletd"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+authors = ["The WalletD Team"]
+description = "The walletd library"
+homepage = "https://walletd.org/"
+repository = "https://github.com/walletd/walletd"
+readme = "README.md"
+categories = ["cryptography::cryptocurrencies"]
+
+[lib]
+name = "walletd"
+path = "src/lib.rs"
+
+[dependencies]
+
+walletd_bip39 = {path = "../mnemonics/bip39"}
+walletd_mnemonic_model = {path = "../mnemonics/model"}
+walletd_coin_model = {path = "../coins/model"}
+walletd_bitcoin = {path = "../coins/bitcoin"}
+walletd_ethereum = {path = "../coins/ethereum"}
+walletd_hd_key = {path = "../mnemonics/hd_key"}
+
+anyhow = "1.0.68"
+hex = { version = "0.4.2" }
+thiserror = "1.0.40"
+web3 = "0.18.0"
