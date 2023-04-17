@@ -795,7 +795,7 @@ impl BlockchainConnectorGeneral for Blockstream {
 }
 
 /// FeeEstimates is a wrapper around the fee estimates returned by the Blockstream API
-#[derive(Clone, Default, Debug, Deserialize, Serialize)]
+#[derive(Clone, Default, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct FeeEstimates(pub serde_json::Map<String, Value>);
 
 impl fmt::Display for FeeEstimates {
@@ -972,7 +972,7 @@ impl Blockstream {
 #[cfg(test)]
 mod tests {
     use mockito::Server;
-
+    use serde_json::{Number, Value};
     use super::*;
 
 
@@ -989,5 +989,57 @@ mod tests {
         let bs = Blockstream::new(&server.url()).unwrap();
         let check_blockcount = bs.block_count().unwrap();
         assert_eq!(expected_blockcount, check_blockcount);
+    }
+
+    #[tokio::test]
+    async fn test_fee_estimates() {
+        let mut server = Server::new();
+        let mut expected_fee_map = serde_json::Map::new();
+        expected_fee_map.insert(String::from("1"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("10"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("1008"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("11"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("12"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("13"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("14"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("144"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("15"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("16"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("17"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("18"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("19"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("2"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("20"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("21"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("22"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("23"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("24"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("25"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("3"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("4"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("5"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("504"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("6"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("7"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("8"), Value::Number(Number::from_f64(1.0).unwrap()));
+        expected_fee_map.insert(String::from("9"), Value::Number(Number::from_f64(1.0).unwrap()));
+        
+        server.mock("GET", "/fee-estimates")
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(&Value::Object(expected_fee_map.clone()).to_string())
+            .create();
+
+        let bs = Blockstream::new(&server.url()).unwrap();
+        let fee_estimates = bs.fee_estimates().await.unwrap();
+        assert_eq!(fee_estimates.0, expected_fee_map);
+    }
+
+    // TODO(AS): delete this function, just using it when writing the mock tests
+    async fn getting_actual_data() {
+        let blockstreamm_test_url = "https://blockstream.info/testnet/api";
+        let bs = Blockstream::new(blockstreamm_test_url).unwrap();
+        let fee_estimates = bs.fee_estimates().await.unwrap();
+        println!("fee_estimates: {:#?}", fee_estimates);
     }
 }
