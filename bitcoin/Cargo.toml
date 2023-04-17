@@ -1,0 +1,43 @@
+[package]
+name = "walletd_bitcoin"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+authors = ["The WalletD Team"]
+description = "Bitcoin walletd library"
+homepage = "https://walletd.org/"
+repository = "https://github.com/walletd/walletd"
+readme = "README.md"
+categories = ["cryptography::cryptocurrencies"]
+
+[lib]
+name = "walletd_bitcoin"
+path = "src/lib.rs"
+
+[dev-dependencies]
+mockito = "0.31.1"
+
+[dependencies]
+
+walletd_coin_model = {path = "../model/"}
+walletd_bip39 = {path = "../../mnemonics/bip39"}
+walletd_hd_key = {path = "../../mnemonics/hd_key"}
+
+anyhow = "1.0.68"
+async-trait = "0.1.60"
+base58 = { version = "0.2.0" }
+bitcoin = "0.30.0"
+bitcoin_hashes = "0.12.0"
+time = { version = "0.3", features = ["macros", "formatting"] }
+hex = "0.4.3"
+log = "0.4.17"
+reqwest = { version = "0.11.16", features = ["blocking", "json"] }
+ripemd = "0.1.3"
+prettytable-rs = "0.10.0"
+secp256k1 = {version = "0.27.0", features = ["rand-std"]}
+sha2 = { version = "0.10.6", default-features = false }
+serde_json = "1.0"
+serde = "1.0.148"
+signature = "1.6.4"
+thiserror = "1.0.40"
+

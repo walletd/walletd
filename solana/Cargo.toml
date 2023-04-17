@@ -1,0 +1,28 @@
+[package]
+name = "walletd_solana"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+authors = ["The WalletD Team"]
+description = "Solana walletd library"
+homepage = "https://walletd.org/"
+repository = "https://github.com/walletd/walletd"
+readme = "README.md"
+categories = ["cryptography::cryptocurrencies"]
+
+[lib]
+name = "walletd_solana"
+path = "src/lib.rs"
+
+[dependencies]
+
+walletd_bip39 = {path = "../../mnemonics/bip39"}
+walletd_coin_model = {path = "../model"}
+walletd_hd_key = {path = "../../mnemonics/hd_key"}
+
+anyhow = "1.0.68"
+base58 = { version = "0.2.0" }
+ed25519-dalek-bip32 = "0.2.0"
+hex = { version = "0.4.2" }
+solana-client = "1.14.7"
+solana-sdk = "1.14.10"
