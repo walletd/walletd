@@ -1,8 +1,7 @@
+pub use hex;
+
 pub mod seed;
 pub use self::seed::Seed;
-
-mod error;
-pub use error::Error;
 
 /// The MnemonicHandler trait is used to provide a common interface for the
 /// different Mnemonic libraries

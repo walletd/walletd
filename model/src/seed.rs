@@ -1,4 +1,5 @@
 use std::fmt;
+use std::str::FromStr;
 
 /// The secret value used to derive HD wallet addresses from a
 /// [`Mnemonic`][Mnemonic] phrase.
@@ -35,6 +36,15 @@ impl Seed {
 impl AsRef<[u8]> for Seed {
     fn as_ref(&self) -> &[u8] {
         self.as_bytes()
+    }
+}
+
+impl FromStr for Seed {
+    type Err = hex::FromHexError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let bytes = hex::decode(s)?;
+        Ok(Seed::new(bytes))
     }
 }
 
