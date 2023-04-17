@@ -971,21 +971,23 @@ impl Blockstream {
 
 #[cfg(test)]
 mod tests {
-    use mockito::mock;
+    use mockito::Server;
 
     use super::*;
 
+
     #[test]
     fn test_block_count() {
-        let _m = mock("GET", "/blocks/tip/height")
+        let mut server = Server::new();
+        let expected_blockcount = 773876;
+        server.mock("GET", "/blocks/tip/height")
             .with_status(200)
             .with_header("content-type", "text/plain")
-            .with_body("773876")
+            .with_body(expected_blockcount.to_string())
             .create();
 
-        let _url: &String = &mockito::server_url();
-        let bs = Blockstream::new(&mockito::server_url()).unwrap();
-        let check = bs.block_count().unwrap();
-        assert_eq!(773876, check);
+        let bs = Blockstream::new(&server.url()).unwrap();
+        let check_blockcount = bs.block_count().unwrap();
+        assert_eq!(expected_blockcount, check_blockcount);
     }
 }
