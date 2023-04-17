@@ -1163,7 +1163,7 @@ async fn test_transactions() {
 
 }
 
-
+#[test]
 fn test_mnempool_transactions() {
     let mut server = Server::new();
     let mut expected_mempool_transactions: Vec<BTransaction> = vec![
@@ -1238,13 +1238,15 @@ fn test_mnempool_transactions() {
     assert_eq!(transactions_data, expected_mempool_transactions);
 }
 
+
+
     // TODO(AS): delete this function, just using it when writing the mock tests
-    #[test]
-    fn getting_actual_data() {
+    #[tokio::test]
+    async fn getting_actual_data() {
         let blockstreamm_test_url = "https://blockstream.info/testnet/api";
         let bs = Blockstream::new(blockstreamm_test_url).unwrap();
-        let for_address = "tb1qhq65xl3ps3qpnd62nwxcy43yl6cmzcyekg965v";
-        let transaction_data = bs.mempool_transactions(for_address).unwrap();
-        println!("transaction data: {:#?}", transaction_data);
+        let for_address = "tb1qjft2mkemu4jzy5epd45djr56eeej6c932rlt75";
+        let utxos= bs.utxo(for_address).await.unwrap();
+        println!("utxos: {:#?}", utxos);
     }
 }
