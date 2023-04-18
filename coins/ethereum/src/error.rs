@@ -57,4 +57,7 @@ pub enum Error {
     /// Error when trying to retrieve a transaction from a transaction hash
     #[error("An error was encountered while trying to retrieve a tx from a tx hash")]
     GetTx,
+    /// Error due to overflow
+    #[error("Overflow error: {0}")]
+    Overflow(String),
 }

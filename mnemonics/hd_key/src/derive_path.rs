@@ -265,6 +265,11 @@ impl HDPath {
         self.path.len()
     }
 
+    /// Returns true if the path is empty, false otherwise
+    pub fn is_empty(&self) -> bool {
+        self.path.is_empty()
+    }
+
     /// Helper function to convert a derivation path string to a list of strings
     /// Returns [`Error`] if the path is empty or does not start with "m"
     pub fn derive_path_str_to_list(deriv_path: &str) -> Result<Vec<String>, Error> {

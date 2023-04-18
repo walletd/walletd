@@ -40,7 +40,7 @@ impl fmt::Display for EthereumFormat {
 mod tests {
     use super::*;
     use std::str::FromStr;
-    use walletd_bip39::{Language, Mnemonic, MnemonicHandler, MnemonicStyleBuilder, Seed};
+    use walletd_bip39::Seed;
     use walletd_coin_model::{CryptoWallet, CryptoWalletBuilder};
     use walletd_hd_key::HDNetworkType;
 

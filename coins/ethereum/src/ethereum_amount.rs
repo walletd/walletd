@@ -2,6 +2,7 @@ use core::fmt;
 use core::fmt::Display;
 use std::ops;
 
+use crate::Error;
 use walletd_coin_model::CryptoAmount;
 use web3::ethabi::ethereum_types::U256;
 
@@ -13,58 +14,81 @@ pub struct EthereumAmount {
 }
 
 impl ops::Add<Self> for EthereumAmount {
-    type Output = Self;
+    type Output = Result<Self, Error>;
 
-    fn add(self, rhs: Self) -> Self {
-        Self {
-            wei: self.wei + rhs.wei,
-        }
-    }
-}
-
-impl ops::AddAssign for EthereumAmount {
-    fn add_assign(&mut self, other: Self) {
-        *self = Self {
-            wei: self.wei + other.wei,
-        }
+    fn add(self, rhs: Self) -> Result<Self, Error> {
+        Ok(Self {
+            wei: self
+                .wei
+                .checked_add(rhs.wei)
+                .ok_or(Error::Overflow(format!(
+                    "Overflow in U256 when adding {} to {}",
+                    self.wei, rhs.wei
+                )))?,
+        })
     }
 }
 
 impl ops::Sub for EthereumAmount {
-    type Output = Self;
+    type Output = Result<Self, Error>;
 
-    fn sub(self, rhs: Self) -> Self {
-        Self {
-            wei: self.wei - rhs.wei,
-        }
+    fn sub(self, rhs: Self) -> Result<Self, Error> {
+        Ok(Self {
+            wei: self
+                .wei
+                .checked_sub(rhs.wei)
+                .ok_or(Error::Overflow(format!(
+                    "Overflow in U256 when subtracting {} from {}",
+                    self.wei, rhs.wei
+                )))?,
+        })
     }
 }
+
 impl ops::Mul<u64> for EthereumAmount {
-    type Output = Self;
+    type Output = Result<Self, Error>;
 
     fn mul(self, rhs: u64) -> Self::Output {
-        Self {
-            wei: self.wei * rhs,
+        let result = self.wei * rhs;
+
+        if result > U256::MAX {
+            return Err(Error::Overflow(format!(
+                "Overflow in U256 when multiplying {} by {}",
+                self.wei, rhs
+            )));
         }
+        Ok(Self { wei: result })
     }
 }
 impl ops::Mul for EthereumAmount {
-    type Output = Self;
+    type Output = Result<Self, Error>;
 
     fn mul(self, rhs: Self) -> Self::Output {
-        Self {
-            wei: self.wei * rhs.wei,
-        }
+        Ok(Self {
+            wei: self
+                .wei
+                .checked_mul(rhs.wei)
+                .ok_or(Error::Overflow(format!(
+                    "Overflow in U256 when multiplying {} by {}",
+                    self.wei, rhs.wei
+                )))?,
+        })
     }
 }
 
 impl ops::Div for EthereumAmount {
-    type Output = Self;
+    type Output = Result<Self, Error>;
 
     fn div(self, rhs: Self) -> Self::Output {
-        Self {
-            wei: self.wei / rhs.wei,
-        }
+        Ok(Self {
+            wei: self
+                .wei
+                .checked_div(rhs.wei)
+                .ok_or(Error::Overflow(format!(
+                    "Overflow in U256 when dividing {} by {}",
+                    self.wei, rhs.wei
+                )))?,
+        })
     }
 }
 

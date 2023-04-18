@@ -88,4 +88,7 @@ pub enum Error {
     /// Converts a format error from the time crate
     #[error("Error from time crate: {0}")]
     TimeFormat(#[from] time::error::Format),
+    /// Error due to overflow
+    #[error("Overflow error: {0}")]
+    Overflow(String),
 }
