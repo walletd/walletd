@@ -1,5 +1,7 @@
 use std::str::FromStr;
-use walletd_bitcoin::{BitcoinAddress, Seed, Error, HDKey, CryptoAddress, HDNetworkType, AddressType};
+use walletd_bitcoin::{
+    AddressType, BitcoinAddress, CryptoAddress, Error, HDKey, HDNetworkType, Seed,
+};
 
 #[test]
 fn test_from_hd_key_testnet() -> Result<(), Error> {
@@ -12,7 +14,6 @@ fn test_from_hd_key_testnet() -> Result<(), Error> {
     assert_eq!(bitcoin_address.public_address(), expected_address);
     Ok(())
 }
-
 
 #[test]
 fn test_from_hd_key_mainnet_p2wpkh() -> Result<(), Error> {
@@ -50,4 +51,3 @@ fn test_from_hd_key_mainnet_p2sh() -> Result<(), Error> {
     //assert_eq!(bitcoin_address.public_address(), expected_address);
     Ok(())
 }
-

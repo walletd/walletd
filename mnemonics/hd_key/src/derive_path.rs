@@ -596,4 +596,4 @@ mod tests {
         let dt = HDPurpose::BIP32;
         assert_eq!(format!("{}", dt), "0'");
     }
-    }
+}
