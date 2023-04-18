@@ -269,7 +269,7 @@ mod tests {
             "dry", "pointx",
         ];
         
-        assert_eq!(WordList::detect_language(phrase).is_err(), true);
+        assert!(WordList::detect_language(phrase).is_err());
 
     }
 

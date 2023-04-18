@@ -110,8 +110,9 @@ fn test_bip32_first_account_derive() -> Result<(), Error> {
 }
 
 
+
 #[test]
-fn test_new_func_first_BIP32_address() -> Result<(), Error> {
+fn test_new_func_first_bip32_address() -> Result<(), Error> {
     let dt = HDPurpose::BIP32;
     let keys = HDKey::new(
         Seed::new(vec![
@@ -164,7 +165,7 @@ fn test_new_func_first_BIP32_address() -> Result<(), Error> {
 }
 
     #[test]
-    fn test_derive_first_BIP32_address() -> Result<(), Error> {
+    fn test_derive_first_bip32_address() -> Result<(), Error> {
         let dt = HDPurpose::BIP32;
         let keys = HDKey::new_master(
             Seed::new(vec![
@@ -235,11 +236,11 @@ fn test_new_func_first_BIP32_address() -> Result<(), Error> {
         assert_eq!(&derived.extended_private_key_serialized()?, "xprvA47jwGZNLdTnKuMGfLdeYMV7dgAF9gCjYUNYGeAjJuXrRbj1MULdePjyC5nH7Pp2GTRqnXqkumeJC29fRVVSJmbrWDUENyRG22n1tJdn5b7");
         assert_eq!(&derived.extended_public_key_serialized()?, "xpub6H76Ln6GB125YPRjmNAeuVRrBhzjZ8vauhJ952aLsF4qJQ49u1etCC4T3KkvysShJwgdPL3B5fEsiZJCeymY1Z2wfUNXN77ksN9oqLP9PU3");
         assert_eq!(
-            &derived.to_wif().unwrap(),
+            &derived.to_wif()?,
             "L36tbAQoqCpU4rHQuyhYmRHscbcrSc31HXefsrMUaXco8Wqfpaqf"
         );
         assert_eq!(
-            format!("{:x}", derived.extended_public_key().unwrap()),
+            format!("{:x}", derived.extended_public_key()?),
             "0224c0180e484ca64cea39fc471a02bf286196e12d10f08dfa18bdc995f0707cad"
         );
         Ok(())
@@ -248,7 +249,7 @@ fn test_new_func_first_BIP32_address() -> Result<(), Error> {
 
 
     #[test]
-    fn test_ETH_BIP44() -> Result<(), Error> {
+    fn test_eth_bip44() -> Result<(), Error> {
         let dpath = HDPath::builder()
             .with_purpose(HDPurpose::BIP44.to_shortform_num())
             .with_coin_type(Coin::from(Symbol::ETH).id())
@@ -274,7 +275,7 @@ fn test_new_func_first_BIP32_address() -> Result<(), Error> {
                     235, 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155,
                     86, 102, 57, 122, 195, 32, 33, 178, 30, 10, 204, 238
                 ]),
-                derivation_path: HDPath::from_str("m/44'/60'/0'/0/0").unwrap(),
+                derivation_path: HDPath::from_str("m/44h/60h/0h/0/0")?,
                 chain_code: [
                     109, 150, 159, 21, 145, 38, 169, 238, 94, 27, 158, 36, 221, 164, 167, 226, 84,
                     253, 81, 90, 210, 254, 84, 178, 233, 164, 217, 131, 149, 75, 168, 105
@@ -285,15 +286,13 @@ fn test_new_func_first_BIP32_address() -> Result<(), Error> {
                     ExtendedPrivateKey::from_slice(&[
                         165, 220, 218, 239, 160, 128, 19, 9, 44, 163, 125, 63, 96, 212, 111, 39,
                         81, 13, 248, 119, 122, 58, 125, 214, 161, 185, 243, 115, 53, 44, 170, 117
-                    ])
-                    .unwrap()
+                    ])?
                 ),
                 extended_public_key: Some(
                     ExtendedPublicKey::from_slice(&[
                         3, 237, 181, 7, 68, 80, 173, 147, 6, 71, 14, 89, 107, 91, 14, 126, 178, 36,
                         245, 197, 197, 57, 113, 112, 101, 150, 46, 195, 101, 233, 63, 6, 97
-                    ])
-                    .unwrap()
+                    ])?
                 ),
                 child_index: 0,
                 network: HDNetworkType::MainNet,
@@ -304,4 +303,66 @@ fn test_new_func_first_BIP32_address() -> Result<(), Error> {
     }
 
 
+    #[test] 
+    fn test_bip49_first_account() -> Result<(), Error> {
 
+        let mut path_builder = HDPath::builder();
+        path_builder.with_purpose(HDPurpose::BIP49.to_shortform_num()).with_coin_type(Coin::from(Symbol::BTC).id()).set_change_none().set_address_index_none();
+
+        let master_key = HDKey::new_master(
+            Seed::new(vec![
+                162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
+                249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
+                30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
+                57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
+            ]),
+            HDNetworkType::MainNet
+        )?;
+
+        assert_eq!(
+            master_key.derivation_path.to_string(),
+            "m".to_string()
+        );
+
+        let first_account = master_key.derive(path_builder.build().to_string())?;
+        assert_eq!(
+            first_account.derivation_path.to_string(),
+            "m/49'/0'/0'".to_string()
+        );
+        assert_eq!(&first_account.extended_private_key_serialized()?, "yprvAKG7rKYNjGJwgbJsjEADohvBMDupqc4J3hAopkwqyfKk73voyQzBNuVFLJFUPVrpm3ei2H1cQCBP1oiAaasyNc9UoPzasnScRfeZxFDT4Tf");
+        assert_eq!(&first_account.extended_public_key_serialized()?, "ypub6YFUFq5GZdsEu5PLqFhEAqruuFkKF4n9Qv6Qd9MTXzriyrFxWxJRvhojBZgZ7Wj5Ak9ow69A8QXhiZoRu41FvXdK7rv8cXJo5PoLwqNywF5");
+        Ok(())
+    }
+
+
+    #[test]
+
+    fn test_bip49_address_one() -> Result<(), Error> {
+        let mut path_builder = HDPath::builder();
+        path_builder.with_purpose(HDPurpose::BIP49.to_shortform_num()).with_coin_type(Coin::from(Symbol::BTC).id()).with_address_index(1);
+
+        let derived = HDKey::new(
+            Seed::new(vec![
+                162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
+                249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
+                30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
+                57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
+            ]),
+            HDNetworkType::MainNet, path_builder.build().to_string()
+        )?;
+        
+        assert_eq!(
+            derived.derivation_path.to_string(),
+            "m/49'/0'/0'/0/1".to_string()
+        );
+        assert_eq!(
+            &derived.to_wif()?,
+            "KzzMux1HnhZCAiCLScSpUDtXtsHgjts4RJLadDDi2zgxU2qq3g53"
+        );
+        assert_eq!(
+            format!("{:x}", derived.extended_public_key()?),
+            "02b9a730f83f85b77c7cf2f444d6cf76b144e11370bb96c6cbc624072f2d8e94cc"
+        );
+        Ok(())
+    
+    }
