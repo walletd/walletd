@@ -182,8 +182,7 @@ impl CryptoWallet for BitcoinWallet {
             keys_per_input.push(key_pair);
         }
 
-    let signed_tx = Self::sign_tx(&transaction, keys_per_input)?;
-
+        let signed_tx = Self::sign_tx(&transaction, keys_per_input)?;
 
         let transaction_hex = BTransaction::serialize(&signed_tx)?;
         let raw_transaction_hex: &'static str = Box::leak(transaction_hex.into_boxed_str());
