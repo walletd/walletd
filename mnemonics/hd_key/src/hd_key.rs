@@ -286,7 +286,7 @@ impl HDKey {
             deriv_path.push(*item);
         }
 
-        if deriv_path.len() < 2 || deriv_path.at(0)? != HDPathIndex::Master {
+        if deriv_path.is_empty() || deriv_path.at(0)? != HDPathIndex::Master {
             return Err(Error::Invalid(format!(
                 "Invalid derivation path {}",
                 deriv_path
