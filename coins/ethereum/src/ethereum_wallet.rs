@@ -1,4 +1,3 @@
-
 //! # Ethereum Wallet (walletd implementation)
 //!
 
@@ -7,18 +6,19 @@ use std::any::Any;
 use std::fmt::LowerHex;
 use std::str::FromStr;
 
+use crate::Error;
+use crate::EthClient;
 use async_trait::async_trait;
 use secp256k1::{PublicKey, SecretKey};
 use tiny_keccak::{Hasher, Keccak};
 use walletd_bip39::Seed;
-use walletd_coin_model::{CryptoWallet, CryptoWalletGeneral, BlockchainConnectorGeneral, CryptoWalletBuilder};
-use walletd_hd_key::{HDKey, HDNetworkType, HDPurpose, slip44, HDPath, HDPathBuilder};
+use walletd_coin_model::{
+    BlockchainConnectorGeneral, CryptoWallet, CryptoWalletBuilder, CryptoWalletGeneral,
+};
+use walletd_hd_key::{slip44, HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPurpose};
 use web3::types::{Address, TransactionParameters};
-use crate::Error;
-use crate::EthClient;
 
-use crate::{EthereumFormat, EthereumAmount};
-
+use crate::{EthereumAmount, EthereumFormat};
 
 #[derive(Debug, Clone)]
 pub struct EthereumPrivateKey(SecretKey);
@@ -48,7 +48,6 @@ impl LowerHex for EthereumPrivateKey {
     }
 }
 
-
 #[derive(Debug, Clone)]
 pub struct EthereumPublicKey(PublicKey);
 
@@ -62,53 +61,48 @@ impl EthereumPublicKey {
         Ok(EthereumPublicKey(public_key))
     }
 
-    pub fn to_public_address(&self,
-        address_format: EthereumFormat,
-    ) -> Result<String, Error> {
+    pub fn to_public_address(&self, address_format: EthereumFormat) -> Result<String, Error> {
         let public_key_full = self.0;
 
         match address_format {
             EthereumFormat::Checksummed => {
                 let mut output = [0u8; 32];
-        let mut hasher = Keccak::v256();
-        hasher.update(&public_key_full.serialize_uncompressed()[1..]);
-        hasher.finalize(&mut output);
-        let address = hex::encode(&output[12..]).to_lowercase();
+                let mut hasher = Keccak::v256();
+                hasher.update(&public_key_full.serialize_uncompressed()[1..]);
+                hasher.finalize(&mut output);
+                let address = hex::encode(&output[12..]).to_lowercase();
 
-        let mut checksum_address = String::new();
-        let mut digest_out2 = [0u8; 32];
-        let mut hasher2 = Keccak::v256();
-        let address_bytes = address.as_bytes();
-        hasher2.update(address_bytes);
-        hasher2.finalize(&mut digest_out2);
-        let keccak_digest_hex = hex::encode(digest_out2);
+                let mut checksum_address = String::new();
+                let mut digest_out2 = [0u8; 32];
+                let mut hasher2 = Keccak::v256();
+                let address_bytes = address.as_bytes();
+                hasher2.update(address_bytes);
+                hasher2.finalize(&mut digest_out2);
+                let keccak_digest_hex = hex::encode(digest_out2);
 
-        for (i, address_char) in address.chars().enumerate() {
-            let keccak_char = &keccak_digest_hex[i..i + 1];
-            if u8::from_str_radix(keccak_char, 16)? >= 8 {
-                checksum_address.push(address_char.to_ascii_uppercase());
-            } else {
-                checksum_address.push(address_char);
+                for (i, address_char) in address.chars().enumerate() {
+                    let keccak_char = &keccak_digest_hex[i..i + 1];
+                    if u8::from_str_radix(keccak_char, 16)? >= 8 {
+                        checksum_address.push(address_char.to_ascii_uppercase());
+                    } else {
+                        checksum_address.push(address_char);
+                    }
+                }
+                checksum_address = format!("{}{}", "0x", checksum_address);
+                Ok(checksum_address)
             }
-        }
-        checksum_address = format!("{}{}", "0x", checksum_address);
-        Ok(checksum_address)
-
-            },
             EthereumFormat::NonChecksummed => {
                 let mut output = [0u8; 32];
-        let mut hasher = Keccak::v256();
-        hasher.update(&public_key_full.serialize_uncompressed()[1..]);
-        hasher.finalize(&mut output);
-        let mut address = hex::encode(&output[12..]).to_lowercase();
-        address = format!("{}{}", "0x", address);
-        Ok(address)
-               
+                let mut hasher = Keccak::v256();
+                hasher.update(&public_key_full.serialize_uncompressed()[1..]);
+                hasher.finalize(&mut output);
+                let mut address = hex::encode(&output[12..]).to_lowercase();
+                address = format!("{}{}", "0x", address);
+                Ok(address)
             }
         }
     }
 }
-
 
 impl LowerHex for EthereumPublicKey {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -129,7 +123,7 @@ pub struct EthereumWalletBuilder {
     address_format: EthereumFormat,
     /// The master HD key used to import the wallet
     master_hd_key: Option<HDKey>,
-    /// The blockchain client used to connect to the blockchain, if the blockchain client is not provided the wallet will be created without an associated blockchain client 
+    /// The blockchain client used to connect to the blockchain, if the blockchain client is not provided the wallet will be created without an associated blockchain client
     /// and the blockchain client can be set later using the `set_blockchain_client` method
     blockchain_client: Option<Box<dyn BlockchainConnectorGeneral>>,
     /// The mnemonic seed used to import the wallet, if the mnemonic seed is not provided, the master_hd_key must be provided
@@ -145,9 +139,10 @@ pub struct EthereumWalletBuilder {
 
 impl Default for EthereumWalletBuilder {
     fn default() -> Self {
-    
-    let mut hd_path_builder = HDPathBuilder::default();
-    hd_path_builder.with_purpose(Self::default_hd_purpose().to_shortform_num()).with_coin_type(slip44::Coin::from(slip44::Symbol::ETH).id());
+        let mut hd_path_builder = HDPathBuilder::default();
+        hd_path_builder
+            .with_purpose(Self::default_hd_purpose().to_shortform_num())
+            .with_coin_type(slip44::Coin::from(slip44::Symbol::ETH).id());
         Self {
             address_format: EthereumFormat::Checksummed,
             master_hd_key: None,
@@ -159,39 +154,52 @@ impl Default for EthereumWalletBuilder {
     }
 }
 
-
 impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
-
     fn new() -> Self {
-       Self::default()
+        Self::default()
     }
 
     fn build(&self) -> Result<EthereumWallet, <EthereumWallet as CryptoWallet>::ErrorType> {
         let master_hd_key = match (&self.master_hd_key, &self.mnemonic_seed) {
             (None, None) => {
-                return Err(Error::UnableToImportWallet("Neither the master HD key nor the mnemonic seed was provided".to_string()))},
-            (Some(key), _) => key.clone(),
-            (None, Some(seed)) => {
-                HDKey::new_master(seed.clone(), self.network_type)?
+                return Err(Error::UnableToImportWallet(
+                    "Neither the master HD key nor the mnemonic seed was provided".to_string(),
+                ))
             }
-        }; 
+            (Some(key), _) => key.clone(),
+            (None, Some(seed)) => HDKey::new_master(seed.clone(), self.network_type)?,
+        };
 
-        let hd_purpose_num = self.hd_path_builder.purpose.unwrap_or(Self::default_hd_purpose().to_shortform_num());
+        let hd_purpose_num = self
+            .hd_path_builder
+            .purpose
+            .unwrap_or(Self::default_hd_purpose().to_shortform_num());
         let coin_type_id = slip44::Coin::Ether.id();
         let mut hd_path_builder = HDPath::builder();
-        hd_path_builder.with_purpose(hd_purpose_num).with_purpose_hardened(true).with_coin_type(coin_type_id).with_coin_type_hardened(true);
+        hd_path_builder
+            .with_purpose(hd_purpose_num)
+            .with_purpose_hardened(true)
+            .with_coin_type(coin_type_id)
+            .with_coin_type_hardened(true);
 
         let derived_key = master_hd_key.derive(hd_path_builder.build().to_string())?;
-        let private_key = EthereumPrivateKey::from_slice(&derived_key
-                    .extended_private_key()?.to_bytes())?;
-        let public_key =  EthereumPublicKey::from_slice(&derived_key
-            .extended_public_key()?.to_bytes())?;
+        let private_key =
+            EthereumPrivateKey::from_slice(&derived_key.extended_private_key()?.to_bytes())?;
+        let public_key =
+            EthereumPublicKey::from_slice(&derived_key.extended_public_key()?.to_bytes())?;
         let public_address = public_key.to_public_address(self.address_format)?;
 
-        let mut wallet = EthereumWallet { address_format: self.address_format, public_address, private_key: Some(private_key), public_key: Some(public_key), network: master_hd_key.network(), blockchain_client: None, master_hd_key: Some(master_hd_key) };
+        let mut wallet = EthereumWallet {
+            address_format: self.address_format,
+            public_address,
+            private_key: Some(private_key),
+            public_key: Some(public_key),
+            network: master_hd_key.network(),
+            blockchain_client: None,
+            master_hd_key: Some(master_hd_key),
+        };
         if let Some(blockchain_client) = &self.blockchain_client {
-                    wallet.blockchain_client = Some(blockchain_client.try_into()?);
-            
+            wallet.blockchain_client = Some(blockchain_client.try_into()?);
         };
         Ok(wallet)
     }
@@ -209,7 +217,10 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
     }
 
     /// Allows specification of the blockchain client for the wallet
-    fn with_blockchain_client(&mut self, blockchain_client: Box<dyn BlockchainConnectorGeneral>) -> &mut Self {
+    fn with_blockchain_client(
+        &mut self,
+        blockchain_client: Box<dyn BlockchainConnectorGeneral>,
+    ) -> &mut Self {
         self.blockchain_client = Some(blockchain_client);
         self
     }
@@ -229,16 +240,11 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
     fn with_hd_path_builder(&mut self, hd_path_builder: HDPathBuilder) -> &mut Self {
         self.hd_path_builder = hd_path_builder;
         self
-        
     }
-
-    
-
 }
 
-
 impl EthereumWalletBuilder {
-    fn default_hd_purpose() ->  HDPurpose {
+    fn default_hd_purpose() -> HDPurpose {
         HDPurpose::BIP44
     }
 }
@@ -264,16 +270,14 @@ impl CryptoWallet for EthereumWallet {
     type WalletBuilder = EthereumWalletBuilder;
     type AddressFormat = EthereumFormat;
 
-
     fn builder() -> Self::WalletBuilder {
         EthereumWalletBuilder::new()
     }
 
-    async fn balance(
-        &self,
-    ) -> Result<Self::CryptoAmount, Error> {
+    async fn balance(&self) -> Result<Self::CryptoAmount, Error> {
         let blockchain_client = self.blockchain_client()?;
-        let address = web3::types::H160::from_str(&self.public_address()).map_err(|e| (Error::FromStr(e.to_string())))?;
+        let address = web3::types::H160::from_str(&self.public_address())
+            .map_err(|e| (Error::FromStr(e.to_string())))?;
         let balance = blockchain_client.balance(address).await?;
         Ok(balance)
     }
@@ -286,7 +290,7 @@ impl CryptoWallet for EthereumWallet {
         let blockchain_client = self.blockchain_client()?;
         let to = Address::from_str(to_address).map_err(|e| Error::FromStr(e.to_string()))?;
         let amount = send_amount.wei();
-        
+
         let tx_object = TransactionParameters {
             to: Some(to),
             value: amount,
@@ -294,7 +298,7 @@ impl CryptoWallet for EthereumWallet {
         };
 
         let secret_key = self.private_key()?.0;
-        
+
         // sign the tx
         let signed = blockchain_client
             .web3()
@@ -352,7 +356,6 @@ impl EthereumWallet {
 
     /// Returns the public key of the wallet
     pub fn public_key(&self) -> Result<EthereumPublicKey, Error> {
-
         if let Some(key) = self.public_key.clone() {
             Ok(key)
         } else {
@@ -377,8 +380,6 @@ impl EthereumWallet {
             Err(Error::MissingMasterHDKey)
         }
     }
-
-
 }
 
 impl fmt::Display for EthereumWallet {

@@ -1,23 +1,22 @@
+use crate::Error;
+use crate::EthereumAmount;
+use async_trait::async_trait;
+use prettytable::row;
+use prettytable::Table;
 use std::any::Any;
+use std::str::FromStr;
+use walletd_coin_model::{BlockchainConnector, BlockchainConnectorGeneral};
 use web3::contract::{Contract, Options};
 use web3::ethabi::Uint;
 use web3::helpers as w3h;
 use web3::transports::Http;
 use web3::types::{BlockId, BlockNumber, Transaction, TransactionId, H160, H256, U256, U64};
-use crate::EthereumAmount;
-use std::str::FromStr;
-use prettytable::Table;
-use prettytable::row;
-use crate::Error;
-use walletd_coin_model::{BlockchainConnector, BlockchainConnectorGeneral};
-use async_trait::async_trait;
 
 #[allow(dead_code)]
 pub enum TransportType {
     Http,
     WebSockets,
 }
-
 
 /// EthClient is a blockchain connector for Ethereum, it contains a web3 instance using a HTTP transport
 #[derive(Clone, Debug)]
@@ -39,10 +38,7 @@ impl EthClient {
     }
 
     /// Rerutns the balance of an address as an EthereumAmount
-    pub async fn balance(
-        &self,
-        address: H160,
-    ) -> Result<EthereumAmount, Error> {
+    pub async fn balance(&self, address: H160) -> Result<EthereumAmount, Error> {
         let balance = self.web3.eth().balance(address, None).await?;
         Ok(EthereumAmount { wei: balance })
     }
@@ -67,26 +63,28 @@ impl EthClient {
     /// ```
     pub async fn transaction_data_from_hash(
         &self,
-        tx_hash: &str
+        tx_hash: &str,
     ) -> Result<web3::types::Transaction, Error> {
-        let transaction_hash: H256 = H256::from_str(tx_hash).map_err(|e| Error::FromStr(e.to_string()))?;
+        let transaction_hash: H256 =
+            H256::from_str(tx_hash).map_err(|e| Error::FromStr(e.to_string()))?;
         match self
             .web3
             .eth()
             .transaction(TransactionId::Hash(transaction_hash))
-            .await {
+            .await
+        {
             Ok(tx) => {
                 if tx.is_none() {
-                    Err(Error::TxResponse(format!("Transaction with tx_hash {} not found", tx_hash)))
+                    Err(Error::TxResponse(format!(
+                        "Transaction with tx_hash {} not found",
+                        tx_hash
+                    )))
                 } else {
                     Ok(tx.unwrap())
                 }
             }
-            Err(error) => {
-                Err(Error::TxResponse(error.to_string()))
-            }
+            Err(error) => Err(Error::TxResponse(error.to_string())),
         }
-        
     }
 
     // TODO(#70): Remove this after write-only functionality is finished
@@ -121,38 +119,59 @@ impl EthClient {
     /// Returns transaction details for a given transaction as a formatted string
     pub async fn transaction_details(tx: Transaction) -> Result<String, Error> {
         let mut table = Table::new();
-        let eth_value = EthereumAmount::from_wei(tx.value); 
+        let eth_value = EthereumAmount::from_wei(tx.value);
         table.add_row(row!["Transaction Hash", format!("0x{:x}", tx.hash)]);
         table.add_row(row!["Amount", eth_value]);
         if tx.block_number.is_some() {
-            table.add_row(row!["Block Number", tx.block_number.expect("Block number missing")]);
+            table.add_row(row![
+                "Block Number",
+                tx.block_number.expect("Block number missing")
+            ]);
         }
         if tx.transaction_index.is_some() {
-            table.add_row(row!["Transaction Index Number", tx.transaction_index.expect("Transaction index missing")]);
+            table.add_row(row![
+                "Transaction Index Number",
+                tx.transaction_index.expect("Transaction index missing")
+            ]);
         }
         if tx.from.is_some() {
-            table.add_row(row!["From Address", format!("0x{:x}", tx.from.expect("No from address"))]);
+            table.add_row(row![
+                "From Address",
+                format!("0x{:x}", tx.from.expect("No from address"))
+            ]);
         }
         if tx.to.is_some() {
-            table.add_row(row!["To Address", format!("0x{:x}", tx.to.expect("No to address"))]);
+            table.add_row(row![
+                "To Address",
+                format!("0x{:x}", tx.to.expect("No to address"))
+            ]);
         }
         if tx.gas_price.is_some() {
             table.add_row(row!["Gas Price", tx.gas_price.expect("No gas price")]);
         }
         table.add_row(row!["Gas", tx.gas]);
         if tx.transaction_type.is_some() {
-            table.add_row(row!["Transaction Type", tx.transaction_type.expect("No transaction type")]);
+            table.add_row(row![
+                "Transaction Type",
+                tx.transaction_type.expect("No transaction type")
+            ]);
         }
         if tx.max_fee_per_gas.is_some() {
-            table.add_row(row!["Maximum Gas Fee", tx.max_fee_per_gas.expect("No max fee per gas")]);
+            table.add_row(row![
+                "Maximum Gas Fee",
+                tx.max_fee_per_gas.expect("No max fee per gas")
+            ]);
         }
         if tx.max_priority_fee_per_gas.is_some() {
-            table.add_row(row!["Maximum priority fee per gas", tx.max_priority_fee_per_gas.expect("No max priority fee per gas")]);
+            table.add_row(row![
+                "Maximum priority fee per gas",
+                tx.max_priority_fee_per_gas
+                    .expect("No max priority fee per gas")
+            ]);
         }
         let table_string = table.to_string();
         Ok(table.to_string())
     }
-
 
     ///  Prints out info on a smart contract transaction from a block hash
     pub async fn get_smart_contract_tx_vec_from_block_hash(
@@ -167,7 +186,10 @@ impl EthClient {
                 .await
             {
                 Ok(Some(tx)) => Ok(tx),
-                Ok(None) => Err(Error::TxResponse(format!("Transaction hash {} not found", transaction_hash))),
+                Ok(None) => Err(Error::TxResponse(format!(
+                    "Transaction hash {} not found",
+                    transaction_hash
+                ))),
                 Err(error) => Err(Error::TxResponse(error.to_string())),
             };
 
@@ -218,7 +240,10 @@ impl EthClient {
             {
                 Ok(tx) => Ok(tx),
                 Err(error) => Err(Error::TxResponse(error.to_string())),
-                Ok(None) => Err(Error::TxResponse(format!("Transaction hash {} not found", transaction_hash))),
+                Ok(None) => Err(Error::TxResponse(format!(
+                    "Transaction hash {} not found",
+                    transaction_hash
+                ))),
             };
             println!("transaction data {:#?}", tx);
             // TODO(AS): refactor this to uncomment this section or handle the way needeed for first public release version
@@ -321,10 +346,10 @@ impl EthClient {
     }
 
     /// Get the current price of gas
-    pub async fn gas_price(&self) -> Result<EthereumAmount, Error> { 
+    pub async fn gas_price(&self) -> Result<EthereumAmount, Error> {
         // getting gas price
         let gas_price = self.web3.eth().gas_price().await?;
-        Ok(EthereumAmount {wei: gas_price})
+        Ok(EthereumAmount { wei: gas_price })
     }
 
     /// Get the latest block number for the current network chain
@@ -389,10 +414,8 @@ impl EthClient {
     }
 }
 
-
 #[async_trait]
 impl BlockchainConnector for EthClient {
-
     type ErrorType = Error;
 
     fn new(endpoint: &str) -> Result<Self, Error> {
@@ -409,50 +432,54 @@ impl BlockchainConnector for EthClient {
         &self.endpoint
     }
 
-
     async fn display_fee_estimates(&self) -> Result<String, Error> {
         let gas_price = self.gas_price().await?;
         let gas_price_gwei = gas_price.eth() * 1_000_000_000f64;
-        let gas_price_string = format!("Gas Price: {} Gwei ({} ETH)", gas_price_gwei, gas_price.eth());
+        let gas_price_string = format!(
+            "Gas Price: {} Gwei ({} ETH)",
+            gas_price_gwei,
+            gas_price.eth()
+        );
         Ok(gas_price_string)
     }
-
 }
 
-
-    impl BlockchainConnectorGeneral for EthClient {
-        fn as_any(&self) -> &dyn Any {
-            self
-        }
-    
-        fn box_clone(&self) -> Box<dyn BlockchainConnectorGeneral> {
-            Box::new(self.clone())
-        }
+impl BlockchainConnectorGeneral for EthClient {
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 
+    fn box_clone(&self) -> Box<dyn BlockchainConnectorGeneral> {
+        Box::new(self.clone())
+    }
+}
 
+impl TryFrom<Box<dyn BlockchainConnectorGeneral>> for EthClient {
+    type Error = Error;
 
-
-    impl TryFrom <Box<dyn BlockchainConnectorGeneral>> for EthClient {
-        type Error = Error;
-    
-        fn try_from(blockchain_connector: Box<dyn BlockchainConnectorGeneral>) -> Result<Self, Self::Error> {
-            match blockchain_connector.as_any().downcast_ref::<EthClient>() {
-                Some(blockstream) => Ok(blockstream.clone()),
-                None => Err(Error::UnableToDowncastBlockchainConnector("Could not convert BlockchainConnector to BlockchainClient".into())),
-            }
+    fn try_from(
+        blockchain_connector: Box<dyn BlockchainConnectorGeneral>,
+    ) -> Result<Self, Self::Error> {
+        match blockchain_connector.as_any().downcast_ref::<EthClient>() {
+            Some(blockstream) => Ok(blockstream.clone()),
+            None => Err(Error::UnableToDowncastBlockchainConnector(
+                "Could not convert BlockchainConnector to BlockchainClient".into(),
+            )),
         }
     }
-    
-    impl TryFrom <&Box<dyn BlockchainConnectorGeneral>> for EthClient {
-        type Error = Error;
-    
-        fn try_from(blockchain_connector: &Box<dyn BlockchainConnectorGeneral>) -> Result<Self, Self::Error> {
-            match blockchain_connector.as_any().downcast_ref::<EthClient>() {
-                Some(blockstream) => Ok(blockstream.clone()),
-                None => Err(Error::UnableToDowncastBlockchainConnector("Could not convert BlockchainConnector to BlockchainClient".into())),
-            }
+}
+
+impl TryFrom<&Box<dyn BlockchainConnectorGeneral>> for EthClient {
+    type Error = Error;
+
+    fn try_from(
+        blockchain_connector: &Box<dyn BlockchainConnectorGeneral>,
+    ) -> Result<Self, Self::Error> {
+        match blockchain_connector.as_any().downcast_ref::<EthClient>() {
+            Some(blockstream) => Ok(blockstream.clone()),
+            None => Err(Error::UnableToDowncastBlockchainConnector(
+                "Could not convert BlockchainConnector to BlockchainClient".into(),
+            )),
         }
     }
-
-
+}

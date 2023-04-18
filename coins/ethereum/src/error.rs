@@ -1,10 +1,8 @@
 use thiserror::Error;
 
-
 /// Custom error type for this crate.
 #[derive(Error, Debug)]
 pub enum Error {
-    
     /// Error due to missing public key
     #[error("Public Key not included")]
     MissingPublicKey,
@@ -37,7 +35,7 @@ pub enum Error {
     ParseInt(#[from] std::num::ParseIntError),
     /// Convert web3 error
     #[error("web3 error: {0}")]
-    FromWeb3(#[from] web3::Error), 
+    FromWeb3(#[from] web3::Error),
     /// Error related to converting from or to a hex
     #[error("Hex error: {0}")]
     Hex(#[from] hex::FromHexError),

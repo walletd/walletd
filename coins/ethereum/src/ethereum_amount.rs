@@ -100,7 +100,6 @@ impl Display for EthereumAmount {
 }
 
 impl CryptoAmount for EthereumAmount {
-    
     fn from_main_unit_decimal_value(value: f64) -> Self {
         Self::from_eth(value)
     }

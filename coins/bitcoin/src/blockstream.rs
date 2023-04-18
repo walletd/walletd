@@ -1,8 +1,9 @@
 //! This module contains the implementation of the handling getting information to and from the bitcoin blockchain using the Blockstream Esplora JSON over HTTP API <https://github.com/Blockstream/esplora/blob/master/API.md>
-//! 
-//! 
+//!
+//!
 use std::any::Any;
 
+use crate::BitcoinWallet;
 use async_trait::async_trait;
 use bitcoin::{Address, AddressType};
 use bitcoin_hashes::{sha256d, Hash};
@@ -10,13 +11,12 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use walletd_coin_model::BlockchainConnectorGeneral;
 use walletd_coin_model::{BlockchainConnector, CryptoWallet};
-use crate::BitcoinWallet;
 
-use time::{OffsetDateTime, Duration};
 use time::format_description::well_known::Rfc2822;
+use time::{Duration, OffsetDateTime};
 
-use prettytable::Table;
 use prettytable::row;
+use prettytable::Table;
 use std::fmt;
 
 use walletd_coin_model::CryptoAddress;
@@ -24,7 +24,7 @@ use walletd_coin_model::CryptoAddress;
 use crate::BitcoinAmount;
 
 pub use bitcoin::{
-     sighash::EcdsaSighashType, Network, PrivateKey as BitcoinPrivateKey,
+    sighash::EcdsaSighashType, Network, PrivateKey as BitcoinPrivateKey,
     PublicKey as BitcoinPublicKey, Script,
 };
 
@@ -49,7 +49,7 @@ pub struct BTransaction {
     /// Vector of Outputs
     pub vout: Vec<Output>,
     #[serde(default)]
-    /// Size 
+    /// Size
     pub size: u64,
     #[serde(default)]
     /// Weight
@@ -62,25 +62,26 @@ pub struct BTransaction {
     pub status: Status,
 }
 
-
 impl BTransaction {
-
     /// Returns a string representation of the transaction history of the given wallet
     /// # Errors
     /// If this function encounters an error, it will return an `Error` variant.
-   pub async fn overview(btc_wallet: BitcoinWallet) -> Result<String, Error> {
-        
+    pub async fn overview(btc_wallet: BitcoinWallet) -> Result<String, Error> {
         // We need to know which addresses belong to our wallet
-        let our_addresses = btc_wallet.addresses().iter().map(|address| address.public_address()).collect::<Vec<String>>();
+        let our_addresses = btc_wallet
+            .addresses()
+            .iter()
+            .map(|address| address.public_address())
+            .collect::<Vec<String>>();
         let blockchain_client = btc_wallet.blockchain_client()?;
-         let mut transactions: Vec<BTransaction> = Vec::new();
-         let mut owners_addresses = Vec::new();
+        let mut transactions: Vec<BTransaction> = Vec::new();
+        let mut owners_addresses = Vec::new();
         for address in &our_addresses {
             let txs = blockchain_client.transactions(address).await?;
-           
+
             for tx in txs {
                 if transactions.iter().any(|x| x.txid == tx.txid) {
-                    continue
+                    continue;
                 }
                 transactions.push(tx);
                 owners_addresses.push(address.clone());
@@ -91,18 +92,39 @@ impl BTransaction {
         transactions.sort_by(|a, b| a.status.block_time.cmp(&b.status.block_time));
         let mut table = Table::new();
         // Amount to display is the change in the running balance
-        table.add_row(row!["Transaction ID", "Amount (BTC)", "To/From Address", "Status", "Timestamp"]);
+        table.add_row(row![
+            "Transaction ID",
+            "Amount (BTC)",
+            "To/From Address",
+            "Status",
+            "Timestamp"
+        ]);
         for i in 0..transactions.len() {
-            let our_inputs: Vec<Output> = transactions[i].vin.iter().filter(|input| owners_addresses.contains(&input.prevout.scriptpubkey_address)).map(|x| x.prevout.clone()).collect();
-            let received_outputs: Vec<Output> = transactions[i].vout.iter().filter(|output| owners_addresses.contains(&output.scriptpubkey_address)).cloned().collect();
-            let received_amount = BitcoinAmount::from_satoshi(received_outputs.iter().fold(0, |acc, output| acc + output.value));
-            let sent_amount = BitcoinAmount::from_satoshi(our_inputs.iter().fold(0, |acc, output| acc + output.value));
-          
+            let our_inputs: Vec<Output> = transactions[i]
+                .vin
+                .iter()
+                .filter(|input| owners_addresses.contains(&input.prevout.scriptpubkey_address))
+                .map(|x| x.prevout.clone())
+                .collect();
+            let received_outputs: Vec<Output> = transactions[i]
+                .vout
+                .iter()
+                .filter(|output| owners_addresses.contains(&output.scriptpubkey_address))
+                .cloned()
+                .collect();
+            let received_amount = BitcoinAmount::from_satoshi(
+                received_outputs
+                    .iter()
+                    .fold(0, |acc, output| acc + output.value),
+            );
+            let sent_amount = BitcoinAmount::from_satoshi(
+                our_inputs.iter().fold(0, |acc, output| acc + output.value),
+            );
+
             let amount_balance = if received_amount > sent_amount {
                 // this is situation when we are receiving money
                 (received_amount - sent_amount).btc()
-            }
-            else {
+            } else {
                 // this is the situation where we are sending money
                 (sent_amount - received_amount).btc() * -1.0
             };
@@ -113,15 +135,17 @@ impl BTransaction {
                 "Pending Confirmation".to_string()
             };
             let timestamp = transactions[i].status.timestamp()?;
-            
-            
-            table.add_row(row![transactions[i].txid, amount_balance, owners_addresses[i], status_string, timestamp]);
 
+            table.add_row(row![
+                transactions[i].txid,
+                amount_balance,
+                owners_addresses[i],
+                status_string,
+                timestamp
+            ]);
         }
         Ok(table.to_string())
     }
-
-
 }
 
 /// Represents a Bitcoin transaction out in the format with the data fields returned by Blockstream
@@ -165,7 +189,10 @@ impl fmt::Display for Output {
         if !self.pubkeyhash.is_empty() {
             table.add_row(row!["PubKeyHash", self.pubkeyhash]);
         }
-        table.add_row(row!["Value (BTC)", BitcoinAmount::from_satoshi(self.value).btc()]);
+        table.add_row(row![
+            "Value (BTC)",
+            BitcoinAmount::from_satoshi(self.value).btc()
+        ]);
         write!(f, "{}", table)
     }
 }
@@ -189,10 +216,10 @@ pub struct Input {
     /// ScriptSig ASM
     pub scriptsig_asm: String,
     #[serde(default)]
-    /// Witness 
+    /// Witness
     pub witness: Vec<String>,
     #[serde(default)]
-    /// Is coinbase 
+    /// Is coinbase
     pub is_coinbase: bool,
     #[serde(default)]
     /// Sequence
@@ -206,7 +233,10 @@ impl fmt::Display for Input {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut table = Table::new();
         table.add_row(row!["Input Tx ID", self.txid]);
-        table.add_row(row!["Amount (BTC)", BitcoinAmount::from_satoshi(self.vout as u64).btc()]);
+        table.add_row(row![
+            "Amount (BTC)",
+            BitcoinAmount::from_satoshi(self.vout as u64).btc()
+        ]);
         if !self.scriptsig.is_empty() {
             table.add_row(row!["ScriptSig", self.scriptsig]);
         }
@@ -246,16 +276,18 @@ impl Status {
     /// Returns the timestamp based on the block_time data as a string formatted as RFC2822
     pub fn timestamp(&self) -> Result<String, Error> {
         if self.confirmed {
-        // Creates a timestamp from the specified number of whole seconds which have passed since the UNIX_EPOCH
-       match OffsetDateTime::UNIX_EPOCH.checked_add(Duration::new(self.block_time.into(), 0)) {
-        // Formats the combined date and time with the specified format string.
-        Some(timestamp) => {let formatted_timestamp = timestamp.format(&Rfc2822)?;
-        Ok(formatted_timestamp)}
-        None => Err(Error::Timestamp("Overflow error when converting timestamp".into()))
-       }
-              
-        }
-        else {
+            // Creates a timestamp from the specified number of whole seconds which have passed since the UNIX_EPOCH
+            match OffsetDateTime::UNIX_EPOCH.checked_add(Duration::new(self.block_time.into(), 0)) {
+                // Formats the combined date and time with the specified format string.
+                Some(timestamp) => {
+                    let formatted_timestamp = timestamp.format(&Rfc2822)?;
+                    Ok(formatted_timestamp)
+                }
+                None => Err(Error::Timestamp(
+                    "Overflow error when converting timestamp".into(),
+                )),
+            }
+        } else {
             Ok("".to_string())
         }
     }
@@ -263,12 +295,12 @@ impl Status {
 
 impl fmt::Display for Status {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-       let mut table = Table::new();
-       table.add_row(row!["Confirmed: ", self.confirmed]);
-         table.add_row(row!["Block Height: ", self.block_height]);
-            table.add_row(row!["Block Hash: ", self.block_hash]);
-                table.add_row(row!["Timestamp ", self.timestamp().unwrap()]);
-                write!(f, "{}", table)
+        let mut table = Table::new();
+        table.add_row(row!["Confirmed: ", self.confirmed]);
+        table.add_row(row!["Block Height: ", self.block_height]);
+        table.add_row(row!["Block Hash: ", self.block_hash]);
+        table.add_row(row!["Timestamp ", self.timestamp().unwrap()]);
+        write!(f, "{}", table)
     }
 }
 
@@ -294,7 +326,6 @@ pub struct Utxo {
 pub struct Utxos(pub Vec<Utxo>);
 
 impl Utxos {
-    
     /// Creates a new Utxos empty vector.
     pub fn new() -> Self {
         Utxos(Vec::new())
@@ -365,7 +396,9 @@ impl InputType {
             }
             "v0_p2wsh" => Ok(InputType::P2wsh),
             "v0_p2wpkh" => Ok(InputType::P2wpkh),
-            _ => Err(Error::CurrentlyNotSupported("Unknown scriptpubkey_type, not currently handled".into())),
+            _ => Err(Error::CurrentlyNotSupported(
+                "Unknown scriptpubkey_type, not currently handled".into(),
+            )),
         }
     }
 
@@ -412,7 +445,7 @@ impl BTransaction {
             let prev_txid = &input_here.txid;
             if prev_txid.len() != 64 {
                 return Err(Error::TxId(
-                    "The references txid in hex format should be 64 characters long".into()
+                    "The references txid in hex format should be 64 characters long".into(),
                 ));
             }
             let prev_txid_encoded = Self::hex_reverse_byte_order(prev_txid)?;
@@ -442,7 +475,7 @@ impl BTransaction {
         let prev_txid = &input.txid;
         if prev_txid.len() != 64 {
             return Err(Error::TxId(
-                "The references txid in hex format should be 64 characters long".into()
+                "The references txid in hex format should be 64 characters long".into(),
             ));
         }
         let prev_txid_encoded = Self::hex_reverse_byte_order(prev_txid)?;
@@ -471,7 +504,9 @@ impl BTransaction {
             outputs_serialization.push_str(&hex::encode(value_encoded));
             let len_scriptpubkey = output.scriptpubkey.len();
             if len_scriptpubkey % 2 != 0 {
-                return Err(Error::ScriptInvalid("Length of scriptpubkey should be a multiple of 2".into()));
+                return Err(Error::ScriptInvalid(
+                    "Length of scriptpubkey should be a multiple of 2".into(),
+                ));
             }
             let len_scriptpubkey_encoded =
                 Self::variable_length_integer_encoding(len_scriptpubkey / 2)?;
@@ -520,7 +555,7 @@ impl BTransaction {
             let prev_txid = &input.txid;
             if prev_txid.len() != 64 {
                 return Err(Error::TxId(
-                    "The reference txid in hex format should be 64 characters long".into()
+                    "The reference txid in hex format should be 64 characters long".into(),
                 ));
             }
             let prev_txid_encoded = Self::hex_reverse_byte_order(prev_txid)?;
@@ -530,7 +565,9 @@ impl BTransaction {
             serialization.push_str(&hex::encode(prev_vout_encoded));
             let len_signature_script = input.scriptsig.len();
             if len_signature_script % 2 != 0 {
-                return Err(Error::ScriptInvalid("Length of script_sig should be a multiple of 2".into()));
+                return Err(Error::ScriptInvalid(
+                    "Length of script_sig should be a multiple of 2".into(),
+                ));
             }
             let len_signature_script_encoded =
                 Self::variable_length_integer_encoding(len_signature_script / 2)?;
@@ -551,8 +588,9 @@ impl BTransaction {
             serialization.push_str(&hex::encode(value_encoded));
             let len_scriptpubkey = output.scriptpubkey.len();
             if len_scriptpubkey % 2 != 0 {
-                
-                return Err(Error::ScriptInvalid("Length of scriptpubkey should be a multiple of 2".into()));
+                return Err(Error::ScriptInvalid(
+                    "Length of scriptpubkey should be a multiple of 2".into(),
+                ));
             }
             let len_scriptpubkey_encoded =
                 Self::variable_length_integer_encoding(len_scriptpubkey / 2)?;
@@ -573,7 +611,7 @@ impl BTransaction {
                     witness_counts[i] += 1;
                     if data.len() % 2 != 0 {
                         return Err(Error::ScriptInvalid(
-                            "Witness data length in hex should be a multiple of 2".into()
+                            "Witness data length in hex should be a multiple of 2".into(),
                         ));
                     }
                     witness_lens.push((data.len() / 2).try_into()?);
@@ -646,7 +684,7 @@ impl BTransaction {
         let len = hex_string.len();
         if len % 2 != 0 {
             return Err(Error::ScriptInvalid(
-                "The hex string should have a length that is a multiple of 2".into()
+                "The hex string should have a length that is a multiple of 2".into(),
             ));
         }
         let mut encoded = String::new();
@@ -704,7 +742,7 @@ impl Output {
             AddressType::P2wsh => self.scriptpubkey_type = "v0_p2wsh".to_string(),
             _ => {
                 return Err(Error::CurrentlyNotSupported(
-                    "Currently not implemented setting scriptpubkey for this address type".into()
+                    "Currently not implemented setting scriptpubkey for this address type".into(),
                 ))
             }
         }
@@ -735,8 +773,6 @@ impl BlockchainConnector for Blockstream {
         })
     }
 
-    
-
     fn url(&self) -> &str {
         &self.url
     }
@@ -753,55 +789,66 @@ impl BlockchainConnectorGeneral for Blockstream {
         self
     }
 
-
     fn box_clone(&self) -> Box<dyn BlockchainConnectorGeneral> {
         Box::new(self.clone())
     }
-
 }
 
 /// FeeEstimates is a wrapper around the fee estimates returned by the Blockstream API
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
 pub struct FeeEstimates(pub serde_json::Map<String, Value>);
 
-
 impl fmt::Display for FeeEstimates {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut table = Table::new();
         writeln!(f, "Fee Estimates")?;
         table.add_row(row!["Confirmation Target (Blocks)", "Fee (sat/vB)"]);
-        let mut keys = self.0.iter().map(|(a, _b)| a.parse::<u32>().expect("expecting that key should be able to be parsed as u32")).collect::<Vec<_>>();
+        let mut keys = self
+            .0
+            .iter()
+            .map(|(a, _b)| {
+                a.parse::<u32>()
+                    .expect("expecting that key should be able to be parsed as u32")
+            })
+            .collect::<Vec<_>>();
         keys.sort();
         for key in keys {
-           table.add_row(row![key, self.0[&key.to_string()]]);
+            table.add_row(row![key, self.0[&key.to_string()]]);
         }
         write!(f, "{}", table)?;
         Ok(())
     }
 }
 
-impl TryFrom <Box<dyn BlockchainConnectorGeneral>> for Blockstream {
+impl TryFrom<Box<dyn BlockchainConnectorGeneral>> for Blockstream {
     type Error = Error;
 
-    fn try_from(blockchain_connector: Box<dyn BlockchainConnectorGeneral>) -> Result<Self, Self::Error> {
+    fn try_from(
+        blockchain_connector: Box<dyn BlockchainConnectorGeneral>,
+    ) -> Result<Self, Self::Error> {
         match blockchain_connector.as_any().downcast_ref::<Blockstream>() {
             Some(blockstream) => Ok(blockstream.clone()),
-            None =>  Err(Error::UnableToDowncastBlockchainConnector("Could not convert BlockchainConnector to Blockstream".into())),
+            None => Err(Error::UnableToDowncastBlockchainConnector(
+                "Could not convert BlockchainConnector to Blockstream".into(),
+            )),
         }
     }
 }
 
-impl TryFrom <&Box<dyn BlockchainConnectorGeneral>> for Blockstream {
+impl TryFrom<&Box<dyn BlockchainConnectorGeneral>> for Blockstream {
     type Error = Error;
 
-    fn try_from(blockchain_connector: &Box<dyn BlockchainConnectorGeneral>) -> Result<Self, Self::Error> {
+    fn try_from(
+        blockchain_connector: &Box<dyn BlockchainConnectorGeneral>,
+    ) -> Result<Self, Self::Error> {
         match blockchain_connector.as_any().downcast_ref::<Blockstream>() {
             Some(blockstream) => Ok(blockstream.clone()),
-            None =>  Err(Error::UnableToDowncastBlockchainConnector("Could not convert BlockchainConnector to Blockstream".into())),
+            None => Err(Error::UnableToDowncastBlockchainConnector(
+                "Could not convert BlockchainConnector to Blockstream".into(),
+            )),
         }
     }
 }
-
 
 impl Blockstream {
     /// Checks if the given address has had an past transactions, returns true if it has and false if it has not
@@ -823,7 +870,9 @@ impl Blockstream {
         let body = reqwest::blocking::get(format!("{}/blocks/tip/height", self.url))
             .expect("Error getting block count")
             .text()?;
-        let block_count = body.parse::<u64>().map_err(|e| Error::FromStr(e.to_string()))?;
+        let block_count = body
+            .parse::<u64>()
+            .map_err(|e| Error::FromStr(e.to_string()))?;
         Ok(block_count)
     }
 
@@ -843,7 +892,7 @@ impl Blockstream {
             .await?
             .text()
             .await?;
-        let transactions: Vec<BTransaction>= serde_json::from_str(&body)?;
+        let transactions: Vec<BTransaction> = serde_json::from_str(&body)?;
         Ok(transactions)
     }
 
@@ -883,7 +932,7 @@ impl Blockstream {
             .await?
             .text()
             .await?;
-       
+
         let transaction: BTransaction = serde_json::from_str(&body)?;
         Ok(transaction)
     }

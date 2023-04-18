@@ -8,8 +8,8 @@ extern crate walletd_ethereum;
 // use walletd_hd_key::HDKey;
 // use walletd_coin_model::CryptoWallet;
 // use walletd_hd_key::NetworkType;
-use web3::types::H160;
 use walletd_coin_model::BlockchainConnector;
+use web3::types::H160;
 
 // const GOERLI_TEST_ADDRESS: &str =
 // "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
