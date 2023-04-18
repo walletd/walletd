@@ -202,6 +202,11 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_default_language() {
+        assert_eq!(Language::new(), Language::English);
+    }
+
+    #[test]
     fn test_from_str_language() {
         assert_eq!(Language::English, Language::from_str("English").unwrap());
         assert_eq!(
@@ -254,6 +259,17 @@ mod tests {
             WordList::detect_language(phrase).unwrap(),
             Language::English
         );
+    }
+
+
+    #[test]
+    fn test_fail_to_detect_language() {
+        let phrase = vec![
+            "outer", "ride", "neither", "foil", "glue", "number", "place", "usage", "ball", "shed",
+            "dry", "point",
+        ];
+        
+        WordList::detect_language(phrase).is_err();
     }
 
     #[test]
@@ -347,4 +363,5 @@ mod tests {
         assert_eq!(wordlist.get_index("zurdo").unwrap(), 2047);
         assert!(wordlist.get_index("inválido").is_err());
     }
+
 }
