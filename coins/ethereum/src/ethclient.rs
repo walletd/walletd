@@ -1,6 +1,7 @@
 use crate::Error;
 use crate::EthereumAmount;
 use async_trait::async_trait;
+use log::info;
 use std::any::Any;
 use std::str::FromStr;
 use walletd_coin_model::{BlockchainConnector, BlockchainConnectorGeneral};
@@ -8,7 +9,7 @@ use web3::contract::{Contract, Options};
 use web3::ethabi::Uint;
 use web3::helpers as w3h;
 use web3::transports::Http;
-use web3::types::{BlockId, BlockNumber, Transaction, TransactionId, H160, H256, U256, U64};
+use web3::types::{BlockId, BlockNumber, TransactionId, H160, H256, U256, U64};
 
 #[allow(dead_code)]
 pub enum TransportType {
@@ -102,7 +103,7 @@ impl EthClient {
             };
             let from_addr = tx.from.unwrap_or(H160::zero());
             let to_addr = tx.to.unwrap_or(H160::zero());
-            println!(
+            info!(
                 "[{}] from {}, to {}, value {}, gas {}, gas price {:?}",
                 tx.transaction_index.unwrap_or(U64::from(0)),
                 w3h::to_string(&from_addr),
@@ -153,8 +154,8 @@ impl EthClient {
                             let total_supply: Uint =
                                 self.total_supply(&smart_contract).await.unwrap();
 
-                            println!("token name {:#?}", token_name);
-                            println!("token supply {:#?}", total_supply);
+                            info!("token name {:#?}", token_name);
+                            info!("token supply {:#?}", total_supply);
                         }
                     }
                     _ => {
@@ -162,7 +163,7 @@ impl EthClient {
                     }
                 },
                 _ => {
-                    // println!("To address is not a valid address, skipping.");
+                    info!("To address is not a valid address, skipping.");
                     continue;
                 }
             }
@@ -186,7 +187,7 @@ impl EthClient {
                     transaction_hash
                 ))),
             };
-            println!("transaction data {:#?}", tx);
+            info!("transaction data {:#?}", tx);
             // TODO(AS): refactor this to uncomment this section or handle the way needeed for first public release version
             // let smart_contract_addr = match tx.unwrap().to {
             //     Some(addr) => match &self.web3.eth().code(addr,
@@ -211,8 +212,8 @@ impl EthClient {
             // Uint =
             // self.total_supply(&smart_contract).await.unwrap();
 
-            //                 println!("token name {:#?}", token_name);
-            //                 println!("token supply {:#?}", total_supply);
+            //                 info!("token name {:#?}", token_name);
+            //                 info!("token supply {:#?}", total_supply);
             //             }
             //         }
             //         _ => {
@@ -220,12 +221,12 @@ impl EthClient {
             //         }
             //     },
             //     _ => {
-            //         // println!("To address is not a valid address,
+            //         // info!("To address is not a valid address,
             // skipping.");         continue;
             //     }
             // };
         }
-        // println!("{:#?}", smart_contract_addr);
+        // info!("{:#?}", smart_contract_addr);
     }
 
     /// Given a specified address, retrieves the Ethereum balance of that
