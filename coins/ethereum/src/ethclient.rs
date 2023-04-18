@@ -1,8 +1,6 @@
 use crate::Error;
 use crate::EthereumAmount;
 use async_trait::async_trait;
-use prettytable::row;
-use prettytable::Table;
 use std::any::Any;
 use std::str::FromStr;
 use walletd_coin_model::{BlockchainConnector, BlockchainConnectorGeneral};
@@ -114,63 +112,6 @@ impl EthClient {
                 tx.gas_price,
             );
         }
-    }
-
-    /// Returns transaction details for a given transaction as a formatted string
-    pub async fn transaction_details(tx: Transaction) -> Result<String, Error> {
-        let mut table = Table::new();
-        let eth_value = EthereumAmount::from_wei(tx.value);
-        table.add_row(row!["Transaction Hash", format!("0x{:x}", tx.hash)]);
-        table.add_row(row!["Amount", eth_value]);
-        if tx.block_number.is_some() {
-            table.add_row(row![
-                "Block Number",
-                tx.block_number.expect("Block number missing")
-            ]);
-        }
-        if tx.transaction_index.is_some() {
-            table.add_row(row![
-                "Transaction Index Number",
-                tx.transaction_index.expect("Transaction index missing")
-            ]);
-        }
-        if tx.from.is_some() {
-            table.add_row(row![
-                "From Address",
-                format!("0x{:x}", tx.from.expect("No from address"))
-            ]);
-        }
-        if tx.to.is_some() {
-            table.add_row(row![
-                "To Address",
-                format!("0x{:x}", tx.to.expect("No to address"))
-            ]);
-        }
-        if tx.gas_price.is_some() {
-            table.add_row(row!["Gas Price", tx.gas_price.expect("No gas price")]);
-        }
-        table.add_row(row!["Gas", tx.gas]);
-        if tx.transaction_type.is_some() {
-            table.add_row(row![
-                "Transaction Type",
-                tx.transaction_type.expect("No transaction type")
-            ]);
-        }
-        if tx.max_fee_per_gas.is_some() {
-            table.add_row(row![
-                "Maximum Gas Fee",
-                tx.max_fee_per_gas.expect("No max fee per gas")
-            ]);
-        }
-        if tx.max_priority_fee_per_gas.is_some() {
-            table.add_row(row![
-                "Maximum priority fee per gas",
-                tx.max_priority_fee_per_gas
-                    .expect("No max priority fee per gas")
-            ]);
-        }
-        let table_string = table.to_string();
-        Ok(table.to_string())
     }
 
     ///  Prints out info on a smart contract transaction from a block hash
@@ -430,17 +371,6 @@ impl BlockchainConnector for EthClient {
 
     fn url(&self) -> &str {
         &self.endpoint
-    }
-
-    async fn display_fee_estimates(&self) -> Result<String, Error> {
-        let gas_price = self.gas_price().await?;
-        let gas_price_gwei = gas_price.eth() * 1_000_000_000f64;
-        let gas_price_string = format!(
-            "Gas Price: {} Gwei ({} ETH)",
-            gas_price_gwei,
-            gas_price.eth()
-        );
-        Ok(gas_price_string)
     }
 }
 

@@ -17,8 +17,7 @@ pub trait BlockchainConnector {
     /// url returns the url of the BlockchainConnector
     fn url(&self) -> &str;
 
-    /// Returns in a string format information about the current fee estimates for the blockchain
-    async fn display_fee_estimates(&self) -> Result<String, Self::ErrorType>;
+    // TODO(AS): return the fee estimates.. also consider adding functions to get common blockchain functions
 
     /// Returns the builder that can be used to build a BlockchainConnector with custom options
     fn builder() -> BlockchainConnectorBuilder<Self>
