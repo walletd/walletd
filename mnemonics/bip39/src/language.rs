@@ -266,10 +266,11 @@ mod tests {
     fn test_fail_to_detect_language() {
         let phrase = vec![
             "outer", "ride", "neither", "foil", "glue", "number", "place", "usage", "ball", "shed",
-            "dry", "point",
+            "dry", "pointx",
         ];
         
-        WordList::detect_language(phrase).is_err();
+        assert_eq!(WordList::detect_language(phrase).is_err(), true);
+
     }
 
     #[test]
@@ -278,8 +279,7 @@ mod tests {
         assert_eq!(wordlist.inner.len(), 2048);
         assert_eq!(wordlist.get_index("的").unwrap(), 0);
         assert_eq!(wordlist.get_index("歇").unwrap(), 2047);
-        // assert!(wordlist.get_index("效").is_err()); // cant find a character
-        // thats not in the list
+        assert!(wordlist.get_index("A").is_err()); // cant find a character thats not in the list
     }
 
     #[test]
@@ -288,8 +288,7 @@ mod tests {
         assert_eq!(wordlist.inner.len(), 2048);
         assert_eq!(wordlist.get_index("的").unwrap(), 0);
         assert_eq!(wordlist.get_index("歇").unwrap(), 2047);
-        // assert!(wordlist.get_index("效").is_err()); // cant find a character
-        // thats not in the list
+        assert!(wordlist.get_index("A").is_err()); // cant find a character thats not in the list
     }
 
     #[test]
