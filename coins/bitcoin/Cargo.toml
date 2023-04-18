@@ -15,7 +15,9 @@ name = "walletd_bitcoin"
 path = "src/lib.rs"
 
 [dev-dependencies]
-mockito = "0.31.1"
+mockito = "1.0.2"
+tokio = "1.27.0"
+tokio-test = "0.4.2"
 
 [dependencies]
 
