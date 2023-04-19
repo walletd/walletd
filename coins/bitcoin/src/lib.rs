@@ -8,13 +8,25 @@
 #![warn(missing_docs)]
 
 pub use bitcoin;
+pub use bitcoin::{
+    Address as AddressInfo, AddressType, Network, PrivateKey as BitcoinPrivateKey,
+    PublicKey as BitcoinPublicKey, Script,
+};
 
 mod bitcoin_address;
-pub use bitcoin_address::{BitcoinAddress, Network};
+pub use bitcoin_address::BitcoinAddress;
 mod bitcoin_wallet;
-pub use bitcoin_wallet::{BitcoinPrivateKey, BitcoinPublicKey, BitcoinWallet};
+pub use bitcoin_wallet::BitcoinWallet;
 mod bitcoin_amount;
 pub use bitcoin_amount::BitcoinAmount;
 pub mod blockstream;
 mod error;
 pub use error::Error;
+pub use walletd_bip39::{
+    Language as Bip39Language, Mnemonic as Bip39Mnemonic, MnemonicHandler, MnemonicStyleBuilder,
+    MnemonicType as Bip39MnemonicType, Seed,
+};
+pub use walletd_coin_model::{
+    CryptoAddress, CryptoAmount, CryptoWallet, CryptoWalletBuilder, CryptoWalletGeneral,
+};
+pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};

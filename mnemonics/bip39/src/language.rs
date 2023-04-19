@@ -202,6 +202,11 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_default_language() {
+        assert_eq!(Language::new(), Language::English);
+    }
+
+    #[test]
     fn test_from_str_language() {
         assert_eq!(Language::English, Language::from_str("English").unwrap());
         assert_eq!(
@@ -257,13 +262,22 @@ mod tests {
     }
 
     #[test]
+    fn test_fail_to_detect_language() {
+        let phrase = vec![
+            "outer", "ride", "neither", "foil", "glue", "number", "place", "usage", "ball", "shed",
+            "dry", "pointx",
+        ];
+
+        assert!(WordList::detect_language(phrase).is_err());
+    }
+
+    #[test]
     fn test_chinese_simplified_wordlist() {
         let wordlist = WordList::new(Language::ChineseSimplified);
         assert_eq!(wordlist.inner.len(), 2048);
         assert_eq!(wordlist.get_index("的").unwrap(), 0);
         assert_eq!(wordlist.get_index("歇").unwrap(), 2047);
-        // assert!(wordlist.get_index("效").is_err()); // cant find a character
-        // thats not in the list
+        assert!(wordlist.get_index("A").is_err()); // cant find a character thats not in the list
     }
 
     #[test]
@@ -272,8 +286,7 @@ mod tests {
         assert_eq!(wordlist.inner.len(), 2048);
         assert_eq!(wordlist.get_index("的").unwrap(), 0);
         assert_eq!(wordlist.get_index("歇").unwrap(), 2047);
-        // assert!(wordlist.get_index("效").is_err()); // cant find a character
-        // thats not in the list
+        assert!(wordlist.get_index("A").is_err()); // cant find a character thats not in the list
     }
 
     #[test]

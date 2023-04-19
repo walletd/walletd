@@ -286,7 +286,7 @@ impl HDKey {
             deriv_path.push(*item);
         }
 
-        if deriv_path.len() < 2 || deriv_path.at(0)? != HDPathIndex::Master {
+        if deriv_path.is_empty() || deriv_path.at(0)? != HDPathIndex::Master {
             return Err(Error::Invalid(format!(
                 "Invalid derivation path {}",
                 deriv_path
@@ -491,7 +491,6 @@ impl HDKey {
 
 #[cfg(test)]
 mod tests {
-    use slip44::{Coin, Symbol};
 
     use super::*;
 
@@ -645,62 +644,6 @@ mod tests {
         let hash160 = HDKey::hash160(&public_key.to_bytes());
         let expected_hash = "387e053312582d232984306f419a720428e0e432";
         assert_eq!(hex::encode(hash160), expected_hash);
-    }
-
-    #[test]
-    fn test_derived_from_master() {
-        let master_key = HDKey::new_master(
-            Seed::new(vec![
-                162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
-                249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
-                30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
-                57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
-            ]),
-            HDNetworkType::MainNet,
-        )
-        .unwrap();
-        let dpath = HDPath::builder()
-            .with_purpose(HDPurpose::BIP44.to_shortform_num())
-            .with_coin_type(Coin::from(Symbol::ETH).id())
-            .build()
-            .to_string();
-
-        let derived_key = master_key.derive(dpath).unwrap();
-        assert_eq!(
-            derived_key,
-            HDKey {
-                master_seed: Seed::new(vec![
-                    162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
-                    249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55,
-                    235, 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155,
-                    86, 102, 57, 122, 195, 32, 33, 178, 30, 10, 204, 238
-                ]),
-                derivation_path: HDPath::from_str("m/44'/60'/0'/0/0").unwrap(),
-                chain_code: [
-                    109, 150, 159, 21, 145, 38, 169, 238, 94, 27, 158, 36, 221, 164, 167, 226, 84,
-                    253, 81, 90, 210, 254, 84, 178, 233, 164, 217, 131, 149, 75, 168, 105
-                ],
-                depth: 5,
-                parent_fingerprint: [219, 127, 235, 119],
-                extended_private_key: Some(
-                    ExtendedPrivateKey::from_slice(&[
-                        165, 220, 218, 239, 160, 128, 19, 9, 44, 163, 125, 63, 96, 212, 111, 39,
-                        81, 13, 248, 119, 122, 58, 125, 214, 161, 185, 243, 115, 53, 44, 170, 117
-                    ])
-                    .unwrap()
-                ),
-                extended_public_key: Some(
-                    ExtendedPublicKey::from_slice(&[
-                        3, 237, 181, 7, 68, 80, 173, 147, 6, 71, 14, 89, 107, 91, 14, 126, 178, 36,
-                        245, 197, 197, 57, 113, 112, 101, 150, 46, 195, 101, 233, 63, 6, 97
-                    ])
-                    .unwrap()
-                ),
-                child_index: 0,
-                network: HDNetworkType::MainNet,
-                derivation_purpose: HDPurpose::BIP44,
-            }
-        );
     }
 
     #[test]

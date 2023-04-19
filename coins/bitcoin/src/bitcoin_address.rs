@@ -40,6 +40,7 @@ impl BitcoinAddress {
             .expect("Private key data missing")
             .to_bytes();
         let public_key = BitcoinPublicKey::from_slice(public_key_bytes)?;
+
         let private_key = BitcoinPrivateKey::from_slice(&private_key_bytes, network)?;
 
         let address_info: AddressInfo = match address_format {

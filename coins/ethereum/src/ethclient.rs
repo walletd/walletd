@@ -36,7 +36,7 @@ impl EthClient {
         self.web3.eth()
     }
 
-    /// Rerutns the balance of an address as an EthereumAmount
+    /// Returns the balance of an address as an EthereumAmount
     pub async fn balance(&self, address: H160) -> Result<EthereumAmount, Error> {
         let balance = self.web3.eth().balance(address, None).await?;
         Ok(EthereumAmount { wei: balance })
@@ -88,7 +88,7 @@ impl EthClient {
 
     // TODO(#70): Remove this after write-only functionality is finished
     /// Debug transaction for adding smart contract functionality
-    pub async fn print_txdata_for_block(&self, block: &web3::types::Block<H256>) {
+    async fn print_txdata_for_block(&self, block: &web3::types::Block<H256>) {
         for transaction_hash in &block.transactions {
             let tx = match self
                 .web3
@@ -116,10 +116,7 @@ impl EthClient {
     }
 
     ///  Prints out info on a smart contract transaction from a block hash
-    pub async fn get_smart_contract_tx_vec_from_block_hash(
-        &self,
-        block: &web3::types::Block<H256>,
-    ) {
+    async fn get_smart_contract_tx_vec_from_block_hash(&self, block: &web3::types::Block<H256>) {
         for transaction_hash in &block.transactions {
             let tx = match self
                 .web3
@@ -172,7 +169,7 @@ impl EthClient {
 
     /// Filters a block for all ERC-20 compliant transactions
     /// This leverages the standardised ERC20 Application Binary Interface
-    pub async fn smart_contract_transactions(&self, block: &web3::types::Block<H256>) {
+    async fn smart_contract_transactions(&self, block: &web3::types::Block<H256>) {
         for transaction_hash in &block.transactions {
             let tx = match self
                 .web3
@@ -238,7 +235,7 @@ impl EthClient {
 
     /// Given a specified smart contract (ERC20) instance, determine the
     /// token balance for a given address
-    pub async fn balance_of_smart_contract(
+    async fn balance_of_smart_contract(
         &self,
         smart_contract: &web3::contract::Contract<Http>,
         address: H160,
@@ -251,7 +248,7 @@ impl EthClient {
 
     /// Given a specified contract instance, determine the total supply of
     /// tokens
-    pub async fn total_supply(
+    async fn total_supply(
         &self,
         smart_contract: &web3::contract::Contract<Http>,
     ) -> Result<Uint, ()> {
@@ -263,7 +260,7 @@ impl EthClient {
     }
 
     /// Given a specified contract instance, retrieve the name of the token
-    pub async fn get_token_name(
+    async fn get_token_name(
         &self,
         contract: &web3::contract::Contract<Http>,
     ) -> Result<String, ()> {
@@ -276,7 +273,7 @@ impl EthClient {
     /// Initialises an instance of an ERC20-compliant smart contract we can
     /// subsequently interact with
     // erc20_abi.json describes standard ERC20 functions
-    pub fn initialise_contract(
+    fn initialise_contract(
         &self,
         addr: H160,
     ) -> Result<web3::contract::Contract<Http>, web3::ethabi::Error> {
@@ -319,10 +316,7 @@ impl EthClient {
     // no transaction data returned by Web3's block struct. This appears to be a bug
     // in Web3
     #[allow(non_snake_case)]
-    pub async fn block_data_from_U64(
-        &self,
-        block_id: U64,
-    ) -> web3::Result<web3::types::Block<H256>> {
+    async fn block_data_from_U64(&self, block_id: U64) -> web3::Result<web3::types::Block<H256>> {
         let blockid = BlockNumber::Number(block_id);
         let block_data = &self
             .web3
@@ -337,7 +331,7 @@ impl EthClient {
 
     /// Gets current chain's latest block number by passing it a string (eg
     /// "80000".to_string())
-    pub async fn block_data_from_numeric_string(
+    async fn block_data_from_numeric_string(
         &self,
         block_id: &str,
     ) -> web3::Result<web3::types::Block<H256>> {

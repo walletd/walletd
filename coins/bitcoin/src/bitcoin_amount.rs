@@ -148,3 +148,80 @@ impl Display for BitcoinAmount {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_add() -> Result<(), Error> {
+        let a = BitcoinAmount::from_btc(1.0);
+        let b = BitcoinAmount::from_btc(2.0);
+        let c = (a + b)?;
+        assert_eq!(c.btc(), 3.0);
+        Ok(())
+    }
+
+    #[test]
+    fn test_add_overflow() -> Result<(), Error> {
+        let a = BitcoinAmount::from_btc(1.0);
+        let b = BitcoinAmount::from_btc(f64::MAX);
+        let c = a + b;
+        assert!(c.is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn test_sub() -> Result<(), Error> {
+        let a = BitcoinAmount::from_btc(1.0);
+        let b = BitcoinAmount::from_btc(2.0);
+        let c = (b - a)?;
+        assert_eq!(c.btc(), 1.0);
+        Ok(())
+    }
+
+    #[test]
+    fn test_sub_overflow() -> Result<(), Error> {
+        let a = BitcoinAmount::from_btc(1.0);
+        let b = BitcoinAmount::from_btc(2.0);
+        let c = a - b;
+        assert!(c.is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn test_multiply() -> Result<(), Error> {
+        let a = BitcoinAmount::from_btc(1.0);
+        let b = 3.5;
+        let c = (a * b)?;
+        assert_eq!(c.btc(), 3.5);
+        Ok(())
+    }
+
+    #[test]
+    fn test_multiply_overflow() -> Result<(), Error> {
+        let a = BitcoinAmount::from_btc(1.0);
+        let b = f64::MAX;
+        let c = a * b;
+        assert!(c.is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn test_multiply_amounts() -> Result<(), Error> {
+        let a = BitcoinAmount::from_satoshi(20);
+        let b = BitcoinAmount::from_satoshi(40);
+        let c = (a * b)?;
+        assert_eq!(c.satoshi(), 800);
+        Ok(())
+    }
+
+    #[test]
+    fn test_multiply_amounts_overflow() -> Result<(), Error> {
+        let a = BitcoinAmount::from_satoshi(u64::MAX);
+        let b = BitcoinAmount::from_satoshi(2);
+        let c = a * b;
+        assert!(c.is_err());
+        Ok(())
+    }
+}
