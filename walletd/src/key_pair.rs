@@ -1,8 +1,8 @@
 use ::walletd_bip39::Seed;
 
 use crate::{
-    BlockchainConnectorGeneral, CryptoWallet, CryptoWalletBuilder, CryptoWalletGeneral, HDKey,
-    HDNetworkType, Bip39Mnemonic, MnemonicHandler
+    Bip39Mnemonic, BlockchainConnectorGeneral, CryptoWallet, CryptoWalletBuilder,
+    CryptoWalletGeneral, HDKey, HDNetworkType, MnemonicHandler,
 };
 
 use crate::Error;
@@ -98,28 +98,32 @@ impl KeyPairBuilder {
     pub fn build(&mut self) -> Result<KeyPair, Error> {
         let mnemonic_phrase = match &self.mnemonic_phrase {
             None => {
-            if self.mnemonic_seed.is_none() {
-                return Err(Error::MissingKeyPairInfo("Neither the mnemonic phrase nor the mnemonic seed was provided".to_string()));
-            
-            } else {
-                "".to_string()
+                if self.mnemonic_seed.is_none() {
+                    return Err(Error::MissingKeyPairInfo(
+                        "Neither the mnemonic phrase nor the mnemonic seed was provided"
+                            .to_string(),
+                    ));
+                } else {
+                    "".to_string()
+                }
             }
-        }
             Some(phrase) => phrase.clone(),
         };
 
         let mnemonic_seed: Seed;
 
         match &self.mnemonic_seed {
-            Some(seed) => {mnemonic_seed = seed.clone()}
+            Some(seed) => mnemonic_seed = seed.clone(),
             None => {
                 mnemonic_seed = match &self.style {
-                    MnemonicKeyPairType::HDBip39 => {
-                        Bip39Mnemonic::detect_language(&mnemonic_phrase, self.passphrase.as_deref())?.to_seed()
-                    }
+                    MnemonicKeyPairType::HDBip39 => Bip39Mnemonic::detect_language(
+                        &mnemonic_phrase,
+                        self.passphrase.as_deref(),
+                    )?
+                    .to_seed(),
                 };
             }
-        }   
+        }
 
         Ok(KeyPair::new(
             mnemonic_seed,
