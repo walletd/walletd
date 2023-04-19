@@ -887,7 +887,6 @@ impl From<BitcoinWallet> for Box<dyn CryptoWalletGeneral> {
     }
 }
 
-
 /// Builder for [BitcoinWallet] that allows for the creation of a [BitcoinWallet] with a custom configuration
 pub struct BitcoinWalletBuilder {
     /// The address format used to generate the wallet, if the address format is not provided, the default address format is P2wpkh
@@ -1102,7 +1101,6 @@ impl BitcoinWalletBuilder {
         self.address_format
     }
 
-
     /// Returns the [HDPurpose] option set on the builder
     /// The hd purpose is set by default based on the default or specified address format
     /// # Errors
@@ -1112,23 +1110,23 @@ impl BitcoinWalletBuilder {
     }
 
     /// Returns an Option enum of the blockchain client, if the blockchain was not set it will return None
-    pub fn blockchain_client(&self) -> Option<&Box<dyn BlockchainConnectorGeneral>> {
-        self.blockchain_client.as_ref()
+    pub fn blockchain_client(&self) -> Option<&dyn BlockchainConnectorGeneral> {
+        self.blockchain_client.as_deref()
     }
 
-      /// Returns the gap limit that was set on the builder
-      /// By default the gap limit is set to 20
-      /// # Errors
-      /// Returns an error if the gap limit was not set
-      pub fn gap_limit(&self) -> Result<usize, Error> {
+    /// Returns the gap limit that was set on the builder
+    /// By default the gap limit is set to 20
+    /// # Errors
+    /// Returns an error if the gap limit was not set
+    pub fn gap_limit(&self) -> Result<usize, Error> {
         match self.gap_limit_specified {
             None => Err(Error::MissingInfo("Gap limit was not set".to_string())),
             Some(limit) => Ok(limit),
         }
     }
 
-     /// Returns the account discovery flag that is set on the builder
-     pub fn account_discovery(&self) -> bool {
+    /// Returns the account discovery flag that is set on the builder
+    pub fn account_discovery(&self) -> bool {
         self.account_discovery
     }
 
@@ -1148,18 +1146,7 @@ impl BitcoinWalletBuilder {
     }
 
     /// Returns the HDPathBuilder set on the bitcoin wallet builder.
-    pub fn hd_path_builder(&self) -> HDPathBuilder {   
+    pub fn hd_path_builder(&self) -> HDPathBuilder {
         self.hd_path_builder.clone()
     }
-
-
-
-
-
-
-
-
-
 }
-
-
