@@ -31,6 +31,8 @@ pub enum MnemonicKeyPairType {
     HDBip39,
 }
 
+
+/// This struct is used specify options for and build a [KeyPair] struct
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct KeyPairBuilder {
     mnemonic_phrase: Option<String>,
@@ -153,6 +155,11 @@ impl KeyPair {
             passphrase,
             network_type,
         }
+    }
+
+    /// Returns a new KeyPairBuilder struct with default options, allows use of builder pattern to specify options
+    pub fn builder() -> KeyPairBuilder {
+        KeyPairBuilder::new()
     }
 
     /// Returns mnemonic phrase as a &str type
