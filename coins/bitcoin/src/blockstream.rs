@@ -3,23 +3,16 @@
 //!
 use std::any::Any;
 
-use crate::BitcoinWallet;
 use async_trait::async_trait;
 use bitcoin::{Address, AddressType};
 use bitcoin_hashes::{sha256d, Hash};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use walletd_coin_model::BlockchainConnector;
 use walletd_coin_model::BlockchainConnectorGeneral;
-use walletd_coin_model::{BlockchainConnector, CryptoWallet};
 
 use time::format_description::well_known::Rfc2822;
 use time::{Duration, OffsetDateTime};
-
-use prettytable::row;
-use prettytable::Table;
-use std::fmt;
-
-use walletd_coin_model::CryptoAddress;
 
 use crate::BitcoinAmount;
 
@@ -62,92 +55,6 @@ pub struct BTransaction {
     pub status: Status,
 }
 
-impl BTransaction {
-    /// Returns a string representation of the transaction history of the given wallet
-    /// # Errors
-    /// If this function encounters an error, it will return an `Error` variant.
-    pub async fn overview(btc_wallet: BitcoinWallet) -> Result<String, Error> {
-        // We need to know which addresses belong to our wallet
-        let our_addresses = btc_wallet
-            .addresses()
-            .iter()
-            .map(|address| address.public_address())
-            .collect::<Vec<String>>();
-        let blockchain_client = btc_wallet.blockchain_client()?;
-        let mut transactions: Vec<BTransaction> = Vec::new();
-        let mut owners_addresses = Vec::new();
-        for address in &our_addresses {
-            let txs = blockchain_client.transactions(address).await?;
-
-            for tx in txs {
-                if transactions.iter().any(|x| x.txid == tx.txid) {
-                    continue;
-                }
-                transactions.push(tx);
-                owners_addresses.push(address.clone());
-            }
-        }
-
-        // sort the transactions by the block_time
-        transactions.sort_by(|a, b| a.status.block_time.cmp(&b.status.block_time));
-        let mut table = Table::new();
-        // Amount to display is the change in the running balance
-        table.add_row(row![
-            "Transaction ID",
-            "Amount (BTC)",
-            "To/From Address",
-            "Status",
-            "Timestamp"
-        ]);
-        for i in 0..transactions.len() {
-            let our_inputs: Vec<Output> = transactions[i]
-                .vin
-                .iter()
-                .filter(|input| owners_addresses.contains(&input.prevout.scriptpubkey_address))
-                .map(|x| x.prevout.clone())
-                .collect();
-            let received_outputs: Vec<Output> = transactions[i]
-                .vout
-                .iter()
-                .filter(|output| owners_addresses.contains(&output.scriptpubkey_address))
-                .cloned()
-                .collect();
-            let received_amount = BitcoinAmount::from_satoshi(
-                received_outputs
-                    .iter()
-                    .fold(0, |acc, output| acc + output.value),
-            );
-            let sent_amount = BitcoinAmount::from_satoshi(
-                our_inputs.iter().fold(0, |acc, output| acc + output.value),
-            );
-
-            let amount_balance = if received_amount > sent_amount {
-                // this is situation when we are receiving money
-                (received_amount - sent_amount)?.btc()
-            } else {
-                // this is the situation where we are sending money
-                (sent_amount - received_amount)?.btc() * -1.0
-            };
-
-            let status_string = if transactions[i].status.confirmed {
-                "Confirmed".to_string()
-            } else {
-                "Pending Confirmation".to_string()
-            };
-            let timestamp = transactions[i].status.timestamp()?;
-
-            table.add_row(row![
-                transactions[i].txid,
-                amount_balance,
-                owners_addresses[i],
-                status_string,
-                timestamp
-            ]);
-        }
-        Ok(table.to_string())
-    }
-}
-
 /// Represents a Bitcoin transaction out in the format with the data fields returned by Blockstream
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq, Eq)]
 pub struct Output {
@@ -169,32 +76,6 @@ pub struct Output {
     #[serde(default)]
     /// Value in Satoshis
     pub value: u64,
-}
-
-impl fmt::Display for Output {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut table = Table::new();
-        if !self.scriptpubkey.is_empty() {
-            table.add_row(row!["ScriptPubKey", self.scriptpubkey]);
-        }
-        if !self.scriptpubkey_asm.is_empty() {
-            table.add_row(row!["ScriptPubKey ASM", self.scriptpubkey_asm]);
-        }
-        if !self.scriptpubkey_type.is_empty() {
-            table.add_row(row!["ScriptPubKey Type", self.scriptpubkey_type]);
-        }
-        if !self.scriptpubkey_address.is_empty() {
-            table.add_row(row!["ScriptPubKey Address", self.scriptpubkey_address]);
-        }
-        if !self.pubkeyhash.is_empty() {
-            table.add_row(row!["PubKeyHash", self.pubkeyhash]);
-        }
-        table.add_row(row![
-            "Value (BTC)",
-            BitcoinAmount::from_satoshi(self.value).btc()
-        ]);
-        write!(f, "{}", table)
-    }
 }
 
 /// Represents a Bitcoin transaction input in the format with the data fields returned by Blockstream
@@ -227,32 +108,6 @@ pub struct Input {
     #[serde(default)]
     /// Inner RedeemScript
     pub inner_redeemscript_asm: String,
-}
-
-impl fmt::Display for Input {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut table = Table::new();
-        table.add_row(row!["Input Tx ID", self.txid]);
-        table.add_row(row![
-            "Amount (BTC)",
-            BitcoinAmount::from_satoshi(self.vout as u64).btc()
-        ]);
-        if !self.scriptsig.is_empty() {
-            table.add_row(row!["ScriptSig", self.scriptsig]);
-        }
-        if !self.scriptsig_asm.is_empty() {
-            table.add_row(row!["ScriptSig ASM", self.scriptsig_asm]);
-        }
-        if !self.witness.is_empty() {
-            table.add_row(row!["Witness", self.witness.join(" ")]);
-        }
-        if !self.inner_redeemscript_asm.is_empty() {
-            table.add_row(row!["Inner Redeemscript ASM", self.inner_redeemscript_asm]);
-        }
-        table.add_row(row!["Is Coinbase", self.is_coinbase]);
-        table.add_row(row!["Sequence", self.sequence]);
-        write!(f, "{}", table)
-    }
 }
 
 /// Represents the Status of a Bitcoin transaction in the format with the data fields returned by Blockstream
@@ -290,17 +145,6 @@ impl Status {
         } else {
             Ok("".to_string())
         }
-    }
-}
-
-impl fmt::Display for Status {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut table = Table::new();
-        table.add_row(row!["Confirmed: ", self.confirmed]);
-        table.add_row(row!["Block Height: ", self.block_height]);
-        table.add_row(row!["Block Hash: ", self.block_hash]);
-        table.add_row(row!["Timestamp ", self.timestamp().unwrap()]);
-        write!(f, "{}", table)
     }
 }
 
@@ -776,12 +620,6 @@ impl BlockchainConnector for Blockstream {
     fn url(&self) -> &str {
         &self.url
     }
-
-    async fn display_fee_estimates(&self) -> Result<String, Error> {
-        let fee_estimates: FeeEstimates = self.fee_estimates().await?;
-        let fee_string = format!("{}", fee_estimates);
-        Ok(fee_string)
-    }
 }
 
 impl BlockchainConnectorGeneral for Blockstream {
@@ -797,28 +635,6 @@ impl BlockchainConnectorGeneral for Blockstream {
 /// FeeEstimates is a wrapper around the fee estimates returned by the Blockstream API
 #[derive(Clone, Default, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct FeeEstimates(pub serde_json::Map<String, Value>);
-
-impl fmt::Display for FeeEstimates {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut table = Table::new();
-        writeln!(f, "Fee Estimates")?;
-        table.add_row(row!["Confirmation Target (Blocks)", "Fee (sat/vB)"]);
-        let mut keys = self
-            .0
-            .iter()
-            .map(|(a, _b)| {
-                a.parse::<u32>()
-                    .expect("expecting that key should be able to be parsed as u32")
-            })
-            .collect::<Vec<_>>();
-        keys.sort();
-        for key in keys {
-            table.add_row(row![key, self.0[&key.to_string()]]);
-        }
-        write!(f, "{}", table)?;
-        Ok(())
-    }
-}
 
 impl TryFrom<Box<dyn BlockchainConnectorGeneral>> for Blockstream {
     type Error = Error;

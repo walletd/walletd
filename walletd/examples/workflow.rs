@@ -1,10 +1,10 @@
 extern crate walletd;
 
 use walletd::{
-    blockstream::BTransaction, blockstream::Blockstream,
-    walletd_coin_model::BlockchainConnectorBuilder, walletd_ethereum::EthClient, Bip39Mnemonic,
-    BitcoinWallet, BlockchainConnector, CryptoWallet, EthereumWallet, HDNetworkType, KeyPair,
-    MnemonicHandler, MnemonicKeyPairType, MnemonicStyleBuilder,
+    blockstream::Blockstream, walletd_coin_model::BlockchainConnectorBuilder,
+    walletd_ethereum::EthClient, Bip39Mnemonic, BitcoinWallet, BlockchainConnector, CryptoWallet,
+    EthereumWallet, HDNetworkType, KeyPair, MnemonicHandler, MnemonicKeyPairType,
+    MnemonicStyleBuilder,
 };
 
 const BTC_TESTNET_URL: &str = "https://blockstream.info/testnet/api";
@@ -82,26 +82,6 @@ async fn main() {
         "Address to use to receive funds to this ETH wallet: {}",
         receive_address_eth
     );
-
-    // Display fee estimates, method is on the blockchain connector trait
-    let btc_fee_estimates = btc_wallet
-        .blockchain_client()
-        .unwrap()
-        .display_fee_estimates()
-        .await
-        .unwrap();
-    println!("BTC Fee Estimates: \n{}", btc_fee_estimates);
-    let eth_fee_estimates = eth_wallet
-        .blockchain_client()
-        .unwrap()
-        .display_fee_estimates()
-        .await
-        .unwrap();
-    println!("ETH Fee Estimates: \n{}", eth_fee_estimates);
-
-    // View transaction overview for BTC (shows transaction history for the wallet), this option is not available for ETH
-    let btc_transaction_overview = BTransaction::overview(btc_wallet).await.unwrap();
-    println!("BTC Transaction Overview: \n{}", btc_transaction_overview);
 
     // There are also options to send transactions using the wallet with the transfer function
     // Not implementing the example here due to needing to have ensure required funds are in the wallet to send

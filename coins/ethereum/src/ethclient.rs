@@ -1,8 +1,7 @@
 use crate::Error;
 use crate::EthereumAmount;
 use async_trait::async_trait;
-use prettytable::row;
-use prettytable::Table;
+use log::info;
 use std::any::Any;
 use std::str::FromStr;
 use walletd_coin_model::{BlockchainConnector, BlockchainConnectorGeneral};
@@ -10,7 +9,7 @@ use web3::contract::{Contract, Options};
 use web3::ethabi::Uint;
 use web3::helpers as w3h;
 use web3::transports::Http;
-use web3::types::{BlockId, BlockNumber, Transaction, TransactionId, H160, H256, U256, U64};
+use web3::types::{BlockId, BlockNumber, TransactionId, H160, H256, U256, U64};
 
 #[allow(dead_code)]
 pub enum TransportType {
@@ -104,7 +103,7 @@ impl EthClient {
             };
             let from_addr = tx.from.unwrap_or(H160::zero());
             let to_addr = tx.to.unwrap_or(H160::zero());
-            println!(
+            info!(
                 "[{}] from {}, to {}, value {}, gas {}, gas price {:?}",
                 tx.transaction_index.unwrap_or(U64::from(0)),
                 w3h::to_string(&from_addr),
@@ -114,63 +113,6 @@ impl EthClient {
                 tx.gas_price,
             );
         }
-    }
-
-    /// Returns transaction details for a given transaction as a formatted string
-    pub async fn transaction_details(tx: Transaction) -> Result<String, Error> {
-        let mut table = Table::new();
-        let eth_value = EthereumAmount::from_wei(tx.value);
-        table.add_row(row!["Transaction Hash", format!("0x{:x}", tx.hash)]);
-        table.add_row(row!["Amount", eth_value]);
-        if tx.block_number.is_some() {
-            table.add_row(row![
-                "Block Number",
-                tx.block_number.expect("Block number missing")
-            ]);
-        }
-        if tx.transaction_index.is_some() {
-            table.add_row(row![
-                "Transaction Index Number",
-                tx.transaction_index.expect("Transaction index missing")
-            ]);
-        }
-        if tx.from.is_some() {
-            table.add_row(row![
-                "From Address",
-                format!("0x{:x}", tx.from.expect("No from address"))
-            ]);
-        }
-        if tx.to.is_some() {
-            table.add_row(row![
-                "To Address",
-                format!("0x{:x}", tx.to.expect("No to address"))
-            ]);
-        }
-        if tx.gas_price.is_some() {
-            table.add_row(row!["Gas Price", tx.gas_price.expect("No gas price")]);
-        }
-        table.add_row(row!["Gas", tx.gas]);
-        if tx.transaction_type.is_some() {
-            table.add_row(row![
-                "Transaction Type",
-                tx.transaction_type.expect("No transaction type")
-            ]);
-        }
-        if tx.max_fee_per_gas.is_some() {
-            table.add_row(row![
-                "Maximum Gas Fee",
-                tx.max_fee_per_gas.expect("No max fee per gas")
-            ]);
-        }
-        if tx.max_priority_fee_per_gas.is_some() {
-            table.add_row(row![
-                "Maximum priority fee per gas",
-                tx.max_priority_fee_per_gas
-                    .expect("No max priority fee per gas")
-            ]);
-        }
-        let table_string = table.to_string();
-        Ok(table.to_string())
     }
 
     ///  Prints out info on a smart contract transaction from a block hash
@@ -212,8 +154,8 @@ impl EthClient {
                             let total_supply: Uint =
                                 self.total_supply(&smart_contract).await.unwrap();
 
-                            println!("token name {:#?}", token_name);
-                            println!("token supply {:#?}", total_supply);
+                            info!("token name {:#?}", token_name);
+                            info!("token supply {:#?}", total_supply);
                         }
                     }
                     _ => {
@@ -221,7 +163,7 @@ impl EthClient {
                     }
                 },
                 _ => {
-                    // println!("To address is not a valid address, skipping.");
+                    info!("To address is not a valid address, skipping.");
                     continue;
                 }
             }
@@ -245,7 +187,7 @@ impl EthClient {
                     transaction_hash
                 ))),
             };
-            println!("transaction data {:#?}", tx);
+            info!("transaction data {:#?}", tx);
             // TODO(AS): refactor this to uncomment this section or handle the way needeed for first public release version
             // let smart_contract_addr = match tx.unwrap().to {
             //     Some(addr) => match &self.web3.eth().code(addr,
@@ -270,8 +212,8 @@ impl EthClient {
             // Uint =
             // self.total_supply(&smart_contract).await.unwrap();
 
-            //                 println!("token name {:#?}", token_name);
-            //                 println!("token supply {:#?}", total_supply);
+            //                 info!("token name {:#?}", token_name);
+            //                 info!("token supply {:#?}", total_supply);
             //             }
             //         }
             //         _ => {
@@ -279,12 +221,12 @@ impl EthClient {
             //         }
             //     },
             //     _ => {
-            //         // println!("To address is not a valid address,
+            //         // info!("To address is not a valid address,
             // skipping.");         continue;
             //     }
             // };
         }
-        // println!("{:#?}", smart_contract_addr);
+        // info!("{:#?}", smart_contract_addr);
     }
 
     /// Given a specified address, retrieves the Ethereum balance of that
@@ -430,17 +372,6 @@ impl BlockchainConnector for EthClient {
 
     fn url(&self) -> &str {
         &self.endpoint
-    }
-
-    async fn display_fee_estimates(&self) -> Result<String, Error> {
-        let gas_price = self.gas_price().await?;
-        let gas_price_gwei = gas_price.eth() * 1_000_000_000f64;
-        let gas_price_string = format!(
-            "Gas Price: {} Gwei ({} ETH)",
-            gas_price_gwei,
-            gas_price.eth()
-        );
-        Ok(gas_price_string)
     }
 }
 

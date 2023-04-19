@@ -27,7 +27,6 @@ pub use {
 };
 
 mod crypto_coin;
-
 pub use crypto_coin::CryptoCoin;
 
 mod error;

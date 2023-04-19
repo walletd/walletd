@@ -22,11 +22,12 @@ walletd_hd_key = {path = "../../mnemonics/hd_key"}
 
 async-trait = "0.1.60"
 hex = "0.4.3"
+hex-literal = "0.3"
 keccak-hash = "0.10.0"
+log = "0.4.17"
 secp256k1 = { version = "0.21.0", features = ["rand-std"] }
+thiserror = "1.0.38"
 tiny-keccak = { version = "2.0.2" }
 tokio = { version = "1", features = ["full"] }
 web3 = "0.18.0"
-hex-literal = "0.3"
-thiserror = "1.0.38"
-prettytable-rs = "0.10.0"
+
