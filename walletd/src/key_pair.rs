@@ -31,6 +31,7 @@ pub enum MnemonicKeyPairType {
     HDBip39,
 }
 
+/// This struct is used specify options for and build a [KeyPair] struct
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct KeyPairBuilder {
     mnemonic_phrase: Option<String>,
@@ -110,20 +111,15 @@ impl KeyPairBuilder {
             Some(phrase) => phrase.clone(),
         };
 
-        let mnemonic_seed: Seed;
-
-        match &self.mnemonic_seed {
-            Some(seed) => mnemonic_seed = seed.clone(),
-            None => {
-                mnemonic_seed = match &self.style {
-                    MnemonicKeyPairType::HDBip39 => Bip39Mnemonic::detect_language(
-                        &mnemonic_phrase,
-                        self.passphrase.as_deref(),
-                    )?
-                    .to_seed(),
-                };
-            }
-        }
+        let mnemonic_seed: Seed = match &self.mnemonic_seed {
+            Some(seed) => seed.clone(),
+            None => match &self.style {
+                MnemonicKeyPairType::HDBip39 => {
+                    Bip39Mnemonic::detect_language(&mnemonic_phrase, self.passphrase.as_deref())?
+                        .to_seed()
+                }
+            },
+        };
 
         Ok(KeyPair::new(
             mnemonic_seed,
@@ -153,6 +149,11 @@ impl KeyPair {
             passphrase,
             network_type,
         }
+    }
+
+    /// Returns a new KeyPairBuilder struct with default options, allows use of builder pattern to specify options
+    pub fn builder() -> KeyPairBuilder {
+        KeyPairBuilder::new()
     }
 
     /// Returns mnemonic phrase as a &str type

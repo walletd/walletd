@@ -10,8 +10,8 @@ use web3::types::U64;
 async fn main() -> web3::Result<()> {
     // Transport can be one of Http, WebSocket, Ipc
     let eth_client = EthClient::new(&INFURA_GOERLI_ENDPOINT.to_string()).unwrap();
-    let block_number: U64 = U64::from(8455626);
+    let _block_number: U64 = U64::from(8455626);
 
-    let latest_block_data = EthClient::latest_block(&eth_client);
+    let _latest_block_data = EthClient::latest_block(&eth_client);
     Ok(())
 }

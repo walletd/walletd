@@ -71,20 +71,22 @@ where
         }
     }
 
-    /// set_url sets the url of the BlockchainConnectorBuilder
+    /// This function sets the url of the BlockchainConnectorBuilder
     pub fn set_url(&mut self, url: String) -> Self {
         self.url = Some(url);
         self.clone()
     }
 
-    /// set_connector sets the connector type of the BlockchainConnectorBuilder, this requires the associated BlockchainConnector struct to be fully defined with data
+    /// This function sets the connector type of the BlockchainConnectorBuilder, this requires the associated BlockchainConnector struct to be fully defined with data
     pub fn set_connector(&mut self, connector_type: ConnectorType<T>) -> Self {
         self.connector_type = Some(connector_type);
         self.clone()
     }
 
-    /// build builds the BlockchainConnectorBuilder and returns a Box<dyn BlockchainConnectorGeneral> that can be used to connect to a blockchain
-    /// The result of build can be downcasted to a specific BlockchainConnector struct
+    /// This function builds the BlockchainConnectorBuilder using the options provided in the builder
+    ///
+    /// It returns a [Box< dyn BlockchainConnectorGeneral >] that can be used to connect to a blockchain.
+    /// The result of that build later can be downcasted to a specific [BlockchainConnector] struct - any compatible struct that implements the [BlockchainConnector] trait.
     pub fn build(&mut self) -> Result<Box<dyn BlockchainConnectorGeneral>, Error> {
         match &self.connector_type {
             Some(ConnectorType::BTC(connector) | ConnectorType::ETH(connector)) => {
