@@ -1,8 +1,0 @@
-extern crate walletd;
-
-
-// TODO(AS): make an example that uses the walletd crate and shows recovering wallets from a mnemonic phrase
-// There will be previous transaction history for Bitcoin and Ethereum on testnet wallets associated with the mnemonic phrase in the example
-pub fn main() {
-
-}
