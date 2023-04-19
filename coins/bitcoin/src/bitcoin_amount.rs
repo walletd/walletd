@@ -199,7 +199,6 @@ mod tests {
     }
 
     #[test]
-
     fn test_multiply_overflow() -> Result<(), Error> {
         let a = BitcoinAmount::from_btc(1.0);
         let b = f64::MAX;
