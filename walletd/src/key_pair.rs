@@ -1,8 +1,8 @@
 use ::walletd_bip39::Seed;
 
 use crate::{
-    BlockchainConnectorGeneral, CryptoWallet, CryptoWalletBuilder, CryptoWalletGeneral, HDKey,
-    HDNetworkType,
+    Bip39Mnemonic, BlockchainConnectorGeneral, CryptoWallet, CryptoWalletBuilder,
+    CryptoWalletGeneral, HDKey, HDNetworkType, MnemonicHandler,
 };
 
 use crate::Error;
@@ -24,10 +24,115 @@ pub struct KeyPair {
 }
 
 /// The MnemonicKeyPairType enum is used to specify the type of mnemonic phrase
-#[derive(PartialEq, Eq, Debug, Clone, Copy)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy, Default)]
 pub enum MnemonicKeyPairType {
     /// The mnemonic phrase is a BIP39 phrase and is affiliated with a HD wallet
+    #[default]
     HDBip39,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct KeyPairBuilder {
+    mnemonic_phrase: Option<String>,
+    mnemonic_seed: Option<Seed>,
+    passphrase: Option<String>,
+    network_type: HDNetworkType,
+    style: MnemonicKeyPairType,
+}
+
+impl KeyPairBuilder {
+    /// Creates a new KeyPairBuilder struct with the default options
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Specifies the mnemonic phrase
+    pub fn with_mnemonic_phrase(&mut self, mnemonic_phrase: String) -> &mut Self {
+        self.mnemonic_phrase = Some(mnemonic_phrase);
+        self
+    }
+
+    /// Specifies the mnemonic seed
+    pub fn with_mnemonic_seed(&mut self, mnemonic_seed: Seed) -> &mut Self {
+        self.mnemonic_seed = Some(mnemonic_seed);
+        self
+    }
+
+    /// Specifies the passphrase
+    pub fn with_passphrase(&mut self, passphrase: String) -> &mut Self {
+        self.passphrase = Some(passphrase);
+        self
+    }
+
+    /// Specifies the network type
+    pub fn with_network_type(&mut self, network_type: HDNetworkType) -> &mut Self {
+        self.network_type = network_type;
+        self
+    }
+
+    /// Specifies the mnemonic phrase key pair type
+    pub fn with_style(&mut self, style: MnemonicKeyPairType) -> &mut Self {
+        self.style = style;
+        self
+    }
+
+    /// Sets the mnemonic phrase to None, unspecifies the mnemonic phrase if it had previously been specified on the same builder
+    pub fn set_mnemonic_phrase_none(&mut self) -> &mut Self {
+        self.mnemonic_phrase = None;
+        self
+    }
+
+    /// Sets the mnemonic seed to None, unspecifies the mnemonic seed if it had previously been specified on the same builder
+    pub fn set_mnemonic_seed_none(&mut self) -> &mut Self {
+        self.mnemonic_seed = None;
+        self
+    }
+
+    /// Sets the passphrase to None, unspecifies the passphrase if it had previously been specified on the same builder
+    pub fn set_passphrase_none(&mut self) -> &mut Self {
+        self.passphrase = None;
+        self
+    }
+
+    /// Builds the KeyPair struct, returns an error if neither the mnemonic phrase nor the mnemonic seed was specified
+    pub fn build(&mut self) -> Result<KeyPair, Error> {
+        let mnemonic_phrase = match &self.mnemonic_phrase {
+            None => {
+                if self.mnemonic_seed.is_none() {
+                    return Err(Error::MissingKeyPairInfo(
+                        "Neither the mnemonic phrase nor the mnemonic seed was provided"
+                            .to_string(),
+                    ));
+                } else {
+                    "".to_string()
+                }
+            }
+            Some(phrase) => phrase.clone(),
+        };
+
+        let mnemonic_seed: Seed;
+
+        match &self.mnemonic_seed {
+            Some(seed) => mnemonic_seed = seed.clone(),
+            None => {
+                mnemonic_seed = match &self.style {
+                    MnemonicKeyPairType::HDBip39 => Bip39Mnemonic::detect_language(
+                        &mnemonic_phrase,
+                        self.passphrase.as_deref(),
+                    )?
+                    .to_seed(),
+                };
+            }
+        }
+
+        Ok(KeyPair::new(
+            mnemonic_seed,
+            mnemonic_phrase,
+            self.style,
+            self.passphrase.as_deref(),
+            self.network_type,
+        ))
+    }
 }
 
 impl KeyPair {

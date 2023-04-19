@@ -21,4 +21,7 @@ pub enum Error {
     /// Error deriving a wallet of a specific type from a KeyPair struct
     #[error("Error deriving a wallet of a specific type from a KeyPair struct: {0}")]
     DeriveWallet(String),
+    /// Missing info to generate a KeyPair struct
+    #[error("Missing info to generate a KeyPair struct: {0}")]
+    MissingKeyPairInfo(String),
 }
