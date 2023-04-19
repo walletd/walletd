@@ -45,7 +45,7 @@ fn test_from_hd_key_mainnet_p2sh() -> Result<(), Error> {
         format!("{:x}", hd_key.extended_public_key()?),
         "02b9a730f83f85b77c7cf2f444d6cf76b144e11370bb96c6cbc624072f2d8e94cc"
     );
-    let bitcoin_address = BitcoinAddress::from_hd_key(&hd_key, address_format)?;
+    let _bitcoin_address = BitcoinAddress::from_hd_key(&hd_key, address_format)?;
     // TODO(AS: walletd #20):  Need to fix issue with p2sh address generation
     //let expected_address = "32z7gdz9HL5PRbFQM8E6ar5xidHUxCfniW";
     //assert_eq!(bitcoin_address.public_address(), expected_address);
