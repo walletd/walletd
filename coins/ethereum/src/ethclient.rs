@@ -116,10 +116,7 @@ impl EthClient {
     }
 
     ///  Prints out info on a smart contract transaction from a block hash
-    async fn get_smart_contract_tx_vec_from_block_hash(
-        &self,
-        block: &web3::types::Block<H256>,
-    ) {
+    async fn get_smart_contract_tx_vec_from_block_hash(&self, block: &web3::types::Block<H256>) {
         for transaction_hash in &block.transactions {
             let tx = match self
                 .web3
@@ -319,10 +316,7 @@ impl EthClient {
     // no transaction data returned by Web3's block struct. This appears to be a bug
     // in Web3
     #[allow(non_snake_case)]
-    async fn block_data_from_U64(
-        &self,
-        block_id: U64,
-    ) -> web3::Result<web3::types::Block<H256>> {
+    async fn block_data_from_U64(&self, block_id: U64) -> web3::Result<web3::types::Block<H256>> {
         let blockid = BlockNumber::Number(block_id);
         let block_data = &self
             .web3
