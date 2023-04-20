@@ -4,7 +4,6 @@ use std::fmt;
 use curve25519_dalek::scalar::Scalar;
 use rand::{thread_rng, Rng};
 use walletd_mnemonics_core::{MnemonicHandler, MnemonicStyleBuilder, Seed};
-
 use crate::mnemonic_type::BITS_IN_BYTES;
 use crate::{Error, Language, MnemonicType, WordList};
 

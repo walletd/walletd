@@ -14,7 +14,6 @@ categories = ["cryptography::cryptocurrencies"]
 
 [dependencies]
 walletd_mnemonics_core = {path = "../core"}
-
 aligned = "0.4.1"
 crc = { version = "1.8.1" }
 curve25519-dalek = { version = "2.1.0" }

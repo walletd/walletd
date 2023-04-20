@@ -30,7 +30,6 @@ mod mnemonic_type;
 
 pub use language::Language;
 pub use walletd_mnemonics_core::{MnemonicHandler, MnemonicStyleBuilder, Seed};
-
 pub use self::errors::Error;
 use self::language::WordList;
 pub use self::mnemonic::{Mnemonic, MnemonicBuilder};
