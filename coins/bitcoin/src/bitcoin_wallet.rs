@@ -887,6 +887,7 @@ impl From<BitcoinWallet> for Box<dyn CryptoWalletGeneral> {
     }
 }
 
+/// Builder for [BitcoinWallet] that allows for the creation of a [BitcoinWallet] with a custom configuration
 pub struct BitcoinWalletBuilder {
     /// The address format used to generate the wallet, if the address format is not provided, the default address format is P2wpkh
     address_format: AddressType,
@@ -1094,20 +1095,58 @@ impl BitcoinWalletBuilder {
             HDNetworkType::TestNet => Ok(slip44::Coin::Testnet.id()),
         }
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+    /// Returns the address format set
+    pub fn address_format(&self) -> AddressType {
+        self.address_format
+    }
 
-    #[test]
-    fn test_default() {
-        let builder = BitcoinWalletBuilder::default();
-        assert_eq!(builder.address_format, AddressType::P2wpkh);
-        assert_eq!(builder.account_discovery, true);
-        assert_eq!(builder.gap_limit_specified, Some(20));
-        assert_eq!(builder.master_hd_key, None);
-        assert_eq!(builder.mnemonic_seed, None);
-        assert_eq!(builder.network_type, Network::Bitcoin);
+    /// Returns the [HDPurpose] option set on the builder
+    /// The hd purpose is set by default based on the default or specified address format
+    /// # Errors
+    /// Returns an error if the hd_purpose was not set
+    pub fn hd_purpose(&self) -> Option<HDPurpose> {
+        self.hd_purpose
+    }
+
+    /// Returns an Option enum of the blockchain client, if the blockchain was not set it will return None
+    pub fn blockchain_client(&self) -> Option<&dyn BlockchainConnectorGeneral> {
+        self.blockchain_client.as_deref()
+    }
+
+    /// Returns the gap limit that was set on the builder
+    /// By default the gap limit is set to 20
+    /// # Errors
+    /// Returns an error if the gap limit was not set
+    pub fn gap_limit(&self) -> Result<usize, Error> {
+        match self.gap_limit_specified {
+            None => Err(Error::MissingInfo("Gap limit was not set".to_string())),
+            Some(limit) => Ok(limit),
+        }
+    }
+
+    /// Returns the account discovery flag that is set on the builder
+    pub fn account_discovery(&self) -> bool {
+        self.account_discovery
+    }
+
+    /// Returns the mnemonic seed set on the builder
+    /// # Errors
+    /// Returns an error if the mnemonic seed was not set
+    pub fn mnemonic_seed(&self) -> Result<Seed, Error> {
+        match &self.mnemonic_seed {
+            None => Err(Error::MissingInfo("Mnemonic seed was not set".to_string())),
+            Some(ref seed) => Ok(seed.clone()),
+        }
+    }
+
+    /// Returns the network type set on the builder
+    pub fn network_type(&self) -> Network {
+        self.network_type
+    }
+
+    /// Returns the HDPathBuilder set on the bitcoin wallet builder.
+    pub fn hd_path_builder(&self) -> HDPathBuilder {
+        self.hd_path_builder.clone()
     }
 }

@@ -25,6 +25,9 @@ pub enum Error {
     /// Missing master HD key
     #[error("No master HD key set")]
     MissingMasterHDKey,
+    /// Missing some info, error message provides more info on what is missing
+    #[error("Missing info: {0}")]
+    MissingInfo(String),
     /// Error downcasting to BitcoinWallet
     #[error("Could not downcast to BitcoinWallet")]
     UnableToDowncastWallet,
