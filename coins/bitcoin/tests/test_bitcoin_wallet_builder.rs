@@ -1,4 +1,3 @@
-
 use std::str::FromStr;
 use walletd_bitcoin::{
     blockstream::Blockstream, AddressType, BitcoinWalletBuilder, Error, HDKey, Network, Seed,
