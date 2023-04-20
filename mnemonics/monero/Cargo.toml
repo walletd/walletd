@@ -13,7 +13,7 @@ categories = ["cryptography::cryptocurrencies"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-walletd_mnemonic_model = {path = "../model"}
+walletd_mnemonic_core = {path = "../core"}
 
 aligned = "0.4.1"
 crc = { version = "1.8.1" }

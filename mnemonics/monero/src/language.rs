@@ -16,7 +16,7 @@ use std::fmt;
 use std::str::FromStr;
 
 use crc::{crc32, Hasher32};
-use walletd_mnemonic_model::LanguageHandler;
+use walletd_mnemonic_core::LanguageHandler;
 
 use crate::Error;
 
