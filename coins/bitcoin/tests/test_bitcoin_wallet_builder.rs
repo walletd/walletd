@@ -2,7 +2,7 @@ use std::str::FromStr;
 use walletd_bitcoin::{
     blockstream::Blockstream, AddressType, BitcoinWalletBuilder, Error, HDKey, Network, Seed,
 };
-use walletd_coin_model::{BlockchainConnector, CryptoWalletBuilder};
+use walletd_coin_core::{BlockchainConnector, CryptoWalletBuilder};
 use walletd_hd_key::HDNetworkType;
 
 #[test]
