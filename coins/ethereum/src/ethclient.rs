@@ -353,7 +353,7 @@ impl EthClient {
 #[async_trait]
 impl BlockchainConnector for EthClient {
     type ErrorType = Error;
- 
+
     fn new(endpoint: &str) -> Result<Self, Error> {
         // TODO(#71): Change transport to support web sockets
         let transport = web3::transports::Http::new(endpoint)?;

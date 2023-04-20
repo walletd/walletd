@@ -17,7 +17,7 @@ path = "src/lib.rs"
 [dependencies]
 
 walletd_bip39 = {path = "../mnemonics/bip39"}
-walletd_mnemonic_core = {path = "../mnemonics/core"}
+walletd_mnemonics_core = {path = "../mnemonics/core"}
 walletd_coin_core = {path = "../coins/core"}
 walletd_bitcoin = {path = "../coins/bitcoin"}
 walletd_ethereum = {path = "../coins/ethereum"}

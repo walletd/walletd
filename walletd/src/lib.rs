@@ -9,7 +9,7 @@ pub use walletd_bip39::{
     Language as Bip39Language, Mnemonic as Bip39Mnemonic, MnemonicType as Bip39MnemonicType, Seed,
 };
 
-pub use walletd_mnemonic_core::{MnemonicHandler, MnemonicStyleBuilder};
+pub use walletd_mnemonics_core::{MnemonicHandler, MnemonicStyleBuilder};
 
 mod key_pair;
 pub use key_pair::{KeyPair, KeyPairBuilder, MnemonicKeyPairType};
@@ -23,7 +23,7 @@ pub use walletd_ethereum::{EthClient, EthereumAmount, EthereumFormat, EthereumWa
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 pub use {
     walletd_bip39, walletd_bitcoin, walletd_coin_core, walletd_ethereum, walletd_hd_key,
-    walletd_mnemonic_core,
+    walletd_mnemonics_core,
 };
 
 mod crypto_coin;

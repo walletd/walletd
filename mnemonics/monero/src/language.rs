@@ -15,9 +15,8 @@ use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
 
-use crc::{crc32, Hasher32};
-use walletd_mnemonic_core::LanguageHandler;
-
+use crc::{crc32, Ha
+use walletd_mnemonics_core::Languag
 use crate::Error;
 
 #[derive(Debug)]
