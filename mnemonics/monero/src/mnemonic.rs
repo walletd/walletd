@@ -3,7 +3,7 @@ use std::fmt;
 
 use curve25519_dalek::scalar::Scalar;
 use rand::{thread_rng, Rng};
-use walletd_mnemonic_model::{MnemonicHandler, MnemonicStyleBuilder, Seed};
+use walletd_mnemonic_core::{MnemonicHandler, MnemonicStyleBuilder, Seed};
 
 use crate::mnemonic_type::BITS_IN_BYTES;
 use crate::{Error, Language, MnemonicType, WordList};

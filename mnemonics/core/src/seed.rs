@@ -11,7 +11,7 @@ use std::str::FromStr;
 ///
 /// This struct can be used to derive HD wallet addresses using another library
 /// (deriving HD wallet addresses is outside the scope of the
-/// walletd_mnemonic_model crate and the BIP39 standard).
+/// walletd_mnemonic_core crate and the BIP39 standard).
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Seed {
     bytes: Vec<u8>,
