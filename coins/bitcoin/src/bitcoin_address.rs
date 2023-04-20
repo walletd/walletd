@@ -6,7 +6,7 @@ pub use bitcoin::{
     PrivateKey as BitcoinPrivateKey, PublicKey as BitcoinPublicKey, Script,
 };
 
-use walletd_coin_model::CryptoAddress;
+use walletd_coin_core::CryptoAddress;
 use walletd_hd_key::{HDKey, HDNetworkType};
 
 use crate::blockstream::Blockstream;

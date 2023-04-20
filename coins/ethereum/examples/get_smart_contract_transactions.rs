@@ -3,14 +3,14 @@
 // ///
 
 // use walletd_bip39::{Language, Mnemonic, MnemonicHandler};
-// use walletd_coin_model::crypto_wallet::CryptoWallet;
+// use walletd_coin_core::crypto_wallet::CryptoWallet;
 // use walletd_ethereum::*;
 // // use hex_literal::hex;
 // use walletd_hd_keys::HDKeyPair;
-// // use walletd_coin_model::CryptoWallet;
+// // use walletd_coin_core::CryptoWallet;
 // use walletd_hd_keys::NetworkType;
 
-use walletd_coin_model::BlockchainConnector;
+use walletd_coin_core::BlockchainConnector;
 use walletd_ethereum::EthClient;
 
 pub const INFURA_GOERLI_ENDPOINT: &str =

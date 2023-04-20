@@ -4,7 +4,7 @@
 use walletd_bip39::{Mnemonic, MnemonicHandler, MnemonicStyleBuilder};
 use web3::types::U256;
 
-use walletd_coin_model::{BlockchainConnector, CryptoWallet, CryptoWalletBuilder};
+use walletd_coin_core::{BlockchainConnector, CryptoWallet, CryptoWalletBuilder};
 use walletd_ethereum::{EthClient, EthereumAmount, EthereumWallet};
 use walletd_hd_key::HDNetworkType;
 

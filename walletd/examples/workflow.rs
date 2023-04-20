@@ -1,7 +1,7 @@
 extern crate walletd;
 
 use walletd::{
-    blockstream::Blockstream, walletd_coin_model::BlockchainConnectorBuilder,
+    blockstream::Blockstream, walletd_coin_core::BlockchainConnectorBuilder,
     walletd_ethereum::EthClient, Bip39Mnemonic, BitcoinWallet, BlockchainConnector, CryptoWallet,
     EthereumWallet, HDNetworkType, KeyPair, MnemonicHandler, MnemonicKeyPairType,
     MnemonicStyleBuilder,

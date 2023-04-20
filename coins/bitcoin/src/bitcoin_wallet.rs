@@ -8,9 +8,9 @@ use std::any::Any;
 use std::cmp::Reverse;
 use std::fmt;
 use walletd_bip39::Seed;
-use walletd_coin_model::CryptoAddress;
-use walletd_coin_model::CryptoWalletBuilder;
-use walletd_coin_model::{
+use walletd_coin_core::CryptoAddress;
+use walletd_coin_core::CryptoWalletBuilder;
+use walletd_coin_core::{
     BlockchainConnectorGeneral, CryptoAmount, CryptoWallet, CryptoWalletGeneral,
 };
 use walletd_hd_key::slip44;

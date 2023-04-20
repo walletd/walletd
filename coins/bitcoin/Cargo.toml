@@ -21,7 +21,7 @@ tokio-test = "0.4.2"
 
 [dependencies]
 
-walletd_coin_model = {path = "../model/"}
+walletd_coin_core = {path = "../core/"}
 walletd_bip39 = {path = "../../mnemonics/bip39"}
 walletd_hd_key = {path = "../../mnemonics/hd_key"}
 
