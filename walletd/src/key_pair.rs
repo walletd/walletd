@@ -34,11 +34,16 @@ pub enum MnemonicKeyPairType {
 /// This struct is used specify options for and build a [KeyPair] struct
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct KeyPairBuilder {
-    mnemonic_phrase: Option<String>,
-    mnemonic_seed: Option<Seed>,
-    passphrase: Option<String>,
-    network_type: HDNetworkType,
-    style: MnemonicKeyPairType,
+    /// Option to set the mnemomonic phrase
+    pub mnemonic_phrase: Option<String>,
+    /// Option to set the mnemonic seed
+    pub mnemonic_seed: Option<Seed>,
+    /// Option to set the passphrase
+    pub passphrase: Option<String>,
+    /// Option to set the network type
+    pub network_type: HDNetworkType,
+    /// Option to set the mnemonic key pair type
+    pub style: MnemonicKeyPairType,
 }
 
 impl KeyPairBuilder {
