@@ -1,8 +1,8 @@
 use ::walletd_bip39::Seed;
 
 use crate::{
-    Bip39Mnemonic, BlockchainConnectorGeneral, CryptoWallet, CryptoWalletBuilder,
-    CryptoWalletGeneral, HDKey, HDNetworkType, MnemonicHandler,
+    Bip39Mnemonic, CryptoWallet, CryptoWalletBuilder, CryptoWalletGeneral, HDKey, HDNetworkType,
+    MnemonicHandler,
 };
 
 use crate::Error;
@@ -192,13 +192,11 @@ impl KeyPair {
         self.style
     }
 
-    /// Derives a wallet of the specified generic type T from the [KeyPair] struct 
+    /// Derives a wallet of the specified generic type T from the [KeyPair] struct
     /// T must implement the CryptoWallet trait
     /// # Errors
     /// Returns an [Error] vairant if the wallet of type T could not be derived
-    pub fn derive_wallet<T>(
-        &self,
-    ) -> Result<T, Error>
+    pub fn derive_wallet<T>(&self) -> Result<T, Error>
     where
         T: CryptoWallet,
         T::WalletBuilder: CryptoWalletBuilder<T>,
