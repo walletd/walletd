@@ -48,7 +48,7 @@ async fn main() {
 
     // derive the Bitcoin wallet from the HD wallet, associate it with the btc blockchain client
     let mut btc_wallet = hd_wallet
-        .derive_wallet::<BitcoinWallet>(btc_blockchain_client)
+        .derive_wallet_with_client::<BitcoinWallet>(btc_blockchain_client)
         .unwrap();
 
     // Searches for past transactions on first account using default of HDPurpose::BIP84 (default for BTC), can have other options to specify a different deriv path to search with or to search past the first account or change the gap limit ex: .discover_accounts() or .set_derive_type(HDPurpose::BIP44)
@@ -62,7 +62,7 @@ async fn main() {
         .build()
         .unwrap();
     let eth_wallet = hd_wallet
-        .derive_wallet::<EthereumWallet>(eth_blockchain_client)
+        .derive_wallet_with_client::<EthereumWallet>(eth_blockchain_client)
         .unwrap();
 
     // Gets the current balances for the BTC wallet and ETH wallet
