@@ -3,7 +3,7 @@ use core::fmt::Display;
 use std::ops;
 
 use crate::Error;
-use walletd_coin_model::CryptoAmount;
+use walletd_coin_core::CryptoAmount;
 use web3::ethabi::ethereum_types::U256;
 
 /// EthereumAmount contains a field representing the amount of wei in the amount. It also has functions to convert to and from the main unit (ETH) and the smallest unit (wei).

@@ -3,7 +3,7 @@ use core::fmt;
 use core::fmt::Display;
 use std::ops;
 
-use walletd_coin_model::CryptoAmount;
+use walletd_coin_core::CryptoAmount;
 
 /// BitcoinAmount contains a field representing the amount of satoshis in the amount. It also has functions to convert to and from the main unit (BTC) and the smallest unit (satoshi).
 #[derive(Default, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
