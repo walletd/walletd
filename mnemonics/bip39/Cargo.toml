@@ -17,7 +17,7 @@ name = "walletd_bip39"
 path = "src/lib.rs"
 
 [dependencies]
-walletd_mnemonics_core = {path = "../core"}
+walletd_mnemonics_core = {path = "../core", version="0.1"}
 bitvec = { version = "0.17.4" }
 curve25519-dalek = { version = "2.1.0" }
 enum-iterator = "1.2.0"
