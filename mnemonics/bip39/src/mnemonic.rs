@@ -2,6 +2,8 @@ use core::ops::Div;
 use core::str;
 use std::fmt;
 
+use crate::mnemonic_type::ENTROPY_OFFSET;
+use crate::{Language, MnemonicType, ParseMnemonicError, WordList};
 use bitvec::prelude::*;
 use curve25519_dalek::scalar::Scalar;
 use hmac::Hmac;
@@ -9,8 +11,6 @@ use pbkdf2::pbkdf2;
 use rand::{thread_rng, Rng};
 use sha2::{Digest, Sha256, Sha512};
 use walletd_mnemonics_core::{MnemonicHandler, MnemonicStyleBuilder, Seed};
-use crate::mnemonic_type::ENTROPY_OFFSET;
-use crate::{Language, MnemonicType, ParseMnemonicError, WordList};
 
 /// Struct representing a Bip39 mnemonic.
 ///
