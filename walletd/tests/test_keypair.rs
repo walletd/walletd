@@ -7,7 +7,7 @@ use walletd::{
 fn test_keypair() -> Result<(), Error> {
     let mnemonic_phrase =
         "outer ride neither foil glue number place usage ball shed dry point".to_string();
-    let mnemonic_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee").unwrap();
+    let mnemonic_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
     let passphrase = "mypassphrase";
     let network = HDNetworkType::TestNet;
     let keypair = KeyPair::builder()
@@ -15,8 +15,7 @@ fn test_keypair() -> Result<(), Error> {
         .with_mnemonic_seed(mnemonic_seed.clone())
         .with_passphrase(passphrase.to_string())
         .with_network_type(network)
-        .build()
-        .unwrap();
+        .build()?;
 
     assert_eq!(keypair.mnemonic_phrase(), mnemonic_phrase);
     assert_eq!(keypair.mnemonic_seed(), mnemonic_seed);
