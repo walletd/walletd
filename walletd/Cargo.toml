@@ -7,7 +7,7 @@ authors = ["The WalletD Team"]
 description = "The walletd library"
 homepage = "https://walletd.org/"
 repository = "https://github.com/walletd/walletd"
-readme = "README.md"
+readme = "../README.md"
 categories = ["cryptography::cryptocurrencies"]
 
 [lib]
