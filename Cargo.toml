@@ -3,8 +3,8 @@ members = [
     "walletd",
     "mnemonics/bip39",
     "mnemonics/hd_key",
-    "mnemonics/model",
+    "mnemonics/core",
     "coins/bitcoin",
     "coins/ethereum",
-    "coins/model" 
+    "coins/core" 
 ]

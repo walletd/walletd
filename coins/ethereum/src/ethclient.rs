@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use log::info;
 use std::any::Any;
 use std::str::FromStr;
-use walletd_coin_model::{BlockchainConnector, BlockchainConnectorGeneral};
+use walletd_coin_core::{BlockchainConnector, BlockchainConnectorGeneral};
 use web3::contract::{Contract, Options};
 use web3::ethabi::Uint;
 use web3::helpers as w3h;
@@ -52,7 +52,7 @@ impl EthClient {
     /// use std::str::FromStr;
     ///
     /// use walletd_ethereum::EthClient;
-    /// use walletd_coin_model::BlockchainConnector;
+    /// use walletd_coin_core::BlockchainConnector;
     /// use web3::types::H256;
     /// let tx_hash =
     ///     "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
@@ -353,7 +353,7 @@ impl EthClient {
 #[async_trait]
 impl BlockchainConnector for EthClient {
     type ErrorType = Error;
-
+ 
     fn new(endpoint: &str) -> Result<Self, Error> {
         // TODO(#71): Change transport to support web sockets
         let transport = web3::transports::Http::new(endpoint)?;

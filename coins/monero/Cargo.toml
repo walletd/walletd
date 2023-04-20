@@ -15,8 +15,7 @@ name = "walletd_monero"
 path = "src/lib.rs"
 
 [dependencies]
-
-walletd_coin_model = {path = "../model"}
+walletd_coin_core = {path = "../core"}
 walletd_monero_mnemonic = {path = "../../mnemonics/monero"}
 walletd_hd_key = {path = "../../mnemonics/hd_key"}
 

@@ -8,8 +8,8 @@ use bitcoin::{Address, AddressType};
 use bitcoin_hashes::{sha256d, Hash};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use walletd_coin_model::BlockchainConnector;
-use walletd_coin_model::BlockchainConnectorGeneral;
+use walletd_coin_core::BlockchainConnector;
+use walletd_coin_core::BlockchainConnectorGeneral;
 
 use time::format_description::well_known::Rfc2822;
 use time::{Duration, OffsetDateTime};

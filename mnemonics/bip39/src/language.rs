@@ -12,7 +12,7 @@ static PORTUGUESE: &str = include_str!("langs/portuguese.txt");
 use std::fmt;
 use std::str::FromStr;
 
-use walletd_mnemonic_model::LanguageHandler;
+use walletd_mnemonic_core::LanguageHandler;
 
 use crate::ParseMnemonicError;
 

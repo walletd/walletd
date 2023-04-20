@@ -47,7 +47,7 @@ mod language;
 mod mnemonic;
 mod mnemonic_type;
 
-pub use walletd_mnemonic_model::{MnemonicHandler, MnemonicStyleBuilder, Seed};
+pub use walletd_mnemonic_core::{MnemonicHandler, MnemonicStyleBuilder, Seed};
 
 pub use self::error::ParseMnemonicError;
 pub use self::language::Language;

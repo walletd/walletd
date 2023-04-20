@@ -9,21 +9,21 @@ pub use walletd_bip39::{
     Language as Bip39Language, Mnemonic as Bip39Mnemonic, MnemonicType as Bip39MnemonicType, Seed,
 };
 
-pub use walletd_mnemonic_model::{MnemonicHandler, MnemonicStyleBuilder};
+pub use walletd_mnemonic_core::{MnemonicHandler, MnemonicStyleBuilder};
 
 mod key_pair;
 pub use key_pair::{KeyPair, KeyPairBuilder, MnemonicKeyPairType};
 pub use walletd_bitcoin::blockstream;
 pub use walletd_bitcoin::{BitcoinAmount, BitcoinWallet};
-pub use walletd_coin_model::{
+pub use walletd_coin_core::{
     BlockchainConnector, BlockchainConnectorGeneral, ConnectorType, CryptoAddress, CryptoAmount,
     CryptoWallet, CryptoWalletBuilder, CryptoWalletGeneral,
 };
 pub use walletd_ethereum::{EthClient, EthereumAmount, EthereumFormat, EthereumWallet};
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 pub use {
-    walletd_bip39, walletd_bitcoin, walletd_coin_model, walletd_ethereum, walletd_hd_key,
-    walletd_mnemonic_model,
+    walletd_bip39, walletd_bitcoin, walletd_coin_core, walletd_ethereum, walletd_hd_key,
+    walletd_mnemonic_core,
 };
 
 mod crypto_coin;

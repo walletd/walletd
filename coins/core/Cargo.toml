@@ -1,5 +1,5 @@
 [package]
-name = "walletd_coin_model"
+name = "walletd_coin_core"
 version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -11,13 +11,13 @@ readme = "README.md"
 categories = ["cryptography::cryptocurrencies"]
 
 [lib]
-name = "walletd_coin_model"
+name = "walletd_coin_core"
 path = "src/lib.rs"
 
 [dependencies]
 
 walletd_hd_key = {path = "../../mnemonics/hd_key"}
-walletd_mnemonic_model = {path = "../../mnemonics/model"}
+walletd_mnemonic_core = {path = "../../mnemonics/core"}
 
 anyhow = "1.0.68"
 async-trait = "0.1.6"

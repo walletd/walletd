@@ -3,12 +3,12 @@
 extern crate walletd_ethereum;
 
 // use walletd_bip39::MnemonicHandler;
-// use walletd_coin_model::crypto_wallet::CryptoWallet;
+// use walletd_coin_core::crypto_wallet::CryptoWallet;
 // use hex_literal::hex;
 // use walletd_hd_key::HDKey;
-// use walletd_coin_model::CryptoWallet;
+// use walletd_coin_core::CryptoWallet;
 // use walletd_hd_key::NetworkType;
-use walletd_coin_model::BlockchainConnector;
+use walletd_coin_core::BlockchainConnector;
 use web3::types::H160;
 
 // const GOERLI_TEST_ADDRESS: &str =

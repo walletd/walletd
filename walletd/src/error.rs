@@ -15,9 +15,9 @@ pub enum Error {
     /// Error from the walletd_bip39 crate
     #[error("walletd_bip39 mnemonic error: {0}")]
     WalletdBip39(#[from] walletd_bip39::ParseMnemonicError),
-    /// Error from the walletd_coin_model crate
-    #[error("walletd_coin_model error: {0}")]
-    WalletdCoinModel(#[from] walletd_coin_model::Error),
+    /// Error from the walletd_coin_core crate
+    #[error("walletd_coin_core error: {0}")]
+    WalletdCoinModel(#[from] walletd_coin_core::Error),
     /// Error deriving a wallet of a specific type from a KeyPair struct
     #[error("Error deriving a wallet of a specific type from a KeyPair struct: {0}")]
     DeriveWallet(String),
