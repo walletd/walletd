@@ -1,4 +1,4 @@
-README for walletd_ethereum
+# WalletD Ethereum
 
 For "local" examples, the examples require an instance of Ganache-CLI to be running. For "remote" examples, the examples expect a .env file with "INFURA_KEY" to be set. (this is still todo. See [issue #74](https://github.com/walletd/wallet-cli/issues/74))
 

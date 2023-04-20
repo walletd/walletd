@@ -16,8 +16,8 @@ path = "src/lib.rs"
 
 [dependencies]
 
-walletd_hd_key = {path = "../../mnemonics/hd_key"}
-walletd_mnemonics_core = {path = "../../mnemonics/core"}
+walletd_hd_key = {path = "../../mnemonics/hd_key", version="0.1"}
+walletd_mnemonics_core = {path = "../../mnemonics/core", version="0.1"}
 
 anyhow = "1.0.68"
 async-trait = "0.1.6"
