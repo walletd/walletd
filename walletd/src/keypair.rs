@@ -12,15 +12,15 @@ use crate::Error;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct KeyPair {
     /// The style of the mnemonic phrase
-    pub style: MnemonicKeyPairType,
+    style: MnemonicKeyPairType,
     /// The mnemonic seed (derived from the mnemonic phrase as well as the optional passphrase)
-    pub mnemonic_seed: Seed,
+    mnemonic_seed: Seed,
     /// The mnemonic phrase
-    pub mnemonic_phrase: String,
+    mnemonic_phrase: String,
     /// The optional passphrase
-    pub passphrase: Option<String>,
+    passphrase: Option<String>,
     /// The HD network type
-    pub network_type: HDNetworkType,
+    network_type: HDNetworkType,
 }
 
 /// The MnemonicKeyPairType enum is used to specify the type of mnemonic phrase
