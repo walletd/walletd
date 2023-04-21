@@ -1,8 +1,8 @@
 use ::walletd_bip39::Seed;
 
 use crate::{
-    Bip39Mnemonic, BlockchainConnectorGeneral, CryptoWallet, CryptoWalletBuilder,
-    CryptoWalletGeneral, HDKey, HDNetworkType, MnemonicHandler,
+    Bip39Mnemonic, CryptoWallet, CryptoWalletBuilder, CryptoWalletGeneral, HDKey, HDNetworkType,
+    MnemonicHandler,
 };
 
 use crate::Error;
@@ -12,15 +12,15 @@ use crate::Error;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct KeyPair {
     /// The style of the mnemonic phrase
-    pub style: MnemonicKeyPairType,
+    style: MnemonicKeyPairType,
     /// The mnemonic seed (derived from the mnemonic phrase as well as the optional passphrase)
-    pub mnemonic_seed: Seed,
+    mnemonic_seed: Seed,
     /// The mnemonic phrase
-    pub mnemonic_phrase: String,
+    mnemonic_phrase: String,
     /// The optional passphrase
-    pub passphrase: Option<String>,
+    passphrase: Option<String>,
     /// The HD network type
-    pub network_type: HDNetworkType,
+    network_type: HDNetworkType,
 }
 
 /// The MnemonicKeyPairType enum is used to specify the type of mnemonic phrase
@@ -161,6 +161,11 @@ impl KeyPair {
         KeyPairBuilder::new()
     }
 
+    /// Returns the mnemonic seed as a [Seed] type
+    pub fn mnemonic_seed(&self) -> Seed {
+        self.mnemonic_seed.clone()
+    }
+
     /// Returns mnemonic phrase as a &str type
     pub fn mnemonic_phrase(&self) -> &str {
         self.mnemonic_phrase.as_str()
@@ -182,12 +187,16 @@ impl KeyPair {
         self.network_type
     }
 
-    /// Derives a wallet of the specified generic type T, given a blockchain client as an argument
+    /// Returns the mnemonic key pair type ([MnemonicKeyPairType])
+    pub fn style(&self) -> MnemonicKeyPairType {
+        self.style
+    }
+
+    /// Derives a wallet of the specified generic type T from the [KeyPair] struct
     /// T must implement the CryptoWallet trait
-    pub fn derive_wallet<T>(
-        &self,
-        blockchain_client: Box<dyn BlockchainConnectorGeneral>,
-    ) -> Result<T, Error>
+    /// # Errors
+    /// Returns an [Error] vairant if the wallet of type T could not be derived
+    pub fn derive_wallet<T>(&self) -> Result<T, Error>
     where
         T: CryptoWallet,
         T::WalletBuilder: CryptoWalletBuilder<T>,
@@ -196,7 +205,6 @@ impl KeyPair {
     {
         let wallet: T = T::builder()
             .with_master_hd_key(self.to_master_key())
-            .with_blockchain_client(blockchain_client)
             .build()
             .map_err(|e| Error::DeriveWallet(e.to_string()))?;
         Ok(wallet)
