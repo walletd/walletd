@@ -1,5 +1,5 @@
 use std::str::FromStr;
-use walletd::{
+use crate::{
     BitcoinWallet, Error, EthereumWallet, HDNetworkType, KeyPair, MnemonicKeyPairType, Seed,
 };
 

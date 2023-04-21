@@ -210,3 +210,11 @@ impl KeyPair {
         Ok(wallet)
     }
 }
+
+#[cfg(test)]
+mod test_keypair_builder;
+
+#[cfg(test)]
+mod test_keypair;
+
+
