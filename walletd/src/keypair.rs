@@ -35,15 +35,15 @@ pub enum MnemonicKeyPairType {
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct KeyPairBuilder {
     /// Option to set the mnemomonic phrase
-    pub mnemonic_phrase: Option<String>,
+    mnemonic_phrase: Option<String>,
     /// Option to set the mnemonic seed
-    pub mnemonic_seed: Option<Seed>,
+    mnemonic_seed: Option<Seed>,
     /// Option to set the passphrase
-    pub passphrase: Option<String>,
+    passphrase: Option<String>,
     /// Option to set the network type
-    pub network_type: HDNetworkType,
+    network_type: HDNetworkType,
     /// Option to set the mnemonic key pair type
-    pub style: MnemonicKeyPairType,
+    style: MnemonicKeyPairType,
 }
 
 impl KeyPairBuilder {
