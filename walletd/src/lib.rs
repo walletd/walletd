@@ -11,8 +11,8 @@ pub use walletd_bip39::{
 
 pub use walletd_mnemonics_core::{MnemonicHandler, MnemonicStyleBuilder};
 
-mod key_pair;
-pub use key_pair::{KeyPair, KeyPairBuilder, MnemonicKeyPairType};
+mod keypair;
+pub use keypair::{KeyPair, KeyPairBuilder, MnemonicKeyPairType};
 pub use walletd_bitcoin::blockstream;
 pub use walletd_bitcoin::{BitcoinAmount, BitcoinWallet};
 pub use walletd_coin_core::{
