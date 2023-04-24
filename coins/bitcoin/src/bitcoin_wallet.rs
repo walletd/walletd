@@ -1090,3 +1090,7 @@ impl BitcoinWalletBuilder {
         }
     }
 }
+
+
+#[cfg(test)]
+mod test_bitcoin_wallet_builder;
