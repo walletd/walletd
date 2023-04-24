@@ -11,9 +11,9 @@ fn test_keypair() -> Result<(), Error> {
     let passphrase = "mypassphrase";
     let network = HDNetworkType::TestNet;
     let keypair = KeyPair::builder()
-        .with_mnemonic_phrase(mnemonic_phrase.clone())
-        .with_mnemonic_seed(mnemonic_seed.clone())
-        .with_passphrase(passphrase.to_string())
+        .mnemonic_phrase(mnemonic_phrase.clone())
+        .mnemonic_seed(mnemonic_seed.clone())
+        .passphrase(passphrase.to_string())
         .with_network_type(network)
         .build()?;
 
