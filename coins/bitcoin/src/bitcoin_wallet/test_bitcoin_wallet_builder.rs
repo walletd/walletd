@@ -1,7 +1,7 @@
-use std::str::FromStr;
 use crate::{
     blockstream::Blockstream, AddressType, BitcoinWalletBuilder, Error, HDKey, Network, Seed,
 };
+use std::str::FromStr;
 use walletd_coin_core::{BlockchainConnector, CryptoWalletBuilder};
 use walletd_hd_key::HDNetworkType;
 
@@ -11,7 +11,12 @@ fn test_default() -> Result<(), Error> {
     assert_eq!(builder.address_format, AddressType::P2wpkh);
     assert_eq!(builder.account_discovery, true);
     assert!(builder.gap_limit_specified.is_some());
-    assert_eq!(builder.gap_limit_specified.expect("should be some due to previous check"), 20);
+    assert_eq!(
+        builder
+            .gap_limit_specified
+            .expect("should be some due to previous check"),
+        20
+    );
     assert!(builder.master_hd_key.is_none());
     assert!(builder.mnemonic_seed.is_none());
     assert_eq!(builder.network_type, Network::Bitcoin);
@@ -26,7 +31,14 @@ fn test_new() -> Result<(), Error> {
     assert_eq!(builder.account_discovery, default.account_discovery);
     assert!(builder.gap_limit_specified.is_some());
     assert!(default.gap_limit_specified.is_some());
-    assert_eq!(builder.gap_limit_specified.expect("should be some due to previous check"), default.gap_limit_specified.expect("should be some due to previous check"));
+    assert_eq!(
+        builder
+            .gap_limit_specified
+            .expect("should be some due to previous check"),
+        default
+            .gap_limit_specified
+            .expect("should be some due to previous check")
+    );
     assert!(builder.master_hd_key.is_none());
     assert!(builder.mnemonic_seed.is_none());
     assert_eq!(builder.network_type, default.network_type);
@@ -46,7 +58,12 @@ fn test_with_mnemonic_seed() -> Result<(), Error> {
     let mut builder = BitcoinWalletBuilder::default();
     builder.mnemonic_seed(seed.clone());
     assert!(builder.mnemonic_seed.is_some());
-    assert_eq!(builder.mnemonic_seed.expect("should be some due to previous check"), seed);
+    assert_eq!(
+        builder
+            .mnemonic_seed
+            .expect("should be some due to previous check"),
+        seed
+    );
     Ok(())
 }
 
@@ -58,7 +75,12 @@ fn test_with_master_hd_key() -> Result<(), Error> {
     let mut builder = BitcoinWalletBuilder::default();
     builder.master_hd_key(master_hd_key.clone());
     assert!(builder.master_hd_key.is_some());
-    assert_eq!(builder.master_hd_key.expect("should be some due to previous check"), master_hd_key);
+    assert_eq!(
+        builder
+            .master_hd_key
+            .expect("should be some due to previous check"),
+        master_hd_key
+    );
     Ok(())
 }
 
@@ -106,10 +128,7 @@ fn test_with_hd_path_builder() -> Result<(), Error> {
     assert!(builder.hd_path_builder.coin_type.is_some());
     assert!(builder.hd_path_builder.address_index.is_some());
     assert_eq!(
-        builder
-            .hd_path_builder
-            .coin_type
-            .expect("checked is some"),
+        builder.hd_path_builder.coin_type.expect("checked is some"),
         0
     );
     assert_eq!(

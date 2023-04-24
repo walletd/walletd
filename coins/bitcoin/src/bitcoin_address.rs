@@ -156,6 +156,5 @@ impl fmt::Display for BitcoinAddress {
     }
 }
 
-
 #[cfg(test)]
 mod test_bitcoin_address;
