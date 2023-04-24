@@ -1,7 +1,7 @@
-use std::str::FromStr;
-use walletd::{
+use crate::{
     BitcoinWallet, Error, EthereumWallet, HDNetworkType, KeyPair, MnemonicKeyPairType, Seed,
 };
+use std::str::FromStr;
 
 #[test]
 fn test_keypair() -> Result<(), Error> {
