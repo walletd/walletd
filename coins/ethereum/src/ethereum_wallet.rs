@@ -141,8 +141,8 @@ impl Default for EthereumWalletBuilder {
     fn default() -> Self {
         let mut hd_path_builder = HDPathBuilder::default();
         hd_path_builder
-            .with_purpose(Self::default_hd_purpose().to_shortform_num())
-            .with_coin_type(slip44::Coin::from(slip44::Symbol::ETH).id());
+            .purpose(Self::default_hd_purpose().to_shortform_num())
+            .coin_type(slip44::Coin::from(slip44::Symbol::ETH).id());
         Self {
             address_format: EthereumFormat::Checksummed,
             master_hd_key: None,
@@ -177,10 +177,10 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
         let coin_type_id = slip44::Coin::Ether.id();
         let mut hd_path_builder = HDPath::builder();
         hd_path_builder
-            .with_purpose(hd_purpose_num)
-            .with_purpose_hardened(true)
-            .with_coin_type(coin_type_id)
-            .with_coin_type_hardened(true);
+            .purpose(hd_purpose_num)
+            .purpose_hardened(true)
+            .coin_type(coin_type_id)
+            .coin_type_hardened(true);
 
         let derived_key = master_hd_key.derive(hd_path_builder.build().to_string())?;
         let private_key =

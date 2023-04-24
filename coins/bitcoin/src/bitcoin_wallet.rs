@@ -277,10 +277,10 @@ impl BitcoinWallet {
             None => {
                 let mut builder = HDPath::builder();
                 builder
-                    .with_purpose(self.default_hd_purpose()?.to_shortform_num())
-                    .with_coin_type(self.coin_type_id()?)
-                    .with_account(0)
-                    .with_address_index(0);
+                    .purpose(self.default_hd_purpose()?.to_shortform_num())
+                    .coin_type(self.coin_type_id()?)
+                    .account(0)
+                    .address_index(0);
                 builder
             }
         };
@@ -296,7 +296,7 @@ impl BitcoinWallet {
                 for change_index in 0..2 {
                     let specify_deriv_path = &path_builder
                         .clone()
-                        .with_change(change_index)
+                        .change_index(change_index)
                         .build()
                         .to_string();
                     let derived = master_hd_key.derive(specify_deriv_path.clone())?;
@@ -321,13 +321,13 @@ impl BitcoinWallet {
                     }
                 }
                 address_index += 1;
-                path_builder.with_address_index(address_index);
+                path_builder.address_index(address_index);
             }
             if !self.account_discovery {
                 break;
             }
             account_index += 1;
-            path_builder.with_account(account_index);
+            path_builder.account(account_index);
             address_index = 0;
             current_gap = 0;
         }
@@ -365,10 +365,10 @@ impl BitcoinWallet {
         let mut max_address = 0;
         let mut path_builder = HDPath::builder();
         path_builder
-            .with_purpose(purpose)
-            .with_coin_type(coin_type)
-            .with_account(account.to_shortform_num())
-            .with_account_hardened(true);
+            .purpose(purpose)
+            .coin_type(coin_type)
+            .account(account.to_shortform_num())
+            .account_hardened(true);
 
         for info in self.associated.iter() {
             let deriv_path = &info.hd_key().derivation_path();
@@ -379,7 +379,7 @@ impl BitcoinWallet {
             }
         }
         let next_deriv_path = path_builder
-            .with_address_index(max_address + 1)
+            .address_index(max_address + 1)
             .build()
             .to_string();
         let next_hd_key = self.master_hd_key()?.derive(next_deriv_path)?;
@@ -406,14 +406,14 @@ impl BitcoinWallet {
                 let mut builder = HDPath::builder();
 
                 builder
-                    .with_purpose(purpose)
-                    .with_coin_type(coin_type)
-                    .with_account(account.to_shortform_num())
-                    .with_account_hardened(true);
+                    .purpose(purpose)
+                    .coin_type(coin_type)
+                    .account(account.to_shortform_num())
+                    .account_hardened(true);
                 builder
             }
         };
-        path_builder.with_change(1);
+        path_builder.change_index(1);
 
         for info in self.associated.iter() {
             let deriv_path = &info.hd_key().derivation_path();
@@ -425,7 +425,7 @@ impl BitcoinWallet {
         }
 
         let next_deriv_path = path_builder
-            .with_address_index(max_address + 1)
+            .address_index(max_address + 1)
             .build()
             .to_string();
         let next_hd_key = self.master_hd_key()?.derive(next_deriv_path)?;
@@ -466,8 +466,8 @@ impl BitcoinWallet {
             None => {
                 let mut builder = HDPath::builder();
                 builder
-                    .with_purpose(self.default_hd_purpose().unwrap().to_shortform_num())
-                    .with_coin_type(self.coin_type_id().unwrap());
+                    .purpose(self.default_hd_purpose().unwrap().to_shortform_num())
+                    .coin_type(self.coin_type_id().unwrap());
                 builder
             }
         }
@@ -922,13 +922,13 @@ impl Default for BitcoinWalletBuilder {
 
         let mut deriv_path_builder = HDPath::builder();
         deriv_path_builder
-            .with_purpose(default_hd_purpose.to_shortform_num())
-            .with_purpose_hardened(true)
-            .with_coin_type(slip44::Coin::Bitcoin.id())
-            .with_coin_type_hardened(true)
-            .with_account_hardened(true)
-            .with_change_hardened(false)
-            .with_address_index_hardened(false);
+            .purpose(default_hd_purpose.to_shortform_num())
+            .purpose_hardened(true)
+            .coin_type(slip44::Coin::Bitcoin.id())
+            .coin_type_hardened(true)
+            .account_hardened(true)
+            .change_hardened(false)
+            .address_index_hardened(false);
 
         Self {
             address_format: AddressType::P2wpkh,
@@ -1022,10 +1022,10 @@ impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
 
         let mut hd_path_builder = HDPath::builder();
         hd_path_builder
-            .with_purpose(hd_purpose.to_shortform_num())
-            .with_purpose_hardened(true)
-            .with_coin_type(coin_type_id)
-            .with_coin_type_hardened(true);
+            .purpose(hd_purpose.to_shortform_num())
+            .purpose_hardened(true)
+            .coin_type(coin_type_id)
+            .coin_type_hardened(true);
 
         let mut wallet = BitcoinWallet {
             address_format: self.address_format,
