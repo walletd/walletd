@@ -204,7 +204,7 @@ impl KeyPair {
         <T as TryFrom<Box<dyn CryptoWalletGeneral>>>::Error: std::fmt::Display,
     {
         let wallet: T = T::builder()
-            .with_master_hd_key(self.to_master_key())
+            .master_hd_key(self.to_master_key())
             .build()
             .map_err(|e| Error::DeriveWallet(e.to_string()))?;
         Ok(wallet)

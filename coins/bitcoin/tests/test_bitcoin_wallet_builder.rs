@@ -41,7 +41,7 @@ fn test_with_mnemonic_seed() -> Result<(), Error> {
     let seed_hex = "a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee";
     let seed = Seed::from_str(seed_hex).unwrap();
     let mut builder = BitcoinWalletBuilder::default();
-    builder.with_mnemonic_seed(seed.clone());
+    builder.mnemonic_seed(seed.clone());
     assert_eq!(builder.mnemonic_seed()?, seed);
     Ok(())
 }
@@ -52,7 +52,7 @@ fn test_with_master_hd_key() -> Result<(), Error> {
     let seed = Seed::from_str(seed_hex).unwrap();
     let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
     let mut builder = BitcoinWalletBuilder::default();
-    builder.with_master_hd_key(master_hd_key.clone());
+    builder.master_hd_key(master_hd_key.clone());
     assert_eq!(builder.master_hd_key()?, master_hd_key);
     Ok(())
 }
@@ -60,7 +60,7 @@ fn test_with_master_hd_key() -> Result<(), Error> {
 #[test]
 fn test_with_address_format() -> Result<(), Error> {
     let mut builder = BitcoinWalletBuilder::default();
-    builder.with_address_format(AddressType::P2pkh);
+    builder.address_format(AddressType::P2pkh);
     assert_eq!(builder.address_format(), AddressType::P2pkh);
     Ok(())
 }
@@ -68,7 +68,7 @@ fn test_with_address_format() -> Result<(), Error> {
 #[test]
 fn test_with_blockchain_client() -> Result<(), Error> {
     let mut builder = BitcoinWalletBuilder::default();
-    builder.with_blockchain_client(Box::new(Blockstream::new(
+    builder.blockchain_client(Box::new(Blockstream::new(
         "https://blockstream.info/testnet/api",
     )?));
     assert!(builder.blockchain_client().is_some());
@@ -78,7 +78,7 @@ fn test_with_blockchain_client() -> Result<(), Error> {
 #[test]
 fn test_with_network_type() -> Result<(), Error> {
     let mut builder = BitcoinWalletBuilder::default();
-    builder.with_network_type(Network::Testnet);
+    builder.network_type(Network::Testnet);
     assert_eq!(builder.network_type(), Network::Testnet);
     Ok(())
 }
@@ -97,7 +97,7 @@ fn test_with_hd_path_builder() -> Result<(), Error> {
     );
     let mut hd_path_builder = builder.hd_path_builder();
     hd_path_builder.coin_type(0).address_index(1);
-    builder.with_hd_path_builder(hd_path_builder);
+    builder.hd_path_builder(hd_path_builder);
     assert!(builder.hd_path_builder().coin_type.is_some());
     assert!(builder.hd_path_builder().address_index.is_some());
     assert_eq!(

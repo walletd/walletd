@@ -205,19 +205,19 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
     }
 
     /// Allows specification of the master HD key for the wallet
-    fn with_master_hd_key(&mut self, master_hd_key: HDKey) -> &mut Self {
+    fn master_hd_key(&mut self, master_hd_key: HDKey) -> &mut Self {
         self.master_hd_key = Some(master_hd_key);
         self
     }
 
     /// Allows specification of the address format for the wallet
-    fn with_address_format(&mut self, address_format: EthereumFormat) -> &mut Self {
+    fn address_format(&mut self, address_format: EthereumFormat) -> &mut Self {
         self.address_format = address_format;
         self
     }
 
     /// Allows specification of the blockchain client for the wallet
-    fn with_blockchain_client(
+    fn blockchain_client(
         &mut self,
         blockchain_client: Box<dyn BlockchainConnectorGeneral>,
     ) -> &mut Self {
@@ -226,18 +226,18 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
     }
 
     /// Allows specification of the mnemonic seed for the wallet
-    fn with_mnemonic_seed(&mut self, mnemonic_seed: Seed) -> &mut Self {
+    fn mnemonic_seed(&mut self, mnemonic_seed: Seed) -> &mut Self {
         self.mnemonic_seed = Some(mnemonic_seed);
         self
     }
 
     /// Allows specification of the network type for the wallet, the default is HDNetworkType::MainNet
-    fn with_network_type(&mut self, network_type: HDNetworkType) -> &mut Self {
+    fn network_type(&mut self, network_type: HDNetworkType) -> &mut Self {
         self.network_type = network_type;
         self
     }
 
-    fn with_hd_path_builder(&mut self, hd_path_builder: HDPathBuilder) -> &mut Self {
+    fn hd_path_builder(&mut self, hd_path_builder: HDPathBuilder) -> &mut Self {
         self.hd_path_builder = hd_path_builder;
         self
     }
