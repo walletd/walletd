@@ -1046,7 +1046,7 @@ impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
 
 impl BitcoinWalletBuilder {
     /// Allows specification of the gap limit to use for the wallet
-    pub fn with_gap_limit(&mut self, gap_limit: usize) -> &mut Self {
+    pub fn gap_limit(&mut self, gap_limit: usize) -> &mut Self {
         self.gap_limit_specified = Some(gap_limit);
         self
     }
@@ -1054,20 +1054,9 @@ impl BitcoinWalletBuilder {
     /// Allows specification of the account discovery to use for the wallet
     /// If set to false, the wallet will not search for accounts used past the first account
     /// The default is true
-    pub fn with_account_discovery(&mut self, account_discovery: bool) -> &mut Self {
+    pub fn account_discovery(&mut self, account_discovery: bool) -> &mut Self {
         self.account_discovery = account_discovery;
         self
-    }
-
-    /// Allows specification of the blockchain client for the wallet, can override the default of None  
-    /// Returns the master HD key set if it exists
-    /// # Errors
-    /// Returns an error `Error::MissingMasterHDKey` if the master HD key is not set
-    pub fn master_hd_key(&self) -> Result<HDKey, Error> {
-        match &self.master_hd_key {
-            None => Err(Error::MissingMasterHDKey),
-            Some(key) => Ok(key.clone()),
-        }
     }
 
     /// Returns the default HDPurpose based on the address format
@@ -1090,63 +1079,14 @@ impl BitcoinWalletBuilder {
     /// # Errors
     /// Returns an error if the network is not supported
     pub fn coin_type_id(&self) -> Result<u32, Error> {
-        match self.master_hd_key()?.network() {
-            HDNetworkType::MainNet => Ok(slip44::Coin::Bitcoin.id()),
-            HDNetworkType::TestNet => Ok(slip44::Coin::Testnet.id()),
+        match &self.master_hd_key {
+            Some(key) => { 
+                match key.network()  {
+                HDNetworkType::MainNet => return Ok(slip44::Coin::Bitcoin.id()),
+                HDNetworkType::TestNet => return Ok(slip44::Coin::Testnet.id()),
+                };
+            },
+            None => Err(Error::MissingMasterHDKey),
         }
-    }
-
-    /// Returns the address format set
-    pub fn address_format(&self) -> AddressType {
-        self.address_format
-    }
-
-    /// Returns the [HDPurpose] option set on the builder
-    /// The hd purpose is set by default based on the default or specified address format
-    /// # Errors
-    /// Returns an error if the hd_purpose was not set
-    pub fn hd_purpose(&self) -> Option<HDPurpose> {
-        self.hd_purpose
-    }
-
-    /// Returns an Option enum of the blockchain client, if the blockchain was not set it will return None
-    pub fn blockchain_client(&self) -> Option<&dyn BlockchainConnectorGeneral> {
-        self.blockchain_client.as_deref()
-    }
-
-    /// Returns the gap limit that was set on the builder
-    /// By default the gap limit is set to 20
-    /// # Errors
-    /// Returns an error if the gap limit was not set
-    pub fn gap_limit(&self) -> Result<usize, Error> {
-        match self.gap_limit_specified {
-            None => Err(Error::MissingInfo("Gap limit was not set".to_string())),
-            Some(limit) => Ok(limit),
-        }
-    }
-
-    /// Returns the account discovery flag that is set on the builder
-    pub fn account_discovery(&self) -> bool {
-        self.account_discovery
-    }
-
-    /// Returns the mnemonic seed set on the builder
-    /// # Errors
-    /// Returns an error if the mnemonic seed was not set
-    pub fn mnemonic_seed(&self) -> Result<Seed, Error> {
-        match &self.mnemonic_seed {
-            None => Err(Error::MissingInfo("Mnemonic seed was not set".to_string())),
-            Some(ref seed) => Ok(seed.clone()),
-        }
-    }
-
-    /// Returns the network type set on the builder
-    pub fn network_type(&self) -> Network {
-        self.network_type
-    }
-
-    /// Returns the HDPathBuilder set on the bitcoin wallet builder.
-    pub fn hd_path_builder(&self) -> HDPathBuilder {
-        self.hd_path_builder.clone()
     }
 }
