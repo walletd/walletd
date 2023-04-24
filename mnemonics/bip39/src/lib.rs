@@ -16,7 +16,7 @@
 //!
 //! // Create a new randomly generated mnemonic phrase
 //! let passphrase: &str = "mypassphrase";
-//! let mnemonic = Mnemonic::builder().with_passphrase(passphrase).build()?;
+//! let mnemonic = Mnemonic::builder().passphrase(passphrase).build()?;
 //!
 //! println!("phrase: {:?}", mnemonic);
 //!
@@ -29,8 +29,8 @@
 //!     "outer ride neither foil glue number place usage ball shed dry point";
 //! let passphrase: &str = "mypassphrase";
 //! let restored_mnemonic = Mnemonic::builder()
-//!     .with_phrase(mnemonic_phrase)
-//!     .with_passphrase(passphrase)
+//!     .mnemonic_phrase(mnemonic_phrase)
+//!     .passphrase(passphrase)
 //!     .build()?;
 //!
 //! let seed = restored_mnemonic.to_seed();
