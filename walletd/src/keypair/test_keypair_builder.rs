@@ -1,5 +1,5 @@
-use std::str::FromStr;
 use crate::{Error, KeyPairBuilder, MnemonicKeyPairType, Seed};
+use std::str::FromStr;
 use walletd_hd_key::HDNetworkType;
 
 #[test]
