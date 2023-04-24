@@ -7,7 +7,7 @@ fn main() -> () {
     // if a passphrase was used when the mnemonic was created, it must be set here,
     // this example assumes no passphrase was used
     let mnemonic = Mnemonic::builder()
-        .with_phrase(phrase)
+        .mnemonic_phrase(phrase)
         .restore()
         .unwrap_or_else(|error| {
             panic!("Problem creating the mnemonic: {:?}", error);

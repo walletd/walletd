@@ -21,7 +21,7 @@ async fn main() -> Result<(), Error> {
 
     // no passphrase, it's in English
     let my_mnemonic = match Bip39Mnemonic::builder()
-        .with_phrase(my_mnemonic_phrase)
+        .mnemonic_phrase(my_mnemonic_phrase)
         .build()
     {
         Ok(mnemonic) => mnemonic,

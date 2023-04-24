@@ -16,7 +16,7 @@ async fn main() {
     let mnemonic_phrase: &str =
         "joy tail arena mix other envelope diary achieve short nest true vocal";
     let restored_mnemonic = Mnemonic::builder()
-        .with_phrase(mnemonic_phrase)
+        .mnemonic_phrase(mnemonic_phrase)
         .detect_language()
         .build()
         .unwrap();
