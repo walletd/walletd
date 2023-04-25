@@ -12,7 +12,7 @@ static PORTUGUESE: &str = include_str!("langs/portuguese.txt");
 use std::fmt;
 use std::str::FromStr;
 
-use walletd_mnemonics_core::LanguageHandler;
+use walletd_mnemonics_core::LanguageExt;
 
 use crate::ParseMnemonicError;
 
@@ -188,7 +188,7 @@ impl Default for Language {
     }
 }
 
-impl LanguageHandler for Language {
+impl LanguageExt for Language {
     type Language = Language;
 
     /// Returns a new Language with default language set.

@@ -141,7 +141,7 @@ impl Mnemonic {
 
 impl MnemonicExt for Mnemonic {
     type ErrorType = ParseMnemonicError;
-    type LanguageHandler = Language;
+    type LanguageExt = Language;
     type MnemonicStyle = Self;
     type MnemonicStyleBuilder = MnemonicBuilder;
     type MnemonicTypeSpec = MnemonicType;
@@ -234,7 +234,7 @@ impl MnemonicExt for Mnemonic {
 
 impl MnemonicStyleBuilder for MnemonicBuilder {
     type ErrorType = ParseMnemonicError;
-    type LanguageHandler = Language;
+    type LanguageExt = Language;
     type MnemonicStyle = Mnemonic;
     type MnemonicTypeSpec = MnemonicType;
 
@@ -253,7 +253,7 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
         self
     }
 
-    fn language(&mut self, language: Self::LanguageHandler) -> &mut Self {
+    fn language(&mut self, language: Self::LanguageExt) -> &mut Self {
         self.language = Some(language);
         self
     }

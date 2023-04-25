@@ -8,7 +8,7 @@ pub use self::seed::Seed;
 /// different Mnemonic libraries
 pub trait MnemonicExt {
     /// The associated Language struct
-    type LanguageHandler;
+    type LanguageExt;
     /// The associated MnemonicType struct
     type MnemonicTypeSpec;
     /// The associated Builder struct for the Mnemonic
@@ -19,7 +19,7 @@ pub trait MnemonicExt {
     /// Generates a new mnemonic given the language, length of mnemonic, and
     /// optional passphrase
     fn new(
-        language: Self::LanguageHandler,
+        language: Self::LanguageExt,
         mnemonic_type: Self::MnemonicTypeSpec,
         passphrase: Option<&str>,
     ) -> Self::MnemonicStyle;
@@ -27,7 +27,7 @@ pub trait MnemonicExt {
     /// Recovers a mnemonic given the language, mnemonic phrase, and optional
     /// passphrase
     fn from_phrase(
-        language: Self::LanguageHandler,
+        language: Self::LanguageExt,
         phrase: &str,
         specified_passphrase: Option<&str>,
     ) -> Result<Self::MnemonicStyle, Self::ErrorType>;
@@ -47,7 +47,7 @@ pub trait MnemonicExt {
     fn to_seed(&self) -> Seed;
 
     // Returns the language for the mnemonic
-    fn language(&self) -> Self::LanguageHandler;
+    fn language(&self) -> Self::LanguageExt;
 
     // Returns the mnemonic phrase
     fn phrase(&self) -> String;
@@ -61,7 +61,7 @@ pub trait MnemonicStyleBuilder {
     /// The associated Mnemonic struct
     type MnemonicStyle;
     /// The associated Language struct
-    type LanguageHandler;
+    type LanguageExt;
     /// The associated MnemonicType struct
     type MnemonicTypeSpec;
 
@@ -85,7 +85,7 @@ pub trait MnemonicStyleBuilder {
 
     /// Specifies the language for the mnemonic phrase, can be used when
     /// recovering a mnemonic phrase or generating a new mnemonic phrase
-    fn language(&mut self, language: Self::LanguageHandler) -> &mut Self;
+    fn language(&mut self, language: Self::LanguageExt) -> &mut Self;
 
     /// Specifies a passphrase to use to offset/encrypt the seed recovered from
     /// the mnemonic phrase
@@ -111,9 +111,9 @@ pub trait MnemonicStyleBuilder {
     fn generate(&self) -> Result<Self::MnemonicStyle, Self::ErrorType>;
 }
 
-/// The LanguageHandler trait is used to provide a common interface for the
+/// The LanguageExt trait is used to provide a common interface for the
 /// different Language implementations in different Mnemonic libraries
-pub trait LanguageHandler {
+pub trait LanguageExt {
     type Language;
     fn new() -> Self::Language;
 }
