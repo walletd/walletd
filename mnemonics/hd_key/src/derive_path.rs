@@ -454,104 +454,129 @@ impl HDPathBuilder {
     }
 
     /// Specify the purpose index shortform number value
-    pub fn with_purpose(&mut self, purpose: u32) -> &mut Self {
+    pub fn purpose(&mut self, purpose: u32) -> &mut Self {
         self.purpose = Some(purpose);
         self
     }
 
-    /// Specify with a boolean if the purpose index is hardened (true) or not
-    /// (false)
-    pub fn with_purpose_hardened(&mut self, purpose_hardened: bool) -> &mut Self {
-        self.purpose_hardened = purpose_hardened;
+    /// Specify that the purpose index should be hardened
+    pub fn hardened_purpose(&mut self) -> &mut Self {
+        self.purpose_hardened = true;
+        self
+    }
+
+    /// Specify that the purpose index should not be hardened
+    pub fn non_hardened_purpose(&mut self) -> &mut Self {
+        self.purpose_hardened = false;
         self
     }
 
     /// Specify the coin_type index shortform number value
-    pub fn with_coin_type(&mut self, coin_type: u32) -> &mut Self {
+    pub fn coin_type_index(&mut self, coin_type: u32) -> &mut Self {
         self.coin_type = Some(coin_type);
         self
     }
 
-    /// Specify with a boolean if the coin_type index is hardened (true) or not
-    /// (false)
-    pub fn with_coin_type_hardened(&mut self, coin_type_hardened: bool) -> &mut Self {
-        self.coin_type_hardened = coin_type_hardened;
+    /// Specify that the coin type index should be hardened
+    pub fn hardened_coin_type(&mut self) -> &mut Self {
+        self.coin_type_hardened = true;
+        self
+    }
+
+    /// Specify that the coin type index should not be hardened
+    pub fn non_hardened_coin_type(&mut self) -> &mut Self {
+        self.coin_type_hardened = false;
         self
     }
 
     /// Specify the account index shortform number value
-    pub fn with_account(&mut self, account: u32) -> &mut Self {
+    pub fn account_index(&mut self, account: u32) -> &mut Self {
         self.account = Some(account);
         self
     }
 
-    /// Specify with a boolean if the account index is hardened (true) or not
-    /// (false)
-    pub fn with_account_hardened(&mut self, account_hardened: bool) -> &mut Self {
-        self.account_hardened = account_hardened;
+    /// Specify that the account index should be hardened
+    pub fn hardened_account(&mut self) -> &mut Self {
+        self.account_hardened = true;
+        self
+    }
+
+    /// Specify that the account index should not be hardened
+    pub fn non_hardened_account(&mut self) -> &mut Self {
+        self.account_hardened = false;
         self
     }
 
     /// Specify the change index shortform number value
-    pub fn with_change(&mut self, change: u32) -> &mut Self {
+    pub fn change_index(&mut self, change: u32) -> &mut Self {
         self.change = Some(change);
         self
     }
 
-    /// Specify with a boolean if the change index is hardened (true) or not
-    /// (false)
-    pub fn with_change_hardened(&mut self, change_hardened: bool) -> &mut Self {
-        self.change_hardened = change_hardened;
+    /// Specify that the change index should be hardened
+    pub fn hardened_change(&mut self)-> &mut Self {
+        self.change_hardened = true;
+        self
+    }
+
+    /// Specify that the change index should not be hardened
+    pub fn non_hardened_change(&mut self) -> &mut Self {
+        self.change_hardened = false;
         self
     }
 
     /// Specify the address_index index shortform number value
-    pub fn with_address_index(&mut self, address_index: u32) -> &mut Self {
+    pub fn address_index(&mut self, address_index: u32) -> &mut Self {
         self.address_index = Some(address_index);
         self
     }
 
-    /// Specify with a boolean if the address_index index is hardened (true) or
-    /// not (false)
-    pub fn with_address_index_hardened(&mut self, address_index_hardened: bool) -> &mut Self {
-        self.address_index_hardened = address_index_hardened;
+    /// Specify that the address index should be hardened
+    pub fn hardened_address(&mut self) -> &mut Self {
+        self.address_index_hardened = true;
+        self
+    }
+
+    /// Specify that the address index should not be hardened
+    pub fn non_hardened_address(&mut self) -> &mut Self {
+        self.address_index_hardened = false;
         self
     }
 
     /// Set the purpose index to None
-    pub fn set_purpose_none(&mut self) -> &mut Self {
+    pub fn no_purpose_index(&mut self) -> &mut Self {
         self.purpose = None;
         self
     }
 
     /// Set the coin_type index to None
-    pub fn set_coin_type_none(&mut self) -> &mut Self {
+    pub fn no_coin_type_index(&mut self) -> &mut Self {
         self.coin_type = None;
         self
     }
 
     /// Set the account index to None
-    pub fn set_account_none(&mut self) -> &mut Self {
+    pub fn no_account_index(&mut self) -> &mut Self {
         self.account = None;
         self
     }
 
     /// Set the change index to None
-    pub fn set_change_none(&mut self) -> &mut Self {
+    pub fn no_change_index(&mut self) -> &mut Self {
         self.change = None;
         self
     }
 
     /// Set the address_index index to None
-    pub fn set_address_index_none(&mut self) -> &mut Self {
+    pub fn no_address_index(&mut self) -> &mut Self {
         self.address_index = None;
         self
     }
 
-    /// Build the HDPath
-    /// The HDPath will be built from the values specified in the builder
-    /// The HDPath always starts with the Master index (m)
-    /// The HDPath will go in order from purpose, coin_type, account, change,
+    /// Build the [HDPath]
+    /// The [HDPath] will be built from the values specified in the builder
+    /// The [HDPath] always starts with the Master index (m)
+    /// The [HDPath] will go in order from purpose, coin_type, account, change,
     /// address_index
     ///
     /// If the purpose is not set, the HDPath will return the HDPath with the

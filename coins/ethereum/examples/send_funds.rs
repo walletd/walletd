@@ -16,7 +16,7 @@ async fn main() {
     let mnemonic_phrase: &str =
         "joy tail arena mix other envelope diary achieve short nest true vocal";
     let restored_mnemonic = Mnemonic::builder()
-        .with_phrase(mnemonic_phrase)
+        .mnemonic_phrase(mnemonic_phrase)
         .detect_language()
         .build()
         .unwrap();
@@ -31,9 +31,9 @@ async fn main() {
     println!("blockchain_client: {:?}", &blockchain_client);
 
     let wallet = EthereumWallet::builder()
-        .with_mnemonic_seed(seed)
-        .with_network_type(HDNetworkType::TestNet)
-        .with_blockchain_client(Box::new(blockchain_client))
+        .mnemonic_seed(seed)
+        .network_type(HDNetworkType::TestNet)
+        .blockchain_client(Box::new(blockchain_client))
         .build()
         .unwrap();
 

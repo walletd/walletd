@@ -21,7 +21,7 @@ async fn main() -> Result<(), Error> {
 
     // no passphrase, it's in English
     let my_mnemonic = match Bip39Mnemonic::builder()
-        .with_phrase(my_mnemonic_phrase)
+        .mnemonic_phrase(my_mnemonic_phrase)
         .build()
     {
         Ok(mnemonic) => mnemonic,
@@ -42,7 +42,7 @@ async fn main() -> Result<(), Error> {
 
     // more options can be added here later such as for username/password api key etc.
     let btc_blockchain_client = BlockchainConnectorBuilder::<Blockstream>::new()
-        .set_url(BTC_TESTNET_URL.into())
+        .url(BTC_TESTNET_URL.into())
         .build()?;
 
     // derive the Bitcoin wallet from the HD wallet
@@ -58,7 +58,7 @@ async fn main() -> Result<(), Error> {
     // Going to switch to ETH
     // This is another way to use the builder pattern to create the blockchain client instead of using the pattern written out for the btc_blockchain_client
     let eth_blockchain_client = EthClient::builder()
-        .set_url(ETH_TESTNET_URL.into())
+        .url(ETH_TESTNET_URL.into())
         .build()?;
 
     let mut eth_wallet = hd_wallet.derive_wallet::<EthereumWallet>()?;

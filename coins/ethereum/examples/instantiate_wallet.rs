@@ -21,8 +21,8 @@ async fn main() -> web3::Result<()> {
     println!("seed as bytes: {:?}", seed.as_bytes());
 
     let wallet = match EthereumWallet::builder()
-        .with_mnemonic_seed(seed)
-        .with_network_type(HDNetworkType::TestNet)
+        .mnemonic_seed(seed)
+        .network_type(HDNetworkType::TestNet)
         .build()
     {
         Ok(wallet) => Ok(wallet),

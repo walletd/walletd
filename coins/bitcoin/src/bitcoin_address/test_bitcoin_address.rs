@@ -1,7 +1,5 @@
+use crate::{AddressType, BitcoinAddress, CryptoAddress, Error, HDKey, HDNetworkType, Seed};
 use std::str::FromStr;
-use walletd_bitcoin::{
-    AddressType, BitcoinAddress, CryptoAddress, Error, HDKey, HDNetworkType, Seed,
-};
 
 #[test]
 fn test_from_hd_key_testnet() -> Result<(), Error> {

@@ -53,19 +53,19 @@ impl KeyPairBuilder {
     }
 
     /// Specifies the mnemonic phrase
-    pub fn with_mnemonic_phrase(&mut self, mnemonic_phrase: String) -> &mut Self {
+    pub fn mnemonic_phrase(&mut self, mnemonic_phrase: String) -> &mut Self {
         self.mnemonic_phrase = Some(mnemonic_phrase);
         self
     }
 
     /// Specifies the mnemonic seed
-    pub fn with_mnemonic_seed(&mut self, mnemonic_seed: Seed) -> &mut Self {
+    pub fn mnemonic_seed(&mut self, mnemonic_seed: Seed) -> &mut Self {
         self.mnemonic_seed = Some(mnemonic_seed);
         self
     }
 
     /// Specifies the passphrase
-    pub fn with_passphrase(&mut self, passphrase: String) -> &mut Self {
+    pub fn passphrase(&mut self, passphrase: String) -> &mut Self {
         self.passphrase = Some(passphrase);
         self
     }
@@ -77,25 +77,25 @@ impl KeyPairBuilder {
     }
 
     /// Specifies the mnemonic phrase key pair type
-    pub fn with_style(&mut self, style: MnemonicKeyPairType) -> &mut Self {
+    pub fn style(&mut self, style: MnemonicKeyPairType) -> &mut Self {
         self.style = style;
         self
     }
 
     /// Sets the mnemonic phrase to None, unspecifies the mnemonic phrase if it had previously been specified on the same builder
-    pub fn set_mnemonic_phrase_none(&mut self) -> &mut Self {
+    pub fn no_mnemonic_phrase(&mut self) -> &mut Self {
         self.mnemonic_phrase = None;
         self
     }
 
     /// Sets the mnemonic seed to None, unspecifies the mnemonic seed if it had previously been specified on the same builder
-    pub fn set_mnemonic_seed_none(&mut self) -> &mut Self {
+    pub fn no_mnemonic_seed(&mut self) -> &mut Self {
         self.mnemonic_seed = None;
         self
     }
 
     /// Sets the passphrase to None, unspecifies the passphrase if it had previously been specified on the same builder
-    pub fn set_passphrase_none(&mut self) -> &mut Self {
+    pub fn no_passphrase(&mut self) -> &mut Self {
         self.passphrase = None;
         self
     }
@@ -204,7 +204,7 @@ impl KeyPair {
         <T as TryFrom<Box<dyn CryptoWalletGeneral>>>::Error: std::fmt::Display,
     {
         let wallet: T = T::builder()
-            .with_master_hd_key(self.to_master_key())
+            .master_hd_key(self.to_master_key())
             .build()
             .map_err(|e| Error::DeriveWallet(e.to_string()))?;
         Ok(wallet)

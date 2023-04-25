@@ -19,7 +19,7 @@ fn test_with_mnemonic_phrase() -> Result<(), Error> {
     let mnemonic_phrase =
         "outer ride neither foil glue number place usage ball shed dry point".to_string();
     let mut builder = KeyPairBuilder::new();
-    builder.with_mnemonic_phrase(mnemonic_phrase.clone());
+    builder.mnemonic_phrase(mnemonic_phrase.clone());
     let keypair = builder.clone().build()?;
     assert!(builder.clone().mnemonic_phrase.is_some());
 
@@ -32,7 +32,7 @@ fn test_with_mnemonic_phrase() -> Result<(), Error> {
     );
     assert_eq!(keypair.mnemonic_phrase, mnemonic_phrase);
 
-    let builder_phrase_none = builder.set_mnemonic_phrase_none();
+    let builder_phrase_none = builder.no_mnemonic_phrase();
 
     assert!(builder_phrase_none.clone().mnemonic_phrase.is_none());
     let keypair_build = builder_phrase_none.build();
@@ -44,7 +44,7 @@ fn test_with_mnemonic_phrase() -> Result<(), Error> {
 fn test_with_mnemonic_seed() -> Result<(), Error> {
     let mnemonic_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
     let mut builder = KeyPairBuilder::new();
-    builder.with_mnemonic_seed(mnemonic_seed.clone());
+    builder.mnemonic_seed(mnemonic_seed.clone());
     assert!(builder.clone().mnemonic_seed.is_some());
     assert_eq!(
         builder
@@ -53,7 +53,7 @@ fn test_with_mnemonic_seed() -> Result<(), Error> {
             .expect("due to previous check, should be some"),
         mnemonic_seed
     );
-    let builder_no_seed = builder.set_mnemonic_seed_none();
+    let builder_no_seed = builder.no_mnemonic_seed();
     assert!(builder_no_seed.mnemonic_seed.is_none());
     Ok(())
 }
@@ -62,7 +62,7 @@ fn test_with_mnemonic_seed() -> Result<(), Error> {
 fn test_with_passphrase() -> Result<(), Error> {
     let passphrase = "mypassphrase".to_string();
     let mut builder = KeyPairBuilder::new();
-    builder.with_passphrase(passphrase.clone());
+    builder.passphrase(passphrase.clone());
     assert!(builder.clone().passphrase.is_some());
     assert_eq!(
         builder
@@ -71,7 +71,7 @@ fn test_with_passphrase() -> Result<(), Error> {
             .expect("due to previous check, should be some"),
         passphrase
     );
-    let builder_no_passphrase = builder.set_passphrase_none();
+    let builder_no_passphrase = builder.no_passphrase();
     assert!(builder_no_passphrase.passphrase.clone().is_none());
     Ok(())
 }
@@ -88,6 +88,6 @@ fn test_with_network_type() {
 fn test_with_style() {
     let style = MnemonicKeyPairType::HDBip39;
     let mut builder = KeyPairBuilder::new();
-    builder.with_style(style);
+    builder.style(style);
     assert_eq!(builder.style, style);
 }

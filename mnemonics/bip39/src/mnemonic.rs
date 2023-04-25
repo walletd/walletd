@@ -243,27 +243,27 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
         Self::default()
     }
 
-    fn with_seed(&mut self, seed: &Seed) -> &mut Self {
+    fn mnemonic_seed(&mut self, seed: &Seed) -> &mut Self {
         self.seed = Some(seed.clone());
         self
     }
 
-    fn with_phrase(&mut self, mnemonic_phrase: &str) -> &mut Self {
+    fn mnemonic_phrase(&mut self, mnemonic_phrase: &str) -> &mut Self {
         self.mnemonic_phrase = Some(mnemonic_phrase.to_string());
         self
     }
 
-    fn with_language(&mut self, language: Self::LanguageHandler) -> &mut Self {
+    fn language(&mut self, language: Self::LanguageHandler) -> &mut Self {
         self.language = Some(language);
         self
     }
 
-    fn with_passphrase(&mut self, passphrase: &str) -> &mut Self {
+    fn passphrase(&mut self, passphrase: &str) -> &mut Self {
         self.passphrase = Some(passphrase.to_string());
         self
     }
 
-    fn with_mnemonic_type(&mut self, mnemonic_type: Self::MnemonicTypeSpec) -> &mut Self {
+    fn mnemonic_type(&mut self, mnemonic_type: Self::MnemonicTypeSpec) -> &mut Self {
         self.mnemonic_type = Some(mnemonic_type);
         self
     }
@@ -514,7 +514,7 @@ mod tests {
     #[test]
     fn test_print() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
-        let mnemonic = Mnemonic::builder().with_phrase(phrase).build().unwrap();
+        let mnemonic = Mnemonic::builder().mnemonic_phrase(phrase).build().unwrap();
         assert_eq!(mnemonic.phrase(), phrase);
         assert_eq!(mnemonic.language(), Language::English);
         assert_eq!(mnemonic.mnemonic_type(), MnemonicType::Words12);
@@ -523,8 +523,8 @@ mod tests {
     #[test]
     fn test_new_12_word() {
         let mnemonic = Mnemonic::builder()
-            .with_language(Language::English)
-            .with_mnemonic_type(MnemonicType::Words12)
+            .language(Language::English)
+            .mnemonic_type(MnemonicType::Words12)
             .build()
             .unwrap();
         assert_eq!(mnemonic.lang, Language::English);
@@ -536,8 +536,8 @@ mod tests {
     #[test]
     fn test_new_24_word() {
         let mnemonic = Mnemonic::builder()
-            .with_language(Language::English)
-            .with_mnemonic_type(MnemonicType::Words24)
+            .language(Language::English)
+            .mnemonic_type(MnemonicType::Words24)
             .build()
             .unwrap();
         assert_eq!(mnemonic.lang, Language::English);
@@ -549,8 +549,8 @@ mod tests {
     #[test]
     fn test_new_12_word_japanese() {
         let mnemonic = Mnemonic::builder()
-            .with_language(Language::Japanese)
-            .with_mnemonic_type(MnemonicType::Words12)
+            .language(Language::Japanese)
+            .mnemonic_type(MnemonicType::Words12)
             .build()
             .unwrap();
         assert_eq!(mnemonic.language(), Language::Japanese);
@@ -562,7 +562,7 @@ mod tests {
     #[test]
     fn test_from_phrase() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
-        let mnemonic = Mnemonic::builder().with_phrase(phrase).build().unwrap();
+        let mnemonic = Mnemonic::builder().mnemonic_phrase(phrase).build().unwrap();
         assert_eq!(mnemonic.phrase(), phrase);
         assert_eq!(mnemonic.language(), Language::English);
         assert_eq!(
@@ -585,7 +585,7 @@ mod tests {
         let mut mnemonic_builder = Mnemonic::builder();
         mnemonic_builder.language = None;
         mnemonic_builder.mnemonic_type = None;
-        let mnemonic = mnemonic_builder.with_phrase(phrase).restore().unwrap();
+        let mnemonic = mnemonic_builder.mnemonic_phrase(phrase).restore().unwrap();
         assert_eq!(mnemonic.phrase(), phrase);
         assert_eq!(mnemonic.language(), Language::English);
         assert_eq!(
@@ -607,8 +607,8 @@ mod tests {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
         let passphrase = "mypassphrase";
         let mnemonic = Mnemonic::builder()
-            .with_phrase(phrase)
-            .with_passphrase(passphrase)
+            .mnemonic_phrase(phrase)
+            .passphrase(passphrase)
             .build()
             .unwrap();
         assert_eq!(mnemonic.phrase(), phrase);
@@ -622,27 +622,27 @@ mod tests {
     #[test]
     fn test_from_phrase_invalid_length() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry";
-        assert!(Mnemonic::builder().with_phrase(phrase).build().is_err());
+        assert!(Mnemonic::builder().mnemonic_phrase(phrase).build().is_err());
     }
 
     #[test]
     fn test_from_phrase_invalid_word() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry invalid";
-        assert!(Mnemonic::builder().with_phrase(phrase).build().is_err());
+        assert!(Mnemonic::builder().mnemonic_phrase(phrase).build().is_err());
     }
 
     #[test]
     fn test_from_phrase_empty_phrase() {
         let phrase: &str = "";
-        assert!(Mnemonic::builder().with_phrase(phrase).build().is_err());
+        assert!(Mnemonic::builder().mnemonic_phrase(phrase).build().is_err());
     }
 
     #[test]
     fn test_error_conflicting_language_option() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
         let mnemonic = Mnemonic::builder()
-            .with_language(Language::French)
-            .with_phrase(phrase)
+            .language(Language::French)
+            .mnemonic_phrase(phrase)
             .build();
         assert!(mnemonic.is_err());
         assert!(matches!(
@@ -655,8 +655,8 @@ mod tests {
     fn test_error_conflicting_mnemonic_type() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
         let mnemonic = Mnemonic::builder()
-            .with_mnemonic_type(MnemonicType::Words15)
-            .with_phrase(phrase)
+            .mnemonic_type(MnemonicType::Words15)
+            .mnemonic_phrase(phrase)
             .build();
         assert!(mnemonic.is_err());
         assert_eq!(

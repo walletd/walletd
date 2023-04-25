@@ -77,23 +77,23 @@ pub trait MnemonicStyleBuilder {
     /// is specified with the set_passphrase method, the seed recovered using
     /// the recover method will be the encrypted version of the seed which takes
     /// into account the passphrase value.
-    fn with_seed(&mut self, seed: &Seed) -> &mut Self;
+    fn mnemonic_seed(&mut self, seed: &Seed) -> &mut Self;
 
     /// Specifies the mnemonic phrase from which the mnemonic struct is
     /// recovered
-    fn with_phrase(&mut self, mnemonic_phrase: &str) -> &mut Self;
+    fn mnemonic_phrase(&mut self, mnemonic_phrase: &str) -> &mut Self;
 
     /// Specifies the language for the mnemonic phrase, can be used when
     /// recovering a mnemonic phrase or generating a new mnemonic phrase
-    fn with_language(&mut self, language: Self::LanguageHandler) -> &mut Self;
+    fn language(&mut self, language: Self::LanguageHandler) -> &mut Self;
 
     /// Specifies a passphrase to use to offset/encrypt the seed recovered from
     /// the mnemonic phrase
-    fn with_passphrase(&mut self, passphrase: &str) -> &mut Self;
+    fn passphrase(&mut self, passphrase: &str) -> &mut Self;
 
     /// Specifies the mnemonic type to use when recovering or generating a
     /// mnemonic phrase
-    fn with_mnemonic_type(&mut self, mnemonic_type: Self::MnemonicTypeSpec) -> &mut Self;
+    fn mnemonic_type(&mut self, mnemonic_type: Self::MnemonicTypeSpec) -> &mut Self;
 
     /// Sets the specified language to None and returns the builder
     /// This method can be used to let the mnemomic be created from the phrase

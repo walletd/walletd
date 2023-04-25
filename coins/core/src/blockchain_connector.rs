@@ -72,13 +72,13 @@ where
     }
 
     /// This function sets the url of the BlockchainConnectorBuilder
-    pub fn set_url(&mut self, url: String) -> Self {
+    pub fn url(&mut self, url: String) -> Self {
         self.url = Some(url);
         self.clone()
     }
 
     /// This function sets the connector type of the BlockchainConnectorBuilder, this requires the associated BlockchainConnector struct to be fully defined with data
-    pub fn set_connector(&mut self, connector_type: ConnectorType<T>) -> Self {
+    pub fn connector(&mut self, connector_type: ConnectorType<T>) -> Self {
         self.connector_type = Some(connector_type);
         self.clone()
     }

@@ -277,10 +277,10 @@ impl BitcoinWallet {
             None => {
                 let mut builder = HDPath::builder();
                 builder
-                    .with_purpose(self.default_hd_purpose()?.to_shortform_num())
-                    .with_coin_type(self.coin_type_id()?)
-                    .with_account(0)
-                    .with_address_index(0);
+                    .purpose(self.default_hd_purpose()?.to_shortform_num())
+                    .coin_type_index(self.coin_type_id()?)
+                    .account_index(0)
+                    .address_index(0);
                 builder
             }
         };
@@ -296,7 +296,7 @@ impl BitcoinWallet {
                 for change_index in 0..2 {
                     let specify_deriv_path = &path_builder
                         .clone()
-                        .with_change(change_index)
+                        .change_index(change_index)
                         .build()
                         .to_string();
                     let derived = master_hd_key.derive(specify_deriv_path.clone())?;
@@ -321,13 +321,13 @@ impl BitcoinWallet {
                     }
                 }
                 address_index += 1;
-                path_builder.with_address_index(address_index);
+                path_builder.address_index(address_index);
             }
             if !self.account_discovery {
                 break;
             }
             account_index += 1;
-            path_builder.with_account(account_index);
+            path_builder.account_index(account_index);
             address_index = 0;
             current_gap = 0;
         }
@@ -365,10 +365,10 @@ impl BitcoinWallet {
         let mut max_address = 0;
         let mut path_builder = HDPath::builder();
         path_builder
-            .with_purpose(purpose)
-            .with_coin_type(coin_type)
-            .with_account(account.to_shortform_num())
-            .with_account_hardened(true);
+            .purpose(purpose)
+            .coin_type_index(coin_type)
+            .account_index(account.to_shortform_num())
+            .hardened_account();
 
         for info in self.associated.iter() {
             let deriv_path = &info.hd_key().derivation_path();
@@ -379,7 +379,7 @@ impl BitcoinWallet {
             }
         }
         let next_deriv_path = path_builder
-            .with_address_index(max_address + 1)
+            .address_index(max_address + 1)
             .build()
             .to_string();
         let next_hd_key = self.master_hd_key()?.derive(next_deriv_path)?;
@@ -406,14 +406,14 @@ impl BitcoinWallet {
                 let mut builder = HDPath::builder();
 
                 builder
-                    .with_purpose(purpose)
-                    .with_coin_type(coin_type)
-                    .with_account(account.to_shortform_num())
-                    .with_account_hardened(true);
+                    .purpose(purpose)
+                    .coin_type_index(coin_type)
+                    .account_index(account.to_shortform_num())
+                    .hardened_account();
                 builder
             }
         };
-        path_builder.with_change(1);
+        path_builder.change_index(1);
 
         for info in self.associated.iter() {
             let deriv_path = &info.hd_key().derivation_path();
@@ -425,7 +425,7 @@ impl BitcoinWallet {
         }
 
         let next_deriv_path = path_builder
-            .with_address_index(max_address + 1)
+            .address_index(max_address + 1)
             .build()
             .to_string();
         let next_hd_key = self.master_hd_key()?.derive(next_deriv_path)?;
@@ -466,8 +466,8 @@ impl BitcoinWallet {
             None => {
                 let mut builder = HDPath::builder();
                 builder
-                    .with_purpose(self.default_hd_purpose().unwrap().to_shortform_num())
-                    .with_coin_type(self.coin_type_id().unwrap());
+                    .purpose(self.default_hd_purpose().unwrap().to_shortform_num())
+                    .coin_type_index(self.coin_type_id().unwrap());
                 builder
             }
         }
@@ -922,13 +922,13 @@ impl Default for BitcoinWalletBuilder {
 
         let mut deriv_path_builder = HDPath::builder();
         deriv_path_builder
-            .with_purpose(default_hd_purpose.to_shortform_num())
-            .with_purpose_hardened(true)
-            .with_coin_type(slip44::Coin::Bitcoin.id())
-            .with_coin_type_hardened(true)
-            .with_account_hardened(true)
-            .with_change_hardened(false)
-            .with_address_index_hardened(false);
+            .purpose(default_hd_purpose.to_shortform_num())
+            .hardened_purpose()
+            .coin_type_index(slip44::Coin::Bitcoin.id())
+            .hardened_coin_type()
+            .hardened_account()
+            .non_hardened_change()
+            .non_hardened_address();
 
         Self {
             address_format: AddressType::P2wpkh,
@@ -951,19 +951,19 @@ impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
     }
 
     /// Allows specification of the master HD key for the wallet
-    fn with_master_hd_key(&mut self, master_hd_key: HDKey) -> &mut Self {
+    fn master_hd_key(&mut self, master_hd_key: HDKey) -> &mut Self {
         self.master_hd_key = Some(master_hd_key);
         self
     }
 
     /// Allows specification of the mnemonic seed for the wallet
-    fn with_mnemonic_seed(&mut self, mnemonic_seed: Seed) -> &mut Self {
+    fn mnemonic_seed(&mut self, mnemonic_seed: Seed) -> &mut Self {
         self.mnemonic_seed = Some(mnemonic_seed);
         self
     }
 
     /// Allows specification of the address format to use for the wallet
-    fn with_address_format(
+    fn address_format(
         &mut self,
         address_format: <BitcoinWallet as CryptoWallet>::AddressFormat,
     ) -> &mut Self {
@@ -972,7 +972,7 @@ impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
     }
 
     /// Allows specification of the blockchain client for the wallet
-    fn with_blockchain_client(
+    fn blockchain_client(
         &mut self,
         blockchain_client: Box<dyn BlockchainConnectorGeneral>,
     ) -> &mut Self {
@@ -981,13 +981,13 @@ impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
     }
 
     /// Allows specification of the network type for the wallet, the default is Network::Bitcoin
-    fn with_network_type(&mut self, network_type: Network) -> &mut Self {
+    fn network_type(&mut self, network_type: Network) -> &mut Self {
         self.network_type = network_type;
         self
     }
 
     /// Allows specifiction of the hd path builder, will override the default
-    fn with_hd_path_builder(&mut self, hd_path_builder: HDPathBuilder) -> &mut Self {
+    fn hd_path_builder(&mut self, hd_path_builder: HDPathBuilder) -> &mut Self {
         self.hd_path_builder = hd_path_builder;
         self
     }
@@ -1022,10 +1022,10 @@ impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
 
         let mut hd_path_builder = HDPath::builder();
         hd_path_builder
-            .with_purpose(hd_purpose.to_shortform_num())
-            .with_purpose_hardened(true)
-            .with_coin_type(coin_type_id)
-            .with_coin_type_hardened(true);
+            .purpose(hd_purpose.to_shortform_num())
+            .hardened_purpose()
+            .coin_type_index(coin_type_id)
+            .hardened_coin_type();
 
         let mut wallet = BitcoinWallet {
             address_format: self.address_format,
@@ -1046,7 +1046,7 @@ impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
 
 impl BitcoinWalletBuilder {
     /// Allows specification of the gap limit to use for the wallet
-    pub fn with_gap_limit(&mut self, gap_limit: usize) -> &mut Self {
+    pub fn gap_limit(&mut self, gap_limit: usize) -> &mut Self {
         self.gap_limit_specified = Some(gap_limit);
         self
     }
@@ -1054,20 +1054,9 @@ impl BitcoinWalletBuilder {
     /// Allows specification of the account discovery to use for the wallet
     /// If set to false, the wallet will not search for accounts used past the first account
     /// The default is true
-    pub fn with_account_discovery(&mut self, account_discovery: bool) -> &mut Self {
+    pub fn account_discovery(&mut self, account_discovery: bool) -> &mut Self {
         self.account_discovery = account_discovery;
         self
-    }
-
-    /// Allows specification of the blockchain client for the wallet, can override the default of None  
-    /// Returns the master HD key set if it exists
-    /// # Errors
-    /// Returns an error `Error::MissingMasterHDKey` if the master HD key is not set
-    pub fn master_hd_key(&self) -> Result<HDKey, Error> {
-        match &self.master_hd_key {
-            None => Err(Error::MissingMasterHDKey),
-            Some(key) => Ok(key.clone()),
-        }
     }
 
     /// Returns the default HDPurpose based on the address format
@@ -1090,63 +1079,17 @@ impl BitcoinWalletBuilder {
     /// # Errors
     /// Returns an error if the network is not supported
     pub fn coin_type_id(&self) -> Result<u32, Error> {
-        match self.master_hd_key()?.network() {
-            HDNetworkType::MainNet => Ok(slip44::Coin::Bitcoin.id()),
-            HDNetworkType::TestNet => Ok(slip44::Coin::Testnet.id()),
+        match &self.master_hd_key {
+            Some(key) => {
+                match key.network() {
+                    HDNetworkType::MainNet => return Ok(slip44::Coin::Bitcoin.id()),
+                    HDNetworkType::TestNet => return Ok(slip44::Coin::Testnet.id()),
+                };
+            }
+            None => Err(Error::MissingMasterHDKey),
         }
-    }
-
-    /// Returns the address format set
-    pub fn address_format(&self) -> AddressType {
-        self.address_format
-    }
-
-    /// Returns the [HDPurpose] option set on the builder
-    /// The hd purpose is set by default based on the default or specified address format
-    /// # Errors
-    /// Returns an error if the hd_purpose was not set
-    pub fn hd_purpose(&self) -> Option<HDPurpose> {
-        self.hd_purpose
-    }
-
-    /// Returns an Option enum of the blockchain client, if the blockchain was not set it will return None
-    pub fn blockchain_client(&self) -> Option<&dyn BlockchainConnectorGeneral> {
-        self.blockchain_client.as_deref()
-    }
-
-    /// Returns the gap limit that was set on the builder
-    /// By default the gap limit is set to 20
-    /// # Errors
-    /// Returns an error if the gap limit was not set
-    pub fn gap_limit(&self) -> Result<usize, Error> {
-        match self.gap_limit_specified {
-            None => Err(Error::MissingInfo("Gap limit was not set".to_string())),
-            Some(limit) => Ok(limit),
-        }
-    }
-
-    /// Returns the account discovery flag that is set on the builder
-    pub fn account_discovery(&self) -> bool {
-        self.account_discovery
-    }
-
-    /// Returns the mnemonic seed set on the builder
-    /// # Errors
-    /// Returns an error if the mnemonic seed was not set
-    pub fn mnemonic_seed(&self) -> Result<Seed, Error> {
-        match &self.mnemonic_seed {
-            None => Err(Error::MissingInfo("Mnemonic seed was not set".to_string())),
-            Some(ref seed) => Ok(seed.clone()),
-        }
-    }
-
-    /// Returns the network type set on the builder
-    pub fn network_type(&self) -> Network {
-        self.network_type
-    }
-
-    /// Returns the HDPathBuilder set on the bitcoin wallet builder.
-    pub fn hd_path_builder(&self) -> HDPathBuilder {
-        self.hd_path_builder.clone()
     }
 }
+
+#[cfg(test)]
+mod test_bitcoin_wallet_builder;
