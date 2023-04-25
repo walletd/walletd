@@ -105,7 +105,7 @@ impl Default for MnemonicBuilder {
 
 impl MnemonicExt for Mnemonic {
     type ErrorType = Error;
-    type LanguageHandler = Language;
+    type LanguageExt = Language;
     type MnemonicStyle = Self;
     type MnemonicStyleBuilder = MnemonicBuilder;
     type MnemonicTypeSpec = MnemonicType;
@@ -140,7 +140,7 @@ impl MnemonicExt for Mnemonic {
     /// Generates a new mnemonic given the language, length of mnemonic, and
     /// optional passphrase
     fn new(
-        language: Self::LanguageHandler,
+        language: Self::LanguageExt,
         mnemonic_type: Self::MnemonicTypeSpec,
         passphrase: Option<&str>,
     ) -> Self {
@@ -192,7 +192,7 @@ impl MnemonicExt for Mnemonic {
     }
 
     // Returns the language for the mnemonic
-    fn language(&self) -> Self::LanguageHandler {
+    fn language(&self) -> Self::LanguageExt {
         self.lang
     }
 
@@ -209,7 +209,7 @@ impl MnemonicExt for Mnemonic {
 
 impl MnemonicStyleBuilder for MnemonicBuilder {
     type ErrorType = Error;
-    type LanguageHandler = Language;
+    type LanguageExt = Language;
     type MnemonicStyle = Mnemonic;
     type MnemonicTypeSpec = MnemonicType;
 
@@ -227,7 +227,7 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
         self.clone()
     }
 
-    fn set_language(&mut self, language: Self::LanguageHandler) -> Self {
+    fn set_language(&mut self, language: Self::LanguageExt) -> Self {
         self.language = Some(language);
         self.clone()
     }

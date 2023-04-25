@@ -279,7 +279,7 @@ impl Default for Language {
     }
 }
 
-impl LanguageHandler for Language {
+impl LanguageExt for Language {
     type Language = Language;
 
     /// Returns a new Language with default language set.
