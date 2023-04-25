@@ -14,5 +14,5 @@ pub use blockchain_connector::{
 };
 pub use crypto_address::CryptoAddress;
 pub use crypto_amount::CryptoAmount;
-pub use crypto_wallet::{CryptoWallet, CryptoWalletBuilder, CryptoWalletGeneral};
+pub use crypto_wallet::{CryptoWallet, CryptoWalletBuilder};
 pub use error::Error;

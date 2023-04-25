@@ -11,7 +11,7 @@ use walletd_bip39::Seed;
 use walletd_coin_core::CryptoAddress;
 use walletd_coin_core::CryptoWalletBuilder;
 use walletd_coin_core::{
-    CryptoAmount, CryptoWallet, CryptoWalletGeneral,
+    CryptoAmount, CryptoWallet,
 };
 use walletd_hd_key::slip44;
 use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
@@ -210,6 +210,10 @@ impl CryptoWallet for BitcoinWallet {
             None => Err(Error::MissingBlockchainClient),
         }
     }
+
+    fn as_any(&self) -> &dyn Any {
+      self
+  }
 }
 
 impl BitcoinWallet {
@@ -857,33 +861,6 @@ impl fmt::Display for BitcoinWallet {
             writeln!(f, "{}", address)?;
         }
         Ok(())
-    }
-}
-
-impl CryptoWalletGeneral for BitcoinWallet {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn box_clone(&self) -> Box<dyn CryptoWalletGeneral> {
-        Box::new(self.clone())
-    }
-}
-
-impl TryFrom<Box<dyn CryptoWalletGeneral>> for BitcoinWallet {
-    type Error = Error;
-
-    fn try_from(value: Box<dyn CryptoWalletGeneral>) -> Result<Self, Self::Error> {
-        match value.as_any().downcast_ref::<BitcoinWallet>() {
-            Some(wallet) => Ok(wallet.clone()),
-            None => Err(Error::UnableToDowncastWallet),
-        }
-    }
-}
-
-impl From<BitcoinWallet> for Box<dyn CryptoWalletGeneral> {
-    fn from(wallet: BitcoinWallet) -> Self {
-        Box::new(wallet)
     }
 }
 

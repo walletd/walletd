@@ -27,6 +27,6 @@ pub use walletd_bip39::{
     MnemonicType as Bip39MnemonicType, Seed,
 };
 pub use walletd_coin_core::{
-    CryptoAddress, CryptoAmount, CryptoWallet, CryptoWalletBuilder, CryptoWalletGeneral,
+    CryptoAddress, CryptoAmount, CryptoWallet, CryptoWalletBuilder,
 };
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};

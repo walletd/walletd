@@ -13,7 +13,7 @@ use secp256k1::{PublicKey, SecretKey};
 use tiny_keccak::{Hasher, Keccak};
 use walletd_bip39::Seed;
 use walletd_coin_core::{
-    CryptoWallet, CryptoWalletBuilder, CryptoWalletGeneral,
+    CryptoWallet, CryptoWalletBuilder,
 };
 use walletd_hd_key::{slip44, HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPurpose};
 use web3::types::{Address, TransactionParameters};
@@ -334,6 +334,10 @@ impl CryptoWallet for EthereumWallet {
             None => Err(Error::MissingBlockchainClient),
         }
     }
+
+    fn as_any(&self) -> &dyn Any {
+      self
+  }
 }
 
 /// Technically speaking, an "EthereumWallet" is a public address, public key and
@@ -385,32 +389,5 @@ impl EthereumWallet {
 impl fmt::Display for EthereumWallet {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.public_address())
-    }
-}
-
-impl CryptoWalletGeneral for EthereumWallet {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn box_clone(&self) -> Box<dyn CryptoWalletGeneral> {
-        Box::new(self.clone())
-    }
-}
-
-impl TryFrom<Box<dyn CryptoWalletGeneral>> for EthereumWallet {
-    type Error = Error where Error: std::fmt::Display;
-
-    fn try_from(value: Box<dyn CryptoWalletGeneral>) -> Result<Self, Self::Error> {
-        match value.as_any().downcast_ref::<EthereumWallet>() {
-            Some(wallet) => Ok(wallet.clone()),
-            None => Err(Error::UnableToDowncastWallet),
-        }
-    }
-}
-
-impl From<EthereumWallet> for Box<dyn CryptoWalletGeneral> {
-    fn from(wallet: EthereumWallet) -> Self {
-        Box::new(wallet)
     }
 }
