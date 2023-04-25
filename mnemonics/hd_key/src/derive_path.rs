@@ -459,36 +459,51 @@ impl HDPathBuilder {
         self
     }
 
-    /// Specify with a boolean if the purpose index is hardened (true) or not
-    /// (false)
-    pub fn purpose_hardened(&mut self, purpose_hardened: bool) -> &mut Self {
-        self.purpose_hardened = purpose_hardened;
+    /// Specify that the purpose index should be hardened
+    pub fn hardened_purpose(&mut self) -> &mut Self {
+        self.purpose_hardened = true;
+        self
+    }
+
+    /// Specify that the purpose index should not be hardened
+    pub fn non_hardened_purpose(&mut self) -> &mut Self {
+        self.purpose_hardened = false;
         self
     }
 
     /// Specify the coin_type index shortform number value
-    pub fn coin_type(&mut self, coin_type: u32) -> &mut Self {
+    pub fn coin_type_index(&mut self, coin_type: u32) -> &mut Self {
         self.coin_type = Some(coin_type);
         self
     }
 
-    /// Specify with a boolean if the coin_type index is hardened (true) or not
-    /// (false)
-    pub fn coin_type_hardened(&mut self, coin_type_hardened: bool) -> &mut Self {
-        self.coin_type_hardened = coin_type_hardened;
+    /// Specify that the coin type index should be hardened
+    pub fn hardened_coin_type(&mut self) -> &mut Self {
+        self.coin_type_hardened = true;
+        self
+    }
+
+    /// Specify that the coin type index should not be hardened
+    pub fn non_hardened_coin_type(&mut self) -> &mut Self {
+        self.coin_type_hardened = false;
         self
     }
 
     /// Specify the account index shortform number value
-    pub fn account(&mut self, account: u32) -> &mut Self {
+    pub fn account_index(&mut self, account: u32) -> &mut Self {
         self.account = Some(account);
         self
     }
 
-    /// Specify with a boolean if the account index is hardened (true) or not
-    /// (false)
-    pub fn account_hardened(&mut self, account_hardened: bool) -> &mut Self {
-        self.account_hardened = account_hardened;
+    /// Specify that the account index should be hardened
+    pub fn hardened_account(&mut self) -> &mut Self {
+        self.account_hardened = true;
+        self
+    }
+
+    /// Specify that the account index should not be hardened
+    pub fn non_hardened_account(&mut self) -> &mut Self {
+        self.account_hardened = false;
         self
     }
 
@@ -498,10 +513,15 @@ impl HDPathBuilder {
         self
     }
 
-    /// Specify with a boolean if the change index is hardened (true) or not
-    /// (false)
-    pub fn change_hardened(&mut self, change_hardened: bool) -> &mut Self {
-        self.change_hardened = change_hardened;
+    /// Specify that the change index should be hardened
+    pub fn hardened_change(&mut self)-> &mut Self {
+        self.change_hardened = true;
+        self
+    }
+
+    /// Specify that the change index should not be hardened
+    pub fn non_hardened_change(&mut self) -> &mut Self {
+        self.change_hardened = false;
         self
     }
 
@@ -511,27 +531,32 @@ impl HDPathBuilder {
         self
     }
 
-    /// Specify with a boolean if the address_index index is hardened (true) or
-    /// not (false)
-    pub fn address_index_hardened(&mut self, address_index_hardened: bool) -> &mut Self {
-        self.address_index_hardened = address_index_hardened;
+    /// Specify that the address index should be hardened
+    pub fn hardened_address(&mut self) -> &mut Self {
+        self.address_index_hardened = true;
+        self
+    }
+
+    /// Specify that the address index should not be hardened
+    pub fn non_hardened_address(&mut self) -> &mut Self {
+        self.address_index_hardened = false;
         self
     }
 
     /// Set the purpose index to None
-    pub fn no_purpose(&mut self) -> &mut Self {
+    pub fn no_purpose_index(&mut self) -> &mut Self {
         self.purpose = None;
         self
     }
 
     /// Set the coin_type index to None
-    pub fn no_coin_type(&mut self) -> &mut Self {
+    pub fn no_coin_type_index(&mut self) -> &mut Self {
         self.coin_type = None;
         self
     }
 
     /// Set the account index to None
-    pub fn no_account(&mut self) -> &mut Self {
+    pub fn no_account_index(&mut self) -> &mut Self {
         self.account = None;
         self
     }
