@@ -15,7 +15,7 @@ fn main() -> () {
         .passphrase(passphrase)
         .generate()
         .expect("should be valid mnemonic");
-    println!("{}", mnemonic);
+    println!("{:?}", mnemonic);
     // get the wallet seed
     let seed = mnemonic.to_seed();
     println!("{}", seed);
@@ -29,7 +29,7 @@ fn main() -> () {
     let passphrase: &str = "mypassphrase";
     let mnemonic = Mnemonic::new(Language::English, MnemonicType::Words12, Some(passphrase)); // If you don't want to use a passphrase, you can use None instead of
                                                                                               // Some(passphrase)
-    println!("{}", mnemonic);
+    println!("{:?}", mnemonic);
     // get the wallet seed
     let seed = mnemonic.to_seed();
     println!("{}", seed);
