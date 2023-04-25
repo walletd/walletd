@@ -3,7 +3,7 @@ use crate::EthereumAmount;
 use async_trait::async_trait;
 use log::info;
 use std::str::FromStr;
-use walletd_coin_core::{BlockchainConnector};
+use walletd_coin_core::BlockchainConnector;
 use web3::contract::{Contract, Options};
 use web3::ethabi::Uint;
 use web3::helpers as w3h;

@@ -12,9 +12,7 @@ use async_trait::async_trait;
 use secp256k1::{PublicKey, SecretKey};
 use tiny_keccak::{Hasher, Keccak};
 use walletd_bip39::Seed;
-use walletd_coin_core::{
-    CryptoWallet, CryptoWalletBuilder,
-};
+use walletd_coin_core::{CryptoWallet, CryptoWalletBuilder};
 use walletd_hd_key::{slip44, HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPurpose};
 use web3::types::{Address, TransactionParameters};
 
@@ -336,8 +334,8 @@ impl CryptoWallet for EthereumWallet {
     }
 
     fn as_any(&self) -> &dyn Any {
-      self
-  }
+        self
+    }
 }
 
 /// Technically speaking, an "EthereumWallet" is a public address, public key and

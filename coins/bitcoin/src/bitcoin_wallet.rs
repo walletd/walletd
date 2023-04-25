@@ -10,9 +10,7 @@ use std::fmt;
 use walletd_bip39::Seed;
 use walletd_coin_core::CryptoAddress;
 use walletd_coin_core::CryptoWalletBuilder;
-use walletd_coin_core::{
-    CryptoAmount, CryptoWallet,
-};
+use walletd_coin_core::{CryptoAmount, CryptoWallet};
 use walletd_hd_key::slip44;
 use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 
@@ -212,8 +210,8 @@ impl CryptoWallet for BitcoinWallet {
     }
 
     fn as_any(&self) -> &dyn Any {
-      self
-  }
+        self
+    }
 }
 
 impl BitcoinWallet {
@@ -922,7 +920,6 @@ impl Default for BitcoinWalletBuilder {
 }
 
 impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
-
     /// Generates a new BitcoinWalletBuilder with the default options
     fn new() -> Self {
         Self::default()
@@ -1020,8 +1017,6 @@ impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
         // }
         Ok(wallet)
     }
-
-    
 }
 
 impl BitcoinWalletBuilder {

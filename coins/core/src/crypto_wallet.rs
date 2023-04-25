@@ -7,9 +7,7 @@ use async_trait::async_trait;
 
 /// CryptoWallet is a trait that provides common functionality for a crypto wallet. It provides functions to get the balance, send and receive transactions, and sync the wallet with the blockchain.
 #[async_trait]
-pub trait CryptoWallet:
-    Sized + Clone + fmt::Display
-{
+pub trait CryptoWallet: Sized + Clone + fmt::Display {
     /// ErrorType is the type of error that is returned by the CryptoWallet
     type ErrorType: std::error::Error + fmt::Display + Send + Sync + 'static;
     /// CryptoAmount is the type of amount that is used by the CryptoWallet to represent amounts of cryptocurrency
@@ -49,7 +47,6 @@ pub trait CryptoWallet:
 
     /// Returns a dyn Any reference to the CrypotowalletGeneral
     fn as_any(&self) -> &dyn Any;
-
 }
 
 /// CryptoWalletBuilder is a trait that provides a common interface for building a CryptoWallet

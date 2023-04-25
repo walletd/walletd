@@ -80,9 +80,7 @@ where
     pub fn build(&mut self) -> Result<T, Error> {
         let connector_type = self.connector_type.clone();
         match connector_type {
-            Some(ConnectorType::BTC(connector) | ConnectorType::ETH(connector)) => {
-                Ok(connector)
-            }
+            Some(ConnectorType::BTC(connector) | ConnectorType::ETH(connector)) => Ok(connector),
             None => match self.url {
                 Some(ref url) => {
                     let client = T::new(url)
