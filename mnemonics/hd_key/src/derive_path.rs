@@ -514,7 +514,7 @@ impl HDPathBuilder {
     }
 
     /// Specify that the change index should be hardened
-    pub fn hardened_change(&mut self)-> &mut Self {
+    pub fn hardened_change(&mut self) -> &mut Self {
         self.change_hardened = true;
         self
     }
