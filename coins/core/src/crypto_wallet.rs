@@ -15,7 +15,7 @@ pub trait CryptoWallet:
     /// CryptoAmount is the type of amount that is used by the CryptoWallet to represent amounts of cryptocurrency
     type CryptoAmount: CryptoAmount;
     /// BlockchainClient is the type of BlockchainConnector that is used by the CryptoWallet to connect to the blockchain
-    type BlockchainClient: BlockchainConnector + BlockchainConnector;
+    type BlockchainClient: BlockchainConnector;
     /// NetworkType is the type of network that the CryptoWallet is connected to
     type NetworkType;
     /// WalletBuilder is the type of builder that is used to build a CryptoWallet
@@ -62,7 +62,7 @@ pub trait CryptoWalletBuilder<T>
 where
     T: CryptoWallet + CryptoWalletGeneral + Clone,
 {
-    type BlockchainConnector: BlockchainConnector;
+    // type BlockchainConnector: BlockchainConnector;
     /// Constructs a new [CryptoWalletBuilder]
     fn new() -> Self;
     /// Builds a [CryptoWallet] from the [CryptoWalletBuilder]
@@ -72,7 +72,7 @@ where
     /// Specifies the mnemonic seed for the [CryptoWalletBuilder]
     fn mnemonic_seed(&mut self, mnemonic_seed: Seed) -> &mut Self;
     /// Specifies the blockchain client for the [CryptoWalletBuilder]
-    fn blockchain_client(&mut self, client: Self::BlockchainConnector) -> &mut Self;
+    //fn blockchain_client(&mut self, client: Self::BlockchainConnector) -> &mut Self;
     /// Specifies the address format for the [CryptoWalletBuilder]
     fn address_format(&mut self, address_format: T::AddressFormat) -> &mut Self;
     /// Specifies the HD path builder for the [CryptoWalletBuilder]

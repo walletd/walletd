@@ -1,6 +1,5 @@
 use crate::Error;
 use async_trait::async_trait;
-use std::any::Any;
 use std::fmt;
 
 /// BlockchainConnector trait is used to connect to a blockchain and send and receive information to and from the blockchain.

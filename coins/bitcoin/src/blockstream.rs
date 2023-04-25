@@ -1,7 +1,6 @@
 //! This module contains the implementation of the handling getting information to and from the bitcoin blockchain using the Blockstream Esplora JSON over HTTP API <https://github.com/Blockstream/esplora/blob/master/API.md>
 //!
 //!
-use std::any::Any;
 
 use async_trait::async_trait;
 use bitcoin::{Address, AddressType};

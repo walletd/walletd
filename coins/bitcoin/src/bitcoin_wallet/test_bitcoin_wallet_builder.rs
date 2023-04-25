@@ -43,11 +43,11 @@ fn test_new() -> Result<(), Error> {
     assert!(builder.mnemonic_seed.is_none());
     assert_eq!(builder.network_type, default.network_type);
     assert_eq!(builder.hd_path_builder, default.hd_path_builder);
-    assert!(builder.blockchain_client.is_none());
-    assert_eq!(
-        builder.blockchain_client.is_none(),
-        default.blockchain_client.is_none()
-    );
+    //assert!(builder.blockchain_client.is_none());
+    // assert_eq!(
+    //     builder.blockchain_client.is_none(),
+    //     default.blockchain_client.is_none()
+    // );
     Ok(())
 }
 
@@ -92,15 +92,15 @@ fn test_with_address_format() -> Result<(), Error> {
     Ok(())
 }
 
-#[test]
-fn test_with_blockchain_client() -> Result<(), Error> {
-    let mut builder = BitcoinWalletBuilder::default();
-    builder.blockchain_client(Box::new(Blockstream::new(
-        "https://blockstream.info/testnet/api",
-    )?));
-    assert!(builder.blockchain_client.is_some());
-    Ok(())
-}
+// #[test]
+// fn test_with_blockchain_client() -> Result<(), Error> {
+//     let mut builder = BitcoinWalletBuilder::default();
+//     builder.blockchain_client(Box::new(Blockstream::new(
+//         "https://blockstream.info/testnet/api",
+//     )?));
+//     assert!(builder.blockchain_client.is_some());
+//     Ok(())
+// }
 
 #[test]
 fn test_with_network_type() -> Result<(), Error> {

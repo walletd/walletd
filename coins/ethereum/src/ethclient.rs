@@ -2,7 +2,6 @@ use crate::Error;
 use crate::EthereumAmount;
 use async_trait::async_trait;
 use log::info;
-use std::any::Any;
 use std::str::FromStr;
 use walletd_coin_core::{BlockchainConnector};
 use web3::contract::{Contract, Options};

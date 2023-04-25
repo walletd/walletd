@@ -13,7 +13,7 @@ use secp256k1::{PublicKey, SecretKey};
 use tiny_keccak::{Hasher, Keccak};
 use walletd_bip39::Seed;
 use walletd_coin_core::{
-    BlockchainConnector, CryptoWallet, CryptoWalletBuilder, CryptoWalletGeneral,
+    CryptoWallet, CryptoWalletBuilder, CryptoWalletGeneral,
 };
 use walletd_hd_key::{slip44, HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPurpose};
 use web3::types::{Address, TransactionParameters};
@@ -125,7 +125,7 @@ pub struct EthereumWalletBuilder {
     master_hd_key: Option<HDKey>,
     /// The blockchain client used to connect to the blockchain, if the blockchain client is not provided the wallet will be created without an associated blockchain client
     /// and the blockchain client can be set later using the `set_blockchain_client` method
-    blockchain_client: Option<BlockchainConnector>,
+    //blockchain_client: Option<BlockchainConnector>,
     /// The mnemonic seed used to import the wallet, if the mnemonic seed is not provided, the master_hd_key must be provided
     /// If the master_hd_key is provided, the mnemonic seed will be ignored
     mnemonic_seed: Option<Seed>,
@@ -146,7 +146,7 @@ impl Default for EthereumWalletBuilder {
         Self {
             address_format: EthereumFormat::Checksummed,
             master_hd_key: None,
-            blockchain_client: None,
+            //blockchain_client: None,
             mnemonic_seed: None,
             network_type: HDNetworkType::MainNet,
             hd_path_builder,
@@ -189,7 +189,7 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
             EthereumPublicKey::from_slice(&derived_key.extended_public_key()?.to_bytes())?;
         let public_address = public_key.to_public_address(self.address_format)?;
 
-        let mut wallet = EthereumWallet {
+        let wallet = EthereumWallet {
             address_format: self.address_format,
             public_address,
             private_key: Some(private_key),
@@ -198,9 +198,9 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
             blockchain_client: None,
             master_hd_key: Some(master_hd_key),
         };
-        if let Some(blockchain_client) = &self.blockchain_client {
-            wallet.blockchain_client = Some(blockchain_client.try_into()?);
-        };
+        // if let Some(blockchain_client) = &self.blockchain_client {
+        //     wallet.blockchain_client = Some(blockchain_client.try_into()?);
+        // };
         Ok(wallet)
     }
 
@@ -217,13 +217,13 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
     }
 
     /// Allows specification of the blockchain client for the wallet
-    fn blockchain_client(
-        &mut self,
-        blockchain_client: impl BlockchainConnector,
-    ) -> &mut Self {
-        self.blockchain_client = Some(blockchain_client);
-        self
-    }
+    // fn blockchain_client(
+    //     &mut self,
+    //     blockchain_client: impl BlockchainConnector,
+    // ) -> &mut Self {
+    //     self.blockchain_client = Some(blockchain_client);
+    //     self
+    // }
 
     /// Allows specification of the mnemonic seed for the wallet
     fn mnemonic_seed(&mut self, mnemonic_seed: Seed) -> &mut Self {
