@@ -2,7 +2,7 @@
 
 extern crate walletd_ethereum;
 
-// use walletd_bip39::MnemonicHandler;
+// use walletd_bip39::MnemonicExt;
 // use walletd_coin_core::crypto_wallet::CryptoWallet;
 // use hex_literal::hex;
 // use walletd_hd_key::HDKey;

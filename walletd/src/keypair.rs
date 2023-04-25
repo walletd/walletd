@@ -2,7 +2,7 @@ use ::walletd_bip39::Seed;
 
 use crate::{
     Bip39Mnemonic, CryptoWallet, CryptoWalletBuilder, CryptoWalletGeneral, HDKey, HDNetworkType,
-    MnemonicHandler,
+    MnemonicExt,
 };
 
 use crate::Error;

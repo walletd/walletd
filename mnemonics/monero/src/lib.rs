@@ -5,7 +5,7 @@
 //! ## Quickstart
 //!
 //! ```rust
-//! use walletd_monero_mnemonic::{Language, Mnemonic, MnemonicHandler, MnemonicStyleBuilder, MnemonicType};
+//! use walletd_monero_mnemonic::{Language, Mnemonic, MnemonicExt, MnemonicStyleBuilder, MnemonicType};
 //!
 //! // create a new randomly generated mnemonic phrase
 //! let mnemonic = Mnemonic::builder().generate().unwrap();
@@ -29,7 +29,7 @@ mod mnemonic;
 mod mnemonic_type;
 
 pub use language::Language;
-pub use walletd_mnemonics_core::{MnemonicHandler, MnemonicStyleBuilder, Seed};
+pub use walletd_mnemonics_core::{MnemonicExt, MnemonicStyleBuilder, Seed};
 pub use self::errors::Error;
 use self::language::WordList;
 pub use self::mnemonic::{Mnemonic, MnemonicBuilder};
