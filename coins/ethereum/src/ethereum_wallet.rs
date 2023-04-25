@@ -2,7 +2,6 @@
 //!
 
 use core::fmt;
-use std::any::Any;
 use std::fmt::LowerHex;
 use std::str::FromStr;
 
@@ -332,10 +331,6 @@ impl CryptoWallet for EthereumWallet {
             None => Err(Error::MissingBlockchainClient),
         }
     }
-
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
 }
 
 /// Technically speaking, an "EthereumWallet" is a public address, public key and
@@ -381,11 +376,5 @@ impl EthereumWallet {
         } else {
             Err(Error::MissingMasterHDKey)
         }
-    }
-}
-
-impl fmt::Display for EthereumWallet {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.public_address())
     }
 }

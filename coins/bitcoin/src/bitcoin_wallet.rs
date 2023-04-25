@@ -4,9 +4,7 @@ use crate::BitcoinAmount;
 use crate::Error;
 use async_trait::async_trait;
 use bitcoin::blockdata::script;
-use std::any::Any;
 use std::cmp::Reverse;
-use std::fmt;
 use walletd_bip39::Seed;
 use walletd_coin_core::CryptoAddress;
 use walletd_coin_core::CryptoWalletBuilder;
@@ -207,10 +205,6 @@ impl CryptoWallet for BitcoinWallet {
             Some(client) => Ok(client),
             None => Err(Error::MissingBlockchainClient),
         }
-    }
-
-    fn as_any(&self) -> &dyn Any {
-        self
     }
 }
 
@@ -850,15 +844,6 @@ impl BitcoinWallet {
         transaction.fee = fee_amount.satoshi();
 
         Ok((transaction, chosen_indices))
-    }
-}
-
-impl fmt::Display for BitcoinWallet {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for address in self.associated.iter().map(|a| a.address()) {
-            writeln!(f, "{}", address)?;
-        }
-        Ok(())
     }
 }
 
