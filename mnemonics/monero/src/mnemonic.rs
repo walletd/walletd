@@ -3,7 +3,7 @@ use std::fmt;
 
 use curve25519_dalek::scalar::Scalar;
 use rand::{thread_rng, Rng};
-use walletd_mnemonics_core::{MnemonicHandler, MnemonicStyleBuilder, Seed};
+use walletd_mnemonics_core::{MnemonicExt, MnemonicStyleBuilder, Seed};
 use crate::mnemonic_type::BITS_IN_BYTES;
 use crate::{Error, Language, MnemonicType, WordList};
 
@@ -103,7 +103,7 @@ impl Default for MnemonicBuilder {
     }
 }
 
-impl MnemonicHandler for Mnemonic {
+impl MnemonicExt for Mnemonic {
     type ErrorType = Error;
     type LanguageHandler = Language;
     type MnemonicStyle = Self;

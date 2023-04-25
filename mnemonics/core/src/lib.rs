@@ -4,9 +4,9 @@ pub use hex;
 pub mod seed;
 pub use self::seed::Seed;
 
-/// The MnemonicHandler trait is used to provide a common interface for the
+/// The MnemonicExt trait is used to provide a common interface for the
 /// different Mnemonic libraries
-pub trait MnemonicHandler {
+pub trait MnemonicExt {
     /// The associated Language struct
     type LanguageHandler;
     /// The associated MnemonicType struct

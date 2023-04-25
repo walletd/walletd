@@ -9,7 +9,7 @@ pub use walletd_bip39::{
     Language as Bip39Language, Mnemonic as Bip39Mnemonic, MnemonicType as Bip39MnemonicType, Seed,
 };
 
-pub use walletd_mnemonics_core::{MnemonicHandler, MnemonicStyleBuilder};
+pub use walletd_mnemonics_core::{MnemonicExt, MnemonicStyleBuilder};
 
 mod keypair;
 pub use keypair::{KeyPair, KeyPairBuilder, MnemonicKeyPairType};

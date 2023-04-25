@@ -1,7 +1,7 @@
 // EthereumAmount.new_from_eth(u64)
 // use std::str::FromStr;
 
-use walletd_bip39::{Mnemonic, MnemonicHandler, MnemonicStyleBuilder};
+use walletd_bip39::{Mnemonic, MnemonicExt, MnemonicStyleBuilder};
 use web3::types::U256;
 
 use walletd_coin_core::{BlockchainConnector, CryptoWallet, CryptoWalletBuilder};

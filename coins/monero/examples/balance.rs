@@ -1,7 +1,7 @@
 extern crate walletd_monero;
 
 use walletd_monero::{
-    AddressType as MoneroFormat, CryptoWallet, Mnemonic as MoneroMnemonic, MnemonicHandler,
+    AddressType as MoneroFormat, CryptoWallet, Mnemonic as MoneroMnemonic, MnemonicExt,
     MoneroLWSConnection, MoneroWallet, Network as MoneroNetworkType,
 };
 

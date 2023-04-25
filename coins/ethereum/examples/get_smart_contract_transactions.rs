@@ -2,7 +2,7 @@
 // from a specific block ///
 // ///
 
-// use walletd_bip39::{Language, Mnemonic, MnemonicHandler};
+// use walletd_bip39::{Language, Mnemonic, MnemonicExt};
 // use walletd_coin_core::crypto_wallet::CryptoWallet;
 // use walletd_ethereum::*;
 // // use hex_literal::hex;

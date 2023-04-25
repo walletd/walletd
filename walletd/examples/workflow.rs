@@ -3,7 +3,7 @@ extern crate walletd;
 use walletd::{
     blockstream::Blockstream, walletd_coin_core::BlockchainConnectorBuilder,
     walletd_ethereum::EthClient, Bip39Mnemonic, BitcoinWallet, BlockchainConnector, CryptoWallet,
-    Error, EthereumWallet, HDNetworkType, KeyPair, MnemonicHandler, MnemonicKeyPairType,
+    Error, EthereumWallet, HDNetworkType, KeyPair, MnemonicExt, MnemonicKeyPairType,
     MnemonicStyleBuilder,
 };
 
@@ -57,9 +57,7 @@ async fn main() -> Result<(), Error> {
 
     // Going to switch to ETH
     // This is another way to use the builder pattern to create the blockchain client instead of using the pattern written out for the btc_blockchain_client
-    let eth_blockchain_client = EthClient::builder()
-        .url(ETH_TESTNET_URL.into())
-        .build()?;
+    let eth_blockchain_client = EthClient::builder().url(ETH_TESTNET_URL.into()).build()?;
 
     let mut eth_wallet = hd_wallet.derive_wallet::<EthereumWallet>()?;
 

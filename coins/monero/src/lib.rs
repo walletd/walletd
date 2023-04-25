@@ -1,6 +1,6 @@
 pub use walletd_coin_core::{CryptoAmount, CryptoWallet, CryptoWalletGeneral};
 pub use walletd_hd_key::{HDKey, HDNetworkType};
-pub use walletd_monero_mnemonic::{Mnemonic, MnemonicHandler, Seed};
+pub use walletd_monero_mnemonic::{Mnemonic, MnemonicExt, Seed};
 
 pub mod hash;
 pub use hash::keccak256;

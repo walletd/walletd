@@ -1,4 +1,4 @@
-use walletd_bip39::{Language, Mnemonic, MnemonicHandler, MnemonicStyleBuilder, MnemonicType};
+use walletd_bip39::{Language, Mnemonic, MnemonicExt, MnemonicStyleBuilder, MnemonicType};
 
 fn main() -> () {
     // example of how to generate a mnemonic phrase using the builder pattern

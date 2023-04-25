@@ -1,5 +1,5 @@
 use walletd_monero_mnemonic::{
-    Language, Mnemonic, MnemonicHandler, MnemonicStyleBuilder, MnemonicType,
+    Language, Mnemonic, MnemonicExt, MnemonicStyleBuilder, MnemonicType,
 };
 
 fn main() -> () {
