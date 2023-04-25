@@ -123,7 +123,7 @@ fn test_with_hd_path_builder() -> Result<(), Error> {
             .to_shortform_num()
     );
     let mut hd_path_builder = builder.hd_path_builder.clone();
-    hd_path_builder.coin_type(0).address_index(1);
+    hd_path_builder.coin_type_index(0).address_index(1);
     builder.hd_path_builder(hd_path_builder);
     assert!(builder.hd_path_builder.coin_type.is_some());
     assert!(builder.hd_path_builder.address_index.is_some());

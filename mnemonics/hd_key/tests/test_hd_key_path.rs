@@ -228,7 +228,7 @@ fn test_derive_change_internal_chain() -> Result<(), Error> {
 fn test_eth_bip44() -> Result<(), Error> {
     let dpath = HDPath::builder()
         .purpose(HDPurpose::BIP44.to_shortform_num())
-        .coin_type(Coin::from(Symbol::ETH).id())
+        .coin_type_index(Coin::from(Symbol::ETH).id())
         .build()
         .to_string();
 
@@ -280,7 +280,7 @@ fn test_bip49_first_account() -> Result<(), Error> {
     let mut path_builder = HDPath::builder();
     path_builder
         .purpose(HDPurpose::BIP49.to_shortform_num())
-        .coin_type(Coin::from(Symbol::BTC).id())
+        .coin_type_index(Coin::from(Symbol::BTC).id())
         .no_change_index()
         .no_address_index();
 
@@ -312,7 +312,7 @@ fn test_bip49_address_one() -> Result<(), Error> {
     let mut path_builder = HDPath::builder();
     path_builder
         .purpose(HDPurpose::BIP49.to_shortform_num())
-        .coin_type(Coin::from(Symbol::BTC).id())
+        .coin_type_index(Coin::from(Symbol::BTC).id())
         .address_index(1);
 
     let derived = HDKey::new(
