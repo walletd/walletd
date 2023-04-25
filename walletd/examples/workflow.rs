@@ -57,9 +57,7 @@ async fn main() -> Result<(), Error> {
 
     // Going to switch to ETH
     // This is another way to use the builder pattern to create the blockchain client instead of using the pattern written out for the btc_blockchain_client
-    let eth_blockchain_client = EthClient::builder()
-        .url(ETH_TESTNET_URL.into())
-        .build()?;
+    let eth_blockchain_client = EthClient::builder().url(ETH_TESTNET_URL.into()).build()?;
 
     let mut eth_wallet = hd_wallet.derive_wallet::<EthereumWallet>()?;
 
