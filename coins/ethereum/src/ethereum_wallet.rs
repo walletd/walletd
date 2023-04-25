@@ -13,7 +13,7 @@ use secp256k1::{PublicKey, SecretKey};
 use tiny_keccak::{Hasher, Keccak};
 use walletd_bip39::Seed;
 use walletd_coin_core::{
-    BlockchainConnectorGeneral, CryptoWallet, CryptoWalletBuilder, CryptoWalletGeneral,
+    BlockchainConnector, CryptoWallet, CryptoWalletBuilder, CryptoWalletGeneral,
 };
 use walletd_hd_key::{slip44, HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPurpose};
 use web3::types::{Address, TransactionParameters};
@@ -125,7 +125,7 @@ pub struct EthereumWalletBuilder {
     master_hd_key: Option<HDKey>,
     /// The blockchain client used to connect to the blockchain, if the blockchain client is not provided the wallet will be created without an associated blockchain client
     /// and the blockchain client can be set later using the `set_blockchain_client` method
-    blockchain_client: Option<Box<dyn BlockchainConnectorGeneral>>,
+    blockchain_client: Option<BlockchainConnector>,
     /// The mnemonic seed used to import the wallet, if the mnemonic seed is not provided, the master_hd_key must be provided
     /// If the master_hd_key is provided, the mnemonic seed will be ignored
     mnemonic_seed: Option<Seed>,
@@ -219,7 +219,7 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
     /// Allows specification of the blockchain client for the wallet
     fn blockchain_client(
         &mut self,
-        blockchain_client: Box<dyn BlockchainConnectorGeneral>,
+        blockchain_client: impl BlockchainConnector,
     ) -> &mut Self {
         self.blockchain_client = Some(blockchain_client);
         self

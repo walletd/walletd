@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use log::info;
 use std::any::Any;
 use std::str::FromStr;
-use walletd_coin_core::{BlockchainConnector, BlockchainConnectorGeneral};
+use walletd_coin_core::{BlockchainConnector};
 use web3::contract::{Contract, Options};
 use web3::ethabi::Uint;
 use web3::helpers as w3h;
@@ -369,42 +369,32 @@ impl BlockchainConnector for EthClient {
     }
 }
 
-impl BlockchainConnectorGeneral for EthClient {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
+// impl TryFrom<Box<dyn BlockchainConnector>> for EthClient {
+//     type Error = Error;
 
-    fn box_clone(&self) -> Box<dyn BlockchainConnectorGeneral> {
-        Box::new(self.clone())
-    }
-}
+//     fn try_from(
+//         blockchain_connector: Box<dyn BlockchainConnector>,
+//     ) -> Result<Self, Self::Error> {
+//         match blockchain_connector.as_any().downcast_ref::<EthClient>() {
+//             Some(blockstream) => Ok(blockstream.clone()),
+//             None => Err(Error::UnableToDowncastBlockchainConnector(
+//                 "Could not convert BlockchainConnector to BlockchainClient".into(),
+//             )),
+//         }
+//     }
+// }
 
-impl TryFrom<Box<dyn BlockchainConnectorGeneral>> for EthClient {
-    type Error = Error;
+// impl TryFrom<&Box<dyn BlockchainConnector>> for EthClient {
+//     type Error = Error;
 
-    fn try_from(
-        blockchain_connector: Box<dyn BlockchainConnectorGeneral>,
-    ) -> Result<Self, Self::Error> {
-        match blockchain_connector.as_any().downcast_ref::<EthClient>() {
-            Some(blockstream) => Ok(blockstream.clone()),
-            None => Err(Error::UnableToDowncastBlockchainConnector(
-                "Could not convert BlockchainConnector to BlockchainClient".into(),
-            )),
-        }
-    }
-}
-
-impl TryFrom<&Box<dyn BlockchainConnectorGeneral>> for EthClient {
-    type Error = Error;
-
-    fn try_from(
-        blockchain_connector: &Box<dyn BlockchainConnectorGeneral>,
-    ) -> Result<Self, Self::Error> {
-        match blockchain_connector.as_any().downcast_ref::<EthClient>() {
-            Some(blockstream) => Ok(blockstream.clone()),
-            None => Err(Error::UnableToDowncastBlockchainConnector(
-                "Could not convert BlockchainConnector to BlockchainClient".into(),
-            )),
-        }
-    }
-}
+//     fn try_from(
+//         blockchain_connector: &Box<dyn BlockchainConnector>,
+//     ) -> Result<Self, Self::Error> {
+//         match blockchain_connector.as_any().downcast_ref::<EthClient>() {
+//             Some(blockstream) => Ok(blockstream.clone()),
+//             None => Err(Error::UnableToDowncastBlockchainConnector(
+//                 "Could not convert BlockchainConnector to BlockchainClient".into(),
+//             )),
+//         }
+//     }
+// }

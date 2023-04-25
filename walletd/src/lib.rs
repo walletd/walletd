@@ -16,7 +16,7 @@ pub use keypair::{KeyPair, KeyPairBuilder, MnemonicKeyPairType};
 pub use walletd_bitcoin::blockstream;
 pub use walletd_bitcoin::{BitcoinAmount, BitcoinWallet};
 pub use walletd_coin_core::{
-    BlockchainConnector, BlockchainConnectorGeneral, ConnectorType, CryptoAddress, CryptoAmount,
+    BlockchainConnector, ConnectorType, CryptoAddress, CryptoAmount,
     CryptoWallet, CryptoWalletBuilder, CryptoWalletGeneral,
 };
 pub use walletd_ethereum::{EthClient, EthereumAmount, EthereumFormat, EthereumWallet};

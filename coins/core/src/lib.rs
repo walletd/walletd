@@ -10,7 +10,7 @@ mod crypto_wallet;
 mod error;
 
 pub use blockchain_connector::{
-    BlockchainConnector, BlockchainConnectorBuilder, BlockchainConnectorGeneral, ConnectorType,
+    BlockchainConnector, BlockchainConnectorBuilder, ConnectorType,
 };
 pub use crypto_address::CryptoAddress;
 pub use crypto_amount::CryptoAmount;

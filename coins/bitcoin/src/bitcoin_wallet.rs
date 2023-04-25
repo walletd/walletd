@@ -11,7 +11,7 @@ use walletd_bip39::Seed;
 use walletd_coin_core::CryptoAddress;
 use walletd_coin_core::CryptoWalletBuilder;
 use walletd_coin_core::{
-    BlockchainConnectorGeneral, CryptoAmount, CryptoWallet, CryptoWalletGeneral,
+    BlockchainConnector, CryptoAmount, CryptoWallet, CryptoWalletGeneral,
 };
 use walletd_hd_key::slip44;
 use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
@@ -895,7 +895,7 @@ pub struct BitcoinWalletBuilder {
     hd_purpose: Option<HDPurpose>,
     /// The blockchain client used to connect to the blockchain, if the blockchain client is not provided the wallet will be created without an associated blockchain client
     /// and the blockchain client can be set later using the `set_blockchain_client` method
-    blockchain_client: Option<Box<dyn BlockchainConnectorGeneral>>,
+    blockchain_client: Option<BlockchainConnector<ErrorType=Error>>,
     /// The master HD key used to import the wallet
     master_hd_key: Option<HDKey>,
     /// The gap limit used to determine when to stop searching for addresses with a previous transaction history, if the gap limit is not provided, the default gap limit is 20 which means the search will stop after 20 consecutive addresses with no previous transaction history
@@ -974,7 +974,7 @@ impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
     /// Allows specification of the blockchain client for the wallet
     fn blockchain_client(
         &mut self,
-        blockchain_client: Box<dyn BlockchainConnectorGeneral>,
+        blockchain_client: impl BlockchainConnector,
     ) -> &mut Self {
         self.blockchain_client = Some(blockchain_client);
         self
