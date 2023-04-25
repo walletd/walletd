@@ -72,9 +72,7 @@ impl WordList {
     pub fn get_index(&self, word: &str) -> Result<usize, ParseMnemonicError> {
         match self.inner.iter().position(|element| element == &word) {
             Some(index) => Ok(index),
-            None => Err(ParseMnemonicError::InvalidWord(
-                word.to_string()
-            )),
+            None => Err(ParseMnemonicError::InvalidWord(word.to_string())),
         }
     }
 
