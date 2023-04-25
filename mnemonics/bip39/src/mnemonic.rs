@@ -634,7 +634,7 @@ mod tests {
         assert!(mnemonic.is_err());
         assert!(matches!(
             mnemonic.unwrap_err(),
-            ParseMnemonicError::InvalidWord(_, _)
+            ParseMnemonicError::InvalidWord(_)
         ));
     }
 

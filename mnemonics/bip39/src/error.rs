@@ -6,8 +6,8 @@ use crate::MnemonicType;
 #[derive(Error, Debug, PartialEq, Eq)]
 pub enum ParseMnemonicError {
     /// Invalid word in mnemonic phrase
-    #[error("Invalid word: word: {0} not found in wordlist for language: {1}")]
-    InvalidWord(String, String),
+    #[error("Invalid word: word: {0} not found in wordlist")]
+    InvalidWord(String),
     /// Could not find language match for the given phrase
     #[error("Could not find a language match for the given phrase: {0}")]
     InvalidPhraseLanguage(String),
