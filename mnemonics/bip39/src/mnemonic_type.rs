@@ -1,5 +1,3 @@
-use std::fmt;
-
 use crate::ParseMnemonicError;
 
 pub const ENTROPY_OFFSET: usize = 8;
@@ -43,20 +41,6 @@ pub enum MnemonicType {
     Words21 = (224 << ENTROPY_OFFSET) | 7,
     /// 24 word mnemonic phrase
     Words24 = (256 << ENTROPY_OFFSET) | 8,
-}
-
-impl fmt::Display for MnemonicType {
-    /// Display the mnemonic type as a string
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            MnemonicType::Words12 => fmt.write_str("12 words")?,
-            MnemonicType::Words15 => fmt.write_str("15 words")?,
-            MnemonicType::Words18 => fmt.write_str("18 words")?,
-            MnemonicType::Words21 => fmt.write_str("21 words")?,
-            MnemonicType::Words24 => fmt.write_str("24 words")?,
-        };
-        Ok(())
-    }
 }
 
 impl Default for MnemonicType {
@@ -173,15 +157,6 @@ mod tests {
     #[test]
     fn test_entropy_offset() {
         assert_eq!(8, ENTROPY_OFFSET);
-    }
-
-    #[test]
-    fn test_print() {
-        assert_eq!(format!("{}", MnemonicType::Words12), "12 words");
-        assert_eq!(format!("{}", MnemonicType::Words15), "15 words");
-        assert_eq!(format!("{}", MnemonicType::Words18), "18 words");
-        assert_eq!(format!("{}", MnemonicType::Words21), "21 words");
-        assert_eq!(format!("{}", MnemonicType::Words24), "24 words");
     }
 
     #[test]

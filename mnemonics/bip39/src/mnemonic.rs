@@ -58,7 +58,7 @@ impl fmt::Display for Mnemonic {
         writeln!(f, "Mnemonic Phrase: {}", self.phrase)?;
         writeln!(f, "Language: {}", self.lang)?;
         writeln!(f, "Seed: {}", self.seed)?;
-        writeln!(f, "Mnemonic Type: {}", self.mnemonic_type)?;
+        writeln!(f, "Mnemonic Type: {:?}", self.mnemonic_type)?;
         Ok(())
     }
 }
@@ -316,8 +316,6 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
                 if mnemonic_type != specified_mnemonic_type {
                     return Err(ParseMnemonicError::MismatchInSpecificationVersusImplict {
                         attribute: "mnemonic_type".to_string(),
-                        spec: specified_mnemonic_type.to_string(),
-                        implict: mnemonic_type.to_string(),
                     });
                 }
             }
@@ -663,8 +661,6 @@ mod tests {
             mnemonic.unwrap_err(),
             ParseMnemonicError::MismatchInSpecificationVersusImplict {
                 attribute: "mnemonic_type".to_string(),
-                spec: MnemonicType::Words15.to_string(),
-                implict: MnemonicType::Words12.to_string()
             }
         );
     }
