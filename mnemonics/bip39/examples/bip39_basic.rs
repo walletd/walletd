@@ -3,8 +3,7 @@ use walletd_bip39::{Language, Mnemonic, MnemonicExt, MnemonicStyleBuilder, Mnemo
 fn main() -> () {
     // example of how to generate a mnemonic phrase using the builder pattern
     println!("Example of generating a mnemonic phrase using the builder pattern");
-    let test = format!("{}", Language::English);
-    println!("{}", test);
+    println!("{:?}", Language::English);
     // create a new randomly generated mnemonic phrase
     let passphrase: &str = "mypassphrase"; // this is an optional passphrase, if you don't to use a passphrase, you don't
                                            // need to use the .set_passphrase() method
@@ -15,7 +14,7 @@ fn main() -> () {
         .passphrase(passphrase)
         .generate()
         .expect("should be valid mnemonic");
-    println!("{}", mnemonic);
+    println!("{:?}", mnemonic);
     // get the wallet seed
     let seed = mnemonic.to_seed();
     println!("{}", seed);
@@ -23,13 +22,12 @@ fn main() -> () {
     // example of how to generate a mnemonic phrase without using the builder
     // pattern
     println!("Example of generating a mnemonic phrase without using the builder pattern");
-    let test = format!("{}", Language::English);
-    println!("{}", test);
+    println!("{:?}", Language::English);
     // create a new randomly generated mnemonic phrase
     let passphrase: &str = "mypassphrase";
     let mnemonic = Mnemonic::new(Language::English, MnemonicType::Words12, Some(passphrase)); // If you don't want to use a passphrase, you can use None instead of
                                                                                               // Some(passphrase)
-    println!("{}", mnemonic);
+    println!("{:?}", mnemonic);
     // get the wallet seed
     let seed = mnemonic.to_seed();
     println!("{}", seed);

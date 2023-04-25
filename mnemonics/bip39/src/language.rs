@@ -9,7 +9,6 @@ static KOREAN: &str = include_str!("langs/korean.txt");
 static SPANISH: &str = include_str!("langs/spanish.txt");
 static PORTUGUESE: &str = include_str!("langs/portuguese.txt");
 
-use std::fmt;
 use std::str::FromStr;
 
 use walletd_mnemonics_core::LanguageHandler;
@@ -73,10 +72,7 @@ impl WordList {
     pub fn get_index(&self, word: &str) -> Result<usize, ParseMnemonicError> {
         match self.inner.iter().position(|element| element == &word) {
             Some(index) => Ok(index),
-            None => Err(ParseMnemonicError::InvalidWord(
-                word.to_string(),
-                self.language.to_string(),
-            )),
+            None => Err(ParseMnemonicError::InvalidWord(word.to_string())),
         }
     }
 
@@ -162,25 +158,6 @@ impl FromStr for Language {
     }
 }
 
-impl fmt::Display for Language {
-    /// Converts a Language to a string.
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Language::English => fmt.write_str("English")?,
-            Language::ChineseSimplified => fmt.write_str("Chinese Simplified")?,
-            Language::ChineseTraditional => fmt.write_str("Chinese Traditional")?,
-            Language::Czech => fmt.write_str("Czech")?,
-            Language::French => fmt.write_str("French")?,
-            Language::Italian => fmt.write_str("Italian")?,
-            Language::Japanese => fmt.write_str("Japanese")?,
-            Language::Korean => fmt.write_str("Korean")?,
-            Language::Portuguese => fmt.write_str("Portuguese")?,
-            Language::Spanish => fmt.write_str("Spanish")?,
-        };
-        Ok(())
-    }
-}
-
 impl Default for Language {
     /// Returns the default language, English.
     fn default() -> Language {
@@ -227,26 +204,6 @@ mod tests {
             Language::from_str("Portuguese").unwrap()
         );
         assert_eq!(Language::Spanish, Language::from_str("Spanish").unwrap());
-    }
-
-    #[test]
-    fn test_print_language() {
-        assert_eq!(format!("{}", Language::English), "English");
-        assert_eq!(
-            format!("{}", Language::ChineseSimplified),
-            "Chinese Simplified"
-        );
-        assert_eq!(
-            format!("{}", Language::ChineseTraditional),
-            "Chinese Traditional"
-        );
-        assert_eq!(format!("{}", Language::Czech), "Czech");
-        assert_eq!(format!("{}", Language::French), "French");
-        assert_eq!(format!("{}", Language::Italian), "Italian");
-        assert_eq!(format!("{}", Language::Japanese), "Japanese");
-        assert_eq!(format!("{}", Language::Korean), "Korean");
-        assert_eq!(format!("{}", Language::Portuguese), "Portuguese");
-        assert_eq!(format!("{}", Language::Spanish), "Spanish");
     }
 
     #[test]

@@ -1,6 +1,5 @@
 use core::ops::Div;
 use core::str;
-use std::fmt;
 
 use crate::mnemonic_type::ENTROPY_OFFSET;
 use crate::{Language, MnemonicType, ParseMnemonicError, WordList};
@@ -51,16 +50,6 @@ pub struct Mnemonic {
     lang: Language,
     seed: Seed,
     mnemonic_type: MnemonicType,
-}
-
-impl fmt::Display for Mnemonic {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "Mnemonic Phrase: {}", self.phrase)?;
-        writeln!(f, "Language: {}", self.lang)?;
-        writeln!(f, "Seed: {}", self.seed)?;
-        writeln!(f, "Mnemonic Type: {}", self.mnemonic_type)?;
-        Ok(())
-    }
 }
 
 /// [`MnemonicBuilder`][MnemonicBuilder] implements the builder pattern for
@@ -316,8 +305,6 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
                 if mnemonic_type != specified_mnemonic_type {
                     return Err(ParseMnemonicError::MismatchInSpecificationVersusImplict {
                         attribute: "mnemonic_type".to_string(),
-                        spec: specified_mnemonic_type.to_string(),
-                        implict: mnemonic_type.to_string(),
                     });
                 }
             }
@@ -647,7 +634,7 @@ mod tests {
         assert!(mnemonic.is_err());
         assert!(matches!(
             mnemonic.unwrap_err(),
-            ParseMnemonicError::InvalidWord(_, _)
+            ParseMnemonicError::InvalidWord(_)
         ));
     }
 
@@ -663,8 +650,6 @@ mod tests {
             mnemonic.unwrap_err(),
             ParseMnemonicError::MismatchInSpecificationVersusImplict {
                 attribute: "mnemonic_type".to_string(),
-                spec: MnemonicType::Words15.to_string(),
-                implict: MnemonicType::Words12.to_string()
             }
         );
     }
