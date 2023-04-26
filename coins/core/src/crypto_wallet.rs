@@ -57,8 +57,6 @@ where
     fn master_hd_key(&mut self, master_hd_key: HDKey) -> &mut Self;
     /// Specifies the mnemonic seed for the [CryptoWalletBuilder]
     fn mnemonic_seed(&mut self, mnemonic_seed: Seed) -> &mut Self;
-    /// Specifies the blockchain client for the [CryptoWalletBuilder]
-    //fn blockchain_client(&mut self, client: Self::BlockchainConnector) -> &mut Self;
     /// Specifies the address format for the [CryptoWalletBuilder]
     fn address_format(&mut self, address_format: T::AddressFormat) -> &mut Self;
     /// Specifies the HD path builder for the [CryptoWalletBuilder]

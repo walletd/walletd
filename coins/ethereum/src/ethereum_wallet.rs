@@ -120,9 +120,6 @@ pub struct EthereumWalletBuilder {
     address_format: EthereumFormat,
     /// The master HD key used to import the wallet
     master_hd_key: Option<HDKey>,
-    /// The blockchain client used to connect to the blockchain, if the blockchain client is not provided the wallet will be created without an associated blockchain client
-    /// and the blockchain client can be set later using the `set_blockchain_client` method
-    //blockchain_client: Option<BlockchainConnector>,
     /// The mnemonic seed used to import the wallet, if the mnemonic seed is not provided, the master_hd_key must be provided
     /// If the master_hd_key is provided, the mnemonic seed will be ignored
     mnemonic_seed: Option<Seed>,
@@ -195,9 +192,6 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
             blockchain_client: None,
             master_hd_key: Some(master_hd_key),
         };
-        // if let Some(blockchain_client) = &self.blockchain_client {
-        //     wallet.blockchain_client = Some(blockchain_client.try_into()?);
-        // };
         Ok(wallet)
     }
 
@@ -212,15 +206,6 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
         self.address_format = address_format;
         self
     }
-
-    /// Allows specification of the blockchain client for the wallet
-    // fn blockchain_client(
-    //     &mut self,
-    //     blockchain_client: impl BlockchainConnector,
-    // ) -> &mut Self {
-    //     self.blockchain_client = Some(blockchain_client);
-    //     self
-    // }
 
     /// Allows specification of the mnemonic seed for the wallet
     fn mnemonic_seed(&mut self, mnemonic_seed: Seed) -> &mut Self {

@@ -853,9 +853,6 @@ pub struct BitcoinWalletBuilder {
     address_format: AddressType,
     /// The HD purpose used to generate the wallet, if the HD purpose is not provided, the default HD purpose will be inferred from the address_format
     hd_purpose: Option<HDPurpose>,
-    /// The blockchain client used to connect to the blockchain, if the blockchain client is not provided the wallet will be created without an associated blockchain client
-    /// and the blockchain client can be set later using the `set_blockchain_client` method
-    //blockchain_client: Option<Box<dyn BlockchainConnector<ErrorType=Error>>>,
     /// The master HD key used to import the wallet
     master_hd_key: Option<HDKey>,
     /// The gap limit used to determine when to stop searching for addresses with a previous transaction history, if the gap limit is not provided, the default gap limit is 20 which means the search will stop after 20 consecutive addresses with no previous transaction history
@@ -931,15 +928,6 @@ impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
         self
     }
 
-    // /// Allows specification of the blockchain client for the wallet
-    // fn blockchain_client(
-    //     &mut self,
-    //     blockchain_client: <Box< dyn BlockchainConnector>>,
-    // ) -> &mut Self {
-    //     self.blockchain_client = Some(Box<dyn blockchain_client>>);
-    //     self
-    // }
-
     /// Allows specification of the network type for the wallet, the default is Network::Bitcoin
     fn network_type(&mut self, network_type: Network) -> &mut Self {
         self.network_type = network_type;
@@ -997,9 +985,6 @@ impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
             hd_path_builder: Some(hd_path_builder),
         };
 
-        // if let Some(client) = &self.blockchain_client {
-        //     wallet.blockchain_client = Some(client.try_into()?);
-        // }
         Ok(wallet)
     }
 }

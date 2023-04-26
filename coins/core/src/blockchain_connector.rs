@@ -75,7 +75,7 @@ where
 
     /// This function builds the BlockchainConnectorBuilder using the options provided in the builder
     ///
-    /// It returns a [Box< dyn BlockchainConnector >] that can be used to connect to a blockchain.
+    /// It returns a [BlockchainConnector] that can be used to connect to a blockchain.
     /// The result of that build later can be downcasted to a specific [BlockchainConnector] struct - any compatible struct that implements the [BlockchainConnector] trait.
     pub fn build(&mut self) -> Result<T, Error> {
         let connector_type = self.connector_type.clone();

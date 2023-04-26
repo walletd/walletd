@@ -367,33 +367,3 @@ impl BlockchainConnector for EthClient {
         &self.endpoint
     }
 }
-
-// impl TryFrom<Box<dyn BlockchainConnector>> for EthClient {
-//     type Error = Error;
-
-//     fn try_from(
-//         blockchain_connector: Box<dyn BlockchainConnector>,
-//     ) -> Result<Self, Self::Error> {
-//         match blockchain_connector.as_any().downcast_ref::<EthClient>() {
-//             Some(blockstream) => Ok(blockstream.clone()),
-//             None => Err(Error::UnableToDowncastBlockchainConnector(
-//                 "Could not convert BlockchainConnector to BlockchainClient".into(),
-//             )),
-//         }
-//     }
-// }
-
-// impl TryFrom<&Box<dyn BlockchainConnector>> for EthClient {
-//     type Error = Error;
-
-//     fn try_from(
-//         blockchain_connector: &Box<dyn BlockchainConnector>,
-//     ) -> Result<Self, Self::Error> {
-//         match blockchain_connector.as_any().downcast_ref::<EthClient>() {
-//             Some(blockstream) => Ok(blockstream.clone()),
-//             None => Err(Error::UnableToDowncastBlockchainConnector(
-//                 "Could not convert BlockchainConnector to BlockchainClient".into(),
-//             )),
-//         }
-//     }
-// }

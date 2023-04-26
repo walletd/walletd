@@ -33,7 +33,6 @@ async fn main() {
     let mut wallet = EthereumWallet::builder()
         .mnemonic_seed(seed)
         .network_type(HDNetworkType::TestNet)
-        //.blockchain_client(Box::new(blockchain_client))
         .build()
         .unwrap();
     wallet.set_blockchain_client(blockchain_client);

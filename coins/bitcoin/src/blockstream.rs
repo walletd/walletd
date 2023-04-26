@@ -624,36 +624,6 @@ impl BlockchainConnector for Blockstream {
 #[derive(Clone, Default, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct FeeEstimates(pub serde_json::Map<String, Value>);
 
-// impl TryFrom<Box<dyn BlockchainConnector>> for Blockstream {
-//     type Error = Error;
-
-//     fn try_from(
-//         blockchain_connector: Box<dyn BlockchainConnector>,
-//     ) -> Result<Self, Self::Error> {
-//         match blockchain_connector.as_any().downcast_ref::<Blockstream>() {
-//             Some(blockstream) => Ok(blockstream.clone()),
-//             None => Err(Error::UnableToDowncastBlockchainConnector(
-//                 "Could not convert BlockchainConnector to Blockstream".into(),
-//             )),
-//         }
-//     }
-// }
-
-// impl TryFrom<&Box<dyn BlockchainConnector>> for Blockstream {
-//     type Error = Error;
-
-//     fn try_from(
-//         blockchain_connector: &Box<dyn BlockchainConnector>,
-//     ) -> Result<Self, Self::Error> {
-//         match blockchain_connector.as_any().downcast_ref::<Blockstream>() {
-//             Some(blockstream) => Ok(blockstream.clone()),
-//             None => Err(Error::UnableToDowncastBlockchainConnector(
-//                 "Could not convert BlockchainConnector to Blockstream".into(),
-//             )),
-//         }
-//     }
-// }
-
 impl Blockstream {
     /// Checks if the given address has had an past transactions, returns true if it has and false if it has not
     /// Errors if the address is invalid or if the API returns an error
