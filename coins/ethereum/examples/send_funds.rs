@@ -30,13 +30,12 @@ async fn main() {
 
     println!("blockchain_client: {:?}", &blockchain_client);
 
-    let wallet = EthereumWallet::builder()
+    let mut wallet = EthereumWallet::builder()
         .mnemonic_seed(seed)
         .network_type(HDNetworkType::TestNet)
-        .blockchain_client(Box::new(blockchain_client))
         .build()
         .unwrap();
-
+    wallet.set_blockchain_client(blockchain_client);
     // This example now assumes that the wallet has been funded with some testnet ETH
     println!("wallet: {:#?}", &wallet);
 

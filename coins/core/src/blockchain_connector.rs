@@ -1,13 +1,11 @@
 use crate::Error;
 use async_trait::async_trait;
-use std::any::Any;
-use std::fmt;
 
 /// BlockchainConnector trait is used to connect to a blockchain and send and receive information to and from the blockchain.
 #[async_trait]
 pub trait BlockchainConnector {
     /// ErrorType is the type of error that is returned by the BlockchainConnector
-    type ErrorType: std::error::Error + fmt::Display + Send + Sync + 'static;
+    type ErrorType: std::error::Error + Send + Sync + 'static;
 
     /// new creates a new BlockchainConnector with a given url
     fn new(url: &str) -> Result<Self, Self::ErrorType>
@@ -22,19 +20,10 @@ pub trait BlockchainConnector {
     /// Returns the builder that can be used to build a BlockchainConnector with custom options
     fn builder() -> BlockchainConnectorBuilder<Self>
     where
-        Self: Sized + Clone + BlockchainConnectorGeneral,
+        Self: Sized + Clone + BlockchainConnector,
     {
         BlockchainConnectorBuilder::new()
     }
-}
-
-/// BlockchainConnectorGeneral is a general trait that can work with any struct that implements the BlockchainConnector trait
-pub trait BlockchainConnectorGeneral {
-    /// Returns a dyn Any reference to the BlockchainConnector
-    fn as_any(&self) -> &dyn Any;
-
-    /// Returns a clone in a box type
-    fn box_clone(&self) -> Box<dyn BlockchainConnectorGeneral>;
 }
 
 /// ConnectorType is an enum that represents the type of connector that is being used, the different enum variants are meant to bue used with different cryptocurrency types and the generic type T is meant to be a specific struct that implements the BlockchainConnector trait
@@ -61,7 +50,7 @@ where
 
 impl<T> BlockchainConnectorBuilder<T>
 where
-    T: BlockchainConnector + BlockchainConnectorGeneral + Clone,
+    T: BlockchainConnector + Clone,
 {
     /// new creates a new BlockchainConnectorBuilder with default options (no url and no connector type specified)
     pub fn new() -> Self {
@@ -85,18 +74,17 @@ where
 
     /// This function builds the BlockchainConnectorBuilder using the options provided in the builder
     ///
-    /// It returns a [Box< dyn BlockchainConnectorGeneral >] that can be used to connect to a blockchain.
+    /// It returns a [BlockchainConnector] that can be used to connect to a blockchain.
     /// The result of that build later can be downcasted to a specific [BlockchainConnector] struct - any compatible struct that implements the [BlockchainConnector] trait.
-    pub fn build(&mut self) -> Result<Box<dyn BlockchainConnectorGeneral>, Error> {
-        match &self.connector_type {
-            Some(ConnectorType::BTC(connector) | ConnectorType::ETH(connector)) => {
-                Ok(connector.box_clone())
-            }
+    pub fn build(&mut self) -> Result<T, Error> {
+        let connector_type = self.connector_type.clone();
+        match connector_type {
+            Some(ConnectorType::BTC(connector) | ConnectorType::ETH(connector)) => Ok(connector),
             None => match self.url {
                 Some(ref url) => {
                     let client = T::new(url)
                         .map_err(|e| Error::BlockchainConnectorBuilder(e.to_string()))?;
-                    let client_gen = client.box_clone();
+                    let client_gen = client;
                     Ok(client_gen)
                 }
                 None => Err(Error::BlockchainConnectorBuilder("url not set".into())),

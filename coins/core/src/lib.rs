@@ -9,10 +9,8 @@ mod crypto_amount;
 mod crypto_wallet;
 mod error;
 
-pub use blockchain_connector::{
-    BlockchainConnector, BlockchainConnectorBuilder, BlockchainConnectorGeneral, ConnectorType,
-};
+pub use blockchain_connector::{BlockchainConnector, BlockchainConnectorBuilder, ConnectorType};
 pub use crypto_address::CryptoAddress;
 pub use crypto_amount::CryptoAmount;
-pub use crypto_wallet::{CryptoWallet, CryptoWalletBuilder, CryptoWalletGeneral};
+pub use crypto_wallet::{CryptoWallet, CryptoWalletBuilder};
 pub use error::Error;

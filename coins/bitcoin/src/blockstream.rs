@@ -1,7 +1,6 @@
 //! This module contains the implementation of the handling getting information to and from the bitcoin blockchain using the Blockstream Esplora JSON over HTTP API <https://github.com/Blockstream/esplora/blob/master/API.md>
 //!
 //!
-use std::any::Any;
 
 use async_trait::async_trait;
 use bitcoin::{Address, AddressType};
@@ -9,7 +8,6 @@ use bitcoin_hashes::{sha256d, Hash};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use walletd_coin_core::BlockchainConnector;
-use walletd_coin_core::BlockchainConnectorGeneral;
 
 use time::format_description::well_known::Rfc2822;
 use time::{Duration, OffsetDateTime};
@@ -622,49 +620,9 @@ impl BlockchainConnector for Blockstream {
     }
 }
 
-impl BlockchainConnectorGeneral for Blockstream {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn box_clone(&self) -> Box<dyn BlockchainConnectorGeneral> {
-        Box::new(self.clone())
-    }
-}
-
 /// FeeEstimates is a wrapper around the fee estimates returned by the Blockstream API
 #[derive(Clone, Default, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct FeeEstimates(pub serde_json::Map<String, Value>);
-
-impl TryFrom<Box<dyn BlockchainConnectorGeneral>> for Blockstream {
-    type Error = Error;
-
-    fn try_from(
-        blockchain_connector: Box<dyn BlockchainConnectorGeneral>,
-    ) -> Result<Self, Self::Error> {
-        match blockchain_connector.as_any().downcast_ref::<Blockstream>() {
-            Some(blockstream) => Ok(blockstream.clone()),
-            None => Err(Error::UnableToDowncastBlockchainConnector(
-                "Could not convert BlockchainConnector to Blockstream".into(),
-            )),
-        }
-    }
-}
-
-impl TryFrom<&Box<dyn BlockchainConnectorGeneral>> for Blockstream {
-    type Error = Error;
-
-    fn try_from(
-        blockchain_connector: &Box<dyn BlockchainConnectorGeneral>,
-    ) -> Result<Self, Self::Error> {
-        match blockchain_connector.as_any().downcast_ref::<Blockstream>() {
-            Some(blockstream) => Ok(blockstream.clone()),
-            None => Err(Error::UnableToDowncastBlockchainConnector(
-                "Could not convert BlockchainConnector to Blockstream".into(),
-            )),
-        }
-    }
-}
 
 impl Blockstream {
     /// Checks if the given address has had an past transactions, returns true if it has and false if it has not

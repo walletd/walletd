@@ -4,15 +4,11 @@ use crate::BitcoinAmount;
 use crate::Error;
 use async_trait::async_trait;
 use bitcoin::blockdata::script;
-use std::any::Any;
 use std::cmp::Reverse;
-use std::fmt;
 use walletd_bip39::Seed;
 use walletd_coin_core::CryptoAddress;
 use walletd_coin_core::CryptoWalletBuilder;
-use walletd_coin_core::{
-    BlockchainConnectorGeneral, CryptoAmount, CryptoWallet, CryptoWalletGeneral,
-};
+use walletd_coin_core::{CryptoAmount, CryptoWallet};
 use walletd_hd_key::slip44;
 use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 
@@ -308,7 +304,7 @@ impl BitcoinWallet {
                     log::info!(
                         "For deriv path: {}, address: {}, previous transaction history: {}",
                         &specify_deriv_path,
-                        address,
+                        address.public_address(),
                         exists
                     );
 
@@ -851,51 +847,12 @@ impl BitcoinWallet {
     }
 }
 
-impl fmt::Display for BitcoinWallet {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for address in self.associated.iter().map(|a| a.address()) {
-            writeln!(f, "{}", address)?;
-        }
-        Ok(())
-    }
-}
-
-impl CryptoWalletGeneral for BitcoinWallet {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn box_clone(&self) -> Box<dyn CryptoWalletGeneral> {
-        Box::new(self.clone())
-    }
-}
-
-impl TryFrom<Box<dyn CryptoWalletGeneral>> for BitcoinWallet {
-    type Error = Error;
-
-    fn try_from(value: Box<dyn CryptoWalletGeneral>) -> Result<Self, Self::Error> {
-        match value.as_any().downcast_ref::<BitcoinWallet>() {
-            Some(wallet) => Ok(wallet.clone()),
-            None => Err(Error::UnableToDowncastWallet),
-        }
-    }
-}
-
-impl From<BitcoinWallet> for Box<dyn CryptoWalletGeneral> {
-    fn from(wallet: BitcoinWallet) -> Self {
-        Box::new(wallet)
-    }
-}
-
 /// Builder for [BitcoinWallet] that allows for the creation of a [BitcoinWallet] with a custom configuration
 pub struct BitcoinWalletBuilder {
     /// The address format used to generate the wallet, if the address format is not provided, the default address format is P2wpkh
     address_format: AddressType,
     /// The HD purpose used to generate the wallet, if the HD purpose is not provided, the default HD purpose will be inferred from the address_format
     hd_purpose: Option<HDPurpose>,
-    /// The blockchain client used to connect to the blockchain, if the blockchain client is not provided the wallet will be created without an associated blockchain client
-    /// and the blockchain client can be set later using the `set_blockchain_client` method
-    blockchain_client: Option<Box<dyn BlockchainConnectorGeneral>>,
     /// The master HD key used to import the wallet
     master_hd_key: Option<HDKey>,
     /// The gap limit used to determine when to stop searching for addresses with a previous transaction history, if the gap limit is not provided, the default gap limit is 20 which means the search will stop after 20 consecutive addresses with no previous transaction history
@@ -933,7 +890,6 @@ impl Default for BitcoinWalletBuilder {
         Self {
             address_format: AddressType::P2wpkh,
             hd_purpose: Some(HDPurpose::BIP84),
-            blockchain_client: None,
             master_hd_key: None,
             gap_limit_specified: Some(20),
             account_discovery: true,
@@ -968,15 +924,6 @@ impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
         address_format: <BitcoinWallet as CryptoWallet>::AddressFormat,
     ) -> &mut Self {
         self.address_format = address_format;
-        self
-    }
-
-    /// Allows specification of the blockchain client for the wallet
-    fn blockchain_client(
-        &mut self,
-        blockchain_client: Box<dyn BlockchainConnectorGeneral>,
-    ) -> &mut Self {
-        self.blockchain_client = Some(blockchain_client);
         self
     }
 
@@ -1027,7 +974,7 @@ impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
             .coin_type_index(coin_type_id)
             .hardened_coin_type();
 
-        let mut wallet = BitcoinWallet {
+        let wallet = BitcoinWallet {
             address_format: self.address_format,
             associated: Vec::new(),
             blockchain_client: None,
@@ -1037,9 +984,6 @@ impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
             hd_path_builder: Some(hd_path_builder),
         };
 
-        if let Some(client) = &self.blockchain_client {
-            wallet.blockchain_client = Some(client.try_into()?);
-        }
         Ok(wallet)
     }
 }

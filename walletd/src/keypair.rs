@@ -1,9 +1,6 @@
 use ::walletd_bip39::Seed;
 
-use crate::{
-    Bip39Mnemonic, CryptoWallet, CryptoWalletBuilder, CryptoWalletGeneral, HDKey, HDNetworkType,
-    MnemonicExt,
-};
+use crate::{Bip39Mnemonic, CryptoWallet, CryptoWalletBuilder, HDKey, HDNetworkType, MnemonicExt};
 
 use crate::Error;
 
@@ -201,7 +198,6 @@ impl KeyPair {
         T: CryptoWallet,
         T::WalletBuilder: CryptoWalletBuilder<T>,
         T::ErrorType: std::fmt::Display,
-        <T as TryFrom<Box<dyn CryptoWalletGeneral>>>::Error: std::fmt::Display,
     {
         let wallet: T = T::builder()
             .master_hd_key(self.to_master_key())

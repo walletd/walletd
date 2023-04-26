@@ -29,7 +29,7 @@ use crate::transaction::{
     GetOutsEntry, PendingTransaction, Priority, SendTransaction, TxDestinationEntry,
 };
 use crate::{
-    Address, AddressType, CryptoWallet, CryptoWalletGeneral, HDKey, MoneroAmount,
+    Address, AddressType, CryptoWallet, HDKey, MoneroAmount,
     MoneroLWSConnection, MoneroPrivateKeys, MoneroPublicKeys, Network, HDNetworkType, PublicKey,
     Seed, SerializedArchive,
 };

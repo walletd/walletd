@@ -1,4 +1,4 @@
-pub use walletd_coin_core::{CryptoAmount, CryptoWallet, CryptoWalletGeneral};
+pub use walletd_coin_core::{CryptoAmount, CryptoWallet};
 pub use walletd_hd_key::{HDKey, HDNetworkType};
 pub use walletd_monero_mnemonic::{Mnemonic, MnemonicExt, Seed};
 

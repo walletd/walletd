@@ -49,7 +49,7 @@ async fn main() -> Result<(), Error> {
     let mut btc_wallet = hd_wallet.derive_wallet::<BitcoinWallet>()?;
 
     // associate it with the btc blockchain client
-    btc_wallet.set_blockchain_client(btc_blockchain_client.try_into()?);
+    btc_wallet.set_blockchain_client(btc_blockchain_client);
 
     // Searches for past transactions on first account using default of HDPurpose::BIP84 (default for BTC), can have other options to specify a different deriv path to search with or to search past the first account or change the gap limit ex: .discover_accounts() or .set_derive_type(HDPurpose::BIP44)
     // TODO(#79): Expose more user options on the sync of the BTC wallet
@@ -61,13 +61,21 @@ async fn main() -> Result<(), Error> {
 
     let mut eth_wallet = hd_wallet.derive_wallet::<EthereumWallet>()?;
 
-    eth_wallet.set_blockchain_client(eth_blockchain_client.try_into()?);
+    eth_wallet.set_blockchain_client(eth_blockchain_client);
 
     // Gets the current balances for the BTC wallet and ETH wallet
     let current_btc_balance = btc_wallet.balance().await?;
-    println!("Current BTC balance: {}", current_btc_balance);
+    println!(
+        "Current BTC balance: {} BTC, {} satoshi",
+        current_btc_balance.btc(),
+        current_btc_balance.satoshi()
+    );
     let current_eth_balance = eth_wallet.balance().await?;
-    println!("Current ETH balance: {}", current_eth_balance);
+    println!(
+        "Current ETH balance: {} ETH ({} wei)",
+        current_eth_balance.eth(),
+        current_eth_balance.wei()
+    );
 
     // Prints the receive address to use for the BTC wallet, the receive address will be a previously unused address associated with the wallet
     let receive_address_btc = btc_wallet.receive_address()?;

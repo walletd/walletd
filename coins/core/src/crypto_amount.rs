@@ -1,5 +1,5 @@
 /// The CryptoAmount trait provides a common interface handling crypto amounts. It provides functions to convert to and from the main unit and the smallest unit of the coin.
-pub trait CryptoAmount: std::fmt::Display {
+pub trait CryptoAmount {
     /// In the units of main "big" unit (a floating point number, not an integer
     /// subdivision) using decimal value, for bitcoin BTC, ethereum ETH, etc.
     /// The CryptoAmount is a wrapper around a floating point number and the default integer value stored is in the smallest unit of the coin.
