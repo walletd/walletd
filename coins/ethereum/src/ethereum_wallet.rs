@@ -371,5 +371,4 @@ impl EthereumWallet {
             Err(Error::MissingHDKey)
         }
     }
-    
 }
