@@ -48,7 +48,6 @@ pub trait CryptoWalletBuilder<T>
 where
     T: CryptoWallet + Clone,
 {
-    // type BlockchainConnector: BlockchainConnector;
     /// Constructs a new [CryptoWalletBuilder]
     fn new() -> Self;
     /// Builds a [CryptoWallet] from the [CryptoWalletBuilder]

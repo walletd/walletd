@@ -890,7 +890,6 @@ impl Default for BitcoinWalletBuilder {
         Self {
             address_format: AddressType::P2wpkh,
             hd_purpose: Some(HDPurpose::BIP84),
-            //blockchain_client: None,
             master_hd_key: None,
             gap_limit_specified: Some(20),
             account_discovery: true,

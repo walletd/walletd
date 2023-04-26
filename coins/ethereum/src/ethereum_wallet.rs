@@ -140,7 +140,6 @@ impl Default for EthereumWalletBuilder {
         Self {
             address_format: EthereumFormat::Checksummed,
             master_hd_key: None,
-            //blockchain_client: None,
             mnemonic_seed: None,
             network_type: HDNetworkType::MainNet,
             hd_path_builder,
