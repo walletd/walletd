@@ -102,7 +102,7 @@ impl WordList {
         Err(ParseMnemonicError::InvalidPhraseLanguage(phrase.join(" ")))
     }
 
-    /// Returns the language of the [Wordlist]
+    /// Returns the language of the [WordList]
     pub fn language(&self) -> Language {
         self.language
     }
