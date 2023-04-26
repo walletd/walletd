@@ -304,7 +304,7 @@ impl BitcoinWallet {
                     log::info!(
                         "For deriv path: {}, address: {}, previous transaction history: {}",
                         &specify_deriv_path,
-                        address,
+                        address.public_address(),
                         exists
                     );
 

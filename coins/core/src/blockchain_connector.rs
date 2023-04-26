@@ -1,12 +1,11 @@
 use crate::Error;
 use async_trait::async_trait;
-use std::fmt;
 
 /// BlockchainConnector trait is used to connect to a blockchain and send and receive information to and from the blockchain.
 #[async_trait]
 pub trait BlockchainConnector {
     /// ErrorType is the type of error that is returned by the BlockchainConnector
-    type ErrorType: std::error::Error + fmt::Display + Send + Sync + 'static;
+    type ErrorType: std::error::Error + Send + Sync + 'static;
 
     /// new creates a new BlockchainConnector with a given url
     fn new(url: &str) -> Result<Self, Self::ErrorType>

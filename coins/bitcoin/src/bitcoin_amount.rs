@@ -1,8 +1,5 @@
 use crate::Error;
-use core::fmt;
-use core::fmt::Display;
 use std::ops;
-
 use walletd_coin_core::CryptoAmount;
 
 /// BitcoinAmount contains a field representing the amount of satoshis in the amount. It also has functions to convert to and from the main unit (BTC) and the smallest unit (satoshi).
@@ -134,18 +131,6 @@ impl CryptoAmount for BitcoinAmount {
 
     fn to_smallest_unit_integer_value(&self) -> u64 {
         self.satoshi()
-    }
-}
-
-impl Display for BitcoinAmount {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(
-            f,
-            "Bitcoin Amount: {} BTC, {} satoshi",
-            self.btc(),
-            self.satoshi()
-        )?;
-        Ok(())
     }
 }
 

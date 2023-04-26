@@ -1,4 +1,3 @@
-use std::fmt;
 use std::str::FromStr;
 
 pub use bitcoin::{
@@ -146,13 +145,6 @@ impl BitcoinAddress {
     /// Returns the address info related to this BitcoinAddress
     pub fn address_info(&self) -> AddressInfo {
         self.address_info.clone()
-    }
-}
-
-impl fmt::Display for BitcoinAddress {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.public_address())?;
-        Ok(())
     }
 }
 

@@ -1,8 +1,5 @@
-use core::fmt;
-use core::fmt::Display;
-use std::ops;
-
 use crate::Error;
+use std::ops;
 use walletd_coin_core::CryptoAmount;
 use web3::ethabi::ethereum_types::U256;
 
@@ -113,13 +110,6 @@ impl EthereumAmount {
     /// Creates a new EthereumAmount from the wei amount
     pub fn from_wei(wei_amount: U256) -> Self {
         Self { wei: wei_amount }
-    }
-}
-
-impl Display for EthereumAmount {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(f, "{} ETH ({} wei)", self.eth(), self.wei())?;
-        Ok(())
     }
 }
 

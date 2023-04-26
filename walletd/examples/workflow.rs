@@ -65,9 +65,17 @@ async fn main() -> Result<(), Error> {
 
     // Gets the current balances for the BTC wallet and ETH wallet
     let current_btc_balance = btc_wallet.balance().await?;
-    println!("Current BTC balance: {}", current_btc_balance);
+    println!(
+        "Current BTC balance: {} BTC, {} satoshi",
+        current_btc_balance.btc(),
+        current_btc_balance.satoshi()
+    );
     let current_eth_balance = eth_wallet.balance().await?;
-    println!("Current ETH balance: {}", current_eth_balance);
+    println!(
+        "Current ETH balance: {} ETH ({} wei)",
+        current_eth_balance.eth(),
+        current_eth_balance.wei()
+    );
 
     // Prints the receive address to use for the BTC wallet, the receive address will be a previously unused address associated with the wallet
     let receive_address_btc = btc_wallet.receive_address()?;
