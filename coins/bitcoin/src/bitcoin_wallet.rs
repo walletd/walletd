@@ -998,7 +998,7 @@ impl BitcoinWalletBuilder {
     /// Allows specification of the account discovery to use for the wallet
     /// If set to false, the wallet will not search for accounts used past the first account
     /// The default is true
-    
+
     /// Enable account discovery, will search consequetive accounts until the gap limit is reached and an account is found with no transactions
     pub fn account_discovery(&mut self) -> &mut Self {
         self.account_discovery = true;
@@ -1011,7 +1011,6 @@ impl BitcoinWalletBuilder {
         self
     }
 
-    
     /// Returns the default HDPurpose based on the address format
     ///
     /// # Errors
