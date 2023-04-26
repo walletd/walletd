@@ -100,6 +100,12 @@ impl WordList {
         Err(ParseMnemonicError::InvalidPhraseLanguage(phrase.join(" ")))
     }
 
+    /// Returns the language of the [Wordlist]
+    pub fn language(&self) -> Language {
+        self.language
+    }
+
+    /// Returns the inner wordlist
     pub fn inner(&self) -> Vec<&'static str> {
         self.inner.clone()
     }
@@ -258,6 +264,7 @@ mod tests {
     #[test]
     fn test_english_wordlist() {
         let wordlist = WordList::new(Language::English);
+        assert_eq!(wordlist.language(), Language::English);
         assert_eq!(wordlist.inner.len(), 2048);
         assert_eq!(wordlist.get_index("abandon").unwrap(), 0);
         assert_eq!(wordlist.get_index("zoo").unwrap(), 2047);

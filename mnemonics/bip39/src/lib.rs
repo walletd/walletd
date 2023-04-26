@@ -49,7 +49,7 @@ mod mnemonic_type;
 
 pub use self::error::ParseMnemonicError;
 pub use self::language::Language;
-use self::language::WordList;
+pub use self::language::WordList;
 pub use self::mnemonic::{Mnemonic, MnemonicBuilder};
 pub use self::mnemonic_type::MnemonicType;
 pub use walletd_mnemonics_core::{MnemonicExt, MnemonicStyleBuilder, Seed};
