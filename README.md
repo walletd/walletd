@@ -17,6 +17,8 @@ Supports (or should support)
 - Support for Bitcoin, Ethereum, and other blockchains
 
 ## Installing Rust
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwalletd%2Fwalletd.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwalletd%2Fwalletd?ref=badge_shield)
+
 
 Rust can be installed using your package manager of choice or
 [rustup.rs](https://rustup.rs).
@@ -54,3 +56,5 @@ If you are interested in contributing to WalletD, please take a look at our [CON
 WalletD is distributed under the terms of both the MIT license and the Apache License (Version 2.0).
 
 See [LICENSE-APACHE](LICENSE-APACHE) and [LICENSE-MIT](LICENSE-MIT) for details.
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwalletd%2Fwalletd.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwalletd%2Fwalletd?ref=badge_large)
