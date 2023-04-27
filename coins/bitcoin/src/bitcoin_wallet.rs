@@ -998,8 +998,16 @@ impl BitcoinWalletBuilder {
     /// Allows specification of the account discovery to use for the wallet
     /// If set to false, the wallet will not search for accounts used past the first account
     /// The default is true
-    pub fn account_discovery(&mut self, account_discovery: bool) -> &mut Self {
-        self.account_discovery = account_discovery;
+
+    /// Enable account discovery, will search consecutive accounts until the gap limit is reached and an account is found with no transactions
+    pub fn account_discovery(&mut self) -> &mut Self {
+        self.account_discovery = true;
+        self
+    }
+
+    /// Disable account discovery should not be used, will not search past the first account
+    pub fn no_account_discovery(&mut self) -> &mut Self {
+        self.account_discovery = false;
         self
     }
 

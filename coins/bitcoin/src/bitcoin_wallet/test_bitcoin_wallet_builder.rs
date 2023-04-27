@@ -1,8 +1,6 @@
-use crate::{
-    blockstream::Blockstream, AddressType, BitcoinWalletBuilder, Error, HDKey, Network, Seed,
-};
+use crate::{AddressType, BitcoinWalletBuilder, Error, HDKey, Network, Seed};
 use std::str::FromStr;
-use walletd_coin_core::{BlockchainConnector, CryptoWalletBuilder};
+use walletd_coin_core::CryptoWalletBuilder;
 use walletd_hd_key::HDNetworkType;
 
 #[test]
