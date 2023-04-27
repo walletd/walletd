@@ -16,12 +16,14 @@ use walletd_mnemonics_core::LanguageExt;
 use crate::ParseMnemonicError;
 
 #[derive(Debug)]
+/// Represents a wordlist for a language for the Bip39 Mnemonic
 pub struct WordList {
     language: Language,
     inner: Vec<&'static str>,
 }
 
 impl WordList {
+    /// Creates a new [WordList] for a specifed language
     pub fn new(language: Language) -> WordList {
         match language {
             Language::English => WordList {
@@ -100,6 +102,12 @@ impl WordList {
         Err(ParseMnemonicError::InvalidPhraseLanguage(phrase.join(" ")))
     }
 
+    /// Returns the language of the [WordList]
+    pub fn language(&self) -> Language {
+        self.language
+    }
+
+    /// Returns the inner wordlist
     pub fn inner(&self) -> Vec<&'static str> {
         self.inner.clone()
     }
@@ -258,6 +266,7 @@ mod tests {
     #[test]
     fn test_english_wordlist() {
         let wordlist = WordList::new(Language::English);
+        assert_eq!(wordlist.language(), Language::English);
         assert_eq!(wordlist.inner.len(), 2048);
         assert_eq!(wordlist.get_index("abandon").unwrap(), 0);
         assert_eq!(wordlist.get_index("zoo").unwrap(), 2047);
