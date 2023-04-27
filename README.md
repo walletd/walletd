@@ -3,8 +3,9 @@
 
   <img src="./logo/walletd-icon.png" width="300" />
 
-  <p>Library for building blockchain / web3 apps.
-  </p>
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwalletd%2Fwalletd.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwalletd%2Fwalletd?ref=badge_shield) 
+
+  <p>Library for building blockchain / web3 apps.</p>
 </div>
 ⚠️ This project is under heavy development. Expect bugs & breaking changes prior to v1.0.0's release.
 
@@ -54,3 +55,9 @@ If you are interested in contributing to WalletD, please take a look at our [CON
 WalletD is distributed under the terms of both the MIT license and the Apache License (Version 2.0).
 
 See [LICENSE-APACHE](LICENSE-APACHE) and [LICENSE-MIT](LICENSE-MIT) for details.
+<a href="test"></a>
+<div align="center" id="detailed-license-info">
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwalletd%2Fwalletd.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwalletd%2Fwalletd?ref=badge_large)
+
+</div>
