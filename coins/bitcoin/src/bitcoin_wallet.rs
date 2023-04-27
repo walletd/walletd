@@ -1024,12 +1024,10 @@ impl BitcoinWalletBuilder {
     /// Returns an error if the network is not supported
     pub fn coin_type_id(&self) -> Result<u32, Error> {
         match &self.master_hd_key {
-            Some(key) => {
-                match key.network() {
-                    HDNetworkType::MainNet => Ok(slip44::Coin::Bitcoin.id()),
-                    HDNetworkType::TestNet => Ok(slip44::Coin::Testnet.id()),
-                }
-            }
+            Some(key) => match key.network() {
+                HDNetworkType::MainNet => Ok(slip44::Coin::Bitcoin.id()),
+                HDNetworkType::TestNet => Ok(slip44::Coin::Testnet.id()),
+            },
             None => Err(Error::MissingMasterHDKey),
         }
     }
