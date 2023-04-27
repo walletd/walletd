@@ -14,7 +14,7 @@ pub enum Error {
     MissingBlockchainClient,
     /// Missing master HD key
     #[error("No master HD key set")]
-    MissingMasterHDKey,
+    MissingHDKey,
     /// Unable to import wallet, missing info to import a specific wallet
     #[error("Unable to import wallet: {0}")]
     UnableToImportWallet(String),

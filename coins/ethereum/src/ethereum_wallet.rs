@@ -189,7 +189,7 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
             public_key: Some(public_key),
             network: master_hd_key.network(),
             blockchain_client: None,
-            master_hd_key: Some(master_hd_key),
+            derived_hd_key: Some(derived_key),
         };
         Ok(wallet)
     }
@@ -239,7 +239,7 @@ pub struct EthereumWallet {
     public_key: Option<EthereumPublicKey>,
     network: HDNetworkType,
     blockchain_client: Option<EthClient>,
-    master_hd_key: Option<HDKey>,
+    derived_hd_key: Option<HDKey>,
 }
 
 #[async_trait]
@@ -355,10 +355,20 @@ impl EthereumWallet {
 
     /// Returns the master HD key of the wallet if it exists, otherwise returns an error
     pub fn master_hd_key(&self) -> Result<HDKey, Error> {
-        if let Some(key) = self.master_hd_key.clone() {
+        if let Some(key) = self.derived_hd_key.clone() {
+            let master_key = HDKey::new(key.master_seed, key.network, "m".to_string())?;
+            Ok(master_key)
+        } else {
+            Err(Error::MissingHDKey)
+        }
+    }
+
+    /// Returns the derived HD key of the wallet if it exists, otherwise returns an error
+    pub fn derived_hd_key(&self) -> Result<HDKey, Error> {
+        if let Some(key) = self.derived_hd_key.clone() {
             Ok(key)
         } else {
-            Err(Error::MissingMasterHDKey)
+            Err(Error::MissingHDKey)
         }
     }
 }
