@@ -1,4 +1,4 @@
-use walletd_bip39::{Bip39Language, Bip39Mnemonic, MnemonicExt, MnemonicStyleBuilder};
+use walletd_bip39::{Bip39Language, Bip39Mnemonic, MnemonicBuilder, MnemonicExt};
 
 fn main() -> () {
     // Restore a mnemonic struct from a phrase using the builder pattern

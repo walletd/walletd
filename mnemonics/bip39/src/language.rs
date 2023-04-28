@@ -26,7 +26,7 @@ impl WordList {
     /// Creates a new [WordList] for a specifed language
     pub fn new(language: Bip39Language) -> WordList {
         match language {
-          Bip39Language::English => WordList {
+            Bip39Language::English => WordList {
                 language,
                 inner: ENGLISH.split_whitespace().collect(),
             },
@@ -169,7 +169,7 @@ impl FromStr for Bip39Language {
 impl Default for Bip39Language {
     /// Returns the default language, English.
     fn default() -> Self {
-      Self::English
+        Self::English
     }
 }
 
@@ -193,25 +193,46 @@ mod tests {
 
     #[test]
     fn test_from_str_language() {
-        assert_eq!(Bip39Language::English, Bip39Language::from_str("English").unwrap());
         assert_eq!(
-          Bip39Language::ChineseSimplified,
+            Bip39Language::English,
+            Bip39Language::from_str("English").unwrap()
+        );
+        assert_eq!(
+            Bip39Language::ChineseSimplified,
             Bip39Language::from_str("Chinese Simplified").unwrap()
         );
         assert_eq!(
-          Bip39Language::ChineseTraditional,
-          Bip39Language::from_str("Chinese Traditional").unwrap()
+            Bip39Language::ChineseTraditional,
+            Bip39Language::from_str("Chinese Traditional").unwrap()
         );
-        assert_eq!(Bip39Language::Czech, Bip39Language::from_str("Czech").unwrap());
-        assert_eq!(Bip39Language::French, Bip39Language::from_str("French").unwrap());
-        assert_eq!(Bip39Language::Italian, Bip39Language::from_str("Italian").unwrap());
-        assert_eq!(Bip39Language::Japanese, Bip39Language::from_str("Japanese").unwrap());
-        assert_eq!(Bip39Language::Korean, Bip39Language::from_str("Korean").unwrap());
         assert_eq!(
-          Bip39Language::Portuguese,
-          Bip39Language::from_str("Portuguese").unwrap()
+            Bip39Language::Czech,
+            Bip39Language::from_str("Czech").unwrap()
         );
-        assert_eq!(Bip39Language::Spanish, Bip39Language::from_str("Spanish").unwrap());
+        assert_eq!(
+            Bip39Language::French,
+            Bip39Language::from_str("French").unwrap()
+        );
+        assert_eq!(
+            Bip39Language::Italian,
+            Bip39Language::from_str("Italian").unwrap()
+        );
+        assert_eq!(
+            Bip39Language::Japanese,
+            Bip39Language::from_str("Japanese").unwrap()
+        );
+        assert_eq!(
+            Bip39Language::Korean,
+            Bip39Language::from_str("Korean").unwrap()
+        );
+        assert_eq!(
+            Bip39Language::Portuguese,
+            Bip39Language::from_str("Portuguese").unwrap()
+        );
+        assert_eq!(
+            Bip39Language::Spanish,
+            Bip39Language::from_str("Spanish").unwrap()
+        );
     }
 
     #[test]
