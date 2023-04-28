@@ -80,7 +80,7 @@ pub struct Bip39Mnemonic {
 /// [MnemonicBuilder::new()]: ./mnemonic/struct.MnemonicBuilder.html#method.new
 /// [MnemonicBuilder::detect_language()]: ./mnemonic/struct.MnemonicBuilder.html#method.detect_language
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct MnemonicBuilder {
+pub struct Bip39MnemonicBuilder {
     mnemonic_phrase: Option<String>,
     language: Option<Bip39Language>,
     seed: Option<Seed>,
@@ -88,7 +88,7 @@ pub struct MnemonicBuilder {
     passphrase: Option<String>,
 }
 
-impl Default for MnemonicBuilder {
+impl Default for Bip39MnemonicBuilder {
     fn default() -> Self {
         Self {
             mnemonic_phrase: None,
@@ -132,7 +132,7 @@ impl MnemonicExt for Bip39Mnemonic {
     type ErrorType = ParseMnemonicError;
     type LanguageExt = Bip39Language;
     type MnemonicStyle = Self;
-    type MnemonicStyleBuilder = MnemonicBuilder;
+    type MnemonicStyleBuilder = Bip39MnemonicBuilder;
     type MnemonicTypeSpec = Bip39MnemonicType;
 
     /// Generates a new mnemonic given the language, length of mnemonic, and
@@ -217,11 +217,11 @@ impl MnemonicExt for Bip39Mnemonic {
     }
 
     fn builder() -> Self::MnemonicStyleBuilder {
-        MnemonicBuilder::default()
+      Bip39MnemonicBuilder::default()
     }
 }
 
-impl MnemonicStyleBuilder for MnemonicBuilder {
+impl MnemonicStyleBuilder for Bip39MnemonicBuilder {
     type ErrorType = ParseMnemonicError;
     type LanguageExt = Bip39Language;
     type MnemonicStyle = Bip39Mnemonic;
