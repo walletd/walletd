@@ -44,12 +44,12 @@
 
 mod error;
 mod language;
-mod mnemonic;
+mod bip39_mnemonic;
 mod mnemonic_type;
 
 pub use self::error::ParseMnemonicError;
-pub use self::language::Language;
+pub use self::language::Bip39Language;
 pub use self::language::WordList;
-pub use self::mnemonic::{Bip39Mnemonic, MnemonicBuilder};
+pub use self::bip39_mnemonic::{Bip39Mnemonic, MnemonicBuilder};
 pub use self::mnemonic_type::MnemonicType;
 pub use walletd_mnemonics_core::{MnemonicExt, MnemonicStyleBuilder, Seed};
