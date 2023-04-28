@@ -24,7 +24,7 @@ mod error;
 pub use error::Error;
 pub use walletd_bip39::{
     Bip39Language, Bip39Mnemonic, MnemonicExt, MnemonicStyleBuilder,
-    MnemonicType as Bip39MnemonicType, Seed,
+    Bip39MnemonicType, Seed,
 };
 pub use walletd_coin_core::{CryptoAddress, CryptoAmount, CryptoWallet, CryptoWalletBuilder};
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};

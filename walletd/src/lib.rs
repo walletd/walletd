@@ -6,7 +6,7 @@
 #![warn(missing_docs)]
 
 pub use walletd_bip39::{
-    Bip39Language, Bip39Mnemonic, MnemonicType as Bip39MnemonicType, Seed,
+    Bip39Language, Bip39Mnemonic, Bip39MnemonicType , Seed,
 };
 
 pub use walletd_mnemonics_core::{MnemonicExt, MnemonicStyleBuilder};
