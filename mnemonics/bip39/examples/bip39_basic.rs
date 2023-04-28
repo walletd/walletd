@@ -1,4 +1,4 @@
-use walletd_bip39::{Language, Mnemonic, MnemonicExt, MnemonicStyleBuilder, MnemonicType};
+use walletd_bip39::{Language, Bip39Mnemonic, MnemonicExt, MnemonicStyleBuilder, MnemonicType};
 
 fn main() -> () {
     // example of how to generate a mnemonic phrase using the builder pattern
@@ -10,7 +10,7 @@ fn main() -> () {
                                            // The default language is English, so we don't need to specify it here
                                            // The default mnemonic type is Words12, if we don't specify anything for
                                            // mnemonic type we will get a 12 word mnemonic phrase here
-    let mnemonic = Mnemonic::builder()
+    let mnemonic = Bip39Mnemonic::builder()
         .passphrase(passphrase)
         .generate()
         .expect("should be valid mnemonic");
@@ -25,7 +25,7 @@ fn main() -> () {
     println!("{:?}", Language::English);
     // create a new randomly generated mnemonic phrase
     let passphrase: &str = "mypassphrase";
-    let mnemonic = Mnemonic::new(Language::English, MnemonicType::Words12, Some(passphrase)); // If you don't want to use a passphrase, you can use None instead of
+    let mnemonic = Bip39Mnemonic::new(Language::English, MnemonicType::Words12, Some(passphrase)); // If you don't want to use a passphrase, you can use None instead of
                                                                                               // Some(passphrase)
     println!("{:?}", mnemonic);
     // get the wallet seed
