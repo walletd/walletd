@@ -92,6 +92,10 @@ impl CryptoWallet for BitcoinWallet {
         BitcoinWalletBuilder::new()
     }
 
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
     async fn transfer(
         &self,
         send_amount: &BitcoinAmount,

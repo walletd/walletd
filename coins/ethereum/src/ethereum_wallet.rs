@@ -315,6 +315,10 @@ impl CryptoWallet for EthereumWallet {
             None => Err(Error::MissingBlockchainClient),
         }
     }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 /// Technically speaking, an "EthereumWallet" is a public address, public key and
@@ -371,4 +375,6 @@ impl EthereumWallet {
             Err(Error::MissingHDKey)
         }
     }
+
+
 }
