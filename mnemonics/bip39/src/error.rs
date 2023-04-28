@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-use crate::MnemonicType;
+use crate::Bip39MnemonicType;
 
 /// Custom error type for this crate
 #[derive(Error, Debug, PartialEq, Eq)]
@@ -38,6 +38,6 @@ pub enum ParseMnemonicError {
     #[error("invalid number of words in phrase, found {0} words, expected 12, 15, 18, 21, or 24")]
     InvalidNumberOfWords(usize),
     /// Invalid number of bits in entropy for mnemonic
-    #[error("invalid number of bits, found {0} bits, expected {} bits, {} bits, {} bits, {} bits, or {} bits", MnemonicType::Words12.entropy_bits(), MnemonicType::Words15.entropy_bits(), MnemonicType::Words18.entropy_bits(), MnemonicType::Words21.entropy_bits(), MnemonicType::Words24.entropy_bits())]
+    #[error("invalid number of bits, found {0} bits, expected {} bits, {} bits, {} bits, {} bits, or {} bits", Bip39MnemonicType::Words12.entropy_bits(), Bip39MnemonicType::Words15.entropy_bits(), Bip39MnemonicType::Words18.entropy_bits(), Bip39MnemonicType::Words21.entropy_bits(), Bip39MnemonicType::Words24.entropy_bits())]
     InvalidNumberOfBits(usize),
 }

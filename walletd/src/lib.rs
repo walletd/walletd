@@ -5,11 +5,9 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
-pub use walletd_bip39::{
-    Language as Bip39Language, Mnemonic as Bip39Mnemonic, MnemonicType as Bip39MnemonicType, Seed,
-};
+pub use walletd_bip39::{Bip39Language, Bip39Mnemonic, Bip39MnemonicType, Seed};
 
-pub use walletd_mnemonics_core::{MnemonicExt, MnemonicStyleBuilder};
+pub use walletd_mnemonics_core::{MnemonicBuilder, MnemonicExt};
 
 mod keypair;
 pub use keypair::{KeyPair, KeyPairBuilder, MnemonicKeyPairType};

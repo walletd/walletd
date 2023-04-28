@@ -2,14 +2,14 @@ use core::ops::Div;
 use core::str;
 
 use crate::mnemonic_type::ENTROPY_OFFSET;
-use crate::{Language, MnemonicType, ParseMnemonicError, WordList};
+use crate::{Bip39Language, Bip39MnemonicType, ParseMnemonicError, WordList};
 use bitvec::prelude::*;
 use curve25519_dalek::scalar::Scalar;
 use hmac::Hmac;
 use pbkdf2::pbkdf2;
 use rand::{thread_rng, Rng};
 use sha2::{Digest, Sha256, Sha512};
-use walletd_mnemonics_core::{MnemonicExt, MnemonicStyleBuilder, Seed};
+use walletd_mnemonics_core::{MnemonicBuilder, MnemonicExt, Seed};
 
 /// Struct representing a Bip39 mnemonic.
 ///
@@ -45,11 +45,11 @@ use walletd_mnemonics_core::{MnemonicExt, MnemonicStyleBuilder, Seed};
 /// [Seed::new()]: ./seed/struct.Seed.html#method.new
 /// [Seed::as_bytes()]: ./seed/struct.Seed.html#method.as_bytes
 #[derive(Debug, Clone)]
-pub struct Mnemonic {
+pub struct Bip39Mnemonic {
     phrase: String,
-    lang: Language,
+    lang: Bip39Language,
     seed: Seed,
-    mnemonic_type: MnemonicType,
+    mnemonic_type: Bip39MnemonicType,
 }
 
 /// [`MnemonicBuilder`][MnemonicBuilder] implements the builder pattern for
@@ -80,29 +80,29 @@ pub struct Mnemonic {
 /// [MnemonicBuilder::new()]: ./mnemonic/struct.MnemonicBuilder.html#method.new
 /// [MnemonicBuilder::detect_language()]: ./mnemonic/struct.MnemonicBuilder.html#method.detect_language
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct MnemonicBuilder {
+pub struct Bip39MnemonicBuilder {
     mnemonic_phrase: Option<String>,
-    language: Option<Language>,
+    language: Option<Bip39Language>,
     seed: Option<Seed>,
-    mnemonic_type: Option<MnemonicType>,
+    mnemonic_type: Option<Bip39MnemonicType>,
     passphrase: Option<String>,
 }
 
-impl Default for MnemonicBuilder {
+impl Default for Bip39MnemonicBuilder {
     fn default() -> Self {
         Self {
             mnemonic_phrase: None,
-            language: Some(Language::default()),
+            language: Some(Bip39Language::default()),
             seed: None,
-            mnemonic_type: Some(MnemonicType::default()),
+            mnemonic_type: Some(Bip39MnemonicType::default()),
             passphrase: None,
         }
     }
 }
 
-impl Mnemonic {
+impl Bip39Mnemonic {
     fn create_seed(
-        language: Language,
+        language: Bip39Language,
         mnemonic_phrase: &str,
         provided_passphrase: Option<&str>,
     ) -> Result<Seed, ParseMnemonicError> {
@@ -128,16 +128,20 @@ impl Mnemonic {
     }
 }
 
-impl MnemonicExt for Mnemonic {
+impl MnemonicExt for Bip39Mnemonic {
     type ErrorType = ParseMnemonicError;
-    type LanguageExt = Language;
-    type MnemonicStyle = Self;
-    type MnemonicStyleBuilder = MnemonicBuilder;
-    type MnemonicTypeSpec = MnemonicType;
+    type Language = Bip39Language;
+    type Mnemonic = Self;
+    type MnemonicBuilder = Bip39MnemonicBuilder;
+    type MnemonicType = Bip39MnemonicType;
 
     /// Generates a new mnemonic given the language, length of mnemonic, and
     /// optional passphrase
-    fn new(language: Language, mnemonic_type: MnemonicType, passphrase: Option<&str>) -> Mnemonic {
+    fn new(
+        language: Bip39Language,
+        mnemonic_type: Bip39MnemonicType,
+        passphrase: Option<&str>,
+    ) -> Self {
         let wordlist = WordList::new(language);
 
         const DEFAULT_LENGTH: usize = 32;
@@ -152,7 +156,7 @@ impl MnemonicExt for Mnemonic {
         let seed = Self::create_seed(language, &mnemonic_phrase, passphrase)
             .expect("Failed to generate seed");
 
-        Mnemonic {
+        Self {
             phrase: mnemonic_phrase,
             lang: language,
             seed,
@@ -163,14 +167,14 @@ impl MnemonicExt for Mnemonic {
     /// Restores a mnemonic from a mnemonic phrase and optional passphrase,
     /// requires specifying the language
     fn from_phrase(
-        language: Language,
+        language: Bip39Language,
         phrase: &str,
         specified_passphrase: Option<&str>,
     ) -> Result<Self, ParseMnemonicError> {
-        let mnemonic_type = MnemonicType::from_phrase(phrase)?;
-        let seed = Mnemonic::create_seed(language, phrase, specified_passphrase)?;
+        let mnemonic_type = Bip39MnemonicType::from_phrase(phrase)?;
+        let seed = Self::create_seed(language, phrase, specified_passphrase)?;
 
-        Ok(Mnemonic {
+        Ok(Self {
             phrase: phrase.into(),
             lang: language,
             seed,
@@ -183,12 +187,12 @@ impl MnemonicExt for Mnemonic {
     fn detect_language(
         phrase: &str,
         specified_passphrase: Option<&str>,
-    ) -> Result<Self::MnemonicStyle, Self::ErrorType> {
-        let mnemonic_type = MnemonicType::from_phrase(phrase)?;
+    ) -> Result<Self::Mnemonic, Self::ErrorType> {
+        let mnemonic_type = Bip39MnemonicType::from_phrase(phrase)?;
         let language = WordList::detect_language(phrase.split(' ').collect())?;
-        let seed = Mnemonic::create_seed(language, phrase, specified_passphrase)?;
+        let seed = Self::create_seed(language, phrase, specified_passphrase)?;
 
-        Ok(Mnemonic {
+        Ok(Self {
             phrase: phrase.into(),
             lang: language,
             seed,
@@ -207,25 +211,25 @@ impl MnemonicExt for Mnemonic {
     }
 
     /// Gets the lang field data
-    fn language(&self) -> Language {
+    fn language(&self) -> Bip39Language {
         self.lang
     }
 
     /// Gets the mnemonic_type data
-    fn mnemonic_type(&self) -> MnemonicType {
+    fn mnemonic_type(&self) -> Bip39MnemonicType {
         self.mnemonic_type
     }
 
-    fn builder() -> Self::MnemonicStyleBuilder {
-        MnemonicBuilder::default()
+    fn builder() -> Self::MnemonicBuilder {
+        Bip39MnemonicBuilder::default()
     }
 }
 
-impl MnemonicStyleBuilder for MnemonicBuilder {
+impl MnemonicBuilder for Bip39MnemonicBuilder {
     type ErrorType = ParseMnemonicError;
-    type LanguageExt = Language;
-    type MnemonicStyle = Mnemonic;
-    type MnemonicTypeSpec = MnemonicType;
+    type Language = Bip39Language;
+    type Mnemonic = Bip39Mnemonic;
+    type MnemonicType = Bip39MnemonicType;
 
     /// Creates new builder struct with default values
     fn new() -> Self {
@@ -242,7 +246,7 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
         self
     }
 
-    fn language(&mut self, language: Self::LanguageExt) -> &mut Self {
+    fn language(&mut self, language: Self::Language) -> &mut Self {
         self.language = Some(language);
         self
     }
@@ -252,7 +256,7 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
         self
     }
 
-    fn mnemonic_type(&mut self, mnemonic_type: Self::MnemonicTypeSpec) -> &mut Self {
+    fn mnemonic_type(&mut self, mnemonic_type: Self::MnemonicType) -> &mut Self {
         self.mnemonic_type = Some(mnemonic_type);
         self
     }
@@ -289,7 +293,7 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
     /// will be stored as the final seed and a mnemonic phrase will be derived
     /// based on the options that were specified or are default for the language
     /// and mnemonic type.
-    fn restore(&self) -> Result<Self::MnemonicStyle, Self::ErrorType> {
+    fn restore(&self) -> Result<Self::Mnemonic, Self::ErrorType> {
         // early return of an error if neither the passphrase nor seed were provided
         if self.mnemonic_phrase.is_none() && self.seed.is_none() {
             return Err(ParseMnemonicError::MissingInformation(
@@ -300,7 +304,7 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
         let specified_passphrase = self.passphrase.as_deref();
 
         if let Some(phrase) = self.mnemonic_phrase.clone() {
-            let mnemonic_type = MnemonicType::from_phrase(&phrase)?;
+            let mnemonic_type = Bip39MnemonicType::from_phrase(&phrase)?;
             if let Some(specified_mnemonic_type) = self.mnemonic_type {
                 if mnemonic_type != specified_mnemonic_type {
                     return Err(ParseMnemonicError::MismatchInSpecificationVersusImplict {
@@ -310,9 +314,9 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
             }
 
             if let Some(language) = self.language {
-                let seed = Mnemonic::create_seed(language, &phrase, specified_passphrase)?;
+                let seed = Bip39Mnemonic::create_seed(language, &phrase, specified_passphrase)?;
 
-                Ok(Mnemonic {
+                Ok(Bip39Mnemonic {
                     phrase,
                     lang: language,
                     seed,
@@ -322,9 +326,9 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
                 // language was not specified
                 let phrase_words: Vec<&str> = phrase.split_whitespace().collect();
                 let language = WordList::detect_language(phrase_words)?;
-                let seed = Mnemonic::create_seed(language, &phrase, specified_passphrase)?;
+                let seed = Bip39Mnemonic::create_seed(language, &phrase, specified_passphrase)?;
 
-                Ok(Mnemonic {
+                Ok(Bip39Mnemonic {
                     phrase,
                     lang: language,
                     seed,
@@ -344,13 +348,13 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
                     // assuming that the seed provided directly corresponds to the mnemonic phrase
                     let wordlist_info = WordList::new(language);
                     let bytes_length = mnemonic_type.entropy_bits() / ENTROPY_OFFSET;
-                    let phrase = Mnemonic::bytes_to_words(
+                    let phrase = Bip39Mnemonic::bytes_to_words(
                         &specified_seed.as_bytes()[0..bytes_length].to_vec(),
                         &wordlist_info,
                     )?;
                     // Final seed will be encypted if a passphrase is provided
-                    let seed = Mnemonic::create_seed(language, &phrase, specified_passphrase)?;
-                    Ok(Mnemonic {
+                    let seed = Bip39Mnemonic::create_seed(language, &phrase, specified_passphrase)?;
+                    Ok(Bip39Mnemonic {
                         phrase,
                         lang: language,
                         seed,
@@ -366,7 +370,7 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
     }
 
     /// Generate a new mnemonic which follows given specifications
-    fn generate(&self) -> Result<Self::MnemonicStyle, Self::ErrorType> {
+    fn generate(&self) -> Result<Self::Mnemonic, Self::ErrorType> {
         if self.language.is_none() {
             return Err(ParseMnemonicError::MissingInformation(
                 "language must be specified to generate a mnemonic".to_owned(),
@@ -384,7 +388,7 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
             .mnemonic_type
             .expect("mnemonic type should be present due to earlier checks");
 
-        Ok(Mnemonic::new(
+        Ok(Bip39Mnemonic::new(
             language,
             mnemonic_type,
             self.passphrase.as_deref(),
@@ -392,7 +396,7 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
     }
 
     /// Build a mnemonic struct based on the specifications provided
-    fn build(&self) -> Result<Self::MnemonicStyle, Self::ErrorType> {
+    fn build(&self) -> Result<Self::Mnemonic, Self::ErrorType> {
         if self.mnemonic_phrase.is_some() {
             self.restore()
         } else {
@@ -401,7 +405,7 @@ impl MnemonicStyleBuilder for MnemonicBuilder {
     }
 }
 
-impl Mnemonic {
+impl Bip39Mnemonic {
     /// Converting entropy bytes to the mnemonic words, given a wordlist
     fn bytes_to_words(
         entropy_bytes: &Vec<u8>,
@@ -462,7 +466,7 @@ impl Mnemonic {
 
     /// Converts the words of a mnemonic phrase to the bytes representation
     fn words_to_bytes(
-        language: Language,
+        language: Bip39Language,
         mnemonic_phrase: &str,
     ) -> Result<Vec<u8>, ParseMnemonicError> {
         let wordlist = WordList::new(language);
@@ -501,20 +505,23 @@ mod tests {
     #[test]
     fn test_print() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
-        let mnemonic = Mnemonic::builder().mnemonic_phrase(phrase).build().unwrap();
+        let mnemonic = Bip39Mnemonic::builder()
+            .mnemonic_phrase(phrase)
+            .build()
+            .unwrap();
         assert_eq!(mnemonic.phrase(), phrase);
-        assert_eq!(mnemonic.language(), Language::English);
-        assert_eq!(mnemonic.mnemonic_type(), MnemonicType::Words12);
+        assert_eq!(mnemonic.language(), Bip39Language::English);
+        assert_eq!(mnemonic.mnemonic_type(), Bip39MnemonicType::Words12);
     }
 
     #[test]
     fn test_new_12_word() {
-        let mnemonic = Mnemonic::builder()
-            .language(Language::English)
-            .mnemonic_type(MnemonicType::Words12)
+        let mnemonic = Bip39Mnemonic::builder()
+            .language(Bip39Language::English)
+            .mnemonic_type(Bip39MnemonicType::Words12)
             .build()
             .unwrap();
-        assert_eq!(mnemonic.lang, Language::English);
+        assert_eq!(mnemonic.lang, Bip39Language::English);
         let phrase: Vec<&str> = mnemonic.phrase.split(' ').collect();
         let word_count = phrase.len();
         assert_eq!(word_count, 12);
@@ -522,12 +529,12 @@ mod tests {
 
     #[test]
     fn test_new_24_word() {
-        let mnemonic = Mnemonic::builder()
-            .language(Language::English)
-            .mnemonic_type(MnemonicType::Words24)
+        let mnemonic = Bip39Mnemonic::builder()
+            .language(Bip39Language::English)
+            .mnemonic_type(Bip39MnemonicType::Words24)
             .build()
             .unwrap();
-        assert_eq!(mnemonic.lang, Language::English);
+        assert_eq!(mnemonic.lang, Bip39Language::English);
         let phrase: Vec<&str> = mnemonic.phrase.split(' ').collect();
         let word_count = phrase.len();
         assert_eq!(word_count, 24);
@@ -535,12 +542,12 @@ mod tests {
 
     #[test]
     fn test_new_12_word_japanese() {
-        let mnemonic = Mnemonic::builder()
-            .language(Language::Japanese)
-            .mnemonic_type(MnemonicType::Words12)
+        let mnemonic = Bip39Mnemonic::builder()
+            .language(Bip39Language::Japanese)
+            .mnemonic_type(Bip39MnemonicType::Words12)
             .build()
             .unwrap();
-        assert_eq!(mnemonic.language(), Language::Japanese);
+        assert_eq!(mnemonic.language(), Bip39Language::Japanese);
         let phrase: Vec<&str> = mnemonic.phrase.split(' ').collect();
         let word_count = phrase.len();
         assert_eq!(word_count, 12);
@@ -549,9 +556,12 @@ mod tests {
     #[test]
     fn test_from_phrase() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
-        let mnemonic = Mnemonic::builder().mnemonic_phrase(phrase).build().unwrap();
+        let mnemonic = Bip39Mnemonic::builder()
+            .mnemonic_phrase(phrase)
+            .build()
+            .unwrap();
         assert_eq!(mnemonic.phrase(), phrase);
-        assert_eq!(mnemonic.language(), Language::English);
+        assert_eq!(mnemonic.language(), Bip39Language::English);
         assert_eq!(
             mnemonic.to_seed(),
             Seed::new(vec![
@@ -569,12 +579,12 @@ mod tests {
     #[test]
     fn test_detect_language() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
-        let mut mnemonic_builder = Mnemonic::builder();
+        let mut mnemonic_builder = Bip39Mnemonic::builder();
         mnemonic_builder.language = None;
         mnemonic_builder.mnemonic_type = None;
         let mnemonic = mnemonic_builder.mnemonic_phrase(phrase).restore().unwrap();
         assert_eq!(mnemonic.phrase(), phrase);
-        assert_eq!(mnemonic.language(), Language::English);
+        assert_eq!(mnemonic.language(), Bip39Language::English);
         assert_eq!(
             mnemonic.to_seed(),
             Seed::new(vec![
@@ -593,13 +603,13 @@ mod tests {
     fn test_with_passphrase() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
         let passphrase = "mypassphrase";
-        let mnemonic = Mnemonic::builder()
+        let mnemonic = Bip39Mnemonic::builder()
             .mnemonic_phrase(phrase)
             .passphrase(passphrase)
             .build()
             .unwrap();
         assert_eq!(mnemonic.phrase(), phrase);
-        assert_eq!(mnemonic.language(), Language::English);
+        assert_eq!(mnemonic.language(), Bip39Language::English);
         assert_eq!(
             mnemonic.to_seed(),
             Seed::new(hex::decode("3c536b023d71d81e6abc58b0b91c64caff8bb08fabf0c9f3cf948a9f3a494e8ecb0790b6e933834796c930a2d437170bd6071c00bc0553d06235d02315f2c229").unwrap())
@@ -609,26 +619,35 @@ mod tests {
     #[test]
     fn test_from_phrase_invalid_length() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry";
-        assert!(Mnemonic::builder().mnemonic_phrase(phrase).build().is_err());
+        assert!(Bip39Mnemonic::builder()
+            .mnemonic_phrase(phrase)
+            .build()
+            .is_err());
     }
 
     #[test]
     fn test_from_phrase_invalid_word() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry invalid";
-        assert!(Mnemonic::builder().mnemonic_phrase(phrase).build().is_err());
+        assert!(Bip39Mnemonic::builder()
+            .mnemonic_phrase(phrase)
+            .build()
+            .is_err());
     }
 
     #[test]
     fn test_from_phrase_empty_phrase() {
         let phrase: &str = "";
-        assert!(Mnemonic::builder().mnemonic_phrase(phrase).build().is_err());
+        assert!(Bip39Mnemonic::builder()
+            .mnemonic_phrase(phrase)
+            .build()
+            .is_err());
     }
 
     #[test]
     fn test_error_conflicting_language_option() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
-        let mnemonic = Mnemonic::builder()
-            .language(Language::French)
+        let mnemonic = Bip39Mnemonic::builder()
+            .language(Bip39Language::French)
             .mnemonic_phrase(phrase)
             .build();
         assert!(mnemonic.is_err());
@@ -641,8 +660,8 @@ mod tests {
     #[test]
     fn test_error_conflicting_mnemonic_type() {
         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
-        let mnemonic = Mnemonic::builder()
-            .mnemonic_type(MnemonicType::Words15)
+        let mnemonic = Bip39Mnemonic::builder()
+            .mnemonic_type(Bip39MnemonicType::Words15)
             .mnemonic_phrase(phrase)
             .build();
         assert!(mnemonic.is_err());

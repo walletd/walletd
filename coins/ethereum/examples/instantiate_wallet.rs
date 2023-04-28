@@ -1,6 +1,6 @@
 extern crate walletd_ethereum;
 
-use walletd_bip39::{Language, Mnemonic, MnemonicExt};
+use walletd_bip39::{Bip39Language, Bip39Mnemonic, MnemonicExt};
 use walletd_coin_core::{CryptoWallet, CryptoWalletBuilder};
 use walletd_ethereum::EthereumWallet;
 use walletd_hd_key::HDNetworkType;
@@ -15,7 +15,7 @@ async fn main() -> web3::Result<()> {
         "outer ride neither foil glue number place usage ball shed dry point";
     let passphrase: Option<&str> = Some("mypassphrase");
     let restored_mnemonic =
-        Mnemonic::from_phrase(Language::English, mnemonic_phrase, passphrase).unwrap();
+        Bip39Mnemonic::from_phrase(Bip39Language::English, mnemonic_phrase, passphrase).unwrap();
     let seed = restored_mnemonic.to_seed();
 
     println!("seed as bytes: {:?}", seed.as_bytes());

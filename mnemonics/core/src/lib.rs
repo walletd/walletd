@@ -8,62 +8,62 @@ pub use self::seed::Seed;
 /// different Mnemonic libraries
 pub trait MnemonicExt {
     /// The associated Language struct
-    type LanguageExt;
+    type Language;
     /// The associated MnemonicType struct
-    type MnemonicTypeSpec;
+    type MnemonicType;
     /// The associated Builder struct for the Mnemonic
-    type MnemonicStyleBuilder;
-    type MnemonicStyle;
+    type MnemonicBuilder;
+    type Mnemonic;
     type ErrorType;
 
     /// Generates a new mnemonic given the language, length of mnemonic, and
     /// optional passphrase
     fn new(
-        language: Self::LanguageExt,
-        mnemonic_type: Self::MnemonicTypeSpec,
+        language: Self::Language,
+        mnemonic_type: Self::MnemonicType,
         passphrase: Option<&str>,
-    ) -> Self::MnemonicStyle;
+    ) -> Self::Mnemonic;
 
     /// Recovers a mnemonic given the language, mnemonic phrase, and optional
     /// passphrase
     fn from_phrase(
-        language: Self::LanguageExt,
+        language: Self::Language,
         phrase: &str,
         specified_passphrase: Option<&str>,
-    ) -> Result<Self::MnemonicStyle, Self::ErrorType>;
+    ) -> Result<Self::Mnemonic, Self::ErrorType>;
 
     /// Recovers a mnemonic given the mnemonic phrase and optional passphrase,
     /// attempts to auto detect the language of the mnemonic phrase
     fn detect_language(
         phrase: &str,
         specified_passphrase: Option<&str>,
-    ) -> Result<Self::MnemonicStyle, Self::ErrorType>;
+    ) -> Result<Self::Mnemonic, Self::ErrorType>;
 
     /// This method returns the builder for the mnemonic phrase
-    fn builder() -> Self::MnemonicStyleBuilder;
+    fn builder() -> Self::MnemonicBuilder;
 
     /// Returns the ['Seed'][Seed] associated with the mnemonic phrase
     /// [Seed]: ./seed/struct.Seed.html
     fn to_seed(&self) -> Seed;
 
     // Returns the language for the mnemonic
-    fn language(&self) -> Self::LanguageExt;
+    fn language(&self) -> Self::Language;
 
     // Returns the mnemonic phrase
     fn phrase(&self) -> String;
 
     // Returns the mnemonic type
-    fn mnemonic_type(&self) -> Self::MnemonicTypeSpec;
+    fn mnemonic_type(&self) -> Self::MnemonicType;
 }
 
 /// This trait implements a builder pattern for creating a mnemonic
-pub trait MnemonicStyleBuilder {
+pub trait MnemonicBuilder {
     /// The associated Mnemonic struct
-    type MnemonicStyle;
+    type Mnemonic;
     /// The associated Language struct
-    type LanguageExt;
+    type Language;
     /// The associated MnemonicType struct
-    type MnemonicTypeSpec;
+    type MnemonicType;
 
     /// The type of error that can be returned by the builder
     type ErrorType;
@@ -85,7 +85,7 @@ pub trait MnemonicStyleBuilder {
 
     /// Specifies the language for the mnemonic phrase, can be used when
     /// recovering a mnemonic phrase or generating a new mnemonic phrase
-    fn language(&mut self, language: Self::LanguageExt) -> &mut Self;
+    fn language(&mut self, language: Self::Language) -> &mut Self;
 
     /// Specifies a passphrase to use to offset/encrypt the seed recovered from
     /// the mnemonic phrase
@@ -93,7 +93,7 @@ pub trait MnemonicStyleBuilder {
 
     /// Specifies the mnemonic type to use when recovering or generating a
     /// mnemonic phrase
-    fn mnemonic_type(&mut self, mnemonic_type: Self::MnemonicTypeSpec) -> &mut Self;
+    fn mnemonic_type(&mut self, mnemonic_type: Self::MnemonicType) -> &mut Self;
 
     /// Sets the specified language to None and returns the builder
     /// This method can be used to let the mnemomic be created from the phrase
@@ -102,13 +102,13 @@ pub trait MnemonicStyleBuilder {
 
     /// Builds a mnemonic struct given the specifications provided to the
     /// builder
-    fn build(&self) -> Result<Self::MnemonicStyle, Self::ErrorType>;
+    fn build(&self) -> Result<Self::Mnemonic, Self::ErrorType>;
 
     /// Restore a previously used mnemonic given specifications
-    fn restore(&self) -> Result<Self::MnemonicStyle, Self::ErrorType>;
+    fn restore(&self) -> Result<Self::Mnemonic, Self::ErrorType>;
 
     /// Generate a new mnemonic which follows given specifications
-    fn generate(&self) -> Result<Self::MnemonicStyle, Self::ErrorType>;
+    fn generate(&self) -> Result<Self::Mnemonic, Self::ErrorType>;
 }
 
 /// The LanguageExt trait is used to provide a common interface for the

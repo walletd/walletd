@@ -23,8 +23,7 @@ pub mod blockstream;
 mod error;
 pub use error::Error;
 pub use walletd_bip39::{
-    Language as Bip39Language, Mnemonic as Bip39Mnemonic, MnemonicExt, MnemonicStyleBuilder,
-    MnemonicType as Bip39MnemonicType, Seed,
+    Bip39Language, Bip39Mnemonic, Bip39MnemonicType, MnemonicBuilder, MnemonicExt, Seed,
 };
 pub use walletd_coin_core::{CryptoAddress, CryptoAmount, CryptoWallet, CryptoWalletBuilder};
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};

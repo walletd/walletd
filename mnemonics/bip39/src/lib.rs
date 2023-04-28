@@ -48,8 +48,8 @@ mod mnemonic;
 mod mnemonic_type;
 
 pub use self::error::ParseMnemonicError;
-pub use self::language::Language;
+pub use self::language::Bip39Language;
 pub use self::language::WordList;
-pub use self::mnemonic::{Mnemonic, MnemonicBuilder};
-pub use self::mnemonic_type::MnemonicType;
-pub use walletd_mnemonics_core::{MnemonicExt, MnemonicStyleBuilder, Seed};
+pub use self::mnemonic::{Bip39Mnemonic, Bip39MnemonicBuilder};
+pub use self::mnemonic_type::Bip39MnemonicType;
+pub use walletd_mnemonics_core::{MnemonicBuilder, MnemonicExt, Seed};

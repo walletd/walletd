@@ -1,7 +1,7 @@
 // EthereumAmount.new_from_eth(u64)
 // use std::str::FromStr;
 
-use walletd_bip39::{Mnemonic, MnemonicExt, MnemonicStyleBuilder};
+use walletd_bip39::{Bip39Mnemonic, MnemonicBuilder, MnemonicExt};
 use web3::types::U256;
 
 use walletd_coin_core::{BlockchainConnector, CryptoWallet, CryptoWalletBuilder};
@@ -15,7 +15,7 @@ async fn main() {
 
     let mnemonic_phrase: &str =
         "joy tail arena mix other envelope diary achieve short nest true vocal";
-    let restored_mnemonic = Mnemonic::builder()
+    let restored_mnemonic = Bip39Mnemonic::builder()
         .mnemonic_phrase(mnemonic_phrase)
         .detect_language()
         .build()

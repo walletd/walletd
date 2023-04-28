@@ -18,51 +18,51 @@ use crate::ParseMnemonicError;
 #[derive(Debug)]
 /// Represents a wordlist for a language for the Bip39 Mnemonic
 pub struct WordList {
-    language: Language,
+    language: Bip39Language,
     inner: Vec<&'static str>,
 }
 
 impl WordList {
     /// Creates a new [WordList] for a specifed language
-    pub fn new(language: Language) -> WordList {
+    pub fn new(language: Bip39Language) -> WordList {
         match language {
-            Language::English => WordList {
+            Bip39Language::English => WordList {
                 language,
                 inner: ENGLISH.split_whitespace().collect(),
             },
-            Language::ChineseSimplified => WordList {
+            Bip39Language::ChineseSimplified => WordList {
                 language,
                 inner: CHINESE_SIMPLIFIED.split_whitespace().collect(),
             },
-            Language::ChineseTraditional => WordList {
+            Bip39Language::ChineseTraditional => WordList {
                 language,
                 inner: CHINESE_TRADITIONAL.split_whitespace().collect(),
             },
-            Language::Czech => WordList {
+            Bip39Language::Czech => WordList {
                 language,
                 inner: CZECH.split_whitespace().collect(),
             },
-            Language::French => WordList {
+            Bip39Language::French => WordList {
                 language,
                 inner: FRENCH.split_whitespace().collect(),
             },
-            Language::Italian => WordList {
+            Bip39Language::Italian => WordList {
                 language,
                 inner: ITALIAN.split_whitespace().collect(),
             },
-            Language::Japanese => WordList {
+            Bip39Language::Japanese => WordList {
                 language,
                 inner: JAPANESE.split_whitespace().collect(),
             },
-            Language::Korean => WordList {
+            Bip39Language::Korean => WordList {
                 language,
                 inner: KOREAN.split_whitespace().collect(),
             },
-            Language::Spanish => WordList {
+            Bip39Language::Spanish => WordList {
                 language,
                 inner: SPANISH.split_whitespace().collect(),
             },
-            Language::Portuguese => WordList {
+            Bip39Language::Portuguese => WordList {
                 language,
                 inner: PORTUGUESE.split_whitespace().collect(),
             },
@@ -80,8 +80,8 @@ impl WordList {
 
     /// If all words in the phrase are present in a language's wordlist, the
     /// language of the phrase is detected
-    pub fn detect_language(phrase: Vec<&str>) -> Result<Language, ParseMnemonicError> {
-        let all_languages = enum_iterator::all::<Language>().collect::<Vec<_>>();
+    pub fn detect_language(phrase: Vec<&str>) -> Result<Bip39Language, ParseMnemonicError> {
+        let all_languages = enum_iterator::all::<Bip39Language>().collect::<Vec<_>>();
         for language in all_languages {
             let wordlist = WordList::new(language);
             let mut matched_language = true;
@@ -103,7 +103,7 @@ impl WordList {
     }
 
     /// Returns the language of the [WordList]
-    pub fn language(&self) -> Language {
+    pub fn language(&self) -> Bip39Language {
         self.language
     }
 
@@ -122,7 +122,7 @@ impl WordList {
 ///
 /// The wordlists for each language are taken from the BIP39 repo: <https://github.com/bitcoin/bips/tree/master/bip-0039>
 #[derive(Debug, Clone, Copy, PartialEq, Eq, enum_iterator::Sequence)]
-pub enum Language {
+pub enum Bip39Language {
     /// English, this is the only officially supported language
     English,
     /// Chinese Simplified
@@ -145,36 +145,36 @@ pub enum Language {
     Spanish,
 }
 
-impl FromStr for Language {
+impl FromStr for Bip39Language {
     type Err = ParseMnemonicError;
 
     /// Converts a string to a Language.
-    fn from_str(input: &str) -> Result<Language, Self::Err> {
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
         match input {
-            "English" => Ok(Language::English),
-            "Chinese Simplified" => Ok(Language::ChineseSimplified),
-            "Chinese Traditional" => Ok(Language::ChineseTraditional),
-            "Czech" => Ok(Language::Czech),
-            "French" => Ok(Language::French),
-            "Italian" => Ok(Language::Italian),
-            "Japanese" => Ok(Language::Japanese),
-            "Korean" => Ok(Language::Korean),
-            "Portuguese" => Ok(Language::Portuguese),
-            "Spanish" => Ok(Language::Spanish),
+            "English" => Ok(Self::English),
+            "Chinese Simplified" => Ok(Self::ChineseSimplified),
+            "Chinese Traditional" => Ok(Self::ChineseTraditional),
+            "Czech" => Ok(Self::Czech),
+            "French" => Ok(Self::French),
+            "Italian" => Ok(Self::Italian),
+            "Japanese" => Ok(Self::Japanese),
+            "Korean" => Ok(Self::Korean),
+            "Portuguese" => Ok(Self::Portuguese),
+            "Spanish" => Ok(Self::Spanish),
             _ => Err(ParseMnemonicError::InvalidStrReprLang(input.into())),
         }
     }
 }
 
-impl Default for Language {
+impl Default for Bip39Language {
     /// Returns the default language, English.
-    fn default() -> Language {
-        Language::English
+    fn default() -> Self {
+        Self::English
     }
 }
 
-impl LanguageExt for Language {
-    type Language = Language;
+impl LanguageExt for Bip39Language {
+    type Language = Self;
 
     /// Returns a new Language with default language set.
     fn new() -> Self {
@@ -188,30 +188,51 @@ mod tests {
 
     #[test]
     fn test_default_language() {
-        assert_eq!(Language::new(), Language::English);
+        assert_eq!(Bip39Language::new(), Bip39Language::English);
     }
 
     #[test]
     fn test_from_str_language() {
-        assert_eq!(Language::English, Language::from_str("English").unwrap());
         assert_eq!(
-            Language::ChineseSimplified,
-            Language::from_str("Chinese Simplified").unwrap()
+            Bip39Language::English,
+            Bip39Language::from_str("English").unwrap()
         );
         assert_eq!(
-            Language::ChineseTraditional,
-            Language::from_str("Chinese Traditional").unwrap()
+            Bip39Language::ChineseSimplified,
+            Bip39Language::from_str("Chinese Simplified").unwrap()
         );
-        assert_eq!(Language::Czech, Language::from_str("Czech").unwrap());
-        assert_eq!(Language::French, Language::from_str("French").unwrap());
-        assert_eq!(Language::Italian, Language::from_str("Italian").unwrap());
-        assert_eq!(Language::Japanese, Language::from_str("Japanese").unwrap());
-        assert_eq!(Language::Korean, Language::from_str("Korean").unwrap());
         assert_eq!(
-            Language::Portuguese,
-            Language::from_str("Portuguese").unwrap()
+            Bip39Language::ChineseTraditional,
+            Bip39Language::from_str("Chinese Traditional").unwrap()
         );
-        assert_eq!(Language::Spanish, Language::from_str("Spanish").unwrap());
+        assert_eq!(
+            Bip39Language::Czech,
+            Bip39Language::from_str("Czech").unwrap()
+        );
+        assert_eq!(
+            Bip39Language::French,
+            Bip39Language::from_str("French").unwrap()
+        );
+        assert_eq!(
+            Bip39Language::Italian,
+            Bip39Language::from_str("Italian").unwrap()
+        );
+        assert_eq!(
+            Bip39Language::Japanese,
+            Bip39Language::from_str("Japanese").unwrap()
+        );
+        assert_eq!(
+            Bip39Language::Korean,
+            Bip39Language::from_str("Korean").unwrap()
+        );
+        assert_eq!(
+            Bip39Language::Portuguese,
+            Bip39Language::from_str("Portuguese").unwrap()
+        );
+        assert_eq!(
+            Bip39Language::Spanish,
+            Bip39Language::from_str("Spanish").unwrap()
+        );
     }
 
     #[test]
@@ -222,7 +243,7 @@ mod tests {
         ];
         assert_eq!(
             WordList::detect_language(phrase).unwrap(),
-            Language::English
+            Bip39Language::English
         );
     }
 
@@ -238,7 +259,7 @@ mod tests {
 
     #[test]
     fn test_chinese_simplified_wordlist() {
-        let wordlist = WordList::new(Language::ChineseSimplified);
+        let wordlist = WordList::new(Bip39Language::ChineseSimplified);
         assert_eq!(wordlist.inner.len(), 2048);
         assert_eq!(wordlist.get_index("的").unwrap(), 0);
         assert_eq!(wordlist.get_index("歇").unwrap(), 2047);
@@ -247,7 +268,7 @@ mod tests {
 
     #[test]
     fn test_chinese_traditional_wordlist() {
-        let wordlist = WordList::new(Language::ChineseTraditional);
+        let wordlist = WordList::new(Bip39Language::ChineseTraditional);
         assert_eq!(wordlist.inner.len(), 2048);
         assert_eq!(wordlist.get_index("的").unwrap(), 0);
         assert_eq!(wordlist.get_index("歇").unwrap(), 2047);
@@ -256,7 +277,7 @@ mod tests {
 
     #[test]
     fn test_czech_wordlist() {
-        let wordlist = WordList::new(Language::Czech);
+        let wordlist = WordList::new(Bip39Language::Czech);
         assert_eq!(wordlist.inner.len(), 2048);
         assert_eq!(wordlist.get_index("abdikace").unwrap(), 0);
         assert_eq!(wordlist.get_index("zvyk").unwrap(), 2047);
@@ -265,8 +286,8 @@ mod tests {
 
     #[test]
     fn test_english_wordlist() {
-        let wordlist = WordList::new(Language::English);
-        assert_eq!(wordlist.language(), Language::English);
+        let wordlist = WordList::new(Bip39Language::English);
+        assert_eq!(wordlist.language(), Bip39Language::English);
         assert_eq!(wordlist.inner.len(), 2048);
         assert_eq!(wordlist.get_index("abandon").unwrap(), 0);
         assert_eq!(wordlist.get_index("zoo").unwrap(), 2047);
@@ -275,7 +296,7 @@ mod tests {
 
     #[test]
     fn test_french_wordlist() {
-        let wordlist = WordList::new(Language::French);
+        let wordlist = WordList::new(Bip39Language::French);
         assert_eq!(wordlist.inner.len(), 2048);
         assert_eq!(wordlist.get_index("abaisser").unwrap(), 0);
         assert_eq!(wordlist.get_index("zoologie").unwrap(), 2047);
@@ -284,7 +305,7 @@ mod tests {
 
     #[test]
     fn test_italian_wordlist() {
-        let wordlist = WordList::new(Language::Italian);
+        let wordlist = WordList::new(Bip39Language::Italian);
         assert_eq!(wordlist.inner.len(), 2048);
         assert_eq!(wordlist.get_index("abaco").unwrap(), 0);
         assert_eq!(wordlist.get_index("zuppa").unwrap(), 2047);
@@ -293,7 +314,7 @@ mod tests {
 
     #[test]
     fn test_japanese_wordlist() {
-        let wordlist = WordList::new(Language::Japanese);
+        let wordlist = WordList::new(Bip39Language::Japanese);
         assert_eq!(wordlist.inner.len(), 2048);
         assert_eq!(wordlist.get_index("あいこくしん").unwrap(), 0);
         assert_eq!(wordlist.get_index("われる").unwrap(), 2047);
@@ -302,7 +323,7 @@ mod tests {
 
     #[test]
     fn test_korean_wordlist() {
-        let wordlist = WordList::new(Language::Korean);
+        let wordlist = WordList::new(Bip39Language::Korean);
         assert_eq!(wordlist.inner.len(), 2048);
         assert_eq!(wordlist.get_index("가격").unwrap(), 0);
         assert_eq!(wordlist.get_index("힘껏").unwrap(), 2047);
@@ -311,7 +332,7 @@ mod tests {
 
     #[test]
     fn test_portuguese_wordlist() {
-        let wordlist = WordList::new(Language::Portuguese);
+        let wordlist = WordList::new(Bip39Language::Portuguese);
         assert_eq!(wordlist.inner.len(), 2048);
         assert_eq!(wordlist.get_index("abacate").unwrap(), 0);
         assert_eq!(wordlist.get_index("zumbido").unwrap(), 2047);
@@ -320,7 +341,7 @@ mod tests {
 
     #[test]
     fn test_spanish_wordlist() {
-        let wordlist = WordList::new(Language::Spanish);
+        let wordlist = WordList::new(Bip39Language::Spanish);
         assert_eq!(wordlist.inner.len(), 2048);
         assert_eq!(wordlist.get_index("ábaco").unwrap(), 0);
         assert_eq!(wordlist.get_index("zurdo").unwrap(), 2047);
