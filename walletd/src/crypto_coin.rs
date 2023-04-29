@@ -18,14 +18,6 @@ pub enum CryptoCoin {
 
 impl CryptoCoin {
 
-    /// Returns [TypeId] of the [CryptoWallet] type associated with the [CryptoCoin]
-    pub fn wallet_type(&self) -> TypeId {
-        match self {
-            Self::BTC => TypeId::of::<BitcoinWallet>(),
-            Self::ETH =>TypeId::of::<EthereumWallet>(),
-        }
-    }
-
     /// Returns the coin's symbol as string which also represents the main unit of the coin's value
     pub fn main_unit(&self) -> String {
         match self {
