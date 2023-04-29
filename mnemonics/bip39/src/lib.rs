@@ -9,14 +9,14 @@
 //! # Quickstart
 //!
 //! ```rust
-//! use walletd_bip39::{Language, Mnemonic, MnemonicExt, MnemonicStyleBuilder, MnemonicType};
+//! use walletd_bip39::{Bip39Language, Bip39Mnemonic, MnemonicExt, MnemonicBuilder, Bip39MnemonicType};
 //!
 //! # use std::error::Error;
 //! # fn main() -> Result<(), Box<dyn Error>> {
 //!
 //! // Create a new randomly generated mnemonic phrase
 //! let passphrase: &str = "mypassphrase";
-//! let mnemonic = Mnemonic::builder().passphrase(passphrase).build()?;
+//! let mnemonic = Bip39Mnemonic::builder().passphrase(passphrase).build()?;
 //!
 //! println!("phrase: {:?}", mnemonic);
 //!
@@ -28,7 +28,7 @@
 //! let mnemonic_phrase: &str =
 //!     "outer ride neither foil glue number place usage ball shed dry point";
 //! let passphrase: &str = "mypassphrase";
-//! let restored_mnemonic = Mnemonic::builder()
+//! let restored_mnemonic = Bip39Mnemonic::builder()
 //!     .mnemonic_phrase(mnemonic_phrase)
 //!     .passphrase(passphrase)
 //!     .build()?;
