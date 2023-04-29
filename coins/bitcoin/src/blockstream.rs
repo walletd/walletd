@@ -7,10 +7,10 @@ use bitcoin::{Address, AddressType};
 use bitcoin_hashes::{sha256d, Hash};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use walletd_coin_core::BlockchainConnector;
-
+use std::any::Any;
 use time::format_description::well_known::Rfc2822;
 use time::{Duration, OffsetDateTime};
+use walletd_coin_core::BlockchainConnector;
 
 use crate::BitcoinAmount;
 
@@ -617,6 +617,10 @@ impl BlockchainConnector for Blockstream {
 
     fn url(&self) -> &str {
         &self.url
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
