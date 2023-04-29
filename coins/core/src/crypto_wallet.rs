@@ -44,9 +44,7 @@ pub trait CryptoWallet: Sized + Clone {
 
     /// Returns the struct as a reference to a dyn Any
     fn as_any(&self) -> &dyn std::any::Any;
-
 }
-
 
 /// CryptoWalletBuilder is a trait that provides a common interface for building a CryptoWallet
 pub trait CryptoWalletBuilder<T>
