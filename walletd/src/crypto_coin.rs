@@ -2,9 +2,7 @@ use core::fmt;
 use core::fmt::Display;
 use std::str::FromStr;
 
-use crate::{BitcoinWallet, EthereumWallet};
 use anyhow::anyhow;
-use std::any::TypeId;
 use walletd_hd_key::slip44::Symbol;
 
 /// An enum representing the different crypto coins that are supported by WalletD
