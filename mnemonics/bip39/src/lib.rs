@@ -1,9 +1,9 @@
 //! # WalletD Bip39
-//! 
-//! 
+//!
+//!
 //! A Rust library implementation of the [BIP39][bip39-standard] standard for HD wallet mnemonic phrases.
-//! Facilitates generating and importing BIP39 mnemonic phrases and seeds. 
-//! 
+//! Facilitates generating and importing BIP39 mnemonic phrases and seeds.
+//!
 //! [bip39-standard]: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 //!
 //! # Quickstart

@@ -40,7 +40,7 @@ pub trait Mnemonic {
         specified_passphrase: Option<&str>,
     ) -> Result<Self::Mnemonic, Self::ErrorType>;
 
-    /// This method returns the builder for the mnemonic phrase
+    /// Returns the builder for the mnemonic phrase
     fn builder() -> Self::MnemonicBuilder;
 
     /// Returns the ['Seed'][Seed] associated with the mnemonic phrase
@@ -96,9 +96,9 @@ pub trait MnemonicBuilder {
     /// mnemonic phrase
     fn mnemonic_type(&mut self, mnemonic_type: Self::MnemonicType) -> &mut Self;
 
-    /// Sets the specified language to None and returns the builder
-    /// This method can be used to let the mnemomic be created from the phrase
-    /// and automatically detect the language of the mnemonic phrase
+    /// Sets the specified language to None and returns the builder.
+    /// Useful for overriding the default English language assumption.
+    /// When used with [Mnemonic::build()], automatically detects the language of the mnemonic phrase and returns an error if the mnemonic phrase is invalid for every language wordlist.
     fn detect_language(&mut self) -> &mut Self;
 
     /// Builds a mnemonic struct given the specifications provided to the
