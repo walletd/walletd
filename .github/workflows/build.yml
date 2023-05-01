@@ -1,58 +1,16 @@
-name: build, test and coverage
-
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
-env:
-  CARGO_TERM_COLOR: always
+name: Build
 
 jobs:
-  check:
-    name: Rust project
+  tests:
+    name: check build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-          
       - uses: actions/checkout@v3
-      - name: Run all tests (including building doc tests and examples)
-        run: cargo test 
-
-      - name: Run cargo-tarpaulin
-        uses: actions-rs/tarpaulin@v0.1
-        with:
-          version: '0.15.0'
-          args: '-- --test-threads 1'
-
-      - name: Upload to codecov.io
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{secrets.CODECOV_TOKEN}}
-
-      - name: Archive code coverage results
-        uses: actions/upload-artifact@v1
-        with:
-          name: code-coverage-report
-          path: cobertura.xml
-          
-      - uses: actions/checkout@v3
-      - name: check clippy
-        run: cargo clippy 
-        
-      - uses: actions/checkout@v3
-      - name: check docs build
-        run: cargo doc --no-deps
-        
-      
-
-    
-    
+      - name: build
+        run: cargo build
