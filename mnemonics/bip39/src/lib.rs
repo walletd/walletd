@@ -1,9 +1,9 @@
-//! This is a Rust implementation of the [bip39][bip39-standard] standard for
-//! Bitcoin HD wallet mnemonic phrases.
-//!
-//! `bip39` is a walletd Rust library for generating BIP39 mnemonic phrases and
-//! converting them into 128 / 256 bit BIP-39 compliant seed strings.
-//!
+//! # WalletD Bip39
+//! 
+//! 
+//! A Rust library implementation of the [BIP39][bip39-standard] standard for HD wallet mnemonic phrases.
+//! Facilitates generating and importing BIP39 mnemonic phrases and seeds. 
+//! 
 //! [bip39-standard]: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 //!
 //! # Quickstart
