@@ -1,7 +1,10 @@
 //! # WalletD
 //!
-//! This library facilitates the creation and use of non-custodial multi-currency wallets.
-//!
+//! A cryptocurrency wallet library that encapsulates Rust-based functionality for various different cryptocurrencies and blockchains.
+//! Contains features to handle creating and importing wallets, checking balances, and sending and receiving transactions.
+//! Provides a common interface for interacting with different cryptocurrencies and blockchains.
+//! Built to facilitate and simplify development and implementation of multi-cryptocurrency non-custodial wallets.
+//! 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
