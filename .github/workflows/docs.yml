@@ -8,6 +8,9 @@ name: Build docs
 
 jobs:
   check:
+    env: 
+        RUSTDOCFLAGS: '-D warnings'
+          
     name: check docs
     runs-on: ubuntu-latest
     steps:
