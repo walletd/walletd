@@ -8,6 +8,8 @@ name: Clippy
 
 jobs:
   check:
+    env: 
+        RUSTFLAGS: '-D warnings'
     name: check clippy
     runs-on: ubuntu-latest
     steps:
