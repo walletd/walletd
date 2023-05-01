@@ -22,10 +22,6 @@ jobs:
         with:
           toolchain: stable
           override: true
-          
-      - uses: actions/checkout@v3
-      - name: Run all tests (including building doc tests and examples)
-        run: cargo test 
 
       - name: Run cargo-tarpaulin
         uses: actions-rs/tarpaulin@v0.1
