@@ -378,7 +378,9 @@ impl TryFrom<&dyn std::any::Any> for EthClient {
 
     fn try_from(any: &dyn std::any::Any) -> Result<Self, Self::Error> {
         any.downcast_ref::<Self>()
-            .ok_or_else(|| Error::UnableToDowncastBlockchainConnector("Could not convert to EthClient".into()))
+            .ok_or_else(|| {
+                Error::UnableToDowncastBlockchainConnector("Could not convert to EthClient".into())
+            })
             .map(|bs| bs.clone())
     }
 }

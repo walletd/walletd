@@ -2,10 +2,10 @@ use core::fmt;
 use core::fmt::Display;
 use std::str::FromStr;
 
-use anyhow::anyhow;
-use walletd_hd_key::slip44::Symbol;
-use std::any::TypeId;
 use crate::{BitcoinWallet, EthereumWallet};
+use anyhow::anyhow;
+use std::any::TypeId;
+use walletd_hd_key::slip44::Symbol;
 
 /// An enum representing the different crypto coins that are supported by WalletD
 #[derive(Clone, Debug, Copy, PartialEq, Eq)]
@@ -17,7 +17,6 @@ pub enum CryptoCoin {
 }
 
 impl CryptoCoin {
-
     /// Returns the coin's symbol as string which also represents the main unit of the coin's value
     pub fn main_unit(&self) -> String {
         match self {
