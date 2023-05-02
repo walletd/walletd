@@ -4,13 +4,16 @@ on:
   pull_request:
     branches: [main]
 
-name: Build
+name: Build docs
 
 jobs:
   check:
-    name: check build
+    env: 
+        RUSTDOCFLAGS: '-D warnings'
+          
+    name: check docs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: build
-        run: cargo build
+      - name: check docs build
+        run: cargo doc --no-deps
