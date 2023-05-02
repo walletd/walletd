@@ -16,7 +16,7 @@ pub enum TransportType {
     WebSockets,
 }
 
-/// EthClient is a blockchain connector for Ethereum, it contains a web3 instance using a HTTP transport
+/// A blockchain connector for Ethereum which contains a web3 instance using a HTTP transport
 #[derive(Clone, Debug)]
 #[allow(dead_code)]
 pub struct EthClient {

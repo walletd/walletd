@@ -23,7 +23,7 @@ pub use bitcoin::{
 
 const DEFAULT_GAP_LIMIT: usize = 20;
 
-/// Represents a Bitcoin wallet which can have mulitple BitcoinAddress structs associated with it which are derived from a single master HD key.
+/// Represents a Bitcoin wallet which can have multiple [BitcoinAddress] structs associated with it which are derived from a single master HD key.
 #[derive(Debug, Clone)]
 pub struct BitcoinWallet {
     address_format: AddressType,

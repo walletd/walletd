@@ -397,7 +397,7 @@ impl From<Vec<HDPathIndex>> for HDPath {
     }
 }
 
-/// [`HDPathBuilder`] is a builder for the [`HDPath`], it allows specification
+/// A builder for the [HDPath] struct, it allows specification
 /// of the standard full path and also which component are hardened. The default
 /// implementation uses the standard format for the full path.
 #[derive(Debug, Clone, PartialEq, Eq)]

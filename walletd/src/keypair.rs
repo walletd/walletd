@@ -4,8 +4,8 @@ use crate::{Bip39Mnemonic, CryptoWallet, CryptoWalletBuilder, HDKey, HDNetworkTy
 
 use crate::Error;
 
-/// The struct holds info about a mnemonic type and the associated seed and phrase as well as the network type.
-/// It enables the creation of a HD wallet from a mnemonic phrase that could be used with multiple cryptocurrencies.
+/// Holds info about a mnemonic type and the associated seed and phrase as well as the network type.
+/// Enables the creation of a HD wallet from a mnemonic phrase that could be used with multiple cryptocurrencies.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct KeyPair {
     /// The style of the mnemonic phrase

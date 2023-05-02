@@ -231,7 +231,7 @@ impl EthereumWalletBuilder {
     }
 }
 
-/// The EthereumWallet struct contains the information needed to interact with an Ethereum wallet with a single public address associated with it.
+/// Contains the information needed to interact with an Ethereum wallet with a single public address associated with it.
 #[derive(Debug, Clone)]
 pub struct EthereumWallet {
     address_format: EthereumFormat,
