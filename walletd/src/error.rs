@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-/// Custom error type for this crate.
+/// Custom error type for the walletD crate.
 #[derive(Error, Debug)]
 pub enum Error {
     /// Error from the walletd_bitcoin crate

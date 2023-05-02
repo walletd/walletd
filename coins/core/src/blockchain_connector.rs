@@ -26,7 +26,9 @@ pub trait BlockchainConnector {
     }
 }
 
-/// ConnectorType is an enum that represents the type of connector that is being used, the different enum variants are meant to bue used with different cryptocurrency types and the generic type T is meant to be a specific struct that implements the BlockchainConnector trait
+/// Represents the type of blockchain connector that is being used. 
+/// 
+/// The different enum variants are meant to bue used with different cryptocurrency types and the generic type T is meant to be a specific struct that implements the BlockchainConnector trait.
 #[derive(Debug, Clone, Copy)]
 pub enum ConnectorType<T>
 where

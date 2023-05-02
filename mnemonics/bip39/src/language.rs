@@ -113,6 +113,8 @@ impl WordList {
     }
 }
 
+/// The language of a Bip39 mnemonic phrase. English is the default language.
+/// 
 /// The choice of language for a mnemonic phrase not only determines the words
 /// used, but also has an impact on the binary value of each word when the
 /// [`Bip39Mnemonic`](crate::Bip39Mnemonic) is converted into a [`Seed`](crate::Seed).
