@@ -14,7 +14,7 @@ use crate::{DoSerialize, SerializedArchive};
 
 /// A Monero public spend or view key should be a valid Ed25519 point on the
 /// Edwards elliptic curve. It can be represented as 32 bytes.
-/// This struct can be used to represent either a public view key or a public
+/// [PublicKey] can be used to represent either a public view key or a public
 /// spend key
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Hash)]
 pub struct PublicKey(pub CompressedEdwardsY);

@@ -28,7 +28,7 @@ pub enum MnemonicKeyPairType {
     HDBip39,
 }
 
-/// This struct is used specify options for and build a [KeyPair] struct
+/// A builder for the [KeyPair] struct, can be used is used specify options for and build a [KeyPair] struct.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct KeyPairBuilder {
     /// Option to set the mnemomonic phrase

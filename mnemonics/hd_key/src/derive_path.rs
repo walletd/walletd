@@ -242,8 +242,8 @@ impl FromStr for HDPathIndex {
     }
 }
 
-/// This struct contains vector of [`HDPathIndex`] to represent a derivation
-/// path.
+/// Contains a vector of [HDPathIndex] to represent a derivation
+/// path for a [HDKey](crate::HDKey) and relevant helper functions
 #[derive(Default, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct HDPath {
     path: Vec<HDPathIndex>,

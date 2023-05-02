@@ -9,8 +9,8 @@ use ripemd::Ripemd160;
 
 use crate::{Error, HDPath, HDPathIndex, HDPurpose, Seed};
 
-/// This struct is a wrapper around the secp256k1::SecretKey
-/// struct to be used with HDKey
+/// A wrapper around the [secp256k1::SecretKey]
+/// struct to be used with [HDKey]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ExtendedPrivateKey(secp256k1::SecretKey);
 
@@ -115,12 +115,13 @@ impl fmt::Display for HDNetworkType {
     }
 }
 
-/// This struct can be used to represent and create a master key or derive child
-/// keys.
+/// Represents a master or a derived child HD (Hierarchical Deterministic) Key.
+/// 
+/// The [HDKey] struct contains detailed information about a master node or derived child node HD key and provides methods to create and derive HD keys.
 ///
-/// HDKey follows the BIP32 scheme: <https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki>
-/// HDKey also follows the purpose scheme described in BIP43: <https://github.com/bitcoin/bips/blob/master/bip-0043.mediawiki>
-/// The [`HDPurpose`] enum supports the following purpose types: BIP32, BIP44,
+/// [HDKey] follows the BIP32 scheme: <https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki>
+/// [HDKey] also follows the purpose scheme described in BIP43: <https://github.com/bitcoin/bips/blob/master/bip-0043.mediawiki>
+/// The [HDPurpose] enum supports the following purpose types: BIP32, BIP44,
 /// BIP49, and BIP84.
 #[derive(Clone, Debug, PartialEq)]
 pub struct HDKey {

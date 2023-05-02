@@ -12,7 +12,7 @@ use rand::{thread_rng, Rng};
 
 /// A Monero private spend or view key should be a a valid Curve25519 scalar.
 /// It can be represented as 32 bytes.
-/// This struct can be used to represent either a private view key or a private
+/// [PrivateKey] can be used to represent either a private view key or a private
 /// spend key.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct PrivateKey(pub Scalar);

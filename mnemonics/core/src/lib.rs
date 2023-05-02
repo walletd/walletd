@@ -98,7 +98,7 @@ pub trait MnemonicBuilder {
 
     /// Sets the specified language to None and returns the builder.
     /// Useful for overriding the default English language assumption.
-    /// When used with [Mnemonic::build()], automatically detects the language of the mnemonic phrase and returns an error if the mnemonic phrase is invalid for every language wordlist.
+    /// When used with [build()][MnemonicBuilder::build()], automatically detects the language of the mnemonic phrase and returns an error if the mnemonic phrase is invalid for every language wordlist.
     fn detect_language(&mut self) -> &mut Self;
 
     /// Builds a mnemonic struct given the specifications provided to the

@@ -9,7 +9,7 @@ use std::str::FromStr;
 ///
 /// To get the raw byte value use [`as_bytes()`](Self::as_bytes)
 ///
-/// This struct can be used to derive HD wallet addresses using another library
+/// Can be used to derive HD wallet addresses using another library
 /// (deriving HD wallet addresses is outside the scope of the
 /// walletd_mnemonics_core crate and the BIP39 standard).
 #[derive(Debug, Clone, Eq, PartialEq)]
