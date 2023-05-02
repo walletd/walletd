@@ -20,7 +20,7 @@ pub struct KeyPair {
     network_type: HDNetworkType,
 }
 
-/// The MnemonicKeyPairType enum is used to specify the type of mnemonic phrase
+/// Used to specify the type of mnemonic phrase associated with a [KeyPair] struct.
 #[derive(PartialEq, Eq, Debug, Clone, Copy, Default)]
 pub enum MnemonicKeyPairType {
     /// The mnemonic phrase is a BIP39 phrase and is affiliated with a HD wallet

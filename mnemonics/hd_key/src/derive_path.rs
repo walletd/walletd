@@ -3,13 +3,13 @@ use std::str::FromStr;
 
 use crate::Error;
 
-/// This enum represents the different derivation path schemes
-/// supported by the library.
+/// Represents the different derivation path schemes currently supported by the
+/// [walletd_hd_key][crate] library.
 ///
-/// BIP32 is the default derivation scheme which uses a purpose value of 0'
-/// BIP44 uses 44': <https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki>
-/// BIP49 uses 49': <https://github.com/bitcoin/bips/blob/master/bip-0049.mediawiki>
-/// BIP84 uses 84': <https://github.com/bitcoin/bips/blob/master/bip-0084.mediawiki>
+/// [`BIP32`][HDPurpose::BIP32] is the default derivation scheme which uses a purpose value of 0'
+/// [`BIP44`][HDPurpose::BIP44] uses 44': <https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki>
+/// [`BIP49`][HDPurpose::BIP49] uses 49': <https://github.com/bitcoin/bips/blob/master/bip-0049.mediawiki>
+/// [`BIP84`][HDPurpose::BIP84] uses 84': <https://github.com/bitcoin/bips/blob/master/bip-0084.mediawiki>
 /// The [`HDPathBuilder`] struct can be used to set a default purpose value to
 /// use with particular cryptocurrency implementation.
 #[derive(Default, PartialEq, Eq, Copy, Clone, Debug)]
@@ -114,7 +114,7 @@ impl fmt::Display for HDPurpose {
     }
 }
 
-/// This enum distinguishes between the different derivation path
+/// Represents the variants of different derivation path
 /// components.
 ///
 /// The [`HDPath`] struct contains a vector of these values.

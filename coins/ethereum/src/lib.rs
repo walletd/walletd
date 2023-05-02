@@ -23,7 +23,7 @@ pub use walletd_bip39::{
 pub use walletd_coin_core::{CryptoAddress, CryptoAmount, CryptoWallet, CryptoWalletBuilder};
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 
-/// EthereumFormat is an enum that represents the format of an Ethereum address (checksummed or non-checksummed)
+/// Represents the format of an Ethereum address (checksummed or non-checksummed)
 #[derive(Default, Debug, Clone, Copy)]
 pub enum EthereumFormat {
     #[default]
