@@ -7,7 +7,7 @@ on:
 name: Build
 
 jobs:
-  tests:
+  check:
     name: check build
     runs-on: ubuntu-latest
     steps:
