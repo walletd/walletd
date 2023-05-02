@@ -116,7 +116,7 @@ impl fmt::Display for HDNetworkType {
 }
 
 /// Represents a master or a derived child HD (Hierarchical Deterministic) Key.
-/// 
+///
 /// The [HDKey] struct contains detailed information about a master node or derived child node HD key and provides methods to create and derive HD keys.
 ///
 /// [HDKey] follows the BIP32 scheme: <https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki>
