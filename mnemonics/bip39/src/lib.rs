@@ -6,39 +6,46 @@
 //!
 //! [bip39-standard]: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 //!
-//! # Quickstart
+//! # Examples
 //!
-//! ```rust
-//! use walletd_bip39::{Bip39Language, Bip39Mnemonic, Mnemonic, MnemonicBuilder, Bip39MnemonicBuilder, Bip39MnemonicType};
-//!
-//! # use std::error::Error;
-//! # fn main() -> Result<(), Box<dyn Error>> {
-//!
-//! // Create a new randomly generated mnemonic phrase
-//! let passphrase: &str = "mypassphrase";
-//! let mnemonic = Bip39Mnemonic::builder().passphrase(passphrase).build()?;
-//!
-//! println!("phrase: {:?}", mnemonic);
-//!
-//! // Get the wallet seed
-//! let seed = mnemonic.to_seed();
-//! println!("seed hex: {}", seed);
-//!
-//! // Get the HD wallet seed as raw bytes
-//! let mnemonic_phrase: &str =
-//!     "outer ride neither foil glue number place usage ball shed dry point";
-//! let passphrase: &str = "mypassphrase";
-//! let restored_mnemonic = Bip39Mnemonic::builder()
-//!     .mnemonic_phrase(mnemonic_phrase)
-//!     .passphrase(passphrase)
-//!     .build()?;
-//!
-//! let seed = restored_mnemonic.to_seed();
-//! println!("seed as bytes: {:?}", seed.as_bytes());
-//!
+//! 1. Create a new randomly generated mnemonic phrase using the default language of English and the default mnemonic type of 12 words
+//!     - Using the builder with no specifications and default options to create a new mnemonic
+//!         - The default language is English and the default mnemonic type is 12 words
+//!         - The BIP39 mnemonic ([Bip39Mnemonic]) is generated randomly and can be displayed as a string 
+//!         - The [Bip39Mnemonic] can be converted to a [Seed] type and displayed as a hex string or have the raw bytes returned
+//! 
+//! ```
+//! # use walletd_bip39::{Bip39Language, Bip39Mnemonic, MnemonicExt, MnemonicBuilder, Bip39MnemonicType, ParseMnemonicError};
+//! # fn main() -> Result<(), ParseMnemonicError> {
+//! let mnemonic = Bip39Mnemonic::builder().build()?;
+//! println!("mnemonic phrase: {}", mnemonic.phrase());
+//! println!("mnemonic seed hex: {:x}", mnemonic.to_seed());
+//! println!("mnemonic seed as bytes: {:?}", mnemonic.to_seed().as_bytes());
+//! 
 //! # Ok(())
 //! # }
 //! ```
+//! 
+//! 2. Restore a mnemonic phrase from a string and passphrase
+//!    - Using the builder with default options while specifying the mnemonic phrase and passphrase to restore the mnemonic
+//!         - The default language is English, the mnemonic type will be detected from the number of words in the mnemonic phrase 
+//!         - Providing a passphrase is optional, but the if a passphrase was used when first creating the mnemonic, the same passphrase must be provided when recovering the mnemonic
+//!         - The mnemonic phrase, seed hex, and the seed bytes of a recovered mnemonic can be displayed in the same manner as for a newly generated mnemonic
+//! ```
+//! # use walletd_bip39::{Bip39Language, Bip39Mnemonic, MnemonicExt, MnemonicBuilder, Bip39MnemonicType, ParseMnemonicError};
+//! # fn main() -> Result<(), ParseMnemonicError> {
+//! let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
+//! let passphrase: &str = "mypassphrase";
+//! let restored_mnemonic = Bip39Mnemonic::builder().mnemonic_phrase(mnemonic_phrase).passphrase(passphrase).build()?;
+//! # assert_eq!(restored_mnemonic.phrase(), mnemonic_phrase);
+//! println!("mnemonic phrase: {}", restored_mnemonic.phrase());
+//! println!("mnemonic seed hex: {:x}", restored_mnemonic.to_seed());
+//! println!("mnemonic seed as bytes: {:?}", restored_mnemonic.to_seed().as_bytes());
+//! 
+//! # Ok(())
+//! # }
+//! ```
+//! 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
