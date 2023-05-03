@@ -6,7 +6,7 @@ pub use self::seed::Seed;
 pub mod prelude;
 
 /// The Mnemonic trait is used to provide a common interface for the
-/// different Mnemonic libraries
+/// different walletD mnemonic libraries
 pub trait Mnemonic {
     /// The associated Language struct
     type Language;
@@ -112,9 +112,9 @@ pub trait MnemonicBuilder {
     fn generate(&self) -> Result<Self::Mnemonic, Self::ErrorType>;
 }
 
-/// The LanguageExt trait is used to provide a common interface for the
-/// different Language implementations in different Mnemonic libraries
-pub trait LanguageExt {
+/// The Language trait is used to provide a common interface for the
+/// different Language implementations in different walletD mnemonic libraries
+pub trait Language {
     type Language;
     fn new() -> Self::Language;
 }
