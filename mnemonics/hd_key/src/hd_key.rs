@@ -95,8 +95,8 @@ impl fmt::LowerHex for ExtendedPublicKey {
 ///
 /// [`MainNet`][HDNetworkType::MainNet] is the default which is used for the production network.
 /// [`TestNet`][HDNetworkType::TestNet] is used for any development or test network.
-/// 
-/// A [HDNetworkType] can be used to map to a more blockchain-specific network type when used with a specific cryptocurrency. 
+///
+/// A [HDNetworkType] can be used to map to a more blockchain-specific network type when used with a specific cryptocurrency.
 #[derive(Default, PartialEq, Eq, Copy, Clone, Debug)]
 pub enum HDNetworkType {
     #[default]

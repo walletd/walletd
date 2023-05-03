@@ -14,7 +14,7 @@ use walletd_mnemonics_core::{Mnemonic, MnemonicBuilder, Seed};
 /// Represents a Bip39 mnemonic.
 ///
 /// # Examples
-/// 
+///
 /// To create a *new* [Bip39Mnemonic] from a randomly generated key, call
 /// [Bip39Mnemonic::new()].
 /// ```

@@ -7,70 +7,105 @@
 //! [bip39-standard]: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 //!
 //! # Quickstart
-//! A quick way to access the different features related to the BIP39 mnemonic in this walletD library is to make use of the [Bip39Mnemonic] builder [`Bip39MnemonicBuilder`] which can be also be accessed through [`Bip39Mnemonic::builder()`].
+//! A quick way to access the different features related to the BIP39 mnemonic in this walletD library is to make use of the [Bip39Mnemonic] builder ([Bip39MnemonicBuilder]) which can be also be accessed with the default settings through [`Bip39Mnemonic::builder()`].
 //!
-//! Here's how you can create a new randomly generated BIP39 mnemonic as per your specifications:
+//! The default specifications for the [Bip39MnemonicBuilder] are: English language, 12 words in the mnemonic phrase, and no passphrase specified.
+//! You can get the mnemonic seed from the [Bip39Mnemonic] struct using the [`to_seed`][Bip39Mnemonic::to_seed] method.
 //! 
+//! Here's how you can create a new randomly generated BIP39 mnemonic using the default specifications.
 //!  ```
 //! use walletd_bip39::prelude::*;
+//!
 //! # fn main() -> Result<(), walletd_bip39::Error> {
-//! // Generate a new BIP39 mnemonic using the default language of English and the default mnemonic type of 12 words
 //! let mnemonic = Bip39Mnemonic::builder().build()?;
+//! // display the generated mnemonic phrase
 //! println!("mnemonic phrase: {}", mnemonic.phrase());
-//! // You can get the mnemonic seed from the Bip39Mnemonic struct using the [`to_seed`][Seed::to_seed] method
-//! println!("mnemonic seed hex: {:x}", mnemonic.to_seed());  // can use the hex format specifier to print the seed as hex
-//! println!("mnemonic seed as bytes: {:?}", mnemonic.to_seed().as_bytes()); // can use the [`as_bytes`][Seed::as_bytes] method to get the seed as a byte array
+//! // can use the hex format specifier to print the seed as hex
+//! println!("mnemonic seed hex: {:x}", mnemonic.to_seed());
+//! // can use the as_bytes method to get the seed as a byte array
+//! println!("mnemonic seed as bytes: {:?}", mnemonic.to_seed().as_bytes());
 //! # assert_eq!(mnemonic.language(), Bip39Language::English);
 //! # assert_eq!(mnemonic.mnemonic_type(), Bip39MnemonicType::Words12);
-//! 
-//! // Generate a new BIP39 mnemonic with the default language of English but specify the BIP39 mnemonic type of 24 words in the phrase
-//! let mnemonic = Bip39Mnemonic::builder().mnemonic_type(Bip39MnemonicType::Words24).build()?;
-//! println!("mnemonic phrase: {}", mnemonic.phrase());
-//! println!("mnemonic seed hex: {:x}", mnemonic.to_seed());
-//! println!("mnemonic seed as bytes: {:?}", mnemonic.to_seed().as_bytes());
 //! # Ok(())
 //! # }
 //! ```
-//! 
-//!  
-//! Create a new randomly generated mnemonic phrase using the default language of English and the default mnemonic type of 12 words
-//!     - Using the builder with no specifications and default options to create a new mnemonic
-//!         - The default language is English and the default mnemonic type is 12 words
-//!         - The BIP39 mnemonic ([Bip39Mnemonic]) is generated randomly and can be displayed as a string 
-//!         - The [Bip39Mnemonic] can be converted to a [Seed] type and displayed as a hex string or have the raw bytes returned
-//! 
+//!
+//! You can override the default specifications by providing your desired specifications to the builder.
+//! You can also reuse the [Bip39MnemonicBuilder] object in a mutable way to create multiple BIP39 mnemonics and even override previous specifications.
 //! ```
 //! # use walletd_bip39::prelude::*;
 //! # fn main() -> Result<(), walletd_bip39::Error> {
-//! let mnemonic = Bip39Mnemonic::builder().build()?;
-//! println!("mnemonic phrase: {}", mnemonic.phrase());
-//! println!("mnemonic seed hex: {:x}", mnemonic.to_seed());
-//! println!("mnemonic seed as bytes: {:?}", mnemonic.to_seed().as_bytes());
-//! 
+//! let mut mnemonic_builder = Bip39Mnemonic::builder();
+//!
+//! // specify that the mnemonic phrase should consist of 24 words
+//! let mnemonic_1 = mnemonic_builder.mnemonic_type(Bip39MnemonicType::Words24).build()?;
+//! println!("mnemonic_1 phrase: {}", mnemonic_1.phrase());
+//! println!("mnemonic_1 seed hex: {:x}", mnemonic_1.to_seed());
+//! # assert_eq!(mnemonic_1.mnemonic_type(), Bip39MnemonicType::Words24);
+//! // see the number of entropy bits for the specified mnemonic type
+//! # assert_eq!(mnemonic_1.mnemonic_type().entropy_bits(), 256);
+//! println!("mnemonic_1 number of entropy bits: {}", mnemonic_1.mnemonic_type().entropy_bits());
+//!
+//! // reuse builder but now specify 18 words in the mnemonic phrase
+//! let mnemonic_2 = mnemonic_builder.mnemonic_type(Bip39MnemonicType::Words18).build()?;
+//! # assert_eq!(mnemonic_2.mnemonic_type(), Bip39MnemonicType::Words18);
+//! # assert_eq!(mnemonic_2.mnemonic_type().entropy_bits(), 192);
+//! println!("mnemonic_2 phrase: {}", mnemonic_2.phrase());
+//! println!("mnemonic_2 seed hex: {:x}", mnemonic_2.to_seed());
+//! println!("mnemonic_2 number of entropy bits: {}", mnemonic_2.mnemonic_type().entropy_bits());
+//!
 //! # Ok(())
 //! # }
 //! ```
+//!
+//! It may be useful in some cases to provide all of the specifications even when using the some of the default settings.
 //! 
-//! 2. Restore a mnemonic phrase from a string and passphrase
-//!    - Using the builder with default options while specifying the mnemonic phrase and passphrase to restore the mnemonic
-//!         - The default language is English, the mnemonic type will be detected from the number of words in the mnemonic phrase 
-//!         - Providing a passphrase is optional, but the if a passphrase was used when first creating the mnemonic, the same passphrase must be provided when recovering the mnemonic
-//!         - The mnemonic phrase, seed hex, and the seed bytes of a recovered mnemonic can be displayed in the same manner as for a newly generated mnemonic
+//! You can specify a passphrase to use when generating the mnemonic.
+//! Note that the same passphrase must be used when recovering the mnemonic.
+//! 
+//! **Warning:**
+//! If a [Bip39Mnemonic] mnemonic phrase is generated using a specification of passphrase, both the mnemonic phrase and the passphrase is required to recover the [Bip39Mnemonic].
+//! The specified passphrase is not stored in the [Bip39Mnemonic] struct. It is important to store the passphrase you specified securely as well as the mnemonic phrase to enable recovery of the [Bip39Mnemonic].
+//!
+//! ```
+//! # use walletd_bip39::prelude::*;
+//! # fn main() -> Result<(), walletd_bip39::Error> {
+//! let mnemonic_3 = Bip39Mnemonic::builder().passphrase("mypassphrase").mnemonic_type(Bip39MnemonicType::Words12).language(Bip39Language::English).build()?;
+//! # assert_eq!(mnemonic_3.mnemonic_type(), Bip39MnemonicType::Words12);
+//! # assert_eq!(mnemonic_3.language(), Bip39Language::English);
+//! println!("mnemonic_3 phrase: {}", mnemonic_3.phrase());
+//! println!("mnemonic_3 seed hex: {:x}", mnemonic_3.to_seed());
+//! # Ok(())
+//! # }
+//! ```
+//!  
+//! A [Bip39Mnemonic] can be restored from a specified valid mnemonic phrase or from a specified valid mnemonic phrase and passphrase if a passphrase was specified when the mnemonic was generated.
+//! 
 //! ```
 //! # use walletd_bip39::prelude::*;
 //! # fn main() -> Result<(), walletd_bip39::Error> {
 //! let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
-//! let passphrase: &str = "mypassphrase";
-//! let restored_mnemonic = Bip39Mnemonic::builder().mnemonic_phrase(mnemonic_phrase).passphrase(passphrase).build()?;
-//! # assert_eq!(restored_mnemonic.phrase(), mnemonic_phrase);
-//! println!("mnemonic phrase: {}", restored_mnemonic.phrase());
-//! println!("mnemonic seed hex: {:x}", restored_mnemonic.to_seed());
-//! println!("mnemonic seed as bytes: {:?}", restored_mnemonic.to_seed().as_bytes());
+//! let restored_mnemonic_1 = Bip39Mnemonic::builder().mnemonic_phrase(mnemonic_phrase).build()?;
+//! # assert_eq!(restored_mnemonic_1.mnemonic_type(), Bip39MnemonicType::Words12);
+//! # assert_eq!(restored_mnemonic_1.language(), Bip39Language::English);
+//! # assert_eq!(restored_mnemonic_1.phrase(), mnemonic_phrase);
+//! # let seed_hex_1 = "a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee";
+//! # assert_eq!(format!("{:x}", restored_mnemonic_1.to_seed()), seed_hex_1);
+//! println!("restored_mnemonic_1 phrase: {}", restored_mnemonic_1.phrase());
+//! println!("restored_mnemonic_1 seed hex: {:x}", restored_mnemonic_1.to_seed());
 //! 
+//! let specified_passphrase = "mypassphrase";
+//! let restored_mnemonic_2 = Bip39Mnemonic::builder().mnemonic_phrase(mnemonic_phrase).passphrase(specified_passphrase).build()?;
+//! # assert_eq!(restored_mnemonic_2.mnemonic_type(), Bip39MnemonicType::Words12);
+//! # assert_eq!(restored_mnemonic_2.language(), Bip39Language::English);
+//! # assert_eq!(restored_mnemonic_2.phrase(), mnemonic_phrase);
+//! # let seed_hex_2 = "3c536b023d71d81e6abc58b0b91c64caff8bb08fabf0c9f3cf948a9f3a494e8ecb0790b6e933834796c930a2d437170bd6071c00bc0553d06235d02315f2c229";
+//! # assert_eq!(format!("{:x}", restored_mnemonic_2.to_seed()), seed_hex_2);
+//! println!("restored_mnemonic_2 phrase: {}", restored_mnemonic_2.phrase());
+//! println!("restored_mnemonic_2 seed hex: {:x}", restored_mnemonic_2.to_seed());
 //! # Ok(())
 //! # }
-//! ```
-//! 
+//!
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 

@@ -25,7 +25,7 @@ pub const ENTROPY_OFFSET: usize = 8;
 /// # Ok(())
 /// # }
 /// ```
-/// 
+///
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Bip39MnemonicType {
     //  ... = (entropy_bits << ...)   | checksum_bits
@@ -97,14 +97,15 @@ impl Bip39MnemonicType {
         Ok(mnemonic_type)
     }
 
-    /// Get a `MnemonicType` for an existing mnemonic phrase
+    /// Get a [Bip39MnemonicType] for an existing mnemonic phrase
     ///
     /// This can be used when you need information about a mnemonic phrase based
-    /// on the number of words, for example you can get the entropy value
-    /// using [`MnemonicType::entropy_bits`][MnemonicType::entropy_bits()].
+    /// on the number of words, for example you can get the number of entropy bits used by the mnemonic
+    /// using [`Bip39MnemonicType::entropy_bits`].
     ///
+    /// # Errors
     /// Specifying a phrase that does not match one of the standard BIP39 phrase
-    /// lengths will return an `ParseMnemonicError`
+    /// lengths will return an [Error].
     ///
     /// # Example
     /// ```
