@@ -1,4 +1,4 @@
-use crate::ParseMnemonicError;
+use crate::Error;
 
 pub const ENTROPY_OFFSET: usize = 8;
 
@@ -62,14 +62,14 @@ impl Bip39MnemonicType {
     ///
     /// let mnemonic_type = Bip39MnemonicType::from_word_count(12).unwrap();
     /// ```
-    pub fn from_word_count(size: usize) -> Result<Self, ParseMnemonicError> {
+    pub fn from_word_count(size: usize) -> Result<Self, Error> {
         let mnemonic_type = match size {
             12 => Self::Words12,
             15 => Self::Words15,
             18 => Self::Words18,
             21 => Self::Words21,
             24 => Self::Words24,
-            _ => return Err(ParseMnemonicError::InvalidNumberOfWords(size)),
+            _ => return Err(Error::InvalidNumberOfWords(size)),
         };
 
         Ok(mnemonic_type)
@@ -86,14 +86,14 @@ impl Bip39MnemonicType {
     ///
     /// let mnemonic_type = Bip39MnemonicType::from_key_size(128).unwrap();
     /// ```
-    pub fn from_key_size(size: usize) -> Result<Self, ParseMnemonicError> {
+    pub fn from_key_size(size: usize) -> Result<Self, Error> {
         let mnemonic_type = match size {
             128 => Self::Words12,
             160 => Self::Words15,
             192 => Self::Words18,
             224 => Self::Words21,
             256 => Self::Words24,
-            _ => return Err(ParseMnemonicError::InvalidNumberOfBits(size)),
+            _ => return Err(Error::InvalidNumberOfBits(size)),
         };
 
         Ok(mnemonic_type)
@@ -120,7 +120,7 @@ impl Bip39MnemonicType {
     /// ```
     ///
     /// [MnemonicType::entropy_bits()]: ./enum.MnemonicType.html#method.entropy_bits
-    pub fn from_phrase(phrase: &str) -> Result<Self, ParseMnemonicError> {
+    pub fn from_phrase(phrase: &str) -> Result<Self, Error> {
         let word_count = phrase.split(' ').count();
 
         Self::from_word_count(word_count)

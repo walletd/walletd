@@ -5,9 +5,10 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
-pub use walletd_bip39::{Bip39Language, Bip39Mnemonic, Bip39MnemonicType, Seed};
-
-pub use walletd_mnemonics_core::{MnemonicBuilder, MnemonicExt};
+pub use walletd_bip39::{
+    Bip39Language, Bip39Mnemonic, Bip39MnemonicBuilder, Bip39MnemonicType, Seed,
+};
+pub use walletd_mnemonics_core::{Mnemonic, MnemonicBuilder};
 
 mod keypair;
 pub use keypair::{KeyPair, KeyPairBuilder, MnemonicKeyPairType};
@@ -29,3 +30,4 @@ pub use crypto_coin::CryptoCoin;
 
 mod error;
 pub use error::Error;
+pub mod prelude;

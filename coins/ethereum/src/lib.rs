@@ -12,10 +12,16 @@ pub use ethclient::EthClient;
 mod ethereum_amount;
 pub use ethereum_amount::EthereumAmount;
 mod ethereum_wallet;
-pub use ethereum_wallet::EthereumWallet;
+pub use ethereum_wallet::{EthereumWallet, EthereumWalletBuilder};
 mod error;
 pub use error::Error;
 pub use web3;
+pub mod prelude;
+pub use walletd_bip39::{
+    Bip39Language, Bip39Mnemonic, Bip39MnemonicType, Mnemonic, MnemonicBuilder, Seed,
+};
+pub use walletd_coin_core::{CryptoAddress, CryptoAmount, CryptoWallet, CryptoWalletBuilder};
+pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 
 /// EthereumFormat is an enum that represents the format of an Ethereum address (checksummed or non-checksummed)
 #[derive(Default, Debug, Clone, Copy)]

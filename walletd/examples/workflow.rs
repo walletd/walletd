@@ -3,8 +3,7 @@ extern crate walletd;
 use walletd::{
     blockstream::Blockstream, walletd_coin_core::BlockchainConnectorBuilder,
     walletd_ethereum::EthClient, Bip39Mnemonic, BitcoinWallet, BlockchainConnector, CryptoWallet,
-    Error, EthereumWallet, HDNetworkType, KeyPair, MnemonicBuilder, MnemonicExt,
-    MnemonicKeyPairType,
+    Error, EthereumWallet, HDNetworkType, KeyPair, Mnemonic, MnemonicBuilder, MnemonicKeyPairType,
 };
 
 const BTC_TESTNET_URL: &str = "https://blockstream.info/testnet/api";

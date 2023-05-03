@@ -1,6 +1,6 @@
 extern crate walletd_ethereum;
 
-use walletd_bip39::{Bip39Language, Bip39Mnemonic, MnemonicExt};
+use walletd_bip39::{Bip39Language, Bip39Mnemonic, Mnemonic};
 use walletd_coin_core::{CryptoWallet, CryptoWalletBuilder};
 use walletd_ethereum::EthereumWallet;
 use walletd_hd_key::HDNetworkType;

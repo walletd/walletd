@@ -115,6 +115,7 @@ impl LowerHex for EthereumPublicKey {
     }
 }
 
+/// Builder for [EthereumWallet], allows for specification of options for the ethereum wallet
 pub struct EthereumWalletBuilder {
     /// The address format used to generate the wallet, if the address format is not specified the default is used
     address_format: EthereumFormat,

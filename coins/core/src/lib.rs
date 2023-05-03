@@ -8,7 +8,7 @@ mod crypto_address;
 mod crypto_amount;
 mod crypto_wallet;
 mod error;
-
+pub mod prelude;
 pub use blockchain_connector::{BlockchainConnector, BlockchainConnectorBuilder, ConnectorType};
 pub use crypto_address::CryptoAddress;
 pub use crypto_amount::CryptoAmount;

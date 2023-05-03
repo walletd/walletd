@@ -14,7 +14,7 @@ pub enum Error {
     WalletdHDKey(#[from] walletd_hd_key::Error),
     /// Error from the walletd_bip39 crate
     #[error("walletd_bip39 mnemonic error: {0}")]
-    WalletdBip39(#[from] walletd_bip39::ParseMnemonicError),
+    WalletdBip39(#[from] walletd_bip39::Error),
     /// Error from the walletd_coin_core crate
     #[error("walletd_coin_core error: {0}")]
     WalletdCoinCore(#[from] walletd_coin_core::Error),
