@@ -115,7 +115,7 @@ impl WordList {
 
 /// The choice of language for a mnemonic phrase not only determines the words
 /// used, but also has an impact on the binary value of each word when the
-/// [`Mnemonic`](crate::Mnemonic) is converted into a [`Seed`](crate::Seed).
+/// [`Mnemonic`](crate::Bip39Mnemonic) is converted into a [`Seed`](crate::Seed).
 ///
 /// English is the only officially supported language, the rest are provided for
 /// convenience.

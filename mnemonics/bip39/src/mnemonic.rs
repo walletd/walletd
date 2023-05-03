@@ -24,7 +24,7 @@ use walletd_mnemonics_core::{MnemonicBuilder, MnemonicExt, Seed};
 /// to create a [`Mnemonic`][Mnemonic] struct by only specifying the options
 /// needed, allowing for options to be rewritten. The
 /// [`MnemonicBuilder`][MnemonicBuilder] struct with default options can be
-/// created using the [`Mnemonic::builder()`][Mnemonic::builder()] function.
+/// created using the [`Mnemonic::builder()`][Bip39Mnemonic::builder()] function.
 ///
 /// You can get the HD wallet [`Seed`][Seed] from a [`Mnemonic`][Mnemonic] by
 /// calling [`Seed::new()`][Seed::new()]. From there you can either get the raw
