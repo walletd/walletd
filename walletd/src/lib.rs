@@ -28,4 +28,4 @@ pub use crypto_coin::CryptoCoin;
 
 mod error;
 pub use error::Error;
-mod prelude;
+pub mod prelude;
