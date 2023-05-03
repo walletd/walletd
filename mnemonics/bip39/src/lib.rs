@@ -12,14 +12,22 @@
 //! Here's how you can create a new randomly generated BIP39 mnemonic as per your specifications:
 //! 
 //!  ```
-//! use walletd_bip39::{Bip39Language, Bip39Mnemonic, MnemonicExt, MnemonicBuilder, Bip39MnemonicType, ParseMnemonicError};
+//! use walletd_bip39::prelude::*;
 //! # fn main() -> Result<(), ParseMnemonicError> {
-//! // 
+//! // Generate a new BIP39 mnemonic using the default language of English and the default mnemonic type of 12 words
 //! let mnemonic = Bip39Mnemonic::builder().build()?;
+//! println!("mnemonic phrase: {}", mnemonic.phrase());
+//! // You can get the mnemonic seed from the Bip39Mnemonic struct using the [`to_seed`][Seed::to_seed] method
+//! println!("mnemonic seed hex: {:x}", mnemonic.to_seed());  // can use the hex format specifier to print the seed as hex
+//! println!("mnemonic seed as bytes: {:?}", mnemonic.to_seed().as_bytes()); // can use the [`as_bytes`][Seed::as_bytes] method to get the seed as a byte array
+//! # assert_eq!(mnemonic.language(), Bip39Language::English);
+//! # assert_eq!(mnemonic.mnemonic_type(), Bip39MnemonicType::Words12);
+//! 
+//! // Generate a new BIP39 mnemonic with the default language of English but specify the BIP39 mnemonic type of 24 words in the phrase
+//! let mnemonic = Bip39Mnemonic::builder().mnemonic_type(Bip39MnemonicType::Words24).build()?;
 //! println!("mnemonic phrase: {}", mnemonic.phrase());
 //! println!("mnemonic seed hex: {:x}", mnemonic.to_seed());
 //! println!("mnemonic seed as bytes: {:?}", mnemonic.to_seed().as_bytes());
-//! 
 //! # Ok(())
 //! # }
 //! ```
