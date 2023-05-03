@@ -13,7 +13,7 @@ use std::str::FromStr;
 
 use walletd_mnemonics_core::Language;
 
-use crate::ParseMnemonicError;
+use crate::Error;
 
 #[derive(Debug)]
 /// Represents a wordlist for a language for the Bip39 Mnemonic
@@ -71,16 +71,16 @@ impl WordList {
 
     /// Gets the index of a word in a language's wordlist, returns error if word
     /// is not found in wordlist for a language
-    pub fn get_index(&self, word: &str) -> Result<usize, ParseMnemonicError> {
+    pub fn get_index(&self, word: &str) -> Result<usize, Error> {
         match self.inner.iter().position(|element| element == &word) {
             Some(index) => Ok(index),
-            None => Err(ParseMnemonicError::InvalidWord(word.to_string())),
+            None => Err(Error::InvalidWord(word.to_string())),
         }
     }
 
     /// If all words in the phrase are present in a language's wordlist, the
     /// language of the phrase is detected
-    pub fn detect_language(phrase: Vec<&str>) -> Result<Bip39Language, ParseMnemonicError> {
+    pub fn detect_language(phrase: Vec<&str>) -> Result<Bip39Language, Error> {
         let all_languages = enum_iterator::all::<Bip39Language>().collect::<Vec<_>>();
         for language in all_languages {
             let wordlist = WordList::new(language);
@@ -99,7 +99,7 @@ impl WordList {
                 return Ok(language);
             }
         }
-        Err(ParseMnemonicError::InvalidPhraseLanguage(phrase.join(" ")))
+        Err(Error::InvalidPhraseLanguage(phrase.join(" ")))
     }
 
     /// Returns the language of the [WordList]
@@ -146,7 +146,7 @@ pub enum Bip39Language {
 }
 
 impl FromStr for Bip39Language {
-    type Err = ParseMnemonicError;
+    type Err = Error;
 
     /// Converts a string to a Language.
     fn from_str(input: &str) -> Result<Self, Self::Err> {
@@ -161,7 +161,7 @@ impl FromStr for Bip39Language {
             "Korean" => Ok(Self::Korean),
             "Portuguese" => Ok(Self::Portuguese),
             "Spanish" => Ok(Self::Spanish),
-            _ => Err(ParseMnemonicError::InvalidStrReprLang(input.into())),
+            _ => Err(Error::InvalidStrReprLang(input.into())),
         }
     }
 }

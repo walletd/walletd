@@ -4,7 +4,7 @@ use crate::Bip39MnemonicType;
 
 /// Custom error type for this crate
 #[derive(Error, Debug, PartialEq, Eq)]
-pub enum ParseMnemonicError {
+pub enum Error {
     /// Invalid word in mnemonic phrase
     #[error("Invalid word: word: {0} not found in wordlist")]
     InvalidWord(String),

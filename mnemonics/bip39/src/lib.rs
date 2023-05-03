@@ -47,7 +47,7 @@ mod language;
 mod mnemonic;
 mod mnemonic_type;
 
-pub use self::error::ParseMnemonicError;
+pub use self::error::Error;
 pub use self::language::Bip39Language;
 pub use self::language::WordList;
 pub use self::mnemonic::{Bip39Mnemonic, Bip39MnemonicBuilder};

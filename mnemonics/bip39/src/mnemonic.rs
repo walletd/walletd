@@ -2,7 +2,7 @@ use core::ops::Div;
 use core::str;
 
 use crate::mnemonic_type::ENTROPY_OFFSET;
-use crate::{Bip39Language, Bip39MnemonicType, ParseMnemonicError, WordList};
+use crate::{Bip39Language, Bip39MnemonicType, Error, WordList};
 use bitvec::prelude::*;
 use curve25519_dalek::scalar::Scalar;
 use hmac::Hmac;
@@ -105,7 +105,7 @@ impl Bip39Mnemonic {
         language: Bip39Language,
         mnemonic_phrase: &str,
         provided_passphrase: Option<&str>,
-    ) -> Result<Seed, ParseMnemonicError> {
+    ) -> Result<Seed, Error> {
         let mut passphrase = "".to_string();
         if let Some(pass) = provided_passphrase {
             passphrase = pass.to_string();
@@ -129,7 +129,7 @@ impl Bip39Mnemonic {
 }
 
 impl Mnemonic for Bip39Mnemonic {
-    type ErrorType = ParseMnemonicError;
+    type ErrorType = Error;
     type Language = Bip39Language;
     type Mnemonic = Self;
     type MnemonicBuilder = Bip39MnemonicBuilder;
@@ -170,7 +170,7 @@ impl Mnemonic for Bip39Mnemonic {
         language: Bip39Language,
         phrase: &str,
         specified_passphrase: Option<&str>,
-    ) -> Result<Self, ParseMnemonicError> {
+    ) -> Result<Self, Error> {
         let mnemonic_type = Bip39MnemonicType::from_phrase(phrase)?;
         let seed = Self::create_seed(language, phrase, specified_passphrase)?;
 
@@ -226,7 +226,7 @@ impl Mnemonic for Bip39Mnemonic {
 }
 
 impl MnemonicBuilder for Bip39MnemonicBuilder {
-    type ErrorType = ParseMnemonicError;
+    type ErrorType = Error;
     type Language = Bip39Language;
     type Mnemonic = Bip39Mnemonic;
     type MnemonicType = Bip39MnemonicType;
@@ -296,7 +296,7 @@ impl MnemonicBuilder for Bip39MnemonicBuilder {
     fn restore(&self) -> Result<Self::Mnemonic, Self::ErrorType> {
         // early return of an error if neither the passphrase nor seed were provided
         if self.mnemonic_phrase.is_none() && self.seed.is_none() {
-            return Err(ParseMnemonicError::MissingInformation(
+            return Err(Error::MissingInformation(
                 "phrase or seed must be provided to recover a mnemonic".to_owned(),
             ));
         }
@@ -307,7 +307,7 @@ impl MnemonicBuilder for Bip39MnemonicBuilder {
             let mnemonic_type = Bip39MnemonicType::from_phrase(&phrase)?;
             if let Some(specified_mnemonic_type) = self.mnemonic_type {
                 if mnemonic_type != specified_mnemonic_type {
-                    return Err(ParseMnemonicError::MismatchInSpecificationVersusImplict {
+                    return Err(Error::MismatchInSpecificationVersusImplict {
                         attribute: "mnemonic_type".to_string(),
                     });
                 }
@@ -361,10 +361,10 @@ impl MnemonicBuilder for Bip39MnemonicBuilder {
                         mnemonic_type,
                     })
                 } else {
-                    Err(ParseMnemonicError::MissingInformation("To recover a mnemonic phrase from a seed, a mnemonic type must be specified as well as the language".to_owned()))
+                    Err(Error::MissingInformation("To recover a mnemonic phrase from a seed, a mnemonic type must be specified as well as the language".to_owned()))
                 }
             } else {
-                Err(ParseMnemonicError::MissingInformation("To recover a mnemonic phrase from a seed, a language must be specified as well as the mnemonic type".to_owned()))
+                Err(Error::MissingInformation("To recover a mnemonic phrase from a seed, a language must be specified as well as the mnemonic type".to_owned()))
             }
         }
     }
@@ -372,7 +372,7 @@ impl MnemonicBuilder for Bip39MnemonicBuilder {
     /// Generate a new mnemonic which follows given specifications
     fn generate(&self) -> Result<Self::Mnemonic, Self::ErrorType> {
         if self.language.is_none() {
-            return Err(ParseMnemonicError::MissingInformation(
+            return Err(Error::MissingInformation(
                 "language must be specified to generate a mnemonic".to_owned(),
             ));
         }
@@ -380,7 +380,7 @@ impl MnemonicBuilder for Bip39MnemonicBuilder {
             .language
             .expect("language should be present due to earlier checks");
         if self.mnemonic_type.is_none() {
-            return Err(ParseMnemonicError::MissingInformation(
+            return Err(Error::MissingInformation(
                 "mnemonic type must be specified to generate a mnemonic".to_owned(),
             ));
         }
@@ -410,16 +410,16 @@ impl Bip39Mnemonic {
     fn bytes_to_words(
         entropy_bytes: &Vec<u8>,
         wordlist_info: &WordList,
-    ) -> Result<String, ParseMnemonicError> {
+    ) -> Result<String, Error> {
         if entropy_bytes.len() % 4 != 0 {
-            return Err(ParseMnemonicError::InvalidEntropy(
+            return Err(Error::InvalidEntropy(
                 "Entropy must be a multiple of 4 bytes (32 bits) in length".to_owned(),
             ));
         }
         if (entropy_bytes.len() < 128 / ENTROPY_OFFSET)
             || (entropy_bytes.len() > 256 / ENTROPY_OFFSET)
         {
-            return Err(ParseMnemonicError::InvalidEntropy(
+            return Err(Error::InvalidEntropy(
                 "Entropy must be between 128 and 256 bits in length".to_owned(),
             ));
         }
@@ -468,7 +468,7 @@ impl Bip39Mnemonic {
     fn words_to_bytes(
         language: Bip39Language,
         mnemonic_phrase: &str,
-    ) -> Result<Vec<u8>, ParseMnemonicError> {
+    ) -> Result<Vec<u8>, Error> {
         let wordlist = WordList::new(language);
         let phrase: Vec<&str> = mnemonic_phrase.split(' ').collect();
         let word_count = phrase.len();
@@ -493,7 +493,7 @@ impl Bip39Mnemonic {
         let entropy_bytes = entropy[..entropy_bits].as_slice().to_vec();
         match *mnemonic_phrase == Self::bytes_to_words(&entropy_bytes, &wordlist)? {
             true => Ok(entropy_bytes),
-            false => Err(ParseMnemonicError::InvalidMnemonicPhraseChecksum),
+            false => Err(Error::InvalidMnemonicPhraseChecksum),
         }
     }
 }
@@ -653,7 +653,7 @@ mod tests {
         assert!(mnemonic.is_err());
         assert!(matches!(
             mnemonic.unwrap_err(),
-            ParseMnemonicError::InvalidWord(_)
+            Error::InvalidWord(_)
         ));
     }
 
@@ -667,7 +667,7 @@ mod tests {
         assert!(mnemonic.is_err());
         assert_eq!(
             mnemonic.unwrap_err(),
-            ParseMnemonicError::MismatchInSpecificationVersusImplict {
+            Error::MismatchInSpecificationVersusImplict {
                 attribute: "mnemonic_type".to_string(),
             }
         );
