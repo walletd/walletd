@@ -4,3 +4,5 @@
 //! ```
 //! use walletd_hd_key::prelude::*;
 //! ```
+
+pub use crate::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose, Seed};
