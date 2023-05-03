@@ -5,6 +5,9 @@ pub mod seed;
 pub use self::seed::Seed;
 pub mod prelude;
 
+#[doc(hidden)]
+pub use std::str::FromStr;
+
 /// Provide a common interface for
 /// different mnemonic protocols.
 pub trait Mnemonic {
@@ -113,7 +116,7 @@ pub trait MnemonicBuilder {
 }
 
 /// The Language trait is used to provide a common interface for the
-/// different Language implementations in different walletD mnemonic libraries
+/// different Language implementations in different walletD mnemonic libraries.
 pub trait Language {
     type Language;
     fn new() -> Self::Language;
