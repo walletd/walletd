@@ -11,7 +11,7 @@
 //!
 //! The default specifications for the [Bip39MnemonicBuilder] are: English language, 12 words in the mnemonic phrase, and no passphrase specified.
 //! You can get the mnemonic seed from the [Bip39Mnemonic] struct using the [`to_seed`][Bip39Mnemonic::to_seed] method.
-//! 
+//!
 //! Here's how you can create a new randomly generated BIP39 mnemonic using the default specifications.
 //!  ```
 //! use walletd_bip39::prelude::*;
@@ -59,10 +59,10 @@
 //! ```
 //!
 //! It may be useful in some cases to provide all of the specifications even when using the some of the default settings.
-//! 
+//!
 //! You can specify a passphrase to use when generating the mnemonic.
 //! Note that the same passphrase must be used when recovering the mnemonic.
-//! 
+//!
 //! **Warning:**
 //! If a [Bip39Mnemonic] mnemonic phrase is generated using a specification of passphrase, both the mnemonic phrase and the passphrase is required to recover the [Bip39Mnemonic].
 //! The specified passphrase is not stored in the [Bip39Mnemonic] struct. It is important to store the passphrase you specified securely as well as the mnemonic phrase to enable recovery of the [Bip39Mnemonic].
@@ -80,7 +80,7 @@
 //! ```
 //!  
 //! A [Bip39Mnemonic] can be restored from a specified valid mnemonic phrase or from a specified valid mnemonic phrase and passphrase if a passphrase was specified when the mnemonic was generated.
-//! 
+//!
 //! ```
 //! # use walletd_bip39::prelude::*;
 //! # fn main() -> Result<(), walletd_bip39::Error> {
@@ -93,7 +93,7 @@
 //! # assert_eq!(format!("{:x}", restored_mnemonic_1.to_seed()), seed_hex_1);
 //! println!("restored_mnemonic_1 phrase: {}", restored_mnemonic_1.phrase());
 //! println!("restored_mnemonic_1 seed hex: {:x}", restored_mnemonic_1.to_seed());
-//! 
+//!
 //! let specified_passphrase = "mypassphrase";
 //! let restored_mnemonic_2 = Bip39Mnemonic::builder().mnemonic_phrase(mnemonic_phrase).passphrase(specified_passphrase).build()?;
 //! # assert_eq!(restored_mnemonic_2.mnemonic_type(), Bip39MnemonicType::Words12);
