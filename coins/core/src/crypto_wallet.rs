@@ -2,7 +2,7 @@ use crate::{BlockchainConnector, CryptoAmount};
 use async_trait::async_trait;
 use walletd_hd_key::{HDKey, HDPathBuilder, Seed};
 
-/// CryptoWallet is a trait that provides common functionality for a crypto wallet. It provides functions to get the balance, send and receive transactions, and sync the wallet with the blockchain.
+/// Provides common functionality for a crypto wallet. Contains functions to get the balance, send and receive transactions, and sync the wallet with the blockchain.
 #[async_trait]
 pub trait CryptoWallet: Sized + Clone {
     /// ErrorType is the type of error that is returned by the CryptoWallet
@@ -33,7 +33,7 @@ pub trait CryptoWallet: Sized + Clone {
         public_address: &str,
     ) -> Result<String, Self::ErrorType>;
 
-    /// Syncs the CryptoWallet with the blockchain
+    /// Syncs the [CryptoWallet] with the blockchain
     async fn sync(&mut self) -> Result<(), Self::ErrorType>;
 
     /// Returns the receive address of the CryptoWallet, this is the address that is used to receive transactions
@@ -43,7 +43,7 @@ pub trait CryptoWallet: Sized + Clone {
     fn builder() -> Self::WalletBuilder;
 }
 
-/// CryptoWalletBuilder is a trait that provides a common interface for building a CryptoWallet
+/// Provides a common interface for building a [CryptoWallet].
 pub trait CryptoWalletBuilder<T>
 where
     T: CryptoWallet + Clone,

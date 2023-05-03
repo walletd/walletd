@@ -1,7 +1,7 @@
 use crate::Error;
 use async_trait::async_trait;
 
-/// BlockchainConnector trait is used to connect to a blockchain and send and receive information to and from the blockchain.
+/// Used to connect to a blockchain and send and receive information to and from the blockchain.
 #[async_trait]
 pub trait BlockchainConnector {
     /// ErrorType is the type of error that is returned by the BlockchainConnector

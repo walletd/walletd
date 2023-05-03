@@ -2,7 +2,7 @@ use thiserror::Error;
 
 use crate::Bip39MnemonicType;
 
-/// Custom error type for this crate
+/// Custom error type for the [walletd_bip39][crate] library.
 #[derive(Error, Debug, PartialEq, Eq)]
 pub enum Error {
     /// Invalid word in mnemonic phrase

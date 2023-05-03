@@ -5,8 +5,8 @@ pub mod seed;
 pub use self::seed::Seed;
 pub mod prelude;
 
-/// The Mnemonic trait is used to provide a common interface for the
-/// different walletD mnemonic libraries
+/// Provide a common interface for
+/// different mnemonic protocols.
 pub trait Mnemonic {
     /// The associated Language struct
     type Language;
@@ -57,7 +57,7 @@ pub trait Mnemonic {
     fn mnemonic_type(&self) -> Self::MnemonicType;
 }
 
-/// This trait implements a builder pattern for creating a mnemonic
+/// Implements a builder pattern for creating a [mnemonic][MnemonicExt].
 pub trait MnemonicBuilder {
     /// The associated Mnemonic struct
     type Mnemonic;
