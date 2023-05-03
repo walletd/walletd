@@ -9,14 +9,15 @@
 //! # Quickstart Guide
 //! A good way to access the different features related to the BIP39 mnemonic in this walletD library is to make use of the [Bip39Mnemonic] builder ([Bip39MnemonicBuilder]) which can be also be accessed with the default settings through [`Bip39Mnemonic::builder()`].
 //!
-//! The default specifications for the [Bip39MnemonicBuilder] are: English language, 12 words in the mnemonic phrase, and no passphrase specified.
+//! The default specifications for the [Bip39MnemonicBuilder] are: [English language][Bip39Language::English], [12 words in the mnemonic phrase][Bip39MnemonicType::Words12], and no passphrase specified.
 //! You can get the mnemonic seed from the [Bip39Mnemonic] struct using the [`to_seed`][Bip39Mnemonic::to_seed] method.
 //!
 //! Here's how you can create a new randomly generated BIP39 mnemonic using the default specifications.
+//!
 //!  ```
 //! use walletd_bip39::prelude::*;
 //!
-//! # fn main() -> Result<(), walletd_bip39::Error> {
+//! fn bip39_mnemonics() -> Result<(), walletd_bip39::Error> {
 //! let mnemonic = Bip39Mnemonic::builder().build()?;
 //! // display the generated mnemonic phrase
 //! println!("mnemonic phrase: {}", mnemonic.phrase());
@@ -26,15 +27,15 @@
 //! println!("mnemonic seed as bytes: {:?}", mnemonic.to_seed().as_bytes());
 //! # assert_eq!(mnemonic.language(), Bip39Language::English);
 //! # assert_eq!(mnemonic.mnemonic_type(), Bip39MnemonicType::Words12);
-//! # Ok(())
-//! # }
+//! Ok(())
+//! }
 //! ```
 //!
 //! You can override the default specifications by providing your desired specifications to the builder.
 //! You can also reuse the [Bip39MnemonicBuilder] object in a mutable way to create multiple BIP39 mnemonics and even override previous specifications.
 //! ```
 //! # use walletd_bip39::prelude::*;
-//! # fn main() -> Result<(), walletd_bip39::Error> {
+//! # fn create_mnemonics() -> Result<(), walletd_bip39::Error> {
 //! let mut mnemonic_builder = Bip39Mnemonic::builder();
 //!
 //! // specify that the mnemonic phrase should consist of 24 words
@@ -69,21 +70,25 @@
 //!
 //! ```
 //! # use walletd_bip39::prelude::*;
-//! # fn main() -> Result<(), walletd_bip39::Error> {
-//! let mnemonic_3 = Bip39Mnemonic::builder().passphrase("mypassphrase").mnemonic_type(Bip39MnemonicType::Words12).language(Bip39Language::English).build()?;
+//! # fn make_mnemonic_with_passphrase() -> Result<(), walletd_bip39::Error> {
+//! let mnemonic_3 = Bip39Mnemonic::builder()
+//!     .passphrase("mypassphrase")
+//!     .mnemonic_type(Bip39MnemonicType::Words12)
+//!     .language(Bip39Language::English)
+//!     .build()?;
 //! # assert_eq!(mnemonic_3.mnemonic_type(), Bip39MnemonicType::Words12);
 //! # assert_eq!(mnemonic_3.language(), Bip39Language::English);
 //! println!("mnemonic_3 phrase: {}", mnemonic_3.phrase());
 //! println!("mnemonic_3 seed hex: {:x}", mnemonic_3.to_seed());
 //! # Ok(())
-//! # }
+//! }
 //! ```
 //!  
 //! A [Bip39Mnemonic] can be restored from a specified valid mnemonic phrase or from a specified valid mnemonic phrase and passphrase if a passphrase was specified when the mnemonic was generated.
 //!
 //! ```
 //! # use walletd_bip39::prelude::*;
-//! # fn main() -> Result<(), walletd_bip39::Error> {
+//! # fn restore() -> Result<(), walletd_bip39::Error> {
 //! let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
 //! let restored_mnemonic_1 = Bip39Mnemonic::builder().mnemonic_phrase(mnemonic_phrase).build()?;
 //! # assert_eq!(restored_mnemonic_1.mnemonic_type(), Bip39MnemonicType::Words12);

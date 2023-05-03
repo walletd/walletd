@@ -1,6 +1,20 @@
 //! # WalletD Ethereum Library
 //!
 //! This library provides a wallet implementation for Ethereum and blockchain-specific functionality.
+//!
+//! # Quickstart Guide
+//!
+//! Using the [EthereumWallet] struct is a good starting point for using this library and access most of the functionality.
+//!
+//! Here's how you can import an Ethereum wallet based on a master [HDKey].
+//! ```
+//! use walletd_ethereum::prelude::*;
+//!
+//! fn import_ethereum_hd_wallet() -> Result<(), walletd_ethereum::Error> {
+//! Ok(())
+//! }
+//! ```
+//!
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]

@@ -35,4 +35,7 @@ pub enum Error {
         /// Maximum index that is allowed
         max: usize,
     },
+    /// Error related to converting from or to a hex
+    #[error("Hex error: {0}")]
+    Hex(#[from] hex::FromHexError),
 }
