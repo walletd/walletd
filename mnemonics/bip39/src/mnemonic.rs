@@ -13,8 +13,14 @@ use walletd_mnemonics_core::{Mnemonic, MnemonicBuilder, Seed};
 
 /// Represents a Bip39 mnemonic.
 ///
+/// # Examples
+/// 
 /// To create a *new* [Bip39Mnemonic] from a randomly generated key, call
 /// [Bip39Mnemonic::new()].
+/// ```
+/// # use walletd_bip39::{Bip39Mnemonic, Bip39MnemonicType, Bip39Language};
+/// //let mnemonic = Bip39Mnemonic::new(Bip39MnemonicType::Words12, Bip39Language::English, "");
+/// ```
 ///
 ///
 /// To get a [Bip39Mnemonic] instance for an existing mnemonic phrase,

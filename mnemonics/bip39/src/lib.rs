@@ -6,9 +6,26 @@
 //!
 //! [bip39-standard]: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 //!
-//! # Examples
+//! # Quickstart
+//! A quick way to access the different features related to the BIP39 mnemonic in this walletD library is to make use of the [Bip39Mnemonic] builder [`Bip39MnemonicBuilder`] which can be also be accessed through [`Bip39Mnemonic::builder()`].
 //!
-//! 1. Create a new randomly generated mnemonic phrase using the default language of English and the default mnemonic type of 12 words
+//! Here's how you can create a new randomly generated BIP39 mnemonic as per your specifications:
+//! 
+//!  ```
+//! use walletd_bip39::{Bip39Language, Bip39Mnemonic, MnemonicExt, MnemonicBuilder, Bip39MnemonicType, ParseMnemonicError};
+//! # fn main() -> Result<(), ParseMnemonicError> {
+//! // 
+//! let mnemonic = Bip39Mnemonic::builder().build()?;
+//! println!("mnemonic phrase: {}", mnemonic.phrase());
+//! println!("mnemonic seed hex: {:x}", mnemonic.to_seed());
+//! println!("mnemonic seed as bytes: {:?}", mnemonic.to_seed().as_bytes());
+//! 
+//! # Ok(())
+//! # }
+//! ```
+//! 
+//!  
+//! Create a new randomly generated mnemonic phrase using the default language of English and the default mnemonic type of 12 words
 //!     - Using the builder with no specifications and default options to create a new mnemonic
 //!         - The default language is English and the default mnemonic type is 12 words
 //!         - The BIP39 mnemonic ([Bip39Mnemonic]) is generated randomly and can be displayed as a string 
