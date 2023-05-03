@@ -68,7 +68,7 @@ impl KeyPairBuilder {
     }
 
     /// Specifies the network type
-    pub fn with_network_type(&mut self, network_type: HDNetworkType) -> &mut Self {
+    pub fn network_type(&mut self, network_type: HDNetworkType) -> &mut Self {
         self.network_type = network_type;
         self
     }
