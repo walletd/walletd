@@ -4,3 +4,6 @@
 //! ```
 //! use walletd_bitcoin::prelude::*;
 //! ```
+
+pub use crate::{BitcoinAddress, BitcoinWallet, BitcoinWalletBuilder, BitcoinAmount};
+pub use walletd_coin_core::prelude::*;
