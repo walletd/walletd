@@ -13,7 +13,7 @@
 //! 
 //!  ```
 //! use walletd_bip39::prelude::*;
-//! # fn main() -> Result<(), ParseMnemonicError> {
+//! # fn main() -> Result<(), walletd_bip39::Error> {
 //! // Generate a new BIP39 mnemonic using the default language of English and the default mnemonic type of 12 words
 //! let mnemonic = Bip39Mnemonic::builder().build()?;
 //! println!("mnemonic phrase: {}", mnemonic.phrase());
@@ -40,8 +40,8 @@
 //!         - The [Bip39Mnemonic] can be converted to a [Seed] type and displayed as a hex string or have the raw bytes returned
 //! 
 //! ```
-//! # use walletd_bip39::{Bip39Language, Bip39Mnemonic, MnemonicExt, MnemonicBuilder, Bip39MnemonicType, ParseMnemonicError};
-//! # fn main() -> Result<(), ParseMnemonicError> {
+//! # use walletd_bip39::prelude::*;
+//! # fn main() -> Result<(), walletd_bip39::Error> {
 //! let mnemonic = Bip39Mnemonic::builder().build()?;
 //! println!("mnemonic phrase: {}", mnemonic.phrase());
 //! println!("mnemonic seed hex: {:x}", mnemonic.to_seed());
@@ -57,8 +57,8 @@
 //!         - Providing a passphrase is optional, but the if a passphrase was used when first creating the mnemonic, the same passphrase must be provided when recovering the mnemonic
 //!         - The mnemonic phrase, seed hex, and the seed bytes of a recovered mnemonic can be displayed in the same manner as for a newly generated mnemonic
 //! ```
-//! # use walletd_bip39::{Bip39Language, Bip39Mnemonic, MnemonicExt, MnemonicBuilder, Bip39MnemonicType, ParseMnemonicError};
-//! # fn main() -> Result<(), ParseMnemonicError> {
+//! # use walletd_bip39::prelude::*;
+//! # fn main() -> Result<(), walletd_bip39::Error> {
 //! let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
 //! let passphrase: &str = "mypassphrase";
 //! let restored_mnemonic = Bip39Mnemonic::builder().mnemonic_phrase(mnemonic_phrase).passphrase(passphrase).build()?;

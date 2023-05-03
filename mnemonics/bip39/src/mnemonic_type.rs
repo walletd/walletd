@@ -20,7 +20,7 @@ pub const ENTROPY_OFFSET: usize = 8;
 ///
 /// ```
 /// # use walletd_bip39::Bip39MnemonicType;
-/// # fn main() -> Result<(), walletd_bip39::ParseMnemonicError> {
+/// # fn main() -> Result<(), walletd_bip39::Error> {
 /// let mnemonic_type = Bip39MnemonicType::from_key_size(128)?;
 /// # Ok(())
 /// # }
