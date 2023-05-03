@@ -1,6 +1,10 @@
-//! This prelude module simplifies importing many useful items from the walletd_mnemonics_core crate using a glob import.
+//! This prelude module simplifies importing many useful items from the walletd_bip39 crate using a glob import.
 //!
 //! To use this prelude, add the following to your code:
 //! ```
-//! use walletd_mnemonics_core::prelude::*;
+//! use walletd_bip39::prelude::*;
 //! ```
+
+pub use crate::{Bip39Mnemonic, Bip39MnemonicBuilder, Bip39Language};
+pub use walletd_mnemonics_core::prelude::*;
+
