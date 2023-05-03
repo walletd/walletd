@@ -9,7 +9,7 @@ use hmac::Hmac;
 use pbkdf2::pbkdf2;
 use rand::{thread_rng, Rng};
 use sha2::{Digest, Sha256, Sha512};
-use walletd_mnemonics_core::{MnemonicBuilder, MnemonicExt, Seed};
+use walletd_mnemonics_core::{MnemonicBuilder, Mnemonic, Seed};
 
 /// Struct representing a Bip39 mnemonic.
 ///
@@ -128,7 +128,7 @@ impl Bip39Mnemonic {
     }
 }
 
-impl MnemonicExt for Bip39Mnemonic {
+impl Mnemonic for Bip39Mnemonic {
     type ErrorType = ParseMnemonicError;
     type Language = Bip39Language;
     type Mnemonic = Self;

@@ -1,5 +1,5 @@
 use walletd_bip39::{
-    Bip39Language, Bip39Mnemonic, Bip39MnemonicType, MnemonicBuilder, MnemonicExt,
+    Bip39Language, Bip39Mnemonic, Bip39MnemonicType, MnemonicBuilder, Mnemonic,
 };
 
 fn main() -> () {

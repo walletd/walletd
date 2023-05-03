@@ -5,9 +5,9 @@ pub mod seed;
 pub use self::seed::Seed;
 pub mod prelude;
 
-/// The MnemonicExt trait is used to provide a common interface for the
+/// The Mnemonic trait is used to provide a common interface for the
 /// different Mnemonic libraries
-pub trait MnemonicExt {
+pub trait Mnemonic {
     /// The associated Language struct
     type Language;
     /// The associated MnemonicType struct

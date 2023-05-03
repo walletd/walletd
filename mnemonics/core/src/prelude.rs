@@ -4,3 +4,5 @@
 //! ```
 //! use walletd_mnemonics_core::prelude::*;
 //! ```
+
+pub use crate::Seed;

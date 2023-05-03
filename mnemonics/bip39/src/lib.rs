@@ -9,7 +9,7 @@
 //! # Quickstart
 //!
 //! ```rust
-//! use walletd_bip39::{Bip39Language, Bip39Mnemonic, MnemonicExt, MnemonicBuilder, Bip39MnemonicBuilder, Bip39MnemonicType};
+//! use walletd_bip39::{Bip39Language, Bip39Mnemonic, Mnemonic, MnemonicBuilder, Bip39MnemonicBuilder, Bip39MnemonicType};
 //!
 //! # use std::error::Error;
 //! # fn main() -> Result<(), Box<dyn Error>> {
@@ -52,5 +52,5 @@ pub use self::language::Bip39Language;
 pub use self::language::WordList;
 pub use self::mnemonic::{Bip39Mnemonic, Bip39MnemonicBuilder};
 pub use self::mnemonic_type::Bip39MnemonicType;
-pub use walletd_mnemonics_core::{MnemonicBuilder, MnemonicExt, Seed};
+pub use walletd_mnemonics_core::{MnemonicBuilder, Mnemonic, Seed};
 pub mod prelude;
