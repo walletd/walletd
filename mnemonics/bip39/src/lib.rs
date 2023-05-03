@@ -6,8 +6,8 @@
 //!
 //! [bip39-standard]: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 //!
-//! # Quickstart
-//! A quick way to access the different features related to the BIP39 mnemonic in this walletD library is to make use of the [Bip39Mnemonic] builder ([Bip39MnemonicBuilder]) which can be also be accessed with the default settings through [`Bip39Mnemonic::builder()`].
+//! # Quickstart Guide
+//! A good way to access the different features related to the BIP39 mnemonic in this walletD library is to make use of the [Bip39Mnemonic] builder ([Bip39MnemonicBuilder]) which can be also be accessed with the default settings through [`Bip39Mnemonic::builder()`].
 //!
 //! The default specifications for the [Bip39MnemonicBuilder] are: English language, 12 words in the mnemonic phrase, and no passphrase specified.
 //! You can get the mnemonic seed from the [Bip39Mnemonic] struct using the [`to_seed`][Bip39Mnemonic::to_seed] method.
