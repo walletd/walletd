@@ -11,7 +11,7 @@
 pub use walletd_bip39::{
     Bip39Language, Bip39Mnemonic, Bip39MnemonicBuilder, Bip39MnemonicType, Seed,
 };
-pub use walletd_mnemonics_core::{Mnemonic, MnemonicBuilder};
+pub use walletd_mnemonics_core::{Mnemonic, MnemonicBuilder, Language};
 
 mod keypair;
 pub use keypair::{KeyPair, KeyPairBuilder, MnemonicKeyPairType};
