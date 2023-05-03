@@ -5,4 +5,4 @@
 //! use walletd_mnemonics_core::prelude::*;
 //! ```
 
-pub use crate::{Seed, Mnemonic, MnemonicBuilder, Language};
+pub use crate::{Language, Mnemonic, MnemonicBuilder, Seed};

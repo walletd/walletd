@@ -7,3 +7,6 @@
 
 pub use crate::CryptoCoin;
 pub use crate::{KeyPair, KeyPairBuilder, MnemonicKeyPairType};
+pub use walletd_coin_core::prelude::*;
+pub use walletd_hd_key::prelude::*;
+pub use walletd_mnemonics_core::prelude::*;

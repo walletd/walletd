@@ -5,4 +5,7 @@
 //! use walletd_coin_core::prelude::*;
 //! ```
 
-pub use crate::{BlockchainConnector, BlockchainConnectorBuilder, ConnectorType, CryptoAddress, CryptoAmount, CryptoWallet, CryptoWalletBuilder};
+pub use crate::{
+    BlockchainConnector, BlockchainConnectorBuilder, ConnectorType, CryptoAddress, CryptoAmount,
+    CryptoWallet, CryptoWalletBuilder,
+};
