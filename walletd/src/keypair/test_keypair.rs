@@ -14,7 +14,7 @@ fn test_keypair() -> Result<(), Error> {
         .mnemonic_phrase(mnemonic_phrase.clone())
         .mnemonic_seed(mnemonic_seed.clone())
         .passphrase(passphrase.to_string())
-        .with_network_type(network)
+        .network_type(network)
         .build()?;
 
     assert_eq!(keypair.mnemonic_phrase(), mnemonic_phrase);
