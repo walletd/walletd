@@ -2,7 +2,7 @@ use std::fmt;
 use std::str::FromStr;
 
 /// Stores the secret value which can be used to derive a hierarchical
-/// deterministic wallet.
+/// deterministic wallet. Often associated with a mnemonic phrase.
 ///
 /// The seed bytes are usually derived from a mnemonic phrase and an optional
 /// passphrase following a specified protocol.

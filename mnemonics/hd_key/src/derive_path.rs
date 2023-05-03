@@ -243,7 +243,7 @@ impl FromStr for HDPathIndex {
 }
 
 /// Contains a vector of [HDPathIndex] to represent a derivation
-/// path for a [HDKey](crate::HDKey) and relevant helper functions
+/// path for a [HDKey](crate::HDKey) and relevant helper functions.
 #[derive(Default, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct HDPath {
     path: Vec<HDPathIndex>,
@@ -398,7 +398,7 @@ impl From<Vec<HDPathIndex>> for HDPath {
 }
 
 /// A builder for the [HDPath] struct, it allows specification
-/// of the standard full path and also which component are hardened. The default
+/// of the standard full path and also which components are hardened. The default
 /// implementation uses the standard format for the full path.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HDPathBuilder {

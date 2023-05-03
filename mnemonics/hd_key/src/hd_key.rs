@@ -116,7 +116,7 @@ impl fmt::Display for HDNetworkType {
     }
 }
 
-/// Represents a master or a derived child HD (Hierarchical Deterministic) Key.
+/// Represents a master or a derived child HD (Hierarchical Deterministic) key.
 ///
 /// The [HDKey] struct contains detailed information about a master node or derived child node HD key and provides methods to create and derive HD keys.
 ///

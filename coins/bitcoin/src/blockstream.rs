@@ -595,7 +595,7 @@ impl Output {
     }
 }
 
-/// Blockstream is a connector to the Blockstream API
+/// A blockchain connector for Bitcoin which follows [`the Blockstream API`](https://github.com/Blockstream/esplora/blob/master/API.md).
 #[derive(Clone, Default, Debug)]
 pub struct Blockstream {
     /// The client used to make requests to the API

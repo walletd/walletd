@@ -57,7 +57,7 @@ pub trait Mnemonic {
     fn mnemonic_type(&self) -> Self::MnemonicType;
 }
 
-/// Implements a builder pattern for creating a [mnemonic][Mnemonic].
+/// Implements a builder pattern for creating a [Mnemonic].
 pub trait MnemonicBuilder {
     /// The associated Mnemonic struct
     type Mnemonic;

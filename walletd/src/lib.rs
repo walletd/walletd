@@ -15,13 +15,16 @@ pub use walletd_mnemonics_core::{Mnemonic, MnemonicBuilder};
 
 mod keypair;
 pub use keypair::{KeyPair, KeyPairBuilder, MnemonicKeyPairType};
+#[doc(hidden)]
 pub use walletd_bitcoin::blockstream;
+pub use walletd_bitcoin::blockstream::Blockstream;
 pub use walletd_bitcoin::{BitcoinAmount, BitcoinWallet};
+#[doc(hidden)]
+pub use walletd_coin_core::ConnectorType;
 pub use walletd_coin_core::{
-    BlockchainConnector, ConnectorType, CryptoAddress, CryptoAmount, CryptoWallet,
-    CryptoWalletBuilder,
+    BlockchainConnector, CryptoAddress, CryptoAmount, CryptoWallet, CryptoWalletBuilder,
 };
-pub use walletd_ethereum::{EthClient, EthereumAmount, EthereumFormat, EthereumWallet};
+pub use walletd_ethereum::{EthClient, EthereumAmount, EthereumWallet};
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 pub use {
     walletd_bip39, walletd_bitcoin, walletd_coin_core, walletd_ethereum, walletd_hd_key,
