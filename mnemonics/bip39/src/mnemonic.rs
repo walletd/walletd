@@ -407,10 +407,7 @@ impl MnemonicBuilder for Bip39MnemonicBuilder {
 
 impl Bip39Mnemonic {
     /// Converting entropy bytes to the mnemonic words, given a wordlist
-    fn bytes_to_words(
-        entropy_bytes: &Vec<u8>,
-        wordlist_info: &WordList,
-    ) -> Result<String, Error> {
+    fn bytes_to_words(entropy_bytes: &Vec<u8>, wordlist_info: &WordList) -> Result<String, Error> {
         if entropy_bytes.len() % 4 != 0 {
             return Err(Error::InvalidEntropy(
                 "Entropy must be a multiple of 4 bytes (32 bits) in length".to_owned(),
@@ -465,10 +462,7 @@ impl Bip39Mnemonic {
     }
 
     /// Converts the words of a mnemonic phrase to the bytes representation
-    fn words_to_bytes(
-        language: Bip39Language,
-        mnemonic_phrase: &str,
-    ) -> Result<Vec<u8>, Error> {
+    fn words_to_bytes(language: Bip39Language, mnemonic_phrase: &str) -> Result<Vec<u8>, Error> {
         let wordlist = WordList::new(language);
         let phrase: Vec<&str> = mnemonic_phrase.split(' ').collect();
         let word_count = phrase.len();
@@ -651,10 +645,7 @@ mod tests {
             .mnemonic_phrase(phrase)
             .build();
         assert!(mnemonic.is_err());
-        assert!(matches!(
-            mnemonic.unwrap_err(),
-            Error::InvalidWord(_)
-        ));
+        assert!(matches!(mnemonic.unwrap_err(), Error::InvalidWord(_)));
     }
 
     #[test]
