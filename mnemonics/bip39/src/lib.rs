@@ -105,7 +105,8 @@
 //! println!("restored_mnemonic_2 seed hex: {:x}", restored_mnemonic_2.to_seed());
 //! # Ok(())
 //! # }
-//!
+//! ```
+//! 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
