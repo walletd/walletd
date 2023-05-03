@@ -14,3 +14,4 @@ pub use derive_path::{HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 mod error;
 pub use error::Error;
 pub use walletd_mnemonics_core::Seed;
+pub mod prelude;

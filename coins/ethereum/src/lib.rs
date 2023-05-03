@@ -16,6 +16,7 @@ pub use ethereum_wallet::EthereumWallet;
 mod error;
 pub use error::Error;
 pub use web3;
+pub mod prelude;
 
 /// EthereumFormat is an enum that represents the format of an Ethereum address (checksummed or non-checksummed)
 #[derive(Default, Debug, Clone, Copy)]

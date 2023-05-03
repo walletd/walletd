@@ -53,3 +53,4 @@ pub use self::language::WordList;
 pub use self::mnemonic::{Bip39Mnemonic, Bip39MnemonicBuilder};
 pub use self::mnemonic_type::Bip39MnemonicType;
 pub use walletd_mnemonics_core::{MnemonicBuilder, MnemonicExt, Seed};
+pub mod prelude;
