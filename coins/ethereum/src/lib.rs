@@ -137,6 +137,7 @@ pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathInde
 pub enum EthereumFormat {
     #[default]
     /// Checksummed is the checksummed format of an Ethereum address where the case of each letter is mixed using the checksum algorithm
+    /// This is the default format for this enum
     Checksummed,
     /// NonChecksummed is the non-checksummed format of an Ethereum address where the letters are all lowercase
     NonChecksummed,
