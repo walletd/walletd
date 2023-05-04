@@ -273,7 +273,7 @@ impl BitcoinWallet {
             None => {
                 let mut builder = HDPath::builder();
                 builder
-                    .purpose(self.default_hd_purpose()?.to_shortform_num())
+                    .purpose_index(self.default_hd_purpose()?.to_shortform_num())
                     .coin_type_index(self.coin_type_id()?)
                     .account_index(0)
                     .address_index(0);
@@ -361,7 +361,7 @@ impl BitcoinWallet {
         let mut max_address = 0;
         let mut path_builder = HDPath::builder();
         path_builder
-            .purpose(purpose)
+            .purpose_index(purpose)
             .coin_type_index(coin_type)
             .account_index(account.to_shortform_num())
             .hardened_account();
@@ -402,7 +402,7 @@ impl BitcoinWallet {
                 let mut builder = HDPath::builder();
 
                 builder
-                    .purpose(purpose)
+                    .purpose_index(purpose)
                     .coin_type_index(coin_type)
                     .account_index(account.to_shortform_num())
                     .hardened_account();
@@ -462,7 +462,7 @@ impl BitcoinWallet {
             None => {
                 let mut builder = HDPath::builder();
                 builder
-                    .purpose(self.default_hd_purpose().unwrap().to_shortform_num())
+                    .purpose_index(self.default_hd_purpose().unwrap().to_shortform_num())
                     .coin_type_index(self.coin_type_id().unwrap());
                 builder
             }
@@ -879,7 +879,7 @@ impl Default for BitcoinWalletBuilder {
 
         let mut deriv_path_builder = HDPath::builder();
         deriv_path_builder
-            .purpose(default_hd_purpose.to_shortform_num())
+            .purpose_index(default_hd_purpose.to_shortform_num())
             .hardened_purpose()
             .coin_type_index(slip44::Coin::Bitcoin.id())
             .hardened_coin_type()
@@ -969,7 +969,7 @@ impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
 
         let mut hd_path_builder = HDPath::builder();
         hd_path_builder
-            .purpose(hd_purpose.to_shortform_num())
+            .purpose_index(hd_purpose.to_shortform_num())
             .hardened_purpose()
             .coin_type_index(coin_type_id)
             .hardened_coin_type();

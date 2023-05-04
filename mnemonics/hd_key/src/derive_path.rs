@@ -454,7 +454,7 @@ impl HDPathBuilder {
     }
 
     /// Specify the purpose index shortform number value
-    pub fn purpose(&mut self, purpose: u32) -> &mut Self {
+    pub fn purpose_index(&mut self, purpose: u32) -> &mut Self {
         self.purpose = Some(purpose);
         self
     }
