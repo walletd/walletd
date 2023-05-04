@@ -5,7 +5,7 @@
 //! Provides a common interface for interacting with different cryptocurrencies and blockchains.
 //! Built to facilitate and simplify development and implementation of multi-cryptocurrency non-custodial wallets.
 //!
-//! # Quickstart Guide
+//! ## Quickstart Guide
 //!
 //! A good way to access many of the different features of this walletD library is through the use of the [KeyPair] struct which can enable a user to create a HD (Hierarchical Deterministic) wallet from a mnemonic phrase that could be used with multiple cryptocurrencies.
 //! The [KeyPairBuilder] struct which can be accessed with default settings through [`KeyPair::builder()`] is a versatile way to specify options for and build a [KeyPair] struct.
@@ -16,21 +16,99 @@
 //! You need to either specify a mnemonic seed or a mnemonic phrase to build a [KeyPair] struct. If a mnemonic phrase is specified, the mnemonic seed is derived from the mnemonic phrase and the optional passphrase.
 //! If the mnemonic seed is specified, any specifications for the mnemonic phrase and passphrase are ignored when deriving a HD wallet key, but any specifications given for these attributes are stored on the [KeyPair] struct.
 //!
-//! ***Warning**
+//! **Warning**:
+//! The information in the [KeyPair] struct should be treated as sensitive information and should be stored and handled securely, especially if it is being used to store real funds.
 //!
+//! The [KeyPair] struct contains the mnemonic phrase, mnemonic seed, and passphrase if specified, as well as the network type and the mnemonic key pair type.
 //!
+//! ### Create HD KeyPair from Bip39 Mnemonic
 //!
+//! Here's how you can create a [KeyPair] from a [Bip39Mnemonic] using the [KeyPairBuilder].
 //! ```
-//! use walletd::prelude::*;
-//! use walletd::Error;
-//! fn main() -> Result<(), Error> {
-//! let seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
-//! let keypair = KeyPair::builder().mnemonic_seed(seed).network_type(HDNetworkType::TestNet).build()?;
-//!
-//! Ok(())
-//! }
+//! use walletd::prelude::*;  
+//! use walletd_bip39::prelude::*;
+//! # fn main() -> Result<(), walletd::Error> {
+//! let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
+//! let bip39_mnemonic = Bip39Mnemonic::builder().mnemonic_phrase(mnemonic_phrase).build()?;
+//! let seed = bip39_mnemonic.to_seed();
+//! println!("seed_hex: {:x}", seed);
+//! let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
+//! let keypair = KeyPair::builder().mnemonic_phrase(mnemonic_phrase.into()).network_type(HDNetworkType::TestNet).build()?;
+//! assert_eq!(keypair.to_master_key(), master_hd_key);
+//! # Ok(())
+//! # }
 //! ```
 //!
+//! ### Derive Wallets
+//!
+//! The [`KeyPair::derive_wallet`] method can be used to derive a wallet for a specific cryptocurrency from a [KeyPair].
+//! You can specify the type o [CryptoWallet] to derive as a generic type parameter to the [`derive_wallet`][KeyPair::derive_wallet] method.
+//! ```
+//! # use walletd::prelude::*;
+//! # use walletd_bip39::prelude::*;
+//! use walletd_bitcoin::prelude::*;
+//! use walletd_ethereum::prelude::*;
+//! # fn main() -> Result<(), walletd::Error> {
+//! # let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
+//! # let bip39_mnemonic = Bip39Mnemonic::builder().mnemonic_phrase(mnemonic_phrase).build()?;
+//! # let seed = bip39_mnemonic.to_seed();
+//! # println!("seed_hex: {:x}", seed);
+//! # let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
+//! # let keypair = KeyPair::builder().mnemonic_phrase(mnemonic_phrase.into()).network_type(HDNetworkType::TestNet).build()?;
+//! let mut btc_wallet = keypair.derive_wallet::<BitcoinWallet>()?;
+//! let mut eth_wallet = keypair.derive_wallet::<EthereumWallet>()?;
+//! # Ok(())
+//! # }
+//! ```
+//! ### Specify Blockchain Connectors
+//! ```no_run
+//! # use walletd::prelude::*;
+//! # use walletd_bip39::prelude::*;
+//! # use walletd_bitcoin::prelude::*;
+//! # use walletd_ethereum::prelude::*;
+//! # fn main() -> Result<(), walletd::Error> {
+//! # let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
+//! # let bip39_mnemonic = Bip39Mnemonic::builder().mnemonic_phrase(mnemonic_phrase).build()?;
+//! # let seed = bip39_mnemonic.to_seed();
+//! # println!("seed_hex: {:x}", seed);
+//! # let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
+//! # let keypair = KeyPair::builder().mnemonic_phrase(mnemonic_phrase.into()).network_type(HDNetworkType::TestNet).build()?;
+//! # let mut btc_wallet = keypair.derive_wallet::<BitcoinWallet>()?;
+//! # let mut eth_wallet = keypair.derive_wallet::<EthereumWallet>()?;
+//! btc_wallet.set_blockchain_client(Blockstream::new("https://blockstream.info/testnet/api")?);
+//! eth_wallet.set_blockchain_client(EthClient::new("https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161")?);
+//!
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ### Use the CryptoWallets
+//! ```no_run
+//! # use walletd::prelude::*;
+//! # use walletd_bip39::prelude::*;
+//! # use walletd_bitcoin::prelude::*;
+//! # use walletd_ethereum::prelude::*;
+//! # async fn cryptowallets() -> Result<(), walletd::Error> {
+//! # let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
+//! # let bip39_mnemonic = Bip39Mnemonic::builder().mnemonic_phrase(mnemonic_phrase).build()?;
+//! # let seed = bip39_mnemonic.to_seed();
+//! # println!("seed_hex: {:x}", seed);
+//! # let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
+//! # let keypair = KeyPair::builder().mnemonic_phrase(mnemonic_phrase.into()).network_type(HDNetworkType::TestNet).build()?;
+//! # let mut btc_wallet = keypair.derive_wallet::<BitcoinWallet>()?;
+//! # let mut eth_wallet = keypair.derive_wallet::<EthereumWallet>()?;
+//! # btc_wallet.set_blockchain_client(Blockstream::new("https://blockstream.info/testnet/api")?);
+//! # eth_wallet.set_blockchain_client(EthClient::new("https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161")?);
+//! btc_wallet.sync().await?;
+//! println!("btc_wallet balance: {} BTC", btc_wallet.balance().await?.btc());
+//! let mut eth_wallet = keypair.derive_wallet::<EthereumWallet>()?;
+//! print!("eth_wallet public address: {}", eth_wallet.public_address());
+//! let eth_client = EthClient::new("https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161")?;
+//! eth_wallet.set_blockchain_client(eth_client);
+//! println!("eth_wallet balance: {} ETH", eth_wallet.balance().await?.eth());
+//! # Ok(())
+//! # }
+//! ```
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 

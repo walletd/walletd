@@ -57,7 +57,7 @@
 //! # Ok(())
 //! # }
 //! ```
-//! 
+//!
 //! It may be useful in some cases to provide all of the specifications even when using the some of the default settings.
 //!
 //! ### Use of Optional Passphrase
@@ -85,7 +85,7 @@
 //! ```
 //!  
 //! ### Restoring a Mnemonic
-//! 
+//!
 //! A [Bip39Mnemonic] can be restored from a specified valid mnemonic phrase or from a specified valid mnemonic phrase and passphrase if a passphrase was specified when the mnemonic was generated.
 //!
 //! ```

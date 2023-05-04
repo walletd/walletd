@@ -9,25 +9,29 @@ async fn main() -> Result<(), walletd_bitcoin::Error> {
         .master_hd_key(master_hd_key)
         .build()?;
     let btc_client = Blockstream::new("https://blockstream.info/testnet/api")?;
-     let fee_estimates = btc_client.fee_estimates().await?;
+    let fee_estimates = btc_client.fee_estimates().await?;
     println!("fee estimates: {:?}", fee_estimates);
     btc_wallet.set_blockchain_client(btc_client);
     btc_wallet.sync().await?;
     for addr in btc_wallet.associated_info() {
-         println!("address: {}, derivation path {}", 
-         addr.address.public_address(), addr.hd_key().derivation_path().to_string());
-     }
+        println!(
+            "address: {}, derivation path {}",
+            addr.address.public_address(),
+            addr.hd_key().derivation_path().to_string()
+        );
+    }
     println!("next receive address: {}", btc_wallet.receive_address()?);
-     println!("next change address: {}", btc_wallet.next_change_address()?.public_address());
+    println!(
+        "next change address: {}",
+        btc_wallet.next_change_address()?.public_address()
+    );
 
-    
-
-     let balance = btc_wallet.balance().await?;
-     println!(
-         "bitcoin wallet balance: {} BTC, ({} satoshi",
-         balance.btc(),
-         balance.satoshi()
-     );
+    let balance = btc_wallet.balance().await?;
+    println!(
+        "bitcoin wallet balance: {} BTC, ({} satoshi",
+        balance.btc(),
+        balance.satoshi()
+    );
 
     Ok(())
 }

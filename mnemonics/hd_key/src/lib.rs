@@ -9,7 +9,7 @@
 //!
 //! The [HDKey] struct is the main entry point for the library.
 //! You can create a new master [HDKey] from a [Seed] and also derive a child [HDKey].
-//! 
+//!
 //! The network type [HDNetworkType] is associated with each [HDKey] which affects the format of the associated [ExtendedPrivateKey] and [ExtendedPublicKey] when serialized.
 //! The derivation path [HDPath] can be customized to support different HD key derivation schemes including various [HDPurpose] types such as [BIP44][HDPurpose::BIP44], [BIP49][HDPurpose::BIP49], and [BIP84][HDPurpose::BIP84].
 //! The [HDPathBuilder] struct which can be easily accessed through [`HDPath::builder()`] implements common default settings for the [HDPath] and can be used to customize the [HDPath] to your needs.
