@@ -1,20 +1,90 @@
 //! # WalletD Ethereum Library
 //!
-//! This library provides a wallet implementation for Ethereum and blockchain-specific functionality.
+//! Provides a wallet implementation for Ethereum and blockchain-specific functionality.
 //!
 //! # Quickstart Guide
 //!
-//! Using the [EthereumWallet] struct is a good starting point for using this library and access most of the functionality.
+//! Use the [EthereumWallet] struct as a good starting point to access the functionalities for Ethereum that walletD provides.
+//! 
+//! Each [EthereumWallet] is associated with one public address. 
+//! An [EthereumWallet] could be instantiated without a [EthereumPrivateKey] affiliated with it, but it would not be able to sign transactions. 
+//! If an [EthereumWallet] is created with an [EthereumPublicKey] but no [EthereumPrivateKey], it will be able to verify signatures but not sign or send transactions.
 //!
-//! Here's how you can import an Ethereum wallet based on a master [HDKey].
+//!
+//! Here's how you can import an Ethereum wallet based on a master [HDKey]. We will use the `mut` keyword to make the [ethereum wallet][EthereumWallet] mutable so that we can modify `ethereum_wallet` later.
+//! By importing the `ethereum_wallet` fom a `master_hd_key` will both the [EthereumPrivateKey] and the [EthereumPublicKey] will be provided to the `ethereum_wallet`.
 //! ```
 //! use walletd_ethereum::prelude::*;
+//! use walletd_hd_key::prelude::*;
 //!
-//! fn import_ethereum_hd_wallet() -> Result<(), walletd_ethereum::Error> {
+//! fn import_ethereum_wallet() -> Result<(), walletd_ethereum::Error> {
+//! let master_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
+//! let master_hd_key = HDKey::new_master(master_seed, HDNetworkType::TestNet)?;
+//! let mut ethereum_wallet = EthereumWallet::builder().master_hd_key(master_hd_key).build()?;
+//! let public_address = ethereum_wallet.public_address();
+//! println!("ethereum wallet public address: {}", ethereum_wallet.public_address());
+//! assert!(ethereum_wallet.private_key().is_ok());
+//! assert!(ethereum_wallet.public_key().is_ok());
+//! # assert_eq!(public_address, "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc".to_string());
 //! Ok(())
 //! }
 //! ```
-//!
+//! 
+//! Deriving an [EthereumWallet] is simple and uses some default settings under the hood. 
+//! We can inspect our `ethereum_wallet` to see that a child `derived_hd_key` was derived from the master `master_hd_key` and see the derivation path [HDPath] that was used by default.
+//! ```
+//! # use walletd_ethereum::prelude::*;
+//! # use walletd_hd_key::prelude::*;
+//! # fn import_ethereum_wallet() -> Result<(), walletd_ethereum::Error> {
+//! # let master_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
+//! # let master_hd_key = HDKey::new_master(master_seed, HDNetworkType::TestNet)?;
+//! # let mut ethereum_wallet = EthereumWallet::builder().master_hd_key(master_hd_key).build()?;
+//! let derived_hd_key = ethereum_wallet.derived_hd_key()?;
+//! let address_derivation_path = derived_hd_key.derivation_path;
+//! println!("address derivation path: {}", address_derivation_path);
+//! # assert_eq!(address_derivation_path.to_string(), "m/44'/60'/0'/0/0".to_string());
+//! # Ok(())
+//! # }
+//! ```
+//! We see that by default the Ethereum wallet uses the derivation path "m/44'/60'/0'/0/" corresponding to  [BIP44 for the purpose value][HDPurpose::BIP44] and 60' corresponding to the coin type for Ethereum. 
+//! 
+//! We need to add a [blockchain connector][BlockchainConnector] to our [ethereum wallet][EthereumWallet] to be able to interact with the Ethereum blockchain.
+//! 
+//! Here's an example of how to add an instance of [EthClient] to our `ethereum_wallet`. 
+//! [EthClient] currently supports any Ethereum endpoint that conforms to the Ethereum JSON-RPC standard for accessing Ethereum blockchain data. 
+//! We recommend using [Infura](https://www.infura.io/), or [Alchemy](https://www.alchemy.com/pricing). Both services provide generous free plans that you can use.
+//! Note that the url used to connect needs to match the network type being used (pay attention to the difference between testnet networks (used for testing and development purposes) and the mainnet network (where coins have actual value).
+//! 
+//! ```
+//! # use walletd_ethereum::prelude::*;
+//! # use walletd_hd_key::prelude::*;
+//! # fn ethereum_wallet() -> Result<(), walletd_ethereum::Error> {
+//! # let master_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
+//! # let master_hd_key = HDKey::new_master(master_seed, HDNetworkType::TestNet)?;
+//! # let mut ethereum_wallet = EthereumWallet::builder().master_hd_key(master_hd_key).build()?;
+//!  let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
+//!  let ethclient = EthClient::new(ethclient_url)?;
+//!  ethereum_wallet.set_blockchain_client(ethclient);
+//! # Ok(())
+//! # }
+//! ```
+//! 
+//! The blockchain client `ethclient` can be used separately from the `ethereum_wallet` to access blockchain data:
+//! ```
+//! # use walletd_ethereum::prelude::*;
+//! async fn ethclient() -> Result<(), walletd_ethereum::Error> {
+//! # let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
+//! # let ethclient = EthClient::new(ethclient_url)?;
+//! let tx_hash = "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
+//! let tx = ethclient.transaction_data_from_hash(tx_hash).await?;
+//! println!("transaction data: {:?}", tx);
+//! # Ok(())
+//! # }
+//! ```
+//! 
+//! 
+//! 
+//! 
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
@@ -26,7 +96,7 @@ pub use ethclient::EthClient;
 mod ethereum_amount;
 pub use ethereum_amount::EthereumAmount;
 mod ethereum_wallet;
-pub use ethereum_wallet::{EthereumWallet, EthereumWalletBuilder};
+pub use ethereum_wallet::{EthereumWallet, EthereumWalletBuilder, EthereumPrivateKey, EthereumPublicKey};
 mod error;
 pub use error::Error;
 pub use web3;
@@ -34,7 +104,7 @@ pub mod prelude;
 pub use walletd_bip39::{
     Bip39Language, Bip39Mnemonic, Bip39MnemonicType, Mnemonic, MnemonicBuilder, Seed,
 };
-pub use walletd_coin_core::{CryptoAddress, CryptoAmount, CryptoWallet, CryptoWalletBuilder};
+pub use walletd_coin_core::{CryptoAddress, CryptoAmount, CryptoWallet, CryptoWalletBuilder, BlockchainConnector};
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 
 /// Represents the format of an Ethereum address (checksummed or non-checksummed)

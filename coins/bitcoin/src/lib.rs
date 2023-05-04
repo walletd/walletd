@@ -1,7 +1,7 @@
 //! # WalletD Bitcoin Library
 //!
-//! This library provides a wallet implementation for Bitcoin including the ability create a new wallet or import an existing wallet, check balances, and handle transactions.
-//! It supports a heirarchical deterministic (HD) wallet structure and provides the ability to search for previously used addresses associated with the wallet as well as the creation of new addresses.
+//! Provides a wallet implementation for Bitcoin including the ability to create a new wallet or import an existing wallet, check balances, and handle transactions.
+//! It supports a hierarchical deterministic (HD) wallet structure and provides the ability to search for previously used addresses associated with the wallet as well as the creation of new addresses.
 //! It also facilitates obtaining blockchain information.
 //!
 //! # Quickstart Guide
@@ -43,6 +43,6 @@ pub use error::Error;
 pub use walletd_bip39::{
     Bip39Language, Bip39Mnemonic, Bip39MnemonicType, Mnemonic, MnemonicBuilder, Seed,
 };
-pub use walletd_coin_core::{CryptoAddress, CryptoAmount, CryptoWallet, CryptoWalletBuilder};
+pub use walletd_coin_core::{CryptoAddress, CryptoAmount, CryptoWallet, CryptoWalletBuilder, BlockchainConnector};
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 pub mod prelude;

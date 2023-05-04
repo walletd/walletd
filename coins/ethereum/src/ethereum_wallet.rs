@@ -17,14 +17,17 @@ use web3::types::{Address, TransactionParameters};
 
 use crate::{EthereumAmount, EthereumFormat};
 
+/// Represents a private key for an Ethereum wallet, wraps a [SecretKey] from the secp256k1 crate
 #[derive(Debug, Clone)]
 pub struct EthereumPrivateKey(SecretKey);
 
 impl EthereumPrivateKey {
+    /// Represent the private key as a byte array
     pub fn to_bytes(&self) -> [u8; 32] {
         self.0.serialize_secret()
     }
 
+    /// Instantiate the private key from a slice of bytes, errors if given invalid bytes
     pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
         let secret_key = SecretKey::from_slice(bytes)?;
         Ok(EthereumPrivateKey(secret_key))
@@ -45,19 +48,23 @@ impl LowerHex for EthereumPrivateKey {
     }
 }
 
+/// Represents an EthereumPublicKey, wraps a [PublicKey] from the secp256k1 crate
 #[derive(Debug, Clone)]
 pub struct EthereumPublicKey(PublicKey);
 
 impl EthereumPublicKey {
+    /// Converts the public key to a byte array
     pub fn to_bytes(&self) -> [u8; 33] {
         self.0.serialize()
     }
-
+    /// Constructs the public key from a slice of bytes, returns an [error][Error] if given invalid bytes
     pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
         let public_key = PublicKey::from_slice(bytes)?;
         Ok(EthereumPublicKey(public_key))
     }
 
+
+    /// Returns the public address of the public key in the specified format
     pub fn to_public_address(&self, address_format: EthereumFormat) -> Result<String, Error> {
         let public_key_full = self.0;
 

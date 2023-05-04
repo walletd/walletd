@@ -5,4 +5,5 @@
 //! use walletd_ethereum::prelude::*;
 //! ```
 
-pub use crate::{EthereumAmount, EthereumFormat, EthereumWallet, EthereumWalletBuilder};
+pub use crate::{EthereumAmount, EthereumFormat, EthereumWallet, EthereumWalletBuilder, EthClient, EthereumPrivateKey, EthereumPublicKey};
+pub use walletd_coin_core::prelude::*;

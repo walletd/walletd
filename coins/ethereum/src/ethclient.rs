@@ -47,7 +47,7 @@ impl EthClient {
     /// # Arguments
     /// * `transaction_hash` - A H256 hash of a transaction
     /// # Example
-    /// ```
+    /// ```no_run
     /// use std::str::FromStr;
     ///
     /// use walletd_ethereum::EthClient;
