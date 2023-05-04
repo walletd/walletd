@@ -63,7 +63,6 @@ impl EthereumPublicKey {
         Ok(EthereumPublicKey(public_key))
     }
 
-
     /// Returns the public address of the public key in the specified format
     pub fn to_public_address(&self, address_format: EthereumFormat) -> Result<String, Error> {
         let public_key_full = self.0;
