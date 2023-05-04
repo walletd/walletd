@@ -2,7 +2,7 @@
 //!
 //! Provides a wallet implementation for Ethereum and blockchain-specific functionality.
 //!
-//! # Quickstart Guide
+//! ## Quickstart Guide
 //!
 //! Use the [EthereumWallet] struct as a good starting point to access the functionalities for Ethereum that walletD provides.
 //!
@@ -10,6 +10,7 @@
 //! An [EthereumWallet] could be instantiated without a [EthereumPrivateKey] affiliated with it, but it would not be able to sign transactions.
 //! If an [EthereumWallet] is created with an [EthereumPublicKey] but no [EthereumPrivateKey], it will be able to verify signatures but not sign or send transactions.
 //!
+//! ### Importing an Ethereum Wallet from an HD Key
 //!
 //! Here's how you can import an Ethereum wallet based on a master [HDKey]. We will use the `mut` keyword to make the [ethereum wallet][EthereumWallet] mutable so that we can modify `ethereum_wallet` later.
 //! By importing the `ethereum_wallet` fom a `master_hd_key` will both the [EthereumPrivateKey] and the [EthereumPublicKey] will be provided to the `ethereum_wallet`.
@@ -28,6 +29,8 @@
 //! # Ok(())
 //! # }
 //! ```
+//!
+//! ### Default Derivation Path
 //!
 //! Deriving an [EthereumWallet] is simple and uses some default settings under the hood.
 //! We can inspect our `ethereum_wallet` to see that a child `derived_hd_key` was derived from the master `master_hd_key` and see the derivation path [HDPath] that was used by default.
@@ -49,6 +52,8 @@
 //!
 //! We need to add a [blockchain connector][BlockchainConnector] to our [ethereum wallet][EthereumWallet] to be able to interact with the Ethereum blockchain.
 //!
+//!
+//! ### Adding a Blockchain Connector
 //! Here's an example of how to add an instance of [EthClient] to our `ethereum_wallet`.
 //! [EthClient] currently supports any Ethereum endpoint that conforms to the Ethereum JSON-RPC standard for accessing Ethereum blockchain data.
 //! We recommend using [Infura](https://www.infura.io/), or [Alchemy](https://www.alchemy.com/pricing). Both services provide generous free plans that you can use.
@@ -68,6 +73,7 @@
 //! # }
 //! ```
 //!
+//! ### Using EthClient to Access Blockchain Data
 //! The blockchain client `ethclient` can be used separately from the `ethereum_wallet` to access blockchain data such as details of a transaction given a tx hash, the current block number, or the current gas price.
 //! ```no_run
 //! # use walletd_ethereum::prelude::*;
@@ -83,6 +89,7 @@
 //! # }
 //! ```
 //!
+//! ### Balance of Ethereum Wallet on Blockchain
 //! When the `ethereum_wallet` is connected to the blockchain, we can find the balance of the wallet.
 //! ```no_run
 //! # use walletd_ethereum::prelude::*;

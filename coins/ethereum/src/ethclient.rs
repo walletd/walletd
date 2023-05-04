@@ -352,7 +352,7 @@ impl EthClient {
 #[async_trait]
 impl BlockchainConnector for EthClient {
     type ErrorType = Error;
-
+    /// Create a new instance of [EthClient] based on a given endpoint url, errors if the endpoint is invalid or the transport fails to connect
     fn new(endpoint: &str) -> Result<Self, Error> {
         // TODO(#71): Change transport to support web sockets
         let transport = web3::transports::Http::new(endpoint)?;

@@ -1,6 +1,3 @@
-//! # Ethereum Wallet (walletd implementation)
-//!
-
 use core::fmt;
 use std::fmt::LowerHex;
 use std::str::FromStr;
@@ -123,22 +120,19 @@ impl LowerHex for EthereumPublicKey {
 
 /// Builder for [EthereumWallet], allows for specification of options for the ethereum wallet
 pub struct EthereumWalletBuilder {
-    /// The address format used to generate the wallet, if the address format is not specified the default is used
     address_format: EthereumFormat,
-    /// The master HD key used to import the wallet
     master_hd_key: Option<HDKey>,
-    /// The mnemonic seed used to import the wallet, if the mnemonic seed is not provided, the master_hd_key must be provided
-    /// If the master_hd_key is provided, the mnemonic seed will be ignored
     mnemonic_seed: Option<Seed>,
-    /// The specified network type to use, if the master_hd_key is provided, the network type will be inferred from the master_hd_key and this network_type will be ignored
     network_type: HDNetworkType,
-    /// Specifiyng a HDPathBuilder allows for customizing the derivation path used including which indices are hardened and will override the default
-    /// The default HDPathBuilder uses hardened indices for the purpose, coin type, account ,and non-hardened indices for the change and address indices
-    /// The default HDPathBuilder is `m/44'/60'/0'/0/0`
     hd_path_builder: HDPathBuilder,
 }
 
 impl Default for EthereumWalletBuilder {
+    /// Specifies the default options for the EthereumWalletBuilder
+    /// The default address format is EthereumFormat::Checksummed
+    /// The default network type is HDNetworkType::MainNet
+    /// The default HDPathBuilder is `m/44'/60'/0'/0/0`
+    /// By default neither the master HD key nor the mnemonic seed are specified
     fn default() -> Self {
         let mut hd_path_builder = HDPathBuilder::default();
         hd_path_builder
@@ -324,8 +318,6 @@ impl CryptoWallet for EthereumWallet {
     }
 }
 
-/// Technically speaking, an "EthereumWallet" is a public address, public key and
-/// private key
 impl EthereumWallet {
     /// Returns the address format used by the wallet
     pub fn address_format(&self) -> EthereumFormat {
