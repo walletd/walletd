@@ -10,23 +10,23 @@ use ripemd::Ripemd160;
 use crate::{Error, HDPath, HDPathIndex, HDPurpose, Seed};
 
 /// A wrapper around the [secp256k1::SecretKey]
-/// struct to be used with [HDKey]
+/// struct to be used with [HDKey].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ExtendedPrivateKey(secp256k1::SecretKey);
 
 impl ExtendedPrivateKey {
-    /// Creates a new ExtendedPrivateKey from a slice of bytes
+    /// Creates a new [ExtendedPrivateKey] from a slice of bytes.
     pub fn from_slice(data: &[u8]) -> Result<ExtendedPrivateKey, Error> {
         let secret_key = secp256k1::SecretKey::from_slice(data)?;
         Ok(ExtendedPrivateKey(secret_key))
     }
 
-    /// Returns the bytes of the ExtendedPrivateKey
+    /// Returns the bytes of the [ExtendedPrivateKey].
     pub fn to_bytes(&self) -> [u8; 32] {
         *self.0.as_ref()
     }
 
-    /// Converts the ExtendedPrivateKey to an ExtendedPublicKey
+    /// Converts the [ExtendedPrivateKey] to an [ExtendedPublicKey].
     pub fn to_public_key(&self) -> ExtendedPublicKey {
         ExtendedPublicKey(secp256k1::PublicKey::from_secret_key(
             &secp256k1::Secp256k1::new(),
@@ -34,7 +34,7 @@ impl ExtendedPrivateKey {
         ))
     }
 
-    /// Adds a tweak to the underlying private key
+    /// Adds a tweak to the underlying private key.
     pub fn add_tweak(mut self, tweak: &secp256k1::Scalar) -> Result<Self, Error> {
         self = ExtendedPrivateKey(self.0.add_tweak(tweak)?);
         Ok(self)
@@ -55,23 +55,23 @@ impl fmt::LowerHex for ExtendedPrivateKey {
     }
 }
 
-/// The ExtendedPublicKey struct is a wrapper around the secp256k1::PublicKey
-/// struct to be used with HDKey
+/// A wrapper around the [secp256k1::PublicKey]
+/// struct to be used with [HDKey]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ExtendedPublicKey(secp256k1::PublicKey);
 
 impl ExtendedPublicKey {
-    /// Creates a new ExtendedPublicKey from a slice of bytes
+    /// Creates a new [ExtendedPublicKey] from a slice of bytes.
     pub fn from_slice(slice: &[u8]) -> Result<Self, Error> {
         Ok(Self(secp256k1::PublicKey::from_slice(slice)?))
     }
 
-    /// Creates a new ExtendedPublicKey from an ExtendedPrivateKey
+    /// Creates a new [ExtendedPublicKey] from an [ExtendedPrivateKey].
     pub fn from_private_key(private_key: &ExtendedPrivateKey) -> Self {
         private_key.to_public_key()
     }
 
-    /// Converts the ExtendedPublicKey to bytes
+    /// Converts the [ExtendedPublicKey] a byte array.
     pub fn to_bytes(&self) -> [u8; 33] {
         self.0.serialize()
     }

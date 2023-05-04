@@ -20,43 +20,43 @@ pub trait Mnemonic {
     type Mnemonic;
     type ErrorType;
 
-    /// Generates a new mnemonic given the language, length of mnemonic, and
-    /// optional passphrase
+    /// Generates a new [mnemonic][Self::Mnemonic] given the [language][Self::Language], [mnemonic type][Self::MnemonicType], and
+    /// an optional passphrase.
     fn new(
         language: Self::Language,
         mnemonic_type: Self::MnemonicType,
         passphrase: Option<&str>,
     ) -> Self::Mnemonic;
 
-    /// Recovers a mnemonic given the language, mnemonic phrase, and optional
-    /// passphrase
+    /// Recovers a [mnemonic][Self::Mnemonic] given the given the [language][Self::Language], [mnemonic type][Self::MnemonicType], and
+    /// an optional passphrase.
     fn from_phrase(
         language: Self::Language,
         phrase: &str,
         specified_passphrase: Option<&str>,
     ) -> Result<Self::Mnemonic, Self::ErrorType>;
 
-    /// Recovers a mnemonic given the mnemonic phrase and optional passphrase,
-    /// attempts to auto detect the language of the mnemonic phrase
+    /// Recovers a [mnemonic][Self::Mnemonic] given the mnemonic phrase and optional passphrase,
+    /// attempts to auto detect the language of the mnemonic phrase.
+    /// Returns an [error][Self::ErrorType] if the language cannot be detected or the provided mnemonic phrase was invalid.
     fn detect_language(
         phrase: &str,
         specified_passphrase: Option<&str>,
     ) -> Result<Self::Mnemonic, Self::ErrorType>;
 
-    /// Returns the builder for the mnemonic phrase
+    /// Returns the [builder][Self::MnemonicBuilder] for the [mnemonic][Self::Mnemonic].
     fn builder() -> Self::MnemonicBuilder;
 
-    /// Returns the ['Seed'][Seed] associated with the mnemonic phrase
-    /// [Seed]: ./seed/struct.Seed.html
+    /// Returns the [seed][Seed] associated with the mnemonic phrase.
     fn to_seed(&self) -> Seed;
 
-    // Returns the language for the mnemonic
+    // Returns the [language][Self::Language] for the mnemonic.
     fn language(&self) -> Self::Language;
 
-    // Returns the mnemonic phrase
+    // Returns the mnemonic phrase.
     fn phrase(&self) -> String;
 
-    // Returns the mnemonic type
+    // Returns the [mnemonic type][Self::MnemonicType].
     fn mnemonic_type(&self) -> Self::MnemonicType;
 }
 
@@ -85,19 +85,19 @@ pub trait MnemonicBuilder {
     fn mnemonic_seed(&mut self, seed: &Seed) -> &mut Self;
 
     /// Specifies the mnemonic phrase from which the mnemonic struct is
-    /// recovered
+    /// recovered.
     fn mnemonic_phrase(&mut self, mnemonic_phrase: &str) -> &mut Self;
 
     /// Specifies the language for the mnemonic phrase, can be used when
-    /// recovering a mnemonic phrase or generating a new mnemonic phrase
+    /// recovering a mnemonic phrase or generating a new mnemonic phrase.
     fn language(&mut self, language: Self::Language) -> &mut Self;
 
     /// Specifies a passphrase to use to offset/encrypt the seed recovered from
-    /// the mnemonic phrase
+    /// the mnemonic phrase.
     fn passphrase(&mut self, passphrase: &str) -> &mut Self;
 
     /// Specifies the [mnemonic type][Self::mnemonic_type] to use when recovering or generating a
-    /// mnemonic phrase
+    /// mnemonic phrase.
     fn mnemonic_type(&mut self, mnemonic_type: Self::MnemonicType) -> &mut Self;
 
     /// Sets the [specified language][Self::Language] to None.
@@ -124,5 +124,7 @@ pub trait MnemonicBuilder {
 /// different Language implementations in different walletD mnemonic libraries.
 pub trait Language {
     type Language;
+
+    /// Returns the default [Language] for the implementation.
     fn new() -> Self::Language;
 }
