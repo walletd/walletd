@@ -4,23 +4,27 @@
 //! It supports a hierarchical deterministic (HD) wallet structure and provides the ability to search for previously used addresses associated with the wallet as well as the creation of new addresses.
 //! It also facilitates obtaining blockchain information.
 //!
-//! # Quickstart Guide
+//! ## Quickstart Guide
 //!
-//! The [BitcoinWallet] struct is the main entry point for the library.
+//! The [BitcoinWallet] struct is the main entry point to access walletD functionality for Bitcoin.
 //!
-//! Here's how you can access a bitcoin wallet based on a master [HDKey].
+//! ## Import from Seed
+//! # Bitcoin Wallet from a Seed
+//! Here's how you can access a bitcoin wallet based on a master [Seed]. 
+//! The [Seed] can be derived from a [Mnemonic] using the [Mnemonic::to_seed] method.
 //! ```
 //! use walletd_bitcoin::prelude::*;
 //! use walletd_hd_key::prelude::*;
-//! fn import_btc_hd_wallet() -> Result<(), walletd_bitcoin::Error> {
+//! # fn import_btc_hd_wallet() -> Result<(), walletd_bitcoin::Error> {
 //! let master_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
 //! let network_type = HDNetworkType::TestNet;
 //! let master_hd_key = HDKey::new_master(master_seed, network_type)?;
 //! let btc_wallet = BitcoinWallet::builder().master_hd_key(master_hd_key).build()?;
-//!
-//! Ok(())
-//! }
+//! # Ok(())
+//! # }
 //! ```
+//! 
+//! 
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]

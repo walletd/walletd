@@ -4,9 +4,10 @@
 //! A Rust library implementation of the [`BIP39 standard`](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) for HD wallet mnemonic phrases.
 //! Facilitates generating and importing BIP39 mnemonic phrases and seeds.
 //!
-//! # Quickstart Guide
+//! ## Quickstart Guide
 //! A good way to access the different features related to the BIP39 mnemonic in this walletD library is to make use of the [Bip39Mnemonic] builder ([Bip39MnemonicBuilder]) which can be also be accessed with the default settings through [`Bip39Mnemonic::builder()`].
 //!
+//! ### Create with Defaults
 //! The default specifications for the [Bip39MnemonicBuilder] are: [English language][Bip39Language::English], [12 words in the mnemonic phrase][Bip39MnemonicType::Words12], and no passphrase specified.
 //! You can get the mnemonic seed from the [Bip39Mnemonic] struct using the [`to_seed`][Bip39Mnemonic::to_seed] method.
 //!
@@ -28,7 +29,7 @@
 //! Ok(())
 //! }
 //! ```
-//!
+//! ### Specify Options
 //! You can override the default specifications by providing your desired specifications to the builder.
 //! You can also reuse the [Bip39MnemonicBuilder] object in a mutable way to create multiple BIP39 mnemonics and even override previous specifications.
 //! ```
@@ -56,9 +57,10 @@
 //! # Ok(())
 //! # }
 //! ```
-//!
+//! 
 //! It may be useful in some cases to provide all of the specifications even when using the some of the default settings.
 //!
+//! ### Use of Optional Passphrase
 //! You can specify a passphrase to use when generating the mnemonic.
 //! Note that the same passphrase must be used when recovering the mnemonic.
 //!
@@ -82,6 +84,8 @@
 //! }
 //! ```
 //!  
+//! ### Restoring a Mnemonic
+//! 
 //! A [Bip39Mnemonic] can be restored from a specified valid mnemonic phrase or from a specified valid mnemonic phrase and passphrase if a passphrase was specified when the mnemonic was generated.
 //!
 //! ```

@@ -10,7 +10,7 @@
 //! An [EthereumWallet] could be instantiated without a [EthereumPrivateKey] affiliated with it, but it would not be able to sign transactions.
 //! If an [EthereumWallet] is created with an [EthereumPublicKey] but no [EthereumPrivateKey], it will be able to verify signatures but not sign or send transactions.
 //!
-//! ### Importing an Ethereum Wallet from an HD Key
+//! ### Import from Seed
 //!
 //! Here's how you can import an Ethereum wallet based on a master [HDKey]. We will use the `mut` keyword to make the [ethereum wallet][EthereumWallet] mutable so that we can modify `ethereum_wallet` later.
 //! By importing the `ethereum_wallet` fom a `master_hd_key` will both the [EthereumPrivateKey] and the [EthereumPublicKey] will be provided to the `ethereum_wallet`.
