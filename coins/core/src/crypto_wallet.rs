@@ -48,18 +48,18 @@ pub trait CryptoWalletBuilder<T>
 where
     T: CryptoWallet + Clone,
 {
-    /// Constructs a new [CryptoWalletBuilder]
+    /// Constructs a new [CryptoWalletBuilder].
     fn new() -> Self;
-    /// Builds a [CryptoWallet] from the [CryptoWalletBuilder]
+    /// Builds a [CryptoWallet] from the [CryptoWalletBuilder].
     fn build(&self) -> Result<T, T::ErrorType>;
-    /// Specifies the master HD key for the [CryptoWalletBuilder]
+    /// Specifies the [master HD key][HDKey] for the [CryptoWalletBuilder].
     fn master_hd_key(&mut self, master_hd_key: HDKey) -> &mut Self;
-    /// Specifies the mnemonic seed for the [CryptoWalletBuilder]
+    /// Specifies the [mnemonic seed][Seed] for the [CryptoWalletBuilder].
     fn mnemonic_seed(&mut self, mnemonic_seed: Seed) -> &mut Self;
-    /// Specifies the address format for the [CryptoWalletBuilder]
+    /// Specifies the [address format][CryptoWallet::AddressFormat] for the [CryptoWalletBuilder].
     fn address_format(&mut self, address_format: T::AddressFormat) -> &mut Self;
-    /// Specifies the HD path builder for the [CryptoWalletBuilder]
+    /// Specifies the[] HD path builder][HDPathBuilder] for the [CryptoWalletBuilder].
     fn hd_path_builder(&mut self, hd_path_builder: HDPathBuilder) -> &mut Self;
-    /// Specifies the network type for the [CryptoWalletBuilder]
+    /// Specifies the [network type][CryptoWallet::NetworkType] for the [CryptoWalletBuilder].
     fn network_type(&mut self, network_type: T::NetworkType) -> &mut Self;
 }

@@ -443,12 +443,12 @@ impl BitcoinWallet {
         self.hd_path_builder = Some(hd_path_builder);
     }
 
-    /// Returns the gap limit that is being used when searching for addresses with this wallet.
+    /// Returns the gap limit that is being used when searching for addresses with this [wallet][BitcoinWallet].
     pub fn gap_limit(&self) -> usize {
         self.gap_limit
     }
 
-    /// Returns the account discovery flag that is being used when searching for addresses with this wallet
+    /// Returns the account discovery flag that is being used when searching for addresses with this [wallet][BitcoinWallet].
     pub fn account_discovery(&self) -> bool {
         self.account_discovery
     }
@@ -467,7 +467,7 @@ impl BitcoinWallet {
             }
         }
     }
-    /// This function is used to calculate the signature as a hex encoded string with the option sighashall for a given transaction hash using a provided private key
+    /// This function is used to calculate the signature as a hex encoded string with the option sighashall for a given transaction hash using a provided private key.
     pub fn signature_sighashall_for_transaction_hash(
         transaction_hash: &str,
         private_key: &BitcoinPrivateKey,
@@ -512,7 +512,7 @@ impl BitcoinWallet {
         Ok(signature)
     }
 
-    /// Signs a transaction with the provided private keys and returns the signed transaction
+    /// Signs a transaction with the provided private keys and returns the signed transaction.
     pub fn sign_tx(
         tx: &BTransaction,
         keys_per_input: Vec<(BitcoinPrivateKey, BitcoinPublicKey)>,
@@ -577,7 +577,7 @@ impl BitcoinWallet {
     /// Goal is to find a combination of the fewest inputs that is bigger than
     /// what we need - close to twice the send amount while not producing a
     /// change amount that is smaller than what the fee would be to spend that
-    /// amount
+    /// amount.
     pub fn choose_inputs_and_set_fee(
         utxo_available: &Vec<Utxo>,
         send_amount: &BitcoinAmount,
@@ -749,7 +749,7 @@ impl BitcoinWallet {
         }
     }
 
-    /// Estimates the fee for a transaction with the given number of inputs and outputs given the fee per byte, makes use of default sizes to estimate the size of the tranasaction and the corresponding fee
+    /// Estimates the fee for a transaction with the given number of inputs and outputs given the fee per byte, makes use of default sizes to estimate the size of the transaction and the corresponding fee.
     pub fn estimate_fee_with_default_sizes(
         is_segwit: bool,
         num_inputs: usize,
@@ -778,7 +778,7 @@ impl BitcoinWallet {
         }
     }
 
-    /// Prepares a transaction to be signed and broadcasted
+    /// Prepares a transaction to be signed and broadcasted.
     pub fn prepare_transaction(
         fee_sat_per_byte: f64,
         utxo_available: &Vec<Utxo>,
