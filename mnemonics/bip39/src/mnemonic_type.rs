@@ -116,7 +116,7 @@ impl Bip39MnemonicType {
     /// let mnemonic_type = Bip39MnemonicType::from_phrase(mnemonic).unwrap();
     ///
     /// let entropy_bits = mnemonic_type.entropy_bits();
-    /// ``` 
+    /// ```
     pub fn from_phrase(phrase: &str) -> Result<Self, Error> {
         let word_count = phrase.split(' ').count();
 

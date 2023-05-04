@@ -329,7 +329,7 @@ impl HDKey {
     }
 
     /// Returns the extended private key
-    /// 
+    ///
     /// Returns an [error][Error] if the extended private key is missing
     pub fn extended_private_key(&self) -> Result<ExtendedPrivateKey, Error> {
         if let Some(private_key) = self.extended_private_key {
