@@ -3,7 +3,7 @@ use std::ops;
 use walletd_coin_core::CryptoAmount;
 use web3::ethabi::ethereum_types::U256;
 
-/// EthereumAmount contains a field representing the amount of wei in the amount. It also has functions to convert to and from the main unit (ETH) and the smallest unit (wei).
+/// Contains a field representing the amount of wei in the amount. Also has functions to convert to and from the main unit (ETH) and the smallest unit (wei).
 #[derive(Default, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Debug)]
 pub struct EthereumAmount {
     /// The number of wei (U256) in the amount

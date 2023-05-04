@@ -4,8 +4,8 @@
 use crate::{MoneroPrivateKeys, PublicKey};
 
 /// A Monero full public key contains both the spend_key and view_key
-/// information. This struct uses optional fields for the spend_key and view_key
-/// as it is possible to specify one without the other.
+/// information. [MoneroPublicKeys] uses optional fields for the spend_key and view_key
+/// as it is possible to specify one without the other. 
 #[derive(Debug, Clone, PartialEq, Copy)]
 pub struct MoneroPublicKeys {
     pub spend_key: Option<PublicKey>,

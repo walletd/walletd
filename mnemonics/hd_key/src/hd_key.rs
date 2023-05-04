@@ -9,24 +9,24 @@ use ripemd::Ripemd160;
 
 use crate::{Error, HDPath, HDPathIndex, HDPurpose, Seed};
 
-/// This struct is a wrapper around the secp256k1::SecretKey
-/// struct to be used with HDKey
+/// A wrapper around the [secp256k1::SecretKey]
+/// struct to be used with [HDKey].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ExtendedPrivateKey(secp256k1::SecretKey);
 
 impl ExtendedPrivateKey {
-    /// Creates a new ExtendedPrivateKey from a slice of bytes
+    /// Creates a new [ExtendedPrivateKey] from a slice of bytes.
     pub fn from_slice(data: &[u8]) -> Result<ExtendedPrivateKey, Error> {
         let secret_key = secp256k1::SecretKey::from_slice(data)?;
         Ok(ExtendedPrivateKey(secret_key))
     }
 
-    /// Returns the bytes of the ExtendedPrivateKey
+    /// Returns the bytes of the [ExtendedPrivateKey].
     pub fn to_bytes(&self) -> [u8; 32] {
         *self.0.as_ref()
     }
 
-    /// Converts the ExtendedPrivateKey to an ExtendedPublicKey
+    /// Converts the [ExtendedPrivateKey] to an [ExtendedPublicKey].
     pub fn to_public_key(&self) -> ExtendedPublicKey {
         ExtendedPublicKey(secp256k1::PublicKey::from_secret_key(
             &secp256k1::Secp256k1::new(),
@@ -34,7 +34,7 @@ impl ExtendedPrivateKey {
         ))
     }
 
-    /// Adds a tweak to the underlying private key
+    /// Adds a tweak to the underlying private key.
     pub fn add_tweak(mut self, tweak: &secp256k1::Scalar) -> Result<Self, Error> {
         self = ExtendedPrivateKey(self.0.add_tweak(tweak)?);
         Ok(self)
@@ -55,23 +55,23 @@ impl fmt::LowerHex for ExtendedPrivateKey {
     }
 }
 
-/// The ExtendedPublicKey struct is a wrapper around the secp256k1::PublicKey
-/// struct to be used with HDKey
+/// A wrapper around the [secp256k1::PublicKey]
+/// struct to be used with [HDKey]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ExtendedPublicKey(secp256k1::PublicKey);
 
 impl ExtendedPublicKey {
-    /// Creates a new ExtendedPublicKey from a slice of bytes
+    /// Creates a new [ExtendedPublicKey] from a slice of bytes.
     pub fn from_slice(slice: &[u8]) -> Result<Self, Error> {
         Ok(Self(secp256k1::PublicKey::from_slice(slice)?))
     }
 
-    /// Creates a new ExtendedPublicKey from an ExtendedPrivateKey
+    /// Creates a new [ExtendedPublicKey] from an [ExtendedPrivateKey].
     pub fn from_private_key(private_key: &ExtendedPrivateKey) -> Self {
         private_key.to_public_key()
     }
 
-    /// Converts the ExtendedPublicKey to bytes
+    /// Converts the [ExtendedPublicKey] a byte array.
     pub fn to_bytes(&self) -> [u8; 33] {
         self.0.serialize()
     }
@@ -91,11 +91,12 @@ impl fmt::LowerHex for ExtendedPublicKey {
     }
 }
 
-/// This enum represents the different network types supported by the
-/// library.
+/// Represents the different network types relevant to [HDKey].
 ///
-/// MainNet is the default which is used for the production network.
-/// TestNet is used for any development or test network.
+/// [`MainNet`][HDNetworkType::MainNet] is the default which is used for the production network.
+/// [`TestNet`][HDNetworkType::TestNet] is used for any development or test network.
+///
+/// A [HDNetworkType] can be used to map to a more blockchain-specific network type when used with a specific cryptocurrency.
 #[derive(Default, PartialEq, Eq, Copy, Clone, Debug)]
 pub enum HDNetworkType {
     #[default]
@@ -115,12 +116,13 @@ impl fmt::Display for HDNetworkType {
     }
 }
 
-/// This struct can be used to represent and create a master key or derive child
-/// keys.
+/// Represents a master or a derived child HD (Hierarchical Deterministic) key.
 ///
-/// HDKey follows the BIP32 scheme: <https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki>
-/// HDKey also follows the purpose scheme described in BIP43: <https://github.com/bitcoin/bips/blob/master/bip-0043.mediawiki>
-/// The [`HDPurpose`] enum supports the following purpose types: BIP32, BIP44,
+/// The [HDKey] struct contains detailed information about a master node or derived child node HD key and provides methods to create and derive HD keys.
+///
+/// [HDKey] follows the BIP32 scheme: <https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki>
+/// [HDKey] also follows the purpose scheme described in BIP43: <https://github.com/bitcoin/bips/blob/master/bip-0043.mediawiki>
+/// The [HDPurpose] enum supports the following purpose types: BIP32, BIP44,
 /// BIP49, and BIP84.
 #[derive(Clone, Debug, PartialEq)]
 pub struct HDKey {
@@ -153,14 +155,9 @@ impl HDKey {
     /// Multiple purpose types can be derived from the master node using the
     /// [`HDPurpose`] type
     ///
-    /// # Arguments
-    /// * `seed` - The seed to use to create the master node
-    /// * `network_type` - The network type to use for the master node
-    ///
-    /// # Errors
-    /// If this function encounters an error, it will return an `Error` type,
-    /// this can happen if the seed is invalid or an error is encounted when
-    /// specifiying the extended private key and extended public key
+    /// If this function encounters an error, it will return an [`Error`] type.
+    /// this can happen if the seed is invalid or an error is encountered when
+    /// specifying the extended private key and extended public key
     pub fn new_master(seed: Seed, network_type: HDNetworkType) -> Result<Self, Error> {
         let mut mac: HmacSha512 = HmacSha512::new_from_slice(b"Bitcoin seed")
             .map_err(|e| Error::HmacSha512(e.to_string()))?; // the "Bitcoin seed" string is specified in the bip32 protocol
@@ -332,8 +329,8 @@ impl HDKey {
     }
 
     /// Returns the extended private key
-    /// # Errors
-    /// Returns an error if the extended private key is missing
+    ///
+    /// Returns an [error][Error] if the extended private key is missing
     pub fn extended_private_key(&self) -> Result<ExtendedPrivateKey, Error> {
         if let Some(private_key) = self.extended_private_key {
             Ok(private_key)
@@ -343,8 +340,8 @@ impl HDKey {
     }
 
     /// Returns the extended public key
-    /// # Errors
-    /// Returns an error if the extended public key is missing
+    ///
+    /// Returns an [error][Error] if the extended public key is missing
     pub fn extended_public_key(&self) -> Result<ExtendedPublicKey, Error> {
         if let Some(public_key) = self.extended_public_key {
             Ok(public_key)

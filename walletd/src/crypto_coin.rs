@@ -5,7 +5,7 @@ use std::str::FromStr;
 use anyhow::anyhow;
 use walletd_hd_key::slip44::Symbol;
 
-/// An enum representing the different crypto coins that are supported by WalletD
+/// Represents the different crypto coins that are currently supported by walletD
 #[derive(Clone, Debug, Copy, PartialEq, Eq)]
 pub enum CryptoCoin {
     /// Bitcoin

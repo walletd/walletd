@@ -60,4 +60,10 @@ pub enum Error {
     /// Error due to overflow
     #[error("Overflow error: {0}")]
     Overflow(String),
+    /// Error from web3 contract
+    #[error("Error from web3 contract: {0}")]
+    Web3Contract(#[from] web3::contract::Error),
+    /// Error from web3 ethabi
+    #[error("Error from web3 ethabi: {0}")]
+    Web3Ethabi(#[from] web3::ethabi::Error),
 }

@@ -12,7 +12,9 @@ use crate::blockstream::Blockstream;
 use crate::BitcoinAmount;
 use crate::Error;
 
-/// Represents a Bitcoin address, holds the address information, private key, public key, and network
+/// Represents a Bitcoin address.
+/// Contains the [address details][AddressInfo] and [network][Network]
+/// The [private key][BitcoinPrivateKey] and [public key][BitcoinPublicKey] are optional fields.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BitcoinAddress {
     address_info: AddressInfo,
@@ -22,7 +24,7 @@ pub struct BitcoinAddress {
 }
 
 impl BitcoinAddress {
-    /// Creates a new BitcoinAddress struct from a HDKey struct using a specified address format
+    /// Creates a new [BitcoinAddress] struct from an [HD Key][HDKey] with a specified [address format][AddressType].
     pub fn from_hd_key(hd_key: &HDKey, address_format: AddressType) -> Result<Self, Error> {
         // TODO(#82): consider handling the other Bitcoin network types
         let network: Network = match hd_key.network {
@@ -64,11 +66,10 @@ impl BitcoinAddress {
         })
     }
 
-    /// Returns the balance of this particular BitcoinAddress as a BitcoinAmount struct
+    /// Returns the balance of this particular [BitcoinAddress] as a [BitcoinAmount] struct.
     pub async fn balance(&self, blockchain_client: &Blockstream) -> Result<BitcoinAmount, Error> {
         let utxo_info = blockchain_client.utxo(&self.public_address()).await?;
         let amount = utxo_info.sum()?;
-
         Ok(amount)
     }
 }
@@ -80,7 +81,8 @@ impl CryptoAddress for BitcoinAddress {
 }
 
 impl BitcoinAddress {
-    /// Creates a new BitcoinAddress struct from a public address string and a specified network, will not have info on the private or public
+    /// Creates a new [BitcoinAddress] struct from a public address string and a specified [network][Network].
+    /// The created [BitcoinAddress] will not have info related to its [private key][BitcoinPrivateKey] or [public key][BitcoinPublicKey]
     pub fn from_public_address(public_address: &str, network: Network) -> Result<Self, Error> {
         let address_info = AddressInfo::from_str(public_address)?.require_network(network)?;
         Ok(Self {
@@ -91,9 +93,10 @@ impl BitcoinAddress {
         })
     }
 
-    /// Returns the public key related to this BitcoinAddress
-    /// # Errors
-    /// Returns `Error::MissingPublicKey` if the public key is not present
+    /// Returns the public key related to this [BitcoinAddress].
+    /// Returns an [error][Error] if the [public key][BitcoinPublicKey] is not present.
+    ///
+    /// This method should be used in cases where either it is expected that the [public key][BitcoinPublicKey] is present or the [Error] is handled in the case that the [public key][BitcoinPublicKey] is not present.
     pub fn public_key(&self) -> Result<BitcoinPublicKey, Error> {
         if let Some(key) = self.public_key {
             Ok(key)
@@ -102,9 +105,10 @@ impl BitcoinAddress {
         }
     }
 
-    /// Returns the private key related to this BitcoinAddress
-    /// # Errors
-    /// Returns `Error::MissingPrivateKey` if the private key is not present
+    /// Returns the private key related to this [BitcoinAddress].
+    /// Returs an [error][Error] if the [private key][BitcoinPrivateKey] is not present.
+    ///
+    /// This method should be used in cases where either it is expected that the [private key][BitcoinPrivateKey] is present or the [Error] is handled in the case that the [private key][BitcoinPrivateKey] is not present.
     pub fn private_key(&self) -> Result<BitcoinPrivateKey, Error> {
         if let Some(key) = self.private_key {
             Ok(key)
@@ -113,7 +117,7 @@ impl BitcoinAddress {
         }
     }
 
-    /// Estimates the fee for a transaction with the given number of inputs and outputs given the fee per byte, makes use of default sizes to estimate the size of the tranasaction and the corresponding fee
+    /// Estimates the fee for a transaction with the given number of inputs and outputs given the fee per byte, makes use of default sizes to estimate the size of the transaction and the corresponding fee.
     pub fn estimate_fee_with_default_sizes(
         is_segwit: bool,
         num_inputs: usize,
@@ -142,7 +146,7 @@ impl BitcoinAddress {
         }
     }
 
-    /// Returns the address info related to this BitcoinAddress
+    /// Returns the [address info][AddressInfo] related to this [BitcoinAddress].
     pub fn address_info(&self) -> AddressInfo {
         self.address_info.clone()
     }

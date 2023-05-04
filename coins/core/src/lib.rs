@@ -1,6 +1,9 @@
-//! # WalletD Coin Model Library
+//! # WalletD Coin Core
 //!
-//! This library provides common traits, functionality, and interfaces that are used by other walletd libraries that are specific to a particular cryptocurrency.
+//! Provides common traits, functionality, and interfaces that are used by other walletD libraries that are specific to a particular cryptocurrency.
+//!]
+
+#![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
 mod blockchain_connector;

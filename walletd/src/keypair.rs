@@ -4,8 +4,8 @@ use crate::{Bip39Mnemonic, CryptoWallet, CryptoWalletBuilder, HDKey, HDNetworkTy
 
 use crate::Error;
 
-/// The struct holds info about a mnemonic type and the associated seed and phrase as well as the network type.
-/// It enables the creation of a HD wallet from a mnemonic phrase that could be used with multiple cryptocurrencies.
+/// Holds info about a mnemonic type and the associated seed and phrase as well as the network type.
+/// Enables the creation of a HD wallet from a mnemonic phrase that could be used with multiple cryptocurrencies.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct KeyPair {
     /// The style of the mnemonic phrase
@@ -20,7 +20,7 @@ pub struct KeyPair {
     network_type: HDNetworkType,
 }
 
-/// The MnemonicKeyPairType enum is used to specify the type of mnemonic phrase
+/// Used to specify the type of mnemonic phrase associated with a [KeyPair] struct.
 #[derive(PartialEq, Eq, Debug, Clone, Copy, Default)]
 pub enum MnemonicKeyPairType {
     /// The mnemonic phrase is a BIP39 phrase and is affiliated with a HD wallet
@@ -28,7 +28,7 @@ pub enum MnemonicKeyPairType {
     HDBip39,
 }
 
-/// This struct is used specify options for and build a [KeyPair] struct
+/// A builder for the [KeyPair] struct, can be used is used specify options for and build a [KeyPair] struct.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct KeyPairBuilder {
     /// Option to set the mnemomonic phrase
@@ -68,7 +68,7 @@ impl KeyPairBuilder {
     }
 
     /// Specifies the network type
-    pub fn with_network_type(&mut self, network_type: HDNetworkType) -> &mut Self {
+    pub fn network_type(&mut self, network_type: HDNetworkType) -> &mut Self {
         self.network_type = network_type;
         self
     }

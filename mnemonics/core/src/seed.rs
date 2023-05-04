@@ -2,14 +2,14 @@ use std::fmt;
 use std::str::FromStr;
 
 /// Stores the secret value which can be used to derive a hierarchical
-/// deterministic wallet.
+/// deterministic wallet. Often associated with a mnemonic phrase.
 ///
 /// The seed bytes are usually derived from a mnemonic phrase and an optional
 /// passphrase following a specified protocol.
 ///
 /// To get the raw byte value use [`as_bytes()`](Self::as_bytes)
 ///
-/// This struct can be used to derive HD wallet addresses using another library
+/// Can be used to derive HD wallet addresses using another library
 /// (deriving HD wallet addresses is outside the scope of the
 /// walletd_mnemonics_core crate and the BIP39 standard).
 #[derive(Debug, Clone, Eq, PartialEq)]

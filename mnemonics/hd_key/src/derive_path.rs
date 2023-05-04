@@ -3,13 +3,13 @@ use std::str::FromStr;
 
 use crate::Error;
 
-/// This enum represents the different derivation path schemes
-/// supported by the library.
+/// Represents the different derivation path schemes currently supported by the
+/// [walletd_hd_key][crate] library.
 ///
-/// BIP32 is the default derivation scheme which uses a purpose value of 0'
-/// BIP44 uses 44': <https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki>
-/// BIP49 uses 49': <https://github.com/bitcoin/bips/blob/master/bip-0049.mediawiki>
-/// BIP84 uses 84': <https://github.com/bitcoin/bips/blob/master/bip-0084.mediawiki>
+/// [`BIP32`][HDPurpose::BIP32] is the default derivation scheme which uses a purpose value of 0'
+/// [`BIP44`][HDPurpose::BIP44] uses 44': <https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki>
+/// [`BIP49`][HDPurpose::BIP49] uses 49': <https://github.com/bitcoin/bips/blob/master/bip-0049.mediawiki>
+/// [`BIP84`][HDPurpose::BIP84] uses 84': <https://github.com/bitcoin/bips/blob/master/bip-0084.mediawiki>
 /// The [`HDPathBuilder`] struct can be used to set a default purpose value to
 /// use with particular cryptocurrency implementation.
 #[derive(Default, PartialEq, Eq, Copy, Clone, Debug)]
@@ -114,7 +114,7 @@ impl fmt::Display for HDPurpose {
     }
 }
 
-/// This enum distinguishes between the different derivation path
+/// Represents the variants of different derivation path
 /// components.
 ///
 /// The [`HDPath`] struct contains a vector of these values.
@@ -242,8 +242,8 @@ impl FromStr for HDPathIndex {
     }
 }
 
-/// This struct contains vector of [`HDPathIndex`] to represent a derivation
-/// path.
+/// Contains a vector of [HDPathIndex] to represent a derivation
+/// path for a [HDKey](crate::HDKey) and relevant helper functions.
 #[derive(Default, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct HDPath {
     path: Vec<HDPathIndex>,
@@ -306,13 +306,7 @@ impl HDPath {
     }
 
     /// Returns the HDPathIndex object at the specified position (index) in the
-    /// path if it exists, otherwise returns an Error # Arguments
-    /// * `index` - the index of the HDPathIndex object to return based on the
-    ///   path vector inside the HDPath
-    ///
-    /// # Errors
-    /// Returns an error `Error::IndexOutOfRange` if the index is not valid for
-    /// the HDPath object
+    /// path if it exists, otherwise returns an [error][Error::IndexOutOfRange]
     pub fn at(&self, index: usize) -> Result<HDPathIndex, Error> {
         if index < self.path.len() {
             Ok(self.path[index])
@@ -325,8 +319,9 @@ impl HDPath {
     }
 
     /// Returns the HDPurpose value related to the purpose attribute, if it
-    /// exists in the HDPath # Errors
-    /// Returns an error `Error::IndexOutOfRange` if the index 1 is not valid
+    /// exists in the HDPath
+    ///
+    /// Returns an error [`Error::IndexOutOfRange`] if the index 1 is not valid
     /// for the HDPath object
     pub fn purpose(&self) -> Result<HDPurpose, Error> {
         let purpose: HDPurpose = self.at(1)?.try_into()?;
@@ -334,32 +329,36 @@ impl HDPath {
     }
 
     /// Returns the HDPathIndex value related to the coin_type attribute, if it
-    /// exists in the HDPath # Errors
-    /// Returns an error `Error::IndexOutOfRange` if the index is not valid for
+    /// exists in the HDPath
+    ///
+    /// Returns an error [`Error::IndexOutOfRange`] if the index is not valid for
     /// the HDPath object
     pub fn coin_type(&self) -> Result<HDPathIndex, Error> {
         self.at(2)
     }
 
     /// Returns the HDPathIndex value related to the account attribute, if it
-    /// exists in the HDPath # Errors
-    /// Returns an error `Error::IndexOutOfRange` if the index is not valid for
+    /// exists in the HDPath
+    ///
+    /// Returns an error [`Error::IndexOutOfRange`] if the index is not valid for
     /// the HDPath object
     pub fn account(&self) -> Result<HDPathIndex, Error> {
         self.at(3)
     }
 
     /// Returns the HDPathIndex value related to the change attribute, if it
-    /// exists in the HDPath # Errors
-    /// Returns an error `Error::IndexOutOfRange` if the index is not valid for
+    /// exists in the HDPath
+    ///
+    /// Returns an error [`Error::IndexOutOfRange`] if the index is not valid for
     /// the HDPath object
     pub fn change(&self) -> Result<HDPathIndex, Error> {
         self.at(4)
     }
 
     /// Returns the HDPathIndex value related to the address attribute, if it
-    /// exists in the HDPath # Errors
-    /// Returns an error `Error::IndexOutOfRange` if the index is not valid for
+    /// exists in the HDPath
+    ///
+    /// Returns an error [`Error::IndexOutOfRange`] if the index is not valid for
     /// the HDPath object
     pub fn address(&self) -> Result<HDPathIndex, Error> {
         self.at(5)
@@ -397,8 +396,8 @@ impl From<Vec<HDPathIndex>> for HDPath {
     }
 }
 
-/// [`HDPathBuilder`] is a builder for the [`HDPath`], it allows specification
-/// of the standard full path and also which component are hardened. The default
+/// A builder for the [HDPath] struct, it allows specification
+/// of the standard full path and also which components are hardened. The default
 /// implementation uses the standard format for the full path.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HDPathBuilder {
@@ -454,7 +453,7 @@ impl HDPathBuilder {
     }
 
     /// Specify the purpose index shortform number value
-    pub fn purpose(&mut self, purpose: u32) -> &mut Self {
+    pub fn purpose_index(&mut self, purpose: u32) -> &mut Self {
         self.purpose = Some(purpose);
         self
     }

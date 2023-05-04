@@ -1,6 +1,3 @@
-//! # Ethereum Wallet (walletd implementation)
-//!
-
 use core::fmt;
 use std::fmt::LowerHex;
 use std::str::FromStr;
@@ -17,14 +14,17 @@ use web3::types::{Address, TransactionParameters};
 
 use crate::{EthereumAmount, EthereumFormat};
 
+/// Represents a private key for an Ethereum wallet, wraps a [SecretKey] from the secp256k1 crate
 #[derive(Debug, Clone)]
 pub struct EthereumPrivateKey(SecretKey);
 
 impl EthereumPrivateKey {
+    /// Represent the private key as a byte array
     pub fn to_bytes(&self) -> [u8; 32] {
         self.0.serialize_secret()
     }
 
+    /// Instantiate the private key from a slice of bytes, errors if given invalid bytes
     pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
         let secret_key = SecretKey::from_slice(bytes)?;
         Ok(EthereumPrivateKey(secret_key))
@@ -45,19 +45,22 @@ impl LowerHex for EthereumPrivateKey {
     }
 }
 
+/// Represents an EthereumPublicKey, wraps a [PublicKey] from the secp256k1 crate
 #[derive(Debug, Clone)]
 pub struct EthereumPublicKey(PublicKey);
 
 impl EthereumPublicKey {
+    /// Converts the public key to a byte array
     pub fn to_bytes(&self) -> [u8; 33] {
         self.0.serialize()
     }
-
+    /// Constructs the public key from a slice of bytes, returns an [error][Error] if given invalid bytes
     pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
         let public_key = PublicKey::from_slice(bytes)?;
         Ok(EthereumPublicKey(public_key))
     }
 
+    /// Returns the public address of the public key in the specified format
     pub fn to_public_address(&self, address_format: EthereumFormat) -> Result<String, Error> {
         let public_key_full = self.0;
 
@@ -117,26 +120,23 @@ impl LowerHex for EthereumPublicKey {
 
 /// Builder for [EthereumWallet], allows for specification of options for the ethereum wallet
 pub struct EthereumWalletBuilder {
-    /// The address format used to generate the wallet, if the address format is not specified the default is used
     address_format: EthereumFormat,
-    /// The master HD key used to import the wallet
     master_hd_key: Option<HDKey>,
-    /// The mnemonic seed used to import the wallet, if the mnemonic seed is not provided, the master_hd_key must be provided
-    /// If the master_hd_key is provided, the mnemonic seed will be ignored
     mnemonic_seed: Option<Seed>,
-    /// The specified network type to use, if the master_hd_key is provided, the network type will be inferred from the master_hd_key and this network_type will be ignored
     network_type: HDNetworkType,
-    /// Specifiyng a HDPathBuilder allows for customizing the derivation path used including which indices are hardened and will override the default
-    /// The default HDPathBuilder uses hardened indices for the purpose, coin type, account ,and non-hardened indices for the change and address indices
-    /// The default HDPathBuilder is `m/44'/60'/0'/0/0`
     hd_path_builder: HDPathBuilder,
 }
 
 impl Default for EthereumWalletBuilder {
+    /// Specifies the default options for the EthereumWalletBuilder
+    /// The default address format is EthereumFormat::Checksummed
+    /// The default network type is HDNetworkType::MainNet
+    /// The default HDPathBuilder is `m/44'/60'/0'/0/0`
+    /// By default neither the master HD key nor the mnemonic seed are specified
     fn default() -> Self {
         let mut hd_path_builder = HDPathBuilder::default();
         hd_path_builder
-            .purpose(Self::default_hd_purpose().to_shortform_num())
+            .purpose_index(Self::default_hd_purpose().to_shortform_num())
             .coin_type_index(slip44::Coin::from(slip44::Symbol::ETH).id());
         Self {
             address_format: EthereumFormat::Checksummed,
@@ -171,7 +171,7 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
         let coin_type_id = slip44::Coin::Ether.id();
         let mut hd_path_builder = HDPath::builder();
         hd_path_builder
-            .purpose(hd_purpose_num)
+            .purpose_index(hd_purpose_num)
             .hardened_purpose()
             .coin_type_index(coin_type_id)
             .hardened_coin_type();
@@ -231,7 +231,7 @@ impl EthereumWalletBuilder {
     }
 }
 
-/// The EthereumWallet struct contains the information needed to interact with an Ethereum wallet with a single public address associated with it.
+/// Contains the information needed to interact with an Ethereum wallet with a single public address associated with it.
 #[derive(Debug, Clone)]
 pub struct EthereumWallet {
     address_format: EthereumFormat,
@@ -318,8 +318,6 @@ impl CryptoWallet for EthereumWallet {
     }
 }
 
-/// Technically speaking, an "EthereumWallet" is a public address, public key and
-/// private key
 impl EthereumWallet {
     /// Returns the address format used by the wallet
     pub fn address_format(&self) -> EthereumFormat {

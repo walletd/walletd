@@ -80,7 +80,7 @@ fn test_with_passphrase() -> Result<(), Error> {
 fn test_with_network_type() {
     let network_type = HDNetworkType::TestNet;
     let mut builder = KeyPairBuilder::new();
-    builder.with_network_type(network_type);
+    builder.network_type(network_type);
     assert_eq!(builder.network_type, network_type);
 }
 

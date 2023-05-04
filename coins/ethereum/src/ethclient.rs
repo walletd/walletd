@@ -8,7 +8,8 @@ use web3::contract::{Contract, Options};
 use web3::ethabi::Uint;
 use web3::helpers as w3h;
 use web3::transports::Http;
-use web3::types::{BlockId, BlockNumber, TransactionId, H160, H256, U256, U64};
+use web3::types::Address;
+use web3::types::{BlockId, BlockNumber, TransactionId, H160, H256, U64};
 
 #[allow(dead_code)]
 pub enum TransportType {
@@ -16,7 +17,7 @@ pub enum TransportType {
     WebSockets,
 }
 
-/// EthClient is a blockchain connector for Ethereum, it contains a web3 instance using a HTTP transport
+/// A blockchain connector for Ethereum which contains a [`web3 instance`](https://github.com/tomusdrw/rust-web3) using a HTTP transport.
 #[derive(Clone, Debug)]
 #[allow(dead_code)]
 pub struct EthClient {
@@ -26,38 +27,39 @@ pub struct EthClient {
 
 #[allow(unused)]
 impl EthClient {
-    /// Returns the web3 instance
+    /// Returns the web3 instance.
     pub fn web3(&self) -> web3::Web3<web3::transports::Http> {
         self.web3.clone()
     }
-    /// Returns the eth instance from the web3 instance
+    /// Returns the eth instance from the web3 instance.
     pub fn eth(&self) -> web3::api::Eth<web3::transports::Http> {
         self.web3.eth()
     }
 
-    /// Returns the balance of an address as an EthereumAmount
+    /// Returns the balance of an address as an [EthereumAmount].
     pub async fn balance(&self, address: H160) -> Result<EthereumAmount, Error> {
         let balance = self.web3.eth().balance(address, None).await?;
         Ok(EthereumAmount { wei: balance })
     }
 
-    /// Gets a transaction given a specific tx hash
-    /// Returns a Result containing a Transaction object
-    /// or an Error
-    /// # Arguments
-    /// * `transaction_hash` - A H256 hash of a transaction
-    /// # Example
-    /// ```
-    /// use std::str::FromStr;
+    /// Gets a transaction given a specific tx hash.
     ///
-    /// use walletd_ethereum::EthClient;
-    /// use walletd_coin_core::BlockchainConnector;
-    /// use web3::types::H256;
+    /// Returns an error[Error] if the transaction is not found.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # use walletd_ethereum::EthClient;
+    /// # use walletd_coin_core::BlockchainConnector;
+    /// # async fn example() -> Result<(), walletd_ethereum::Error> {
     /// let tx_hash =
     ///     "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
     /// let infura_goelri_endpoint_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-    /// let eth_client = EthClient::new(infura_goelri_endpoint_url).unwrap();
-    /// let tx = eth_client.transaction_data_from_hash(tx_hash);
+    /// let eth_client = EthClient::new(infura_goelri_endpoint_url)?;
+    /// let tx = eth_client.transaction_data_from_hash(tx_hash).await?;
+    /// println!("tx data: {:?}", tx);
+    /// # Ok(())
+    /// # }
     /// ```
     pub async fn transaction_data_from_hash(
         &self,
@@ -225,24 +227,26 @@ impl EthClient {
         // info!("{:#?}", smart_contract_addr);
     }
 
-    /// Given a specified address, retrieves the Ethereum balance of that
-    /// address
-    pub async fn balance_of_account(&self, address: H160) -> Result<U256, ()> {
-        let balance_of_account = self.web3.eth().balance(address, None).await;
-        Ok(balance_of_account.unwrap())
+    /// Given a specified address, retrieves the [Ethereum balance][EthereumAmount] of that
+    /// [address][Address].
+    pub async fn balance_of_account(&self, address: Address) -> Result<EthereumAmount, Error> {
+        let balance_of_account = self.web3.eth().balance(address, None).await?;
+        Ok(EthereumAmount {
+            wei: balance_of_account,
+        })
     }
 
     /// Given a specified smart contract (ERC20) instance, determine the
-    /// token balance for a given address
+    /// token balance for a given address.
     async fn balance_of_smart_contract(
         &self,
         smart_contract: &web3::contract::Contract<Http>,
-        address: H160,
-    ) -> Result<String, ()> {
+        address: Address,
+    ) -> Result<String, Error> {
         let balance = smart_contract
             .query("balanceOf", address, None, Options::default(), None)
-            .await;
-        Ok(balance.unwrap())
+            .await?;
+        Ok(balance)
     }
 
     /// Given a specified contract instance, determine the total supply of
@@ -272,31 +276,28 @@ impl EthClient {
     /// Initialises an instance of an ERC20-compliant smart contract we can
     /// subsequently interact with
     // erc20_abi.json describes standard ERC20 functions
-    fn initialise_contract(
-        &self,
-        addr: H160,
-    ) -> Result<web3::contract::Contract<Http>, web3::ethabi::Error> {
-        Contract::from_json(
+    fn initialise_contract(&self, addr: H160) -> Result<web3::contract::Contract<Http>, Error> {
+        Ok(Contract::from_json(
             self.web3.eth(),
             addr,
             include_bytes!("./abi/erc20_abi.json"),
-        )
+        )?)
     }
 
-    /// Get the current price of gas
+    /// Get the current price of gas as an [EthereumAmount].
     pub async fn gas_price(&self) -> Result<EthereumAmount, Error> {
         // getting gas price
         let gas_price = self.web3.eth().gas_price().await?;
         Ok(EthereumAmount { wei: gas_price })
     }
 
-    /// Get the latest block number for the current network chain
+    /// Get the latest block number for the current network chain.
     pub async fn current_block_number(&self) -> web3::Result<u64> {
         let block_number = self.web3.eth().block_number().await?;
         Ok(block_number.as_u64())
     }
 
-    /// Gets the latest block's data
+    /// Gets the latest block's data.
     pub async fn latest_block(&self) -> web3::Result<web3::types::Block<H256>> {
         let block_data = &self
             .web3
@@ -310,7 +311,8 @@ impl EthClient {
     }
 
     /// Gets current chain's block using a specified block number. This requires an
-    /// instance of web3's U64, not Rust's u64
+    /// instance of web3's U64, not Rust's u64.
+    ///
     // TODO:(#73) - when using U64,
     // no transaction data returned by Web3's block struct. This appears to be a bug
     // in Web3
@@ -329,7 +331,7 @@ impl EthClient {
     }
 
     /// Gets current chain's latest block number by passing it a string (eg
-    /// "80000".to_string())
+    /// "80000".to_string()).
     async fn block_data_from_numeric_string(
         &self,
         block_id: &str,
@@ -352,7 +354,8 @@ impl EthClient {
 #[async_trait]
 impl BlockchainConnector for EthClient {
     type ErrorType = Error;
-
+    /// Create a new instance of [EthClient] based on a given endpoint url.
+    /// Returns an [error][Error] if the endpoint is invalid or the transport fails to connect.
     fn new(endpoint: &str) -> Result<Self, Error> {
         // TODO(#71): Change transport to support web sockets
         let transport = web3::transports::Http::new(endpoint)?;
@@ -363,6 +366,7 @@ impl BlockchainConnector for EthClient {
         })
     }
 
+    /// Returns the url of the endpoint associated with the [EthClient].
     fn url(&self) -> &str {
         &self.endpoint
     }

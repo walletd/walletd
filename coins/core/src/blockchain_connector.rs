@@ -1,23 +1,23 @@
 use crate::Error;
 use async_trait::async_trait;
 
-/// BlockchainConnector trait is used to connect to a blockchain and send and receive information to and from the blockchain.
+/// Used to connect to a blockchain and send and receive information to and from the blockchain.
 #[async_trait]
 pub trait BlockchainConnector {
-    /// ErrorType is the type of error that is returned by the BlockchainConnector
+    /// The type of error that is returned by the BlockchainConnector.
     type ErrorType: std::error::Error + Send + Sync + 'static;
 
-    /// new creates a new BlockchainConnector with a given url
+    /// Creates a new BlockchainConnector with a given url.
     fn new(url: &str) -> Result<Self, Self::ErrorType>
     where
         Self: Sized;
 
-    /// url returns the url of the BlockchainConnector
+    /// Returns the url endpoint associated with the BlockchainConnector.
     fn url(&self) -> &str;
 
     // TODO(AS): return the fee estimates.. also consider adding functions to get common blockchain functions
 
-    /// Returns the builder that can be used to build a BlockchainConnector with custom options
+    /// Returns the [builder][BlockchainConnectorBuilder] that can be used to build a [BlockchainConnector] with custom options.
     fn builder() -> BlockchainConnectorBuilder<Self>
     where
         Self: Sized + Clone + BlockchainConnector,
@@ -26,7 +26,9 @@ pub trait BlockchainConnector {
     }
 }
 
-/// ConnectorType is an enum that represents the type of connector that is being used, the different enum variants are meant to bue used with different cryptocurrency types and the generic type T is meant to be a specific struct that implements the BlockchainConnector trait
+/// Represents the type of blockchain connector that is being used.
+///
+/// The different enum variants are meant to bue used with different cryptocurrency types and the generic type T is meant to be a specific struct that implements the [BlockchainConnector] trait.
 #[derive(Debug, Clone, Copy)]
 pub enum ConnectorType<T>
 where
@@ -38,7 +40,7 @@ where
     ETH(T),
 }
 
-/// BlockchainConnectorBuilder is a builder that can be used to build a BlockchainConnector with custom options
+/// A builder that can be used to build a [BlockchainConnector] with custom options.
 #[derive(Debug, Clone, Default)]
 pub struct BlockchainConnectorBuilder<T>
 where
@@ -52,7 +54,7 @@ impl<T> BlockchainConnectorBuilder<T>
 where
     T: BlockchainConnector + Clone,
 {
-    /// new creates a new BlockchainConnectorBuilder with default options (no url and no connector type specified)
+    /// Creates a new [BlockchainConnectorBuilder] with default options (no url and no connector type specified).
     pub fn new() -> Self {
         Self {
             url: None,
@@ -60,22 +62,25 @@ where
         }
     }
 
-    /// This function sets the url of the BlockchainConnectorBuilder
+    /// Sets the url of the [BlockchainConnectorBuilder].
     pub fn url(&mut self, url: String) -> Self {
         self.url = Some(url);
         self.clone()
     }
 
-    /// This function sets the connector type of the BlockchainConnectorBuilder, this requires the associated BlockchainConnector struct to be fully defined with data
+    /// Sets the connector type of the [BlockchainConnectorBuilder].
+    /// Use of this function requires that the associated struct of generic type `T` that implement the [BlockchainConnector] trait be fully defined with data.
     pub fn connector(&mut self, connector_type: ConnectorType<T>) -> Self {
         self.connector_type = Some(connector_type);
         self.clone()
     }
 
-    /// This function builds the BlockchainConnectorBuilder using the options provided in the builder
+    /// Builds a [BlockchainConnector] struct using the options provided to the [BlockchainConnectorBuilder]
     ///
     /// It returns a [BlockchainConnector] that can be used to connect to a blockchain.
     /// The result of that build later can be downcasted to a specific [BlockchainConnector] struct - any compatible struct that implements the [BlockchainConnector] trait.
+    ///
+    /// Returns an error if neither the url or the connector type was specified.
     pub fn build(&mut self) -> Result<T, Error> {
         let connector_type = self.connector_type.clone();
         match connector_type {

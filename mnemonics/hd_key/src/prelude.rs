@@ -5,4 +5,6 @@
 //! use walletd_hd_key::prelude::*;
 //! ```
 
-pub use crate::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose, Seed};
+pub use crate::{
+    FromStr, HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose, Seed,
+};

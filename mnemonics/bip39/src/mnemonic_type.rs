@@ -2,32 +2,30 @@ use crate::Error;
 
 pub const ENTROPY_OFFSET: usize = 8;
 
-/// Determines the number of words that will make up the [`Mnemonic`][Mnemonic]
-/// phrase
+/// Represents the different number of words that can be used for a valid [Bip39Mnemonic][crate::Bip39Mnemonic].
 ///
 /// Also directly affects the amount of entropy that will be used to create a
-/// [`Mnemonic`][Mnemonic], and therefore the cryptographic strength of the HD
-/// wallet keys/addresses that can be derived from it using the [`Seed`][Seed].
+/// [Bip39Mnemonic][crate::Bip39Mnemonic], and therefore the cryptographic strength of the HD
+/// wallet keys/addresses that can be derived from it using the [Seed][crate::Seed].
 ///
 /// For example, a 12 word mnemonic phrase is essentially a friendly
 /// representation of a 128-bit key, while a 24 word mnemonic phrase is
 /// essentially a 256-bit key.
 ///
 /// If you know you want a specific phrase length, you can use the enum variant
-/// directly, for example `MnemonicType::Words12`.
+/// directly, for example [`Bip39MnemonicType::Words12`].
 ///
-/// You can also get a `MnemonicType` that corresponds to one of the standard
-/// BIP39 key sizes by passing arbitrary `usize` values:
+/// You can also get a `Bip39MnemonicType` that corresponds to one of the standard
+/// BIP39 key sizes by passing arbitrary `usize` values. An error will be returned if the `usize` value is not a valid key size.
 ///
 /// ```
-/// use walletd_bip39::Bip39MnemonicType;
-///
-/// let mnemonic_type = Bip39MnemonicType::from_key_size(128).unwrap();
+/// # use walletd_bip39::Bip39MnemonicType;
+/// # fn main() -> Result<(), walletd_bip39::Error> {
+/// let mnemonic_type = Bip39MnemonicType::from_key_size(128)?;
+/// # Ok(())
+/// # }
 /// ```
 ///
-/// [MnemonicType]: ../mnemonic_type/struct.MnemonicType.html
-/// [Mnemonic]: ../mnemonic/struct.Mnemonic.html
-/// [Seed]: ../seed/struct.Seed.html
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Bip39MnemonicType {
     //  ... = (entropy_bits << ...)   | checksum_bits
@@ -99,14 +97,15 @@ impl Bip39MnemonicType {
         Ok(mnemonic_type)
     }
 
-    /// Get a `MnemonicType` for an existing mnemonic phrase
+    /// Get a [Bip39MnemonicType] for an existing mnemonic phrase
     ///
     /// This can be used when you need information about a mnemonic phrase based
-    /// on the number of words, for example you can get the entropy value
-    /// using [`MnemonicType::entropy_bits`][MnemonicType::entropy_bits()].
+    /// on the number of words, for example you can get the number of entropy bits used by the mnemonic
+    /// using [`Bip39MnemonicType::entropy_bits`].
+    ///
     ///
     /// Specifying a phrase that does not match one of the standard BIP39 phrase
-    /// lengths will return an `ParseMnemonicError`
+    /// lengths will return an [error][Error].
     ///
     /// # Example
     /// ```
@@ -118,8 +117,6 @@ impl Bip39MnemonicType {
     ///
     /// let entropy_bits = mnemonic_type.entropy_bits();
     /// ```
-    ///
-    /// [MnemonicType::entropy_bits()]: ./enum.MnemonicType.html#method.entropy_bits
     pub fn from_phrase(phrase: &str) -> Result<Self, Error> {
         let word_count = phrase.split(' ').count();
 
