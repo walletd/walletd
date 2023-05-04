@@ -155,14 +155,9 @@ impl HDKey {
     /// Multiple purpose types can be derived from the master node using the
     /// [`HDPurpose`] type
     ///
-    /// # Arguments
-    /// * `seed` - The seed to use to create the master node
-    /// * `network_type` - The network type to use for the master node
-    ///
-    /// # Errors
-    /// If this function encounters an error, it will return an `Error` type,
-    /// this can happen if the seed is invalid or an error is encounted when
-    /// specifiying the extended private key and extended public key
+    /// If this function encounters an error, it will return an [`Error`] type.
+    /// this can happen if the seed is invalid or an error is encountered when
+    /// specifying the extended private key and extended public key
     pub fn new_master(seed: Seed, network_type: HDNetworkType) -> Result<Self, Error> {
         let mut mac: HmacSha512 = HmacSha512::new_from_slice(b"Bitcoin seed")
             .map_err(|e| Error::HmacSha512(e.to_string()))?; // the "Bitcoin seed" string is specified in the bip32 protocol
@@ -334,8 +329,8 @@ impl HDKey {
     }
 
     /// Returns the extended private key
-    /// # Errors
-    /// Returns an error if the extended private key is missing
+    /// 
+    /// Returns an [error][Error] if the extended private key is missing
     pub fn extended_private_key(&self) -> Result<ExtendedPrivateKey, Error> {
         if let Some(private_key) = self.extended_private_key {
             Ok(private_key)
@@ -345,8 +340,8 @@ impl HDKey {
     }
 
     /// Returns the extended public key
-    /// # Errors
-    /// Returns an error if the extended public key is missing
+    ///
+    /// Returns an [error][Error] if the extended public key is missing
     pub fn extended_public_key(&self) -> Result<ExtendedPublicKey, Error> {
         if let Some(public_key) = self.extended_public_key {
             Ok(public_key)

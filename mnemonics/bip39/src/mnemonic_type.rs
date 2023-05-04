@@ -103,9 +103,9 @@ impl Bip39MnemonicType {
     /// on the number of words, for example you can get the number of entropy bits used by the mnemonic
     /// using [`Bip39MnemonicType::entropy_bits`].
     ///
-    /// # Errors
+    ///
     /// Specifying a phrase that does not match one of the standard BIP39 phrase
-    /// lengths will return an [Error].
+    /// lengths will return an [error][Error].
     ///
     /// # Example
     /// ```
@@ -116,9 +116,7 @@ impl Bip39MnemonicType {
     /// let mnemonic_type = Bip39MnemonicType::from_phrase(mnemonic).unwrap();
     ///
     /// let entropy_bits = mnemonic_type.entropy_bits();
-    /// ```
-    ///
-    /// [MnemonicType::entropy_bits()]: ./enum.MnemonicType.html#method.entropy_bits
+    /// ``` 
     pub fn from_phrase(phrase: &str) -> Result<Self, Error> {
         let word_count = phrase.split(' ').count();
 

@@ -306,13 +306,7 @@ impl HDPath {
     }
 
     /// Returns the HDPathIndex object at the specified position (index) in the
-    /// path if it exists, otherwise returns an Error # Arguments
-    /// * `index` - the index of the HDPathIndex object to return based on the
-    ///   path vector inside the HDPath
-    ///
-    /// # Errors
-    /// Returns an error `Error::IndexOutOfRange` if the index is not valid for
-    /// the HDPath object
+    /// path if it exists, otherwise returns an [error][Error::IndexOutOfRange] 
     pub fn at(&self, index: usize) -> Result<HDPathIndex, Error> {
         if index < self.path.len() {
             Ok(self.path[index])
@@ -325,8 +319,9 @@ impl HDPath {
     }
 
     /// Returns the HDPurpose value related to the purpose attribute, if it
-    /// exists in the HDPath # Errors
-    /// Returns an error `Error::IndexOutOfRange` if the index 1 is not valid
+    /// exists in the HDPath 
+    /// 
+    /// Returns an error [`Error::IndexOutOfRange`] if the index 1 is not valid
     /// for the HDPath object
     pub fn purpose(&self) -> Result<HDPurpose, Error> {
         let purpose: HDPurpose = self.at(1)?.try_into()?;
@@ -334,32 +329,36 @@ impl HDPath {
     }
 
     /// Returns the HDPathIndex value related to the coin_type attribute, if it
-    /// exists in the HDPath # Errors
-    /// Returns an error `Error::IndexOutOfRange` if the index is not valid for
+    /// exists in the HDPath 
+    /// 
+    /// Returns an error [`Error::IndexOutOfRange`] if the index is not valid for
     /// the HDPath object
     pub fn coin_type(&self) -> Result<HDPathIndex, Error> {
         self.at(2)
     }
 
     /// Returns the HDPathIndex value related to the account attribute, if it
-    /// exists in the HDPath # Errors
-    /// Returns an error `Error::IndexOutOfRange` if the index is not valid for
+    /// exists in the HDPath 
+    /// 
+    /// Returns an error [`Error::IndexOutOfRange`] if the index is not valid for
     /// the HDPath object
     pub fn account(&self) -> Result<HDPathIndex, Error> {
         self.at(3)
     }
 
     /// Returns the HDPathIndex value related to the change attribute, if it
-    /// exists in the HDPath # Errors
-    /// Returns an error `Error::IndexOutOfRange` if the index is not valid for
+    /// exists in the HDPath 
+    /// 
+    /// Returns an error [`Error::IndexOutOfRange`] if the index is not valid for
     /// the HDPath object
     pub fn change(&self) -> Result<HDPathIndex, Error> {
         self.at(4)
     }
 
     /// Returns the HDPathIndex value related to the address attribute, if it
-    /// exists in the HDPath # Errors
-    /// Returns an error `Error::IndexOutOfRange` if the index is not valid for
+    /// exists in the HDPath 
+    /// 
+    /// Returns an error [`Error::IndexOutOfRange`] if the index is not valid for
     /// the HDPath object
     pub fn address(&self) -> Result<HDPathIndex, Error> {
         self.at(5)

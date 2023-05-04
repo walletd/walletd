@@ -92,8 +92,7 @@ impl BitcoinAddress {
     }
 
     /// Returns the public key related to this BitcoinAddress
-    /// # Errors
-    /// Returns `Error::MissingPublicKey` if the public key is not present
+    /// Returns an [error][Error] if the public key is not present
     pub fn public_key(&self) -> Result<BitcoinPublicKey, Error> {
         if let Some(key) = self.public_key {
             Ok(key)
@@ -103,8 +102,8 @@ impl BitcoinAddress {
     }
 
     /// Returns the private key related to this BitcoinAddress
-    /// # Errors
-    /// Returns `Error::MissingPrivateKey` if the private key is not present
+    ///
+    /// Returns [`Error::MissingPrivateKey`] if the private key is not present
     pub fn private_key(&self) -> Result<BitcoinPrivateKey, Error> {
         if let Some(key) = self.private_key {
             Ok(key)

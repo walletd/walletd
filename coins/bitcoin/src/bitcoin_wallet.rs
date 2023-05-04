@@ -228,8 +228,7 @@ impl BitcoinWallet {
     }
 
     /// Returns the coin type id num based on the network
-    /// # Errors
-    /// Returns an error if the network is not supported
+    /// Returns an [error][Error] if the network is not supported
     pub fn coin_type_id(&self) -> Result<u32, Error> {
         match self.network()? {
             Network::Bitcoin => Ok(slip44::Coin::Bitcoin.id()),
@@ -242,9 +241,7 @@ impl BitcoinWallet {
     }
 
     /// Returns the default HDPurpose based on the address format
-    ///
-    /// # Errors
-    /// Returns an error if the address format is not currently supported
+    /// Returns an [error][Error] if the address format is not currently supported
     pub fn default_hd_purpose(&self) -> Result<HDPurpose, Error> {
         match self.address_format() {
             AddressType::P2pkh => Ok(HDPurpose::BIP44),
@@ -335,7 +332,7 @@ impl BitcoinWallet {
         self.address_format
     }
 
-    /// Returns the master HDKey, if it exists otherwise returns an error
+    /// Returns the master HDKey, if it exists otherwise returns an [error][Error]
     pub fn master_hd_key(&self) -> Result<HDKey, Error> {
         match &self.master_hd_key {
             Some(key) => Ok(key.clone()),
@@ -352,7 +349,6 @@ impl BitcoinWallet {
     }
 
     /// Returns a BitcoinAddress object on the the next available address on the first account (account_index = 0)
-    /// # Errors
     /// Returns an `Error` if it encounters a problem while deriving the next address
     pub fn next_address(&self) -> Result<BitcoinAddress, Error> {
         let purpose = self.default_hd_purpose()?.to_shortform_num();
@@ -780,17 +776,6 @@ impl BitcoinWallet {
     }
 
     /// Prepares a transaction to be signed and broadcasted
-    /// # Arguments
-    /// * `fee_sat_per_byte` - the fee to be paid per byte of the transaction
-    /// * `utxo_available` - the utxos available to be used in the transaction
-    /// * `inputs_available_tx_info` - the transaction info for the utxos available
-    /// * `send_amount` - the amount to be sent
-    /// * `receiver_view_wallet` - the address to send the funds to
-    /// * `change_addr` - the address to send the change to
-    /// # Returns
-    /// * `Result<(BTransaction, Vec<usize>), Error>` - the transaction and the indices of the utxos to use
-    /// # Errors
-    /// * Returns an Error if the transaction cannot be prepared
     pub fn prepare_transaction(
         fee_sat_per_byte: f64,
         utxo_available: &Vec<Utxo>,
@@ -940,8 +925,6 @@ impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
     }
 
     /// Used to import an existing wallet from a master HD key or a mnemonic seed and specified network type
-    /// # Errors
-    /// Returns the error `Error::UnableToImportWallet` if the master HD key is not provided
     fn build(&self) -> Result<BitcoinWallet, Error> {
         let master_hd_key = match (&self.master_hd_key, &self.mnemonic_seed) {
             (None, None) => {
@@ -1012,9 +995,7 @@ impl BitcoinWalletBuilder {
     }
 
     /// Returns the default HDPurpose based on the address format
-    ///
-    /// # Errors
-    /// Returns an error if the address format is not currently supported
+    /// Returns an error[Error] if the address format is not currently supported
     pub fn default_hd_purpose(&self) -> Result<HDPurpose, Error> {
         match self.address_format {
             AddressType::P2pkh => Ok(HDPurpose::BIP44),
@@ -1028,8 +1009,6 @@ impl BitcoinWalletBuilder {
     }
 
     /// Returns the coin type id num based on the network
-    /// # Errors
-    /// Returns an error if the network is not supported
     pub fn coin_type_id(&self) -> Result<u32, Error> {
         match &self.master_hd_key {
             Some(key) => match key.network() {
