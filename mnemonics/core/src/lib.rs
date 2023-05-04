@@ -60,7 +60,7 @@ pub trait Mnemonic {
     fn mnemonic_type(&self) -> Self::MnemonicType;
 }
 
-/// Implements a builder pattern for creating a [Mnemonic].
+/// Provides a builder pattern for creating a [Mnemonic].
 pub trait MnemonicBuilder {
     /// The associated Mnemonic struct
     type Mnemonic;
@@ -72,14 +72,15 @@ pub trait MnemonicBuilder {
     /// The type of error that can be returned by the builder
     type ErrorType;
 
-    /// Creates new builder struct with default values
+    /// Creates a new builder struct with default values.
+    ///
+    /// The default values depend on the implementation of the builder.
     fn new() -> Self;
 
-    /// Specifies the seed from which the mnemonic struct is recovered, it's
-    /// assumed that the seed provided directly corresponds to the mnemonic
-    /// phrase and is not an encrypted version of the seed. If a passphrase
-    /// is specified with the set_passphrase method, the seed recovered using
-    /// the recover method will be the encrypted version of the seed which takes
+    /// Specifies the seed from which the mnemonic struct is recovered.
+    ///
+    /// If a passphrase is specified with the [passphrase][MnemonicBuilder::passphrase] method, the seed recovered using
+    /// the [restore][MnemonicBuilder::restore] or [build][MnemonicBuilder::build] method will be the encrypted version of the seed which takes
     /// into account the passphrase value.
     fn mnemonic_seed(&mut self, seed: &Seed) -> &mut Self;
 
@@ -95,23 +96,27 @@ pub trait MnemonicBuilder {
     /// the mnemonic phrase
     fn passphrase(&mut self, passphrase: &str) -> &mut Self;
 
-    /// Specifies the mnemonic type to use when recovering or generating a
+    /// Specifies the [mnemonic type][Self::mnemonic_type] to use when recovering or generating a
     /// mnemonic phrase
     fn mnemonic_type(&mut self, mnemonic_type: Self::MnemonicType) -> &mut Self;
 
-    /// Sets the specified language to None and returns the builder.
-    /// Useful for overriding the default English language assumption.
-    /// When used with [build()][MnemonicBuilder::build()], automatically detects the language of the mnemonic phrase and returns an error if the mnemonic phrase is invalid for every language wordlist.
+    /// Sets the [specified language][Self::Language] to None.
+    ///
+    /// When used with [mnemonic_phrase][MnemonicBuilder::mnemonic_phrase] and [build][MnemonicBuilder::build] or [restore][MnemonicBuilder::restore], automatically detects the language of the mnemonic phrase and returns an error if the mnemonic phrase is invalid for every [mnemonic][Self::Mnemonic] [language][Self::Language] wordlist.
     fn detect_language(&mut self) -> &mut Self;
 
     /// Builds a mnemonic struct given the specifications provided to the
-    /// builder
+    /// builder.
+    ///
+    /// [build()][MnemonicBuilder::build()] can be used in place of [generate()][MnemonicBuilder::generate()] or [restore()][MnemonicBuilder::restore()] and will emulate the appropriate behavior based on the specifications provided to the builder.   
     fn build(&self) -> Result<Self::Mnemonic, Self::ErrorType>;
 
-    /// Restore a previously used mnemonic given specifications
+    /// Restore a previously used mnemonic based on the given specifications.
+    ///
+    /// Will return an [error][Self::ErrorType] in cases that not enough information was provided to restore the mnemonic or if any provided specifications conflict with each other.
     fn restore(&self) -> Result<Self::Mnemonic, Self::ErrorType>;
 
-    /// Generate a new mnemonic which follows given specifications
+    /// Generate a new mnemonic which follows the provided specifications.
     fn generate(&self) -> Result<Self::Mnemonic, Self::ErrorType>;
 }
 

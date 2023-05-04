@@ -23,7 +23,7 @@ pub use bitcoin::{
 
 const DEFAULT_GAP_LIMIT: usize = 20;
 
-/// Represents a Bitcoin wallet which can have multiple [BitcoinAddress] structs associated with it which are derived from a single master HD key.
+/// Represents a Hierarchical Deterministic (HD) Bitcoin wallet which can have multiple [BitcoinAddress] structs associated with it which are derived from a single master [HD key][HDKey].
 #[derive(Debug, Clone)]
 pub struct BitcoinWallet {
     address_format: AddressType,
@@ -209,7 +209,7 @@ impl CryptoWallet for BitcoinWallet {
 }
 
 impl BitcoinWallet {
-    /// Adds an address to the wallet if it is not already present
+    /// Adds an [associated Bitcoin address][BitcoinAddress] to the [wallet][BitcoinWallet] if it is not already associated to it while also keeping track of the [associated Bitcoin address][BitcoinAddress]'s [derived HD key][HDKey].
     pub fn add(&mut self, associated: &AssociatedAddress) {
         if self.addresses().contains(&associated.address) {
             return;
@@ -217,18 +217,18 @@ impl BitcoinWallet {
         self.associated.push(associated.clone());
     }
 
-    /// Returns the associated info
+    /// Returns the associated info: info on the [associated Bitcoin addresses][BitcoinAddress] paired with their [derived HD key][HDKey].
     pub fn associated_info(&self) -> &[AssociatedAddress] {
         &self.associated
     }
 
-    /// Returns a vector of the BitcoinAddress objects associated with the wallet
+    /// Returns a vector of the [BitcoinAddress] objects associated with the wallet.
     pub fn addresses(&self) -> Vec<BitcoinAddress> {
         self.associated.iter().map(|x| x.address.clone()).collect()
     }
 
-    /// Returns the coin type id num based on the network
-    /// Returns an [error][Error] if the network is not supported
+    /// Returns the coin type id num based on the [Bitcoin network][Network].
+    /// Returns an [error][Error] if the network is not supported.
     pub fn coin_type_id(&self) -> Result<u32, Error> {
         match self.network()? {
             Network::Bitcoin => Ok(slip44::Coin::Bitcoin.id()),
@@ -240,7 +240,7 @@ impl BitcoinWallet {
         }
     }
 
-    /// Returns the default HDPurpose based on the address format
+    /// Returns the [default HDPurpose] based on the [address format][AddressType]
     /// Returns an [error][Error] if the address format is not currently supported
     pub fn default_hd_purpose(&self) -> Result<HDPurpose, Error> {
         match self.address_format() {
@@ -348,8 +348,9 @@ impl BitcoinWallet {
         }
     }
 
-    /// Returns a BitcoinAddress object on the the next available address on the first account (account_index = 0)
-    /// Returns an `Error` if it encounters a problem while deriving the next address
+    /// Returns a [BitcoinAddress] object on the the next available address on the first account (account_index = 0).
+    ///
+    /// Returns an [error][Error] with details if it encounters a problem while deriving the next address
     pub fn next_address(&self) -> Result<BitcoinAddress, Error> {
         let purpose = self.default_hd_purpose()?.to_shortform_num();
         let coin_type = self.coin_type_id()?;
@@ -378,8 +379,9 @@ impl BitcoinWallet {
         BitcoinAddress::from_hd_key(&next_hd_key, self.address_format)
     }
 
-    /// Considering only account 0, returns the next change address corresponding to 1 + the max existing change address index
-    /// Change addresses are used for sending change back to the wallet and have a value of 1 instead of 0 in the derivation path for the change index
+    /// Considering only account 0, returns the [next change address][BitcoinAddress] corresponding to 1 + the max existing change address index.
+    ///
+    /// Change addresses are used for sending change back to the wallet and have a value of 1 (internal chain) instead of 0 (external chain) in the derivation path for the change index.
     pub fn next_change_address(&self) -> Result<BitcoinAddress, Error> {
         let purpose = match &self.hd_path_builder {
             Some(builder) => match builder.purpose {
@@ -424,23 +426,24 @@ impl BitcoinWallet {
         BitcoinAddress::from_hd_key(&next_hd_key, self.address_format)
     }
 
-    /// Set the gap limit to use when searching for addresses, if not set, the default gap limit is used
+    /// Set the gap limit to use when searching for addresses, if not set, the default gap limit of 20 is used.
     pub fn set_gap_limit(&mut self, gap_limit: usize) {
         self.gap_limit = gap_limit;
     }
 
-    /// Set the account discovery flag, if set to true, the wallet will search for addresses on all accounts, if set to false, the wallet will only search for addresses on the first account
-    /// If not set, the default value is true
+    /// Set the account discovery flag, if set to true, the wallet will search for addresses on all accounts, if set to false, the wallet will only search for addresses on the first account.
+    ///
+    /// If not set, the default value is true to enable account discovery.
     pub fn set_account_discovery(&mut self, account_discovery: bool) {
         self.account_discovery = account_discovery;
     }
 
-    /// Set the HDPathBuilder to use when deriving addresses, if not set, the default HDPathBuilder is used
+    /// Set the [HDPathBuilder] to use when deriving addresses, if not set, the default [HDPathBuilder] is used.
     pub fn set_hd_path_builder(&mut self, hd_path_builder: HDPathBuilder) {
         self.hd_path_builder = Some(hd_path_builder);
     }
 
-    /// Returns the gap limit that is being used when searching for addresses with this wallet
+    /// Returns the gap limit that is being used when searching for addresses with this wallet.
     pub fn gap_limit(&self) -> usize {
         self.gap_limit
     }
@@ -450,17 +453,17 @@ impl BitcoinWallet {
         self.account_discovery
     }
 
-    /// Returns the HDPathBuilder that is being used when deriving addresses with this wallet
-    /// If no HDPathBuilder has been set, the default HDPathBuilder that is being used is returned
-    pub fn hd_path_builder(&self) -> HDPathBuilder {
+    /// Returns the [HDPathBuilder] that is being used when deriving addresses with this wallet
+    /// If no [HDPathBuilder] has been set, the default [HDPathBuilder] that is being used is returned
+    pub fn hd_path_builder(&self) -> Result<HDPathBuilder, Error> {
         match &self.hd_path_builder {
-            Some(builder) => builder.clone(),
+            Some(builder) => Ok(builder.clone()),
             None => {
                 let mut builder = HDPath::builder();
                 builder
-                    .purpose_index(self.default_hd_purpose().unwrap().to_shortform_num())
-                    .coin_type_index(self.coin_type_id().unwrap());
-                builder
+                    .purpose_index(self.default_hd_purpose()?.to_shortform_num())
+                    .coin_type_index(self.coin_type_id()?);
+                Ok(builder)
             }
         }
     }

@@ -38,7 +38,7 @@
 //! # let master_hd_key = HDKey::new_master(master_seed, network_type)?;
 //! # let mut btc_wallet = BitcoinWallet::builder().master_hd_key(master_hd_key).build()?;
 //!   assert_eq!(btc_wallet.address_format(), bitcoin::AddressType::P2wpkh);
-//!   assert_eq!(btc_wallet.hd_path_builder().purpose, Some(HDPurpose::BIP84.to_shortform_num()));
+//!   assert_eq!(btc_wallet.hd_path_builder()?.purpose, Some(HDPurpose::BIP84.to_shortform_num()));
 //!
 //! # Ok(())
 //! # }

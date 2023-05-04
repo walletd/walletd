@@ -61,16 +61,16 @@
 //! # }
 //! ```
 //! ### Specify Blockchain Connectors
-//! 
+//!
 //! A valid [blockchain client][BlockchainConnector] is a concrete instance of a struct that implements the [BlockchainConnector] trait.
 //! You can setup a [Blockstream] blockchain client to access the Bitcoin blockchain and an [EthClient] blockchain client to access the Ethereum blockchain.
 //! Specifying a valid endpoint url is required for the [Blockstream] and [EthClient] blockchain clients.
 //! To associate an existing instance of a [cryptowallet][CryptoWallet] with a [blockchain client][BlockchainConnector], use the [`set_blockchain_client`][CryptoWallet::set_blockchain_client] method on the [cryptowallet][CryptoWallet] object.
-//! 
+//!
 //! ```no_run
 //! # use walletd::prelude::*;
 //! # use walletd_bip39::prelude::*;
-//! # use walletd_bitcoin::prelude::*
+//! # use walletd_bitcoin::prelude::*;
 //! # use walletd_ethereum::prelude::*;
 //! # fn main() -> Result<(), walletd::Error> {
 //! # let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
@@ -91,7 +91,7 @@
 //! ### Use the CryptoWallets
 //! Once you have a [cryptowallet][CryptoWallet] object associated with a [blockchain client] you can use the [cryptowallet][CryptoWallet] to access blockchain data.
 //! Any object that implements the [CryptoWallet] trait must implement functions within the trait which include [`balance`][CryptoWallet::balance], and [`transfer`][CryptoWallet::transfer].
-//! 
+//!
 //! ```no_run
 //! # use walletd::prelude::*;
 //! # use walletd_bip39::prelude::*;

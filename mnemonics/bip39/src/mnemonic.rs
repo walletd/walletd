@@ -61,20 +61,12 @@ pub struct Bip39Mnemonic {
 /// The builder pattern allows for the
 /// creation of a [Bip39Mnemonic] struct by only specifying the options
 /// needed, allowing for options to be rewritten.
-/// The [Bip39MnemonicBuilder] struct with default options can be
-/// created using the [`Bip39Mnemonic::builder()`] function or
-/// [`Bip39MnemonicBuilder::new()`]. The default trait is
-/// implemented for MnemonicBuilder with the language set to English, the
-/// mnemonic type set to 12 words, and the other fields not set.
 ///
-/// The [Bip39MnemonicBuilder::generate()] function
-/// will create a new mnemonic and return a [Bip39Mnemonic] struct.
-/// The [Bip39MnemonicBuilder::restore()] function will
-/// restore a mnemonic from a mnemonic phrase or seed and return a
-/// [Bip39Mnemonic] struct. The [Bip39MnemonicBuilder::build()] is a versatile function that can be used both cases when generating a new mnemonic as well as when restoring a mnemonic.
-/// Various builder methods can be used to specify
-/// the options for the mnemonic.
-/// The [MnemonicBuilder::detect_language()] function can be used to specify that the language should be automatically detected from the mnemonic phrase.
+///
+/// A [Bip39MnemonicBuilder] struct with default options can be
+/// created using the [Bip39Mnemonic::builder()] or
+/// [Bip39MnemonicBuilder::new()] methods.
+///
 ///
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Bip39MnemonicBuilder {
@@ -86,6 +78,9 @@ pub struct Bip39MnemonicBuilder {
 }
 
 impl Default for Bip39MnemonicBuilder {
+    /// Default trait is
+    /// implemented for [`MnemonicBuilder`] with the language set to [`English`][Bip39Language::English], the
+    /// [mnemonic type set to 12 words][] no seed , mnemonic_phrase, or passphrase specified.
     fn default() -> Self {
         Self {
             mnemonic_phrase: None,
@@ -228,7 +223,7 @@ impl MnemonicBuilder for Bip39MnemonicBuilder {
     type Mnemonic = Bip39Mnemonic;
     type MnemonicType = Bip39MnemonicType;
 
-    /// Creates new builder struct with default values
+    /// Creates a new [Bip39MnemonicBuilder] struct with default values.
     fn new() -> Self {
         Self::default()
     }
@@ -258,38 +253,16 @@ impl MnemonicBuilder for Bip39MnemonicBuilder {
         self
     }
 
+    /// Sets the [specified language][Self::Language] to None.
+    ///
+    /// Useful for overriding the default [English language][Bip39Language::English] assumption when using a mnemonic phrase in a non-English language without needing to specify which [language][Bip39Language] the mnemonic phrase is in.
+    ///   
+    /// When used with [mnemonic_phrase][MnemonicBuilder::mnemonic_phrase] and [build][MnemonicBuilder::build] or [restore][MnemonicBuilder::restore], automatically detects the language of the mnemonic phrase and returns an error if the mnemonic phrase is invalid for every [mnemonic][Self::Mnemonic] [language][Self::Language] wordlist.
     fn detect_language(&mut self) -> &mut Self {
         self.language = None;
         self
     }
 
-    /// Restore a mnemonic struct from a specified phrase or seed.
-    /// It's recommended to restore a mnemonic struct from the phrase rather
-    /// than a seed. Other optional parameters can be specified to ensure
-    /// that the recovered mnemonic matches the specifications. This
-    /// includes the language, mnemonic type, and passphrase. If a phrase is
-    /// provided, the language and mnemonic type will be derived from the
-    /// phrase, but an error will be reported if the language or mnemonic
-    /// type specified do not match the language or mnemonic type derived
-    /// from the phrase. If a passphrase is provided along with the mnemonic
-    /// phrase, the seed will be derived from the mnemonic phrase and
-    /// encrypted using the passphrase. If both a mnemonic phrase and a seed
-    /// are provided, the specified seed will be ignored and only the mnemonic
-    /// phrase will be used to construct the Mnemonic struct with no checks in
-    /// place to compare with the specified seed. If a seed is directly
-    /// provided without a phrase being specified, the mnemonic will we
-    /// recovered using the seed info and the specifications for the language
-    /// and mnemonic type, there are defaults in place for the language and
-    /// mnemonic type. It is assumed that the seed provided is the
-    /// "unencrypted" seed. That means that if a seed is provided and a
-    /// passphrase is also provided, the final seed stored to the mnemonic
-    /// struct will be the "encrypted" seed with the mnemonic phrase stemming
-    /// directly from the "unencrypted" seed. The seed stored to the
-    /// Mnemonic struct will be the final one which is used to derive the
-    /// private key. If a seed is provided without a passphrase, the seed
-    /// will be stored as the final seed and a mnemonic phrase will be derived
-    /// based on the options that were specified or are default for the language
-    /// and mnemonic type.
     fn restore(&self) -> Result<Self::Mnemonic, Self::ErrorType> {
         // early return of an error if neither the passphrase nor seed were provided
         if self.mnemonic_phrase.is_none() && self.seed.is_none() {
