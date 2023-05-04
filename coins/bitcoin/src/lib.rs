@@ -37,7 +37,12 @@ mod bitcoin_wallet;
 pub use bitcoin_wallet::{BitcoinWallet, BitcoinWalletBuilder};
 mod bitcoin_amount;
 pub use bitcoin_amount::BitcoinAmount;
+
+#[doc(hidden)]
 pub mod blockstream;
+
+pub use blockstream::Blockstream;
+
 mod error;
 pub use error::Error;
 pub use walletd_bip39::{
