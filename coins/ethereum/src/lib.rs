@@ -80,7 +80,7 @@
 //! let gas_price = eth_client.gas_price().await;
 //! println!("transaction data: {:?}", tx);
 //! # Ok(())
-//! }
+//! # }
 //! ```
 //!
 //! When the `ethereum_wallet` is connected to the blockchain, we can find the balance of the wallet.
