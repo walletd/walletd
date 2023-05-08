@@ -1,8 +1,9 @@
-use crate::{AddressType, BitcoinAddress, BitcoinWallet, BitcoinWalletBuilder, Error, Network};
-use walletd_coin_core::prelude::*;
+
+#[cfg(test)]
+
+use super::*;
 use walletd_hd_key::prelude::*;
 
-use super::AssociatedAddress;
 
 const BTC_WALLET_TEST_SEED: &str = "a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee";
 
