@@ -1023,6 +1023,6 @@ impl BitcoinWalletBuilder {
     }
 }
 
+mod test_bitcoin_wallet;
 #[cfg(test)]
 mod test_bitcoin_wallet_builder;
-mod test_bitcoin_wallet;
