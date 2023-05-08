@@ -176,7 +176,7 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
             .coin_type_index(coin_type_id)
             .hardened_coin_type();
 
-        let derived_key = master_hd_key.derive(hd_path_builder.build().to_string())?;
+        let derived_key = master_hd_key.derive(&hd_path_builder.build().to_string())?;
         let private_key =
             EthereumPrivateKey::from_slice(&derived_key.extended_private_key()?.to_bytes())?;
         let public_key =
@@ -355,7 +355,7 @@ impl EthereumWallet {
     /// Returns the master HD key of the wallet if it exists, otherwise returns an error
     pub fn master_hd_key(&self) -> Result<HDKey, Error> {
         if let Some(key) = self.derived_hd_key.clone() {
-            let master_key = HDKey::new(key.master_seed, key.network, "m".to_string())?;
+            let master_key = HDKey::new(key.master_seed, key.network, "m")?;
             Ok(master_key)
         } else {
             Err(Error::MissingHDKey)

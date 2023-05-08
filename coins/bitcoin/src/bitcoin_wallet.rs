@@ -240,8 +240,13 @@ impl BitcoinWallet {
         }
     }
 
-    /// Returns the [default HDPurpose] based on the [address format][AddressType]
+    /// Returns the [default HDPurpose][HDPurpose] based on the [address format][AddressType]
     /// Returns an [error][Error] if the address format is not currently supported
+    ///
+    /// If the address format is [AddressType::P2pkh] the default purpose is [HPDPurpose::BIP44]
+    /// If the address format is [AddressType::P2sh] the default purpose is [HPDPurpose::BIP49]
+    /// If the address format is [AddressType::P2wpkh] the default purpose is [HPDPurpose::BIP84]
+    /// Other address formats are currently not supported and will return an [error][Error]
     pub fn default_hd_purpose(&self) -> Result<HDPurpose, Error> {
         match self.address_format() {
             AddressType::P2pkh => Ok(HDPurpose::BIP44),
@@ -292,7 +297,7 @@ impl BitcoinWallet {
                         .change_index(change_index)
                         .build()
                         .to_string();
-                    let derived = master_hd_key.derive(specify_deriv_path.clone())?;
+                    let derived = master_hd_key.derive(specify_deriv_path)?;
                     let address = BitcoinAddress::from_hd_key(&derived, address_format)?;
                     let exists = blockchain_client
                         .check_if_past_transactions_exist(&address.public_address())
@@ -375,7 +380,7 @@ impl BitcoinWallet {
             .address_index(max_address + 1)
             .build()
             .to_string();
-        let next_hd_key = self.master_hd_key()?.derive(next_deriv_path)?;
+        let next_hd_key = self.master_hd_key()?.derive(&next_deriv_path)?;
         BitcoinAddress::from_hd_key(&next_hd_key, self.address_format)
     }
 
@@ -422,7 +427,7 @@ impl BitcoinWallet {
             .address_index(max_address + 1)
             .build()
             .to_string();
-        let next_hd_key = self.master_hd_key()?.derive(next_deriv_path)?;
+        let next_hd_key = self.master_hd_key()?.derive(&next_deriv_path)?;
         BitcoinAddress::from_hd_key(&next_hd_key, self.address_format)
     }
 

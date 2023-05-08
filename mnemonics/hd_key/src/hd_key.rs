@@ -196,7 +196,7 @@ impl HDKey {
     pub fn new(
         seed: Seed,
         network_type: HDNetworkType,
-        derivation_path: String,
+        derivation_path: &str,
     ) -> Result<Self, Error> {
         Self::new_master(seed, network_type)?.derive(derivation_path)
     }
@@ -208,7 +208,7 @@ impl HDKey {
 
     /// Derives and returns a [`HDKey`] following the specified derivation path
     /// from the [`HDKey`] given as the self parameter as the parent key.
-    pub fn derive(&self, derivation_path: String) -> Result<Self, Error> {
+    pub fn derive(&self, derivation_path: &str) -> Result<Self, Error> {
         let new_deriv_path = HDPath::from_str(&derivation_path)?;
         let new_deriv_path_info = new_deriv_path.to_vec();
         let parent_deriv_path = self.derivation_path.to_vec();
