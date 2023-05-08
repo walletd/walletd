@@ -878,6 +878,7 @@ impl BitcoinWallet {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 /// Builder for [BitcoinWallet] that allows for the creation of a [BitcoinWallet] with a custom configuration
 pub struct BitcoinWalletBuilder {
     /// The address format used to generate the wallet, if the address format is not provided, the default address format is P2wpkh
