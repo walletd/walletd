@@ -49,7 +49,7 @@ impl Default for BitcoinWallet {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AssociatedAddress {
     pub address: BitcoinAddress,
     pub hd_key: HDKey,
@@ -879,7 +879,7 @@ impl Default for BitcoinWalletBuilder {
             address_format: AddressType::P2wpkh,
             hd_purpose: Some(HDPurpose::BIP84),
             master_hd_key: None,
-            gap_limit_specified: Some(20),
+            gap_limit_specified: Some(DEFAULT_GAP_LIMIT),
             account_discovery: true,
             mnemonic_seed: None,
             network_type: Network::Bitcoin,
@@ -1025,3 +1025,4 @@ impl BitcoinWalletBuilder {
 
 #[cfg(test)]
 mod test_bitcoin_wallet_builder;
+mod test_bitcoin_wallet;

@@ -124,7 +124,7 @@ impl fmt::Display for HDNetworkType {
 /// [HDKey] also follows the purpose scheme described in BIP43: <https://github.com/bitcoin/bips/blob/master/bip-0043.mediawiki>
 /// The [HDPurpose] enum supports the following purpose types: BIP32, BIP44,
 /// BIP49, and BIP84.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct HDKey {
     /// The seed used to create the master node
     pub master_seed: Seed,
