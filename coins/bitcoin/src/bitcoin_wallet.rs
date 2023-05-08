@@ -134,7 +134,7 @@ impl CryptoWallet for BitcoinWallet {
         let mut total_value_from_utxos = 0;
         let mut inputs_available: Vec<Utxo> = Vec::new();
         let mut inputs_available_tx_info: Vec<BTransaction> = Vec::new();
-        let change_addr = self.next_change_address()?.address_info();
+        let change_addr = self.next_change_address()?.address_info().clone();
 
         let mut keys_per_input: Vec<(BitcoinPrivateKey, BitcoinPublicKey)> = Vec::new();
         let mut utxo_addr_index = Vec::new();
@@ -155,7 +155,7 @@ impl CryptoWallet for BitcoinWallet {
         };
 
         if available_input_max < *send_amount {
-            return Err(Error::InsufficientFunds("Insufficent funds".into()));
+            return Err(Error::InsufficientFunds("Insufficient funds".into()));
         }
 
         let prepared = Self::prepare_transaction(
@@ -856,7 +856,7 @@ impl BitcoinWallet {
             ..Default::default()
         };
         output_send.value = send_amount.satoshi();
-        output_send.set_scriptpubkey_info(receiver_view_wallet.address_info())?;
+        output_send.set_scriptpubkey_info(receiver_view_wallet.address_info().clone())?;
         outputs.push(output_send);
         let mut output_change = Output {
             ..Default::default()

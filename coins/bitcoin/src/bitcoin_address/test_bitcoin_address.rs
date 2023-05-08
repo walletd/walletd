@@ -59,5 +59,8 @@ fn test_from_public_address() -> Result<(), Error> {
     assert_eq!(btc_address.public_address(), expected_address);
     assert!(btc_address.public_key().is_err());
     assert!(btc_address.private_key().is_err());
+    let address_info = btc_address.address_info();
+    assert!(address_info.address_type().is_some());
+    assert_eq!(address_info.address_type().expect("expecting option value due to previous check"), AddressType::P2wpkh);
     Ok(())
 }
