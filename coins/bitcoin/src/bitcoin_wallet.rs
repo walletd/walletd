@@ -353,6 +353,35 @@ impl BitcoinWallet {
         }
     }
 
+    /// Adds an address on the first account (account_index = 0) with the specified address index to the [BitcoinWallet]
+    /// If the particular address is already associated with the wallet, it will be added again
+    ///
+    /// If not enough info is kn
+    pub fn add_address_index(&mut self, address_index: u32) -> Result<(), Error> {
+        let purpose = self.default_hd_purpose()?.to_shortform_num();
+        let coin_type = self.coin_type_id()?;
+        let account = HDPathIndex::IndexHardened(0);
+        let mut max_address = 0;
+
+        let mut add_deriv_path = match self.hd_path_builder() {
+            Ok(mut hd_path_builder) => hd_path_builder.account_index(0).address_index(address_index).build(),
+            Err(_) => HDPath::builder()
+                .purpose_index(purpose)
+                .coin_type_index(coin_type)
+                .account_index(account.to_shortform_num())
+                .hardened_account().address_index(address_index).build(),
+        };
+
+        // Return error if purpose or coin type was not set
+        let check_purpose = add_deriv_path.purpose()?;
+        let check_coin_type = add_deriv_path.coin_type()?;
+
+        let add_hd_key = self.master_hd_key()?.derive(&add_deriv_path.to_string())?;
+        let btc_address = BitcoinAddress::from_hd_key(&add_hd_key, self.address_format)?;
+        self.add(&AssociatedAddress::new(btc_address, add_hd_key));
+        Ok(())
+    }
+
     /// Returns a [BitcoinAddress] object on the the next available address on the first account (account_index = 0).
     ///
     /// Returns an [error][Error] with details if it encounters a problem while deriving the next address
@@ -361,12 +390,17 @@ impl BitcoinWallet {
         let coin_type = self.coin_type_id()?;
         let account = HDPathIndex::IndexHardened(0);
         let mut max_address = 0;
+
         let mut path_builder = HDPath::builder();
-        path_builder
-            .purpose_index(purpose)
-            .coin_type_index(coin_type)
-            .account_index(account.to_shortform_num())
-            .hardened_account();
+        match self.hd_path_builder() {
+            Ok(mut hd_path_builder) => {hd_path_builder.account_index(0); path_builder = hd_path_builder;}
+            Err(_) => {path_builder
+                .purpose_index(purpose)
+                .coin_type_index(coin_type)
+                .account_index(account.to_shortform_num())
+                .hardened_account();
+            }
+        };
 
         for info in self.associated.iter() {
             let deriv_path = &info.hd_key().derivation_path();
@@ -435,7 +469,7 @@ impl BitcoinWallet {
     pub fn set_master_hd_key(&mut self, master_hd_key: HDKey) {
         self.master_hd_key = Some(master_hd_key);
     }
-    
+
     /// Set the gap limit to use when searching for addresses, if not set, the default gap limit of 20 is used.
     pub fn set_gap_limit(&mut self, gap_limit: usize) {
         self.gap_limit = gap_limit;
