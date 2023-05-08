@@ -361,9 +361,8 @@ impl BitcoinWallet {
         let purpose = self.default_hd_purpose()?.to_shortform_num();
         let coin_type = self.coin_type_id()?;
         let account = HDPathIndex::IndexHardened(0);
-        let mut max_address = 0;
-
-        let mut add_deriv_path = match self.hd_path_builder() {
+        
+        let add_deriv_path = match self.hd_path_builder() {
             Ok(mut hd_path_builder) => hd_path_builder.account_index(0).address_index(address_index).build(),
             Err(_) => HDPath::builder()
                 .purpose_index(purpose)
@@ -373,8 +372,8 @@ impl BitcoinWallet {
         };
 
         // Return error if purpose or coin type was not set
-        let check_purpose = add_deriv_path.purpose()?;
-        let check_coin_type = add_deriv_path.coin_type()?;
+        let _check_purpose = add_deriv_path.purpose()?;
+        let _check_coin_type = add_deriv_path.coin_type()?;
 
         let add_hd_key = self.master_hd_key()?.derive(&add_deriv_path.to_string())?;
         let btc_address = BitcoinAddress::from_hd_key(&add_hd_key, self.address_format)?;

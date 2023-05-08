@@ -10,6 +10,7 @@ fn test_from_hd_key_testnet() -> Result<(), Error> {
     let bitcoin_address = BitcoinAddress::from_hd_key(&hd_key, address_format)?;
     let expected_address = "tb1q2knvzpjltz4uwh6j5wrmqn7lnzccsphpd85jp9";
     assert_eq!(bitcoin_address.public_address(), expected_address);
+    assert!(bitcoin_address.public_key().is_ok());
     Ok(())
 }
 
@@ -47,5 +48,14 @@ fn test_from_hd_key_mainnet_p2sh() -> Result<(), Error> {
     // TODO(AS: walletd #20):  Need to fix issue with p2sh address generation
     //let expected_address = "32z7gdz9HL5PRbFQM8E6ar5xidHUxCfniW";
     //assert_eq!(bitcoin_address.public_address(), expected_address);
+    Ok(())
+}
+
+#[test]
+fn test_from_public_address() -> Result<(), Error> {
+    let expected_address = "tb1q2knvzpjltz4uwh6j5wrmqn7lnzccsphpd85jp9";
+    let btc_address = BitcoinAddress::from_public_address(expected_address, bitcoin::Network::Testnet)?;
+    assert_eq!(btc_address.public_address(), expected_address);
+    assert!(btc_address.public_key().is_err());
     Ok(())
 }
