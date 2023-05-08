@@ -11,6 +11,7 @@ fn test_from_hd_key_testnet() -> Result<(), Error> {
     let expected_address = "tb1q2knvzpjltz4uwh6j5wrmqn7lnzccsphpd85jp9";
     assert_eq!(bitcoin_address.public_address(), expected_address);
     assert!(bitcoin_address.public_key().is_ok());
+    assert!(bitcoin_address.private_key().is_ok());
     Ok(())
 }
 
@@ -57,5 +58,6 @@ fn test_from_public_address() -> Result<(), Error> {
     let btc_address = BitcoinAddress::from_public_address(expected_address, bitcoin::Network::Testnet)?;
     assert_eq!(btc_address.public_address(), expected_address);
     assert!(btc_address.public_key().is_err());
+    assert!(btc_address.private_key().is_err());
     Ok(())
 }
