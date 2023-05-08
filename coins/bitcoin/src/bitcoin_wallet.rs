@@ -431,6 +431,11 @@ impl BitcoinWallet {
         BitcoinAddress::from_hd_key(&next_hd_key, self.address_format)
     }
 
+    /// Sets the [master hd key][HDKey] associated with the [wallet][BitcoinWallet].
+    pub fn set_master_hd_key(&mut self, master_hd_key: HDKey) {
+        self.master_hd_key = Some(master_hd_key);
+    }
+    
     /// Set the gap limit to use when searching for addresses, if not set, the default gap limit of 20 is used.
     pub fn set_gap_limit(&mut self, gap_limit: usize) {
         self.gap_limit = gap_limit;
