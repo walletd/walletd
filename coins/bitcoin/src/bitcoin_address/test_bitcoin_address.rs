@@ -55,12 +55,18 @@ fn test_from_hd_key_mainnet_p2sh() -> Result<(), Error> {
 #[test]
 fn test_from_public_address() -> Result<(), Error> {
     let expected_address = "tb1q2knvzpjltz4uwh6j5wrmqn7lnzccsphpd85jp9";
-    let btc_address = BitcoinAddress::from_public_address(expected_address, bitcoin::Network::Testnet)?;
+    let btc_address =
+        BitcoinAddress::from_public_address(expected_address, bitcoin::Network::Testnet)?;
     assert_eq!(btc_address.public_address(), expected_address);
     assert!(btc_address.public_key().is_err());
     assert!(btc_address.private_key().is_err());
     let address_info = btc_address.address_info();
     assert!(address_info.address_type().is_some());
-    assert_eq!(address_info.address_type().expect("expecting option value due to previous check"), AddressType::P2wpkh);
+    assert_eq!(
+        address_info
+            .address_type()
+            .expect("expecting option value due to previous check"),
+        AddressType::P2wpkh
+    );
     Ok(())
 }

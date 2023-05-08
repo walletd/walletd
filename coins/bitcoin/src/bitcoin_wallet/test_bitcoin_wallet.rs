@@ -1,4 +1,4 @@
-use crate::{AddressType, BitcoinAddress, BitcoinWallet, Error, Network, BitcoinWalletBuilder};
+use crate::{AddressType, BitcoinAddress, BitcoinWallet, BitcoinWalletBuilder, Error, Network};
 use walletd_coin_core::prelude::*;
 use walletd_hd_key::prelude::*;
 
@@ -77,7 +77,10 @@ fn test_bitcoin_wallet() -> Result<(), Error> {
     assert_eq!(btc_wallet.gap_limit(), 10);
     assert_eq!(btc_wallet.addresses().len(), 0);
     btc_wallet.add_address_index(0)?;
-    assert_eq!(btc_wallet.associated_info()[0].address(), &expected_first_address);
+    assert_eq!(
+        btc_wallet.associated_info()[0].address(),
+        &expected_first_address
+    );
     assert_eq!(btc_wallet.addresses().len(), 1);
     let next_address = btc_wallet.next_address()?;
     btc_wallet.add_address_index(1)?;
@@ -86,8 +89,8 @@ fn test_bitcoin_wallet() -> Result<(), Error> {
 }
 
 #[test]
-fn test_default_builder()  {
+fn test_default_builder() {
     let btc_builder = BitcoinWallet::builder();
-    let default_btc_builder= BitcoinWalletBuilder::default();
+    let default_btc_builder = BitcoinWalletBuilder::default();
     assert_eq!(btc_builder, default_btc_builder);
 }

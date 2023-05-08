@@ -361,14 +361,19 @@ impl BitcoinWallet {
         let purpose = self.default_hd_purpose()?.to_shortform_num();
         let coin_type = self.coin_type_id()?;
         let account = HDPathIndex::IndexHardened(0);
-        
+
         let add_deriv_path = match self.hd_path_builder() {
-            Ok(mut hd_path_builder) => hd_path_builder.account_index(0).address_index(address_index).build(),
+            Ok(mut hd_path_builder) => hd_path_builder
+                .account_index(0)
+                .address_index(address_index)
+                .build(),
             Err(_) => HDPath::builder()
                 .purpose_index(purpose)
                 .coin_type_index(coin_type)
                 .account_index(account.to_shortform_num())
-                .hardened_account().address_index(address_index).build(),
+                .hardened_account()
+                .address_index(address_index)
+                .build(),
         };
 
         // Return error if purpose or coin type was not set
@@ -392,12 +397,16 @@ impl BitcoinWallet {
 
         let mut path_builder = HDPath::builder();
         match self.hd_path_builder() {
-            Ok(mut hd_path_builder) => {hd_path_builder.account_index(0); path_builder = hd_path_builder;}
-            Err(_) => {path_builder
-                .purpose_index(purpose)
-                .coin_type_index(coin_type)
-                .account_index(account.to_shortform_num())
-                .hardened_account();
+            Ok(mut hd_path_builder) => {
+                hd_path_builder.account_index(0);
+                path_builder = hd_path_builder;
+            }
+            Err(_) => {
+                path_builder
+                    .purpose_index(purpose)
+                    .coin_type_index(coin_type)
+                    .account_index(account.to_shortform_num())
+                    .hardened_account();
             }
         };
 
