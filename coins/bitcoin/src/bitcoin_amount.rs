@@ -44,22 +44,6 @@ impl ops::Sub for BitcoinAmount {
     }
 }
 
-impl ops::Mul for BitcoinAmount {
-    type Output = Result<Self, Error>;
-
-    fn mul(self, rhs: Self) -> Self::Output {
-        Ok(Self {
-            satoshi: self
-                .satoshi
-                .checked_mul(rhs.satoshi)
-                .ok_or(Error::Overflow(format!(
-                    "Overflow in u64 when multiplying {} by {}",
-                    self.satoshi, rhs.satoshi
-                )))?,
-        })
-    }
-}
-
 impl ops::Mul<f64> for BitcoinAmount {
     type Output = Result<Self, Error>;
 
@@ -75,22 +59,6 @@ impl ops::Mul<f64> for BitcoinAmount {
         let as_u64 = result as u64;
 
         Ok(Self { satoshi: as_u64 })
-    }
-}
-
-impl ops::Div for BitcoinAmount {
-    type Output = Result<Self, Error>;
-
-    fn div(self, rhs: Self) -> Self::Output {
-        Ok(Self {
-            satoshi: self
-                .satoshi
-                .checked_div(rhs.satoshi)
-                .ok_or(Error::Overflow(format!(
-                    "Overflow in u64 when dividing {} by {}",
-                    self.satoshi, rhs.satoshi
-                )))?,
-        })
     }
 }
 
@@ -190,24 +158,6 @@ mod tests {
     fn test_multiply_overflow() -> Result<(), Error> {
         let a = BitcoinAmount::from_btc(1.0);
         let b = f64::MAX;
-        let c = a * b;
-        assert!(c.is_err());
-        Ok(())
-    }
-
-    #[test]
-    fn test_multiply_amounts() -> Result<(), Error> {
-        let a = BitcoinAmount::from_satoshi(20);
-        let b = BitcoinAmount::from_satoshi(40);
-        let c = (a * b)?;
-        assert_eq!(c.satoshi(), 800);
-        Ok(())
-    }
-
-    #[test]
-    fn test_multiply_amounts_overflow() -> Result<(), Error> {
-        let a = BitcoinAmount::from_satoshi(u64::MAX);
-        let b = BitcoinAmount::from_satoshi(2);
         let c = a * b;
         assert!(c.is_err());
         Ok(())

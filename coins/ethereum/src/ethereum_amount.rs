@@ -57,37 +57,6 @@ impl ops::Mul<u64> for EthereumAmount {
         Ok(Self { wei: result })
     }
 }
-impl ops::Mul for EthereumAmount {
-    type Output = Result<Self, Error>;
-
-    fn mul(self, rhs: Self) -> Self::Output {
-        Ok(Self {
-            wei: self
-                .wei
-                .checked_mul(rhs.wei)
-                .ok_or(Error::Overflow(format!(
-                    "Overflow in U256 when multiplying {} by {}",
-                    self.wei, rhs.wei
-                )))?,
-        })
-    }
-}
-
-impl ops::Div for EthereumAmount {
-    type Output = Result<Self, Error>;
-
-    fn div(self, rhs: Self) -> Self::Output {
-        Ok(Self {
-            wei: self
-                .wei
-                .checked_div(rhs.wei)
-                .ok_or(Error::Overflow(format!(
-                    "Overflow in U256 when dividing {} by {}",
-                    self.wei, rhs.wei
-                )))?,
-        })
-    }
-}
 
 impl EthereumAmount {
     /// Creates a new EthereumAmount from a decimal value in ETH
