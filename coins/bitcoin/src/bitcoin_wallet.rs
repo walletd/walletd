@@ -356,7 +356,7 @@ impl BitcoinWallet {
     /// Adds an address on the first account (account_index = 0) with the specified address index to the [BitcoinWallet]
     /// If the particular address is already associated with the wallet, it will be added again
     ///
-    /// If not enough info is kn
+    /// If not enough info is known to add the address, an [error][Error] is returned
     pub fn add_address_index(&mut self, address_index: u32) -> Result<(), Error> {
         let purpose = self.default_hd_purpose()?.to_shortform_num();
         let coin_type = self.coin_type_id()?;
