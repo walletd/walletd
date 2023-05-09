@@ -1,6 +1,6 @@
 [package]
 name = "walletd"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 authors = ["The WalletD Team"]
@@ -16,12 +16,12 @@ path = "src/lib.rs"
 
 [dependencies]
 
-walletd_bip39 = {path = "../mnemonics/bip39", version="0.1"}
-walletd_mnemonics_core = {path = "../mnemonics/core", version="0.1"}
-walletd_coin_core = {path = "../coins/core", version="0.1"}
-walletd_bitcoin = {path = "../coins/bitcoin", version="0.1"}
-walletd_ethereum = {path = "../coins/ethereum", version="0.1"}
-walletd_hd_key = {path = "../mnemonics/hd_key", version="0.1"}
+walletd_bip39 = {path = "../mnemonics/bip39", version="0.2"}
+walletd_mnemonics_core = {path = "../mnemonics/core", version="0.2"}
+walletd_coin_core = {path = "../coins/core", version="0.2"}
+walletd_bitcoin = {path = "../coins/bitcoin", version="0.2"}
+walletd_ethereum = {path = "../coins/ethereum", version="0.2"}
+walletd_hd_key = {path = "../mnemonics/hd_key", version="0.2"}
 
 anyhow = "1.0.68"
 hex = { version = "0.4.2" }
