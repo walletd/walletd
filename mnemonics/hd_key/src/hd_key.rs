@@ -209,7 +209,7 @@ impl HDKey {
     /// Derives and returns a [`HDKey`] following the specified derivation path
     /// from the [`HDKey`] given as the self parameter as the parent key.
     pub fn derive(&self, derivation_path: &str) -> Result<Self, Error> {
-        let new_deriv_path = HDPath::from_str(&derivation_path)?;
+        let new_deriv_path = HDPath::from_str(derivation_path)?;
         let new_deriv_path_info = new_deriv_path.to_vec();
         let parent_deriv_path = self.derivation_path.to_vec();
         let mut private_key = self.extended_private_key.expect("Missing private key");
