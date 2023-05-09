@@ -243,9 +243,9 @@ impl BitcoinWallet {
     /// Returns the [default HDPurpose][HDPurpose] based on the [address format][AddressType]
     /// Returns an [error][Error] if the address format is not currently supported
     ///
-    /// If the address format is [AddressType::P2pkh] the default purpose is [HPDPurpose::BIP44]
-    /// If the address format is [AddressType::P2sh] the default purpose is [HPDPurpose::BIP49]
-    /// If the address format is [AddressType::P2wpkh] the default purpose is [HPDPurpose::BIP84]
+    /// If the address format is [AddressType::P2pkh] the default purpose is [HDPurpose::BIP44]
+    /// If the address format is [AddressType::P2sh] the default purpose is [HDPurpose::BIP49]
+    /// If the address format is [AddressType::P2wpkh] the default purpose is [HDPurpose::BIP84]
     /// Other address formats are currently not supported and will return an [error][Error]
     pub fn default_hd_purpose(&self) -> Result<HDPurpose, Error> {
         match self.address_format() {
