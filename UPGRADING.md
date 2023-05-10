@@ -18,9 +18,32 @@ This guide contains steps for upgrading crates in this project between versions 
     * Renamed set_mnemonic_phrase_none to no_mnemonic_phrase
     * Renamed set_mnemonic_seed_none to no_mnemonic_seed
     * Renamed set_passphrase_none to no_passphrase
+    * Renamed with_network_type to network_type
 
-* Renamed MnemonicHandler trait to Mnemonic
+* Under the Error enum:
+    * Renamed WalletdCoinModel to WalletdCoinCore
 
+* In re-export from walletd_mnemonics_core: 
+    * Uses Mnemonic instead of MnemonicHandler (MnemonicHandler trait was renamed to Mnemonic)
+    * Uses MnemonicBuilder instead of MnemonicStyleBuilder
+    (MnemonicStyleBuilder trait was renamed to MnemonicBuilder)
+
+* No longer re-exporting BlockchainGeneral and CryptoWalletGeneral (no longer there in walletd_coin_core crate)
+
+* Additional re-exports
+
+* Addition of prelude module which includes:
+    * Re-exports from crate: CryptoCoin, KeyPair, KeyPairBuilder, MnemonicKeyPairType
+    * Re-exports everything from the prelude of the walletd_coin_core crate
+    * Re-exports everything from the prelude of the walletd_hd_key crate
+    * Re-exports everything from the prelude from the walletd_mnemonics_core crate
+
+* Changes to crate re-exports
+    * Add export to prelude module
+    * Add re-export to Language from walletd_mnemonics_core
+    * Add re-export to Blockstream from walletd_bitcoin
+    * Add re-export to BlockchainConnectorBuilder from walletd_coin_core
+    * Remove re-export of EthereumFormat from walletd_ethereum
 
 ## Upgrading from walletd_bip39 0.1.x to 0.2.x
 
