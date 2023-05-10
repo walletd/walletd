@@ -146,9 +146,9 @@ impl BitcoinAddress {
         }
     }
 
-    /// Returns the [address info][AddressInfo] related to this [BitcoinAddress].
-    pub fn address_info(&self) -> AddressInfo {
-        self.address_info.clone()
+    /// Returns a reference to the [address info][AddressInfo] related to this [BitcoinAddress].
+    pub fn address_info(&self) -> &AddressInfo {
+        &self.address_info
     }
 }
 

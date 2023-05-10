@@ -39,7 +39,7 @@ fn main() -> Result<(), walletd_hd_key::Error> {
     println!("account derivation path: {}", account_deriv_path);
 
     assert_eq!(&account_deriv_path, "m/44'/60'/0'");
-    let eth_first_account_key = master_hd_key.derive(account_deriv_path.to_string())?;
+    let eth_first_account_key = master_hd_key.derive(&account_deriv_path)?;
     assert_eq!(
         eth_first_account_key.master_seed(),
         master_hd_key.master_seed()
@@ -55,8 +55,8 @@ fn main() -> Result<(), walletd_hd_key::Error> {
     );
 
     // Can derive a child key from a master key or a parent key, the derivation path must be a valid derivation path starting from the master node
-    let derive_from_master = master_hd_key.derive("m/44'/60'/0'/0/0".to_string())?;
-    let derive_from_parent = eth_first_account_key.derive("m/44'/60'/0'/0/0".to_string())?;
+    let derive_from_master = master_hd_key.derive("m/44'/60'/0'/0/0")?;
+    let derive_from_parent = eth_first_account_key.derive("m/44'/60'/0'/0/0")?;
     assert_eq!(derive_from_master, derive_from_parent);
     println!(
         "derive_from_master == derive_from_parent: {}",
@@ -76,8 +76,8 @@ fn main() -> Result<(), walletd_hd_key::Error> {
 
     assert_eq!(custom_key_path, "m/84'/1'/0'/1/0'");
     // Can use ' or h to specify hardened derivation
-    let custom_key = master_hd_key.derive(custom_key_path.clone())?;
-    let key_compare = master_hd_key.derive("m/84h/1h/0h/1/0h".to_string())?;
+    let custom_key = master_hd_key.derive(&custom_key_path)?;
+    let key_compare = master_hd_key.derive("m/84h/1h/0h/1/0h")?;
 
     assert_eq!(custom_key, key_compare);
 
@@ -85,7 +85,7 @@ fn main() -> Result<(), walletd_hd_key::Error> {
     let derived_key = HDKey::new(
         Seed::from_str(seed_hex)?,
         HDNetworkType::TestNet,
-        custom_key_path,
+        &custom_key_path,
     )?;
     assert_eq!(derived_key, custom_key);
     println!("derived_key: {:?}", derived_key);

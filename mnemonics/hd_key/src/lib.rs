@@ -103,7 +103,7 @@
 //! # .no_change_index()
 //! # .no_address_index()
 //! # .build().to_string();
-//! let eth_first_account_key = master_hd_key.derive(account_deriv_path.to_string())?;
+//! let eth_first_account_key = master_hd_key.derive(&account_deriv_path.to_string())?;
 //! assert_eq!(
 //! eth_first_account_key.master_seed(),
 //! master_hd_key.master_seed()
@@ -131,12 +131,12 @@
 //!.no_change_index()
 //!.no_address_index()
 //!.build().to_string();
-//! # let eth_first_account_key = master_hd_key.derive(account_deriv_path.to_string())?;
-//! let compare_account_key = master_hd_key.derive("m/44h/60h/0h".to_string())?;
+//! # let eth_first_account_key = master_hd_key.derive(&account_deriv_path.to_string())?;
+//! let compare_account_key = master_hd_key.derive("m/44h/60h/0h")?;
 //! assert_eq!(eth_first_account_key, compare_account_key);
 //!
-//! let address_key1 = master_hd_key.derive("m/44h/60h/0h/0/0".to_string())?;
-//! let address_key2 = eth_first_account_key.derive("m/44'/60'/0'/0/0".to_string())?;
+//! let address_key1 = master_hd_key.derive("m/44h/60h/0h/0/0")?;
+//! let address_key2 = eth_first_account_key.derive("m/44'/60'/0'/0/0")?;
 //! assert_eq!(address_key1, address_key2);
 //! # Ok(())
 //! # }
@@ -163,7 +163,7 @@
 //! let derived_key = HDKey::new(
 //!    seed,
 //!    HDNetworkType::TestNet,
-//!    custom_key_path,
+//!    &custom_key_path,
 //! )?;
 //!println!("derived_key: {:?}", derived_key);
 //! println!("derived_key depth: {}", derived_key.depth());

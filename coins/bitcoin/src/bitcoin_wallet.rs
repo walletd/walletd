@@ -49,7 +49,7 @@ impl Default for BitcoinWallet {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AssociatedAddress {
     pub address: BitcoinAddress,
     pub hd_key: HDKey,
@@ -134,7 +134,7 @@ impl CryptoWallet for BitcoinWallet {
         let mut total_value_from_utxos = 0;
         let mut inputs_available: Vec<Utxo> = Vec::new();
         let mut inputs_available_tx_info: Vec<BTransaction> = Vec::new();
-        let change_addr = self.next_change_address()?.address_info();
+        let change_addr = self.next_change_address()?.address_info().clone();
 
         let mut keys_per_input: Vec<(BitcoinPrivateKey, BitcoinPublicKey)> = Vec::new();
         let mut utxo_addr_index = Vec::new();
@@ -155,7 +155,7 @@ impl CryptoWallet for BitcoinWallet {
         };
 
         if available_input_max < *send_amount {
-            return Err(Error::InsufficientFunds("Insufficent funds".into()));
+            return Err(Error::InsufficientFunds("Insufficient funds".into()));
         }
 
         let prepared = Self::prepare_transaction(
@@ -240,8 +240,13 @@ impl BitcoinWallet {
         }
     }
 
-    /// Returns the [default HDPurpose] based on the [address format][AddressType]
+    /// Returns the [default HDPurpose][HDPurpose] based on the [address format][AddressType]
     /// Returns an [error][Error] if the address format is not currently supported
+    ///
+    /// If the address format is [AddressType::P2pkh] the default purpose is [HDPurpose::BIP44]
+    /// If the address format is [AddressType::P2sh] the default purpose is [HDPurpose::BIP49]
+    /// If the address format is [AddressType::P2wpkh] the default purpose is [HDPurpose::BIP84]
+    /// Other address formats are currently not supported and will return an [error][Error]
     pub fn default_hd_purpose(&self) -> Result<HDPurpose, Error> {
         match self.address_format() {
             AddressType::P2pkh => Ok(HDPurpose::BIP44),
@@ -292,7 +297,7 @@ impl BitcoinWallet {
                         .change_index(change_index)
                         .build()
                         .to_string();
-                    let derived = master_hd_key.derive(specify_deriv_path.clone())?;
+                    let derived = master_hd_key.derive(specify_deriv_path)?;
                     let address = BitcoinAddress::from_hd_key(&derived, address_format)?;
                     let exists = blockchain_client
                         .check_if_past_transactions_exist(&address.public_address())
@@ -348,6 +353,39 @@ impl BitcoinWallet {
         }
     }
 
+    /// Adds an address on the first account (account_index = 0) with the specified address index to the [BitcoinWallet]
+    /// If the particular address is already associated with the wallet, it will be added again
+    ///
+    /// If not enough info is known to add the address, an [error][Error] is returned
+    pub fn add_address_index(&mut self, address_index: u32) -> Result<(), Error> {
+        let purpose = self.default_hd_purpose()?.to_shortform_num();
+        let coin_type = self.coin_type_id()?;
+        let account = HDPathIndex::IndexHardened(0);
+
+        let add_deriv_path = match self.hd_path_builder() {
+            Ok(mut hd_path_builder) => hd_path_builder
+                .account_index(0)
+                .address_index(address_index)
+                .build(),
+            Err(_) => HDPath::builder()
+                .purpose_index(purpose)
+                .coin_type_index(coin_type)
+                .account_index(account.to_shortform_num())
+                .hardened_account()
+                .address_index(address_index)
+                .build(),
+        };
+
+        // Return error if purpose or coin type was not set
+        let _check_purpose = add_deriv_path.purpose()?;
+        let _check_coin_type = add_deriv_path.coin_type()?;
+
+        let add_hd_key = self.master_hd_key()?.derive(&add_deriv_path.to_string())?;
+        let btc_address = BitcoinAddress::from_hd_key(&add_hd_key, self.address_format)?;
+        self.add(&AssociatedAddress::new(btc_address, add_hd_key));
+        Ok(())
+    }
+
     /// Returns a [BitcoinAddress] object on the the next available address on the first account (account_index = 0).
     ///
     /// Returns an [error][Error] with details if it encounters a problem while deriving the next address
@@ -356,12 +394,21 @@ impl BitcoinWallet {
         let coin_type = self.coin_type_id()?;
         let account = HDPathIndex::IndexHardened(0);
         let mut max_address = 0;
+
         let mut path_builder = HDPath::builder();
-        path_builder
-            .purpose_index(purpose)
-            .coin_type_index(coin_type)
-            .account_index(account.to_shortform_num())
-            .hardened_account();
+        match self.hd_path_builder() {
+            Ok(mut hd_path_builder) => {
+                hd_path_builder.account_index(0);
+                path_builder = hd_path_builder;
+            }
+            Err(_) => {
+                path_builder
+                    .purpose_index(purpose)
+                    .coin_type_index(coin_type)
+                    .account_index(account.to_shortform_num())
+                    .hardened_account();
+            }
+        };
 
         for info in self.associated.iter() {
             let deriv_path = &info.hd_key().derivation_path();
@@ -375,7 +422,7 @@ impl BitcoinWallet {
             .address_index(max_address + 1)
             .build()
             .to_string();
-        let next_hd_key = self.master_hd_key()?.derive(next_deriv_path)?;
+        let next_hd_key = self.master_hd_key()?.derive(&next_deriv_path)?;
         BitcoinAddress::from_hd_key(&next_hd_key, self.address_format)
     }
 
@@ -422,8 +469,13 @@ impl BitcoinWallet {
             .address_index(max_address + 1)
             .build()
             .to_string();
-        let next_hd_key = self.master_hd_key()?.derive(next_deriv_path)?;
+        let next_hd_key = self.master_hd_key()?.derive(&next_deriv_path)?;
         BitcoinAddress::from_hd_key(&next_hd_key, self.address_format)
+    }
+
+    /// Sets the [master hd key][HDKey] associated with the [wallet][BitcoinWallet].
+    pub fn set_master_hd_key(&mut self, master_hd_key: HDKey) {
+        self.master_hd_key = Some(master_hd_key);
     }
 
     /// Set the gap limit to use when searching for addresses, if not set, the default gap limit of 20 is used.
@@ -813,7 +865,7 @@ impl BitcoinWallet {
             ..Default::default()
         };
         output_send.value = send_amount.satoshi();
-        output_send.set_scriptpubkey_info(receiver_view_wallet.address_info())?;
+        output_send.set_scriptpubkey_info(receiver_view_wallet.address_info().clone())?;
         outputs.push(output_send);
         let mut output_change = Output {
             ..Default::default()
@@ -835,6 +887,7 @@ impl BitcoinWallet {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 /// Builder for [BitcoinWallet] that allows for the creation of a [BitcoinWallet] with a custom configuration
 pub struct BitcoinWalletBuilder {
     /// The address format used to generate the wallet, if the address format is not provided, the default address format is P2wpkh
@@ -879,7 +932,7 @@ impl Default for BitcoinWalletBuilder {
             address_format: AddressType::P2wpkh,
             hd_purpose: Some(HDPurpose::BIP84),
             master_hd_key: None,
-            gap_limit_specified: Some(20),
+            gap_limit_specified: Some(DEFAULT_GAP_LIMIT),
             account_discovery: true,
             mnemonic_seed: None,
             network_type: Network::Bitcoin,
@@ -1023,5 +1076,7 @@ impl BitcoinWalletBuilder {
     }
 }
 
+#[cfg(test)]
+mod test_bitcoin_wallet;
 #[cfg(test)]
 mod test_bitcoin_wallet_builder;

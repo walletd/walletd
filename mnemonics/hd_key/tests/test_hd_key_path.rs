@@ -21,7 +21,7 @@ fn test_new_func_bip32_first_account() -> Result<(), Error> {
             32, 33, 178, 30, 10, 204, 238,
         ]),
         HDNetworkType::MainNet,
-        format!("m/{}/{}'/0'", dt, Coin::from(Symbol::BTC).id()),
+        &format!("m/{}/{}'/0'", dt, Coin::from(Symbol::BTC).id()),
     )?;
 
     assert_eq!(
@@ -69,7 +69,7 @@ fn test_bip32_first_account_derive() -> Result<(), Error> {
         HDNetworkType::MainNet,
     )?;
     assert_eq!(
-        keys.derive(format!("m/{}/{}'/0'", dt, Coin::from(Symbol::BTC).id()))?,
+        keys.derive(&format!("m/{}/{}'/0'", dt, Coin::from(Symbol::BTC).id()))?,
         HDKey {
             master_seed: Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
@@ -112,7 +112,7 @@ fn test_new_func_first_bip32_address() -> Result<(), Error> {
             32, 33, 178, 30, 10, 204, 238,
         ]),
         HDNetworkType::MainNet,
-        dt.default_path_specify(Coin::Bitcoin.id(), 0, 0, 0),
+        &dt.default_path_specify(Coin::Bitcoin.id(), 0, 0, 0),
     )?;
 
     assert_eq!(
@@ -162,7 +162,7 @@ fn test_derive_first_bip32_address() -> Result<(), Error> {
     )?;
 
     assert_eq!(
-        keys.derive(dt.default_path_specify(Coin::Bitcoin.id(), 0, 0, 0))?,
+        keys.derive(&dt.default_path_specify(Coin::Bitcoin.id(), 0, 0, 0))?,
         HDKey {
             master_seed: Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
@@ -205,7 +205,7 @@ fn test_derive_change_internal_chain() -> Result<(), Error> {
             32, 33, 178, 30, 10, 204, 238,
         ]),
         HDNetworkType::MainNet,
-        dt.default_path_specify(Coin::Bitcoin.id(), 0, 1, 0),
+        &dt.default_path_specify(Coin::Bitcoin.id(), 0, 1, 0),
     )?;
     assert_eq!(
         derived.derivation_path.to_string(),
@@ -240,7 +240,7 @@ fn test_eth_bip44() -> Result<(), Error> {
             32, 33, 178, 30, 10, 204, 238,
         ]),
         HDNetworkType::MainNet,
-        dpath,
+        &dpath,
     )?;
 
     assert_eq!(
@@ -296,7 +296,7 @@ fn test_bip49_first_account() -> Result<(), Error> {
 
     assert_eq!(master_key.derivation_path.to_string(), "m".to_string());
 
-    let first_account = master_key.derive(path_builder.build().to_string())?;
+    let first_account = master_key.derive(&path_builder.build().to_string())?;
     assert_eq!(
         first_account.derivation_path.to_string(),
         "m/49'/0'/0'".to_string()
@@ -323,7 +323,7 @@ fn test_bip49_address_one() -> Result<(), Error> {
             32, 33, 178, 30, 10, 204, 238,
         ]),
         HDNetworkType::MainNet,
-        path_builder.build().to_string(),
+        &path_builder.build().to_string(),
     )?;
 
     assert_eq!(

@@ -124,7 +124,7 @@ impl fmt::Display for HDNetworkType {
 /// [HDKey] also follows the purpose scheme described in BIP43: <https://github.com/bitcoin/bips/blob/master/bip-0043.mediawiki>
 /// The [HDPurpose] enum supports the following purpose types: BIP32, BIP44,
 /// BIP49, and BIP84.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct HDKey {
     /// The seed used to create the master node
     pub master_seed: Seed,
@@ -196,7 +196,7 @@ impl HDKey {
     pub fn new(
         seed: Seed,
         network_type: HDNetworkType,
-        derivation_path: String,
+        derivation_path: &str,
     ) -> Result<Self, Error> {
         Self::new_master(seed, network_type)?.derive(derivation_path)
     }
@@ -208,8 +208,8 @@ impl HDKey {
 
     /// Derives and returns a [`HDKey`] following the specified derivation path
     /// from the [`HDKey`] given as the self parameter as the parent key.
-    pub fn derive(&self, derivation_path: String) -> Result<Self, Error> {
-        let new_deriv_path = HDPath::from_str(&derivation_path)?;
+    pub fn derive(&self, derivation_path: &str) -> Result<Self, Error> {
+        let new_deriv_path = HDPath::from_str(derivation_path)?;
         let new_deriv_path_info = new_deriv_path.to_vec();
         let parent_deriv_path = self.derivation_path.to_vec();
         let mut private_key = self.extended_private_key.expect("Missing private key");
