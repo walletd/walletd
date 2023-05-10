@@ -83,7 +83,7 @@ MismatchInSpecificationVersusImplicit, fields spec and implicit were removed, on
 * Under the HDKey struct
     * Changed signature of derive function to derive(&self, derivation_path: &str) -> Result<Self, Error> from derive(&self, derivation_path: String) -> Result<Self, Error>
         * (changed derivation_path argument to &str instead of String)
-        
+
 * Under the HDPathBuilder struct
     * Renamed with_purpose to purpose_index
     * Refactored with_purpose_hardened which took in a boolean as an argument to
@@ -128,8 +128,35 @@ MismatchInSpecificationVersusImplicit, fields spec and implicit were removed, on
     * Renamed with_address_format to address_format
     * Renamed with_hd_path_builder to with_hd_path_builder
     * Renamed with_network_type to network_type
+    * Under BitcoinWalletBuilder struct, method blockchain_client has been removed, there is now not a functionality to set the blockchain_client from the wallet builder, blockchain_client can still be set directly on the BitcoinWallet object.
+    * In BitcoinWalletBuilder the old account_discovery function which took in a boolean argument has been replaced: Use account_discovery() in place of the old account_discovery(true), Use no_account_discovery() in place of the old account_discovery(true)
 
-* Renamed MnemonicHandler trait to Mnemonic
+* Under BitcoinWallet struct:
+    * Changed signature of the hd_path_builder method to return a Result<HDPathBuilder, Error> instead of just HDPathBuilder (returns an error if the HDPathBuilder has not been set instead of returning a default HDPathBuilder)
+    
+* From walletd_bip38:
+    * Use renamed Mnemonic trait instead of MnemonicHandler
+    * Use renamed MnemonicBuilder trait instead of MnemonicStyleBuilder
+
+* Removed some Display trait implementations
+    *  No longer can call .to_string on BitcoinAddress, can still use debug formatting to display
+    * No longer can call .to_string on BitcoinAmount, can still call .to_string on the public satoshi field of BitcoinAmount
+    * No longer can call .to_string on BitcoinWallet, can still use debug formatting to display
+
+
+* Under BitcoinAddress struct
+    * Changed address_info method to return &AddressInfo instead of AddressInfo
+
+* Under BitcoinAmount
+    * Removed ops::Mul trait for BitcoinAmount
+    * Removed ops::Div trait for BitcoinAmount
+
+* There is no CryptoWalletGeneral trait or BlockchainConnecterGeneral trait anymore 
+    * Implementation of BlockchainConnecterGeneral trait for Blockstream has been removed.
+
+* Addition of prelude module 
+
+* Added re-export of Blockstream from crate
 
 ## Upgrading from walletd_ethereum 0.1.x to 0.2.x
 
