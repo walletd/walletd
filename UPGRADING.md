@@ -32,11 +32,7 @@ This guide contains steps for upgrading crates in this project between versions 
 
 * Additional re-exports
 
-* Addition of prelude module which includes:
-    * Re-exports from crate: CryptoCoin, KeyPair, KeyPairBuilder, MnemonicKeyPairType
-    * Re-exports everything from the prelude of the walletd_coin_core crate
-    * Re-exports everything from the prelude of the walletd_hd_key crate
-    * Re-exports everything from the prelude from the walletd_mnemonics_core crate
+* Addition of prelude module 
 
 * Changes to crate re-exports
     * Add export to prelude module
@@ -47,14 +43,40 @@ This guide contains steps for upgrading crates in this project between versions 
 
 ## Upgrading from walletd_bip39 0.1.x to 0.2.x
 
-* Under the implementation of MnemonicStyleBuilder for the MnemonicBuilder struct
+
+* In re-export and use of walletd_mnemonics_core:
+    * Renamed MnemonicStyleBuilder to MnemonicBuilder
+    * Renamed MnemonicHandler trait to Mnemonic
+    * Renamed LanguageHandler trait to Language
+    
+
+* Renamed Mnemonic to Bip39Mnemonic
+    * No longer can call .to_string on Bip39Mnemonic struct, can still use debug formatting to display
+* Renamed Language to Bip39Language
+    * No longer can call .to_string on Bip39Language struct, can still use debug formatting to display
+* Renamed MnemonicType to Bip39MnemonicType
+    * No longer can call .to_string on Bip39MnemonicType struct, can still use debug formatting to display
+* Renamed MnemonicBuilder to Bip39MnemonicBuilder
+
+* Renamed ParseMnemonicError to Error
+    * Changes in ParseMnemonicError variants:
+InvalidWord variant now only has one String associated with it instead of two, does not display the wordlist language
+MismatchInSpecificationVersusImplicit, fields spec and implicit were removed, only the attribute field is present
+
+* Under the implementation of MnemonicBuilder for the Bip39MnemonicBuilder struct
     * Renamed with_seed to mnemonic_seed
     * Renamed with_phrase to mnemonic_phrase
     * Renamed with_language to language
     * Renamed with_passphrase to passphrase
     * Renamed with_mnemonic_type to mnemonic_type
 
-* Renamed MnemonicHandler trait to Mnemonic
+* Elevated WordList struct to be public (was previously private).
+    * Added method to WordList named language which returns the language associated with the WordList
+    * Added re-export of WordList
+
+* Addition of prelude module 
+* Add crate re-export of std::str::FromStr
+
 
 ## Upgrading from walletd_hd_key 0.1.x to 0.2.x
 
