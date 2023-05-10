@@ -80,8 +80,12 @@ MismatchInSpecificationVersusImplicit, fields spec and implicit were removed, on
 
 ## Upgrading from walletd_hd_key 0.1.x to 0.2.x
 
+* Under the HDKey struct
+    * Changed signature of derive function to derive(&self, derivation_path: &str) -> Result<Self, Error> from derive(&self, derivation_path: String) -> Result<Self, Error>
+        * (changed derivation_path argument to &str instead of String)
+        
 * Under the HDPathBuilder struct
-    * Renamed with_purpose to purpose
+    * Renamed with_purpose to purpose_index
     * Refactored with_purpose_hardened which took in a boolean as an argument to
         hardened_purpose instead of with_purpose_hardened(true) and
         non_hardened_purpose instead of with_purpose_hardened(false)
@@ -106,6 +110,13 @@ MismatchInSpecificationVersusImplicit, fields spec and implicit were removed, on
     * Renamed set_account_none to no_account_index
     * Renamed set_change_none to no_change_index
     * Renamed set_address_index_none to no_address_index
+
+* Under the Error enum
+    * Added the Hex variant to convert hex::fromHexError
+
+* Addition of prelude module
+
+* Add re-export of std::str::FromStr
 
 ## Upgrading from walletd_bitcoin 0.1.x to 0.2.x
 
