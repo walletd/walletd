@@ -167,19 +167,48 @@ MismatchInSpecificationVersusImplicit, fields spec and implicit were removed, on
     * Renamed with_address_format to address_format
     * Renamed with_hd_path_builder to with_hd_path_builder
     * Renamed with_network_type to network_type
+    * In EthereumWalletBuilder struct, function blockchain_client has been removed, there is now not a functionality to set the blockchain_client from the wallet builder, blockchain_client can still be set directly on the EthereumWallet object.
+ 
+* There is no CryptoWalletGeneral trait or BlockchainConnecterGeneral trait anymore 
+    * Implementation of BlockchainConnecterGeneral trait for EthClient has been removed.
+
+
+* Removed some Display trait implementations
+    * No longer can call .to_string on EthereumAmount, can still use debug formatting to display.
+    * No longer can call .to_string on EthereumWallet, can still use debug formatting to display.
+
+* Under Error enum:
+    * Added Web3Contract variant that transforms error from web3::contract::Error
+    * Added Web3Ethabi variant that transforms error from web3::ethabi::Error
+
+* Added re-export of EthereumPrivateKey and EthereumPublicKey from ethereum_wallet module
+* Added re-export of BlockchainConnector from walletd_coin_core
+
+
+* Addition of prelude module 
 
 ## Upgrading from walletd_mnemonics_core 0.1.x to 0.2.x
 
-* Under the MnemonicStyleBuilder trait:
+* Renamed MnemonicHandler trait to Mnemonic
+* Renamed LanguageHandler trait to Language
+* Renamed MnemonicStyleBuilder trait to MnemonicBuilder 
+
+* Under the MnemonicBuilder trait:
     * Renamed with_seed to mnemonic_seed
     * Renamed with_phrase to mnemonic_phrase
     * Renamed with_language to language
     * Renamed with_passphrase to passphrase
     * Renamed with_mnemonic_type to mnemonic_type
     
-* Renamed MnemonicHandler trait to Mnemonic
+
+* Addition of prelude module 
 
 ## Upgrading from walletd_coin_core 0.1.x to 0.2.x
+
+* The BlockchainConnectorGeneral trait has been removed
+* The CryptoAmount trait now no longer needs the std::fmt::Display to be implemented when the CryptoAmount trait is implemented on a struct
+* The CryptoWalletGeneral trait has been removed, there is now no TryFrom conversion related to CryptoWalletGeneral
+* On the CryptoWalletBuilder trait, the function blockchain_client has been removed
 
 * Under the CryptoWalletBuilder trait
     * Renamed with_master_hd_key to master_hd_key
@@ -192,5 +221,7 @@ MismatchInSpecificationVersusImplicit, fields spec and implicit were removed, on
 * Under the BlockchainConnectorBuilder trait
     * Renamed set_url to url
     * Renamed set_connector to connector
+
+* Addition of prelude module 
 
 
