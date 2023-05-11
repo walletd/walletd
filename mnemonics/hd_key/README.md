@@ -1,6 +1,6 @@
-# walletd hd_key
+# WalletD HD Key
 
-`hd_key` is a Rust implementation of the BIP-32 standard's hierarchical deterministic (HD) key generation. 
+`walletd_hd_key` is a Rust library implementation of the BIP-32 standard's hierarchical deterministic (HD) key generation. 
 
 More information about this crate can be found in the [crate documentation][docs].
 
@@ -15,14 +15,7 @@ This library supports key generation using the following BIPs (Bitcoin Improveme
 
 ## Usage example
 
-```rust
-// still to come
-```
-
-You can find this [example][readme-example] as well as other example projects in
-the [example directory][examples].
-
-See the [crate documentation][docs] for way more examples.
+See the [crate documentation][docs] usage examples.
 
 ## Safety
 
@@ -60,8 +53,8 @@ Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in `hd_key` by you, shall be licensed as MIT, without any
 additional terms or conditions.
 
-[readme-example]: https://github.com/walletd/hd_key/tree/main/examples/readme
-[examples]: https://github.com/walletd/hd_key/tree/main/examples
+[readme-example]: https://github.com/walletd/mnemoincs/hd_key/tree/main/examples/readme
+[examples]: https://github.com/walletd/walletd/tree/main/mnemonics/hd_key/examples
 [docs]: https://docs.rs/walletd_hd_key
 [contributing]: https://github.com/walletd/hd_key/blob/main/CONTRIBUTING.md
 [discussion]: https://github.com/walletd/hd_key/discussions/new?category=q-a
