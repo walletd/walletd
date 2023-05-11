@@ -6,9 +6,9 @@ This guide contains steps for upgrading crates in this project between versions 
 
 * Changes related to the KeyPair struct
     * Changed use of KeyPair derive_wallet function to not pass the blockchain connector as an argument.
-    * Can set the blockchain connector on there derived wallet directly subsequent to the derive_wallet call.
+        * Can set the blockchain connector on the derived wallet directly subsequent to the derive_wallet call.
     * No longer allowed to access fields of the KeyPair struct directly or to modify directly.
-    * Can still use the public getter functions on KeyPair to get the values of the fields.
+        * Can still use the public getter functions on KeyPair to get the values of the fields.
 
 * Under the KeyPairBuilder struct
     * Renamed with_mnemonic_phrase to mnemonic_phrase
