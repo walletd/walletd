@@ -122,7 +122,7 @@ MismatchInSpecificationVersusImplicit, fields spec and implicit were removed, on
     * Renamed with_mnemonic_seed to mnemonic_seed
     * Renamed with_blockchain_client to blockchain_client
     * Renamed with_address_format to address_format
-    * Renamed with_hd_path_builder to with_hd_path_builder
+    * Renamed with_hd_path_builder to hd_path_builder
     * Renamed with_network_type to network_type
     * Under BitcoinWalletBuilder struct, method blockchain_client has been removed, there is now not a functionality to set the blockchain_client from the wallet builder, blockchain_client can still be set directly on the BitcoinWallet object.
     * In BitcoinWalletBuilder the old account_discovery function which took in a boolean argument has been replaced: Use account_discovery() in place of the old account_discovery(true), Use no_account_discovery() in place of the old account_discovery(true)
@@ -161,7 +161,7 @@ MismatchInSpecificationVersusImplicit, fields spec and implicit were removed, on
     * Renamed with_mnemonic_seed to mnemonic_seed
     * Renamed with_blockchain_client to blockchain_client
     * Renamed with_address_format to address_format
-    * Renamed with_hd_path_builder to with_hd_path_builder
+    * Renamed with_hd_path_builder to hd_path_builder
     * Renamed with_network_type to network_type
     * In EthereumWalletBuilder struct, function blockchain_client has been removed, there is now not a functionality to set the blockchain_client from the wallet builder, blockchain_client can still be set directly on the EthereumWallet object.
  
@@ -211,7 +211,7 @@ MismatchInSpecificationVersusImplicit, fields spec and implicit were removed, on
     * Renamed with_mnemonic_seed to mnemonic_seed
     * Renamed with_blockchain_client to blockchain_client
     * Renamed with_address_format to address_format
-    * Renamed with_hd_path_builder to with_hd_path_builder
+    * Renamed with_hd_path_builder to hd_path_builder
     * Renamed with_network_type to network_type
 
 * Under the BlockchainConnectorBuilder trait
