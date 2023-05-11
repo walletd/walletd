@@ -132,7 +132,7 @@ MismatchInSpecificationVersusImplicit, fields spec and implicit were removed, on
     * In BitcoinWalletBuilder the old account_discovery function which took in a boolean argument has been replaced: Use account_discovery() in place of the old account_discovery(true), Use no_account_discovery() in place of the old account_discovery(true)
 
 * Under BitcoinWallet struct:
-    * Changed signature of the hd_path_builder method to return a Result<HDPathBuilder, Error> instead of just HDPathBuilder (returns an error if the HDPathBuilder has not been set instead of returning a default HDPathBuilder)
+    * Changed signature of the hd_path_builder method to return a Result<HDPathBuilder, Error> instead of just HDPathBuilder 
     
 * From walletd_bip38:
     * Use renamed Mnemonic trait instead of MnemonicHandler
