@@ -13,7 +13,7 @@ Supports (or should support)
 
 - Generation of mnemonic phrases
 - Importing of mnemonic phrases
-- Generation of Heirarchical Deterministic (HD) wallets
+- Generation of Hierarchical Deterministic (HD) wallets
 - Importing of HD wallets
 - Support for Bitcoin, Ethereum, and other blockchains
 
@@ -42,14 +42,14 @@ Please refer to the [`cargo` documentation](https://doc.rust-lang.org/stable/car
 
 ### Building the docs
 
-Docs can be build the the following:
+Docs can be built using the following:
 
 ```
 cargo doc --no-deps --open
 ```
 
 ## Contributing
-If you are interested in contributing to WalletD, please take a look at our [CONTRIBUTING](CONTRIBUTING).
+If you are interested in contributing to WalletD, please take a look at our [CONTRIBUTING](https://github.com/walletd/walletd/blob/main/CONTRIBUTING.md).
 
 ## License
 WalletD is distributed under the terms of both the MIT license and the Apache License (Version 2.0).
