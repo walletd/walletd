@@ -11,7 +11,7 @@ This guide contains steps for upgrading crates in this project between versions 
     * Can still use the public getter functions on KeyPair to get the values of the fields.
 
 * Under the KeyPairBuilder struct
-    * Renamed with_mnemonic_phrase to mnemonic_phrases
+    * Renamed with_mnemonic_phrase to mnemonic_phrase
     * Renamed with_mnemonic_seed to mnemonic_seed
     * Renamed with_passphrase to passphrase
     * Renamed with_style to style
