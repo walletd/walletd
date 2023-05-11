@@ -131,7 +131,7 @@ MismatchInSpecificationVersusImplicit, fields spec and implicit were removed, on
 * Under BitcoinWallet struct:
     * Changed signature of the hd_path_builder method to return a Result<HDPathBuilder, Error> instead of just HDPathBuilder 
     
-* From walletd_bip38:
+* From walletd_bip39:
     * Use renamed Mnemonic trait instead of MnemonicHandler
     * Use renamed MnemonicBuilder trait instead of MnemonicStyleBuilder
 
