@@ -28,13 +28,10 @@ This guide contains steps for upgrading crates in this project between versions 
     * Uses MnemonicBuilder instead of MnemonicStyleBuilder
     (MnemonicStyleBuilder trait was renamed to MnemonicBuilder)
 
-* No longer re-exporting BlockchainGeneral and CryptoWalletGeneral (no longer there in walletd_coin_core crate)
-
-* Additional re-exports
-
-* Addition of prelude module 
 
 * Changes to crate re-exports
+    * Addition and re-export of a prelude module 
+    * No longer re-exporting BlockchainGeneral and CryptoWalletGeneral (no longer there in walletd_coin_core crate)
     * Add export to prelude module
     * Add re-export to Language from walletd_mnemonics_core
     * Add re-export to Blockstream from walletd_bitcoin
@@ -139,7 +136,7 @@ MismatchInSpecificationVersusImplicit, fields spec and implicit were removed, on
     * Use renamed MnemonicBuilder trait instead of MnemonicStyleBuilder
 
 * Removed some Display trait implementations
-    *  No longer can call .to_string on BitcoinAddress, can still use debug formatting to display
+    * No longer can call .to_string on BitcoinAddress, can still use debug formatting to display
     * No longer can call .to_string on BitcoinAmount, can still call .to_string on the public satoshi field of BitcoinAmount
     * No longer can call .to_string on BitcoinWallet, can still use debug formatting to display
 
