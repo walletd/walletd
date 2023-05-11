@@ -125,7 +125,7 @@ MismatchInSpecificationVersusImplicit, fields spec and implicit were removed, on
     * Renamed with_address_format to address_format
     * Renamed with_hd_path_builder to hd_path_builder
     * Renamed with_network_type to network_type
-    * Under BitcoinWalletBuilder struct, method blockchain_client has been removed, there is now not a functionality to set the blockchain_client from the wallet builder, blockchain_client can still be set directly on the BitcoinWallet object.
+    * Under BitcoinWalletBuilder struct, the method blockchain_client has been removed, there is now no functionality to set the blockchain_client from the wallet builder, however, the blockchain_client can still be set directly on the BitcoinWallet object.
     * In BitcoinWalletBuilder the old account_discovery function which took in a boolean argument has been replaced: Use account_discovery() in place of the old account_discovery(true), Use no_account_discovery() in place of the old account_discovery(true)
 
 * Under BitcoinWallet struct:
@@ -164,7 +164,7 @@ MismatchInSpecificationVersusImplicit, fields spec and implicit were removed, on
     * Renamed with_address_format to address_format
     * Renamed with_hd_path_builder to hd_path_builder
     * Renamed with_network_type to network_type
-    * In EthereumWalletBuilder struct, function blockchain_client has been removed, there is now not a functionality to set the blockchain_client from the wallet builder, blockchain_client can still be set directly on the EthereumWallet object.
+    * In EthereumWalletBuilder struct, the method blockchain_client has been removed, there is now not a functionality to set the blockchain_client from the wallet builder, however, blockchain_client can still be set directly on the EthereumWallet object.
  
 * There is no CryptoWalletGeneral trait or BlockchainConnecterGeneral trait anymore 
     * Implementation of BlockchainConnecterGeneral trait for EthClient has been removed.
