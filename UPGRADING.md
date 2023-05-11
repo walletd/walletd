@@ -32,7 +32,6 @@ This guide contains steps for upgrading crates in this project between versions 
 * Changes to crate re-exports
     * Addition and re-export of a prelude module 
     * No longer re-exporting BlockchainGeneral and CryptoWalletGeneral (no longer there in walletd_coin_core crate)
-    * Add export to prelude module
     * Add re-export to Language from walletd_mnemonics_core
     * Add re-export to Blockstream from walletd_bitcoin
     * Add re-export to BlockchainConnectorBuilder from walletd_coin_core
