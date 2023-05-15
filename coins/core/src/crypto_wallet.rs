@@ -2,6 +2,21 @@ use crate::{BlockchainConnector, CryptoAmount};
 use async_trait::async_trait;
 use walletd_hd_key::{HDKey, HDPathBuilder, Seed};
 
+pub trait CryptoTx: Sized + Clone {
+    type ErrorType;
+    type TxType;
+    type CryptoAmount: CryptoAmount;
+    
+    fn prepare_tx(
+        &self,
+        send_amount: &Self::CryptoAmount,
+        public_address: &str,
+    ) -> Result<Self::TxType, Self::ErrorType>;
+
+    fn sign_tx(&self, tx: &Self::TxType) -> Result<Self::TxType, Self::ErrorType>;
+}
+
+
 /// Provides common functionality for a crypto wallet. Contains functions to get the balance, send and receive transactions, and sync the wallet with the blockchain.
 #[async_trait]
 pub trait CryptoWallet: Sized + Clone {
