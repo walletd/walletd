@@ -6,7 +6,7 @@ use std::str::FromStr;
 #[derive(Clone)]
 struct BitcoinTx {
     tx: bitcoin::Transaction,
-    signers: Vec<BitcoinPrivateKey>,
+    signers_addresses: Vec<String>,
 }
 
 #[derive(Clone)]
@@ -67,16 +67,20 @@ impl TryFrom<BTransaction> for BitcoinTx {
                 input: tx_inputs,
                 output: tx_outputs,
             },
-            signers: vec![],
+            signers_addresses: vec![],
         })
     }
+}
+
+struct BitcoinSigningParameters {
+    private_key: BitcoinPrivateKey,
 }
 
 impl CryptoTx for BitcoinTx {
     type ErrorType = Error;
     type CryptoAmount = BitcoinAmount;
     type TxParameters = BitcoinTxParameters;
-    type PrivateSigningKey = BitcoinPrivateKey;
+    type SigningParameters = BitcoinSigningParameters;
 
     fn prepare_tx(tx_parameters: &Self::TxParameters) -> Result<Self, Self::ErrorType> {
         let receiver_view_wallet = BitcoinAddress::from_public_address(
@@ -92,10 +96,15 @@ impl CryptoTx for BitcoinTx {
             tx_parameters.change_address.clone(),
         )?;
 
+        let tx: BitcoinTx = prepared.0.try_into()?;
+
         todo!()
     }
 
-    fn sign_tx(&self) -> Result<Self, Self::ErrorType> {
+    fn sign_tx(
+        &self,
+        signing_parameters: &BitcoinSigningParameters,
+    ) -> Result<Self, Self::ErrorType> {
         unimplemented!()
     }
 
