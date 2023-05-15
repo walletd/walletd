@@ -2,18 +2,27 @@ use crate::{BlockchainConnector, CryptoAmount};
 use async_trait::async_trait;
 use walletd_hd_key::{HDKey, HDPathBuilder, Seed};
 
+/// Provides common functionality for a cryptocurrency transaction. Contains functions to prepare, sign, and validate a transaction.
 pub trait CryptoTx: Sized + Clone {
+    /// ErrorType is the type of error that is returned by the CryptoTx
     type ErrorType;
+    /// TxType is the type of transaction that is used by the CryptoTx
     type TxType;
+    /// CryptoAmount is the type of amount that is used by the CryptoTx to represent amounts of cryptocurrency
     type CryptoAmount: CryptoAmount;
     
+    /// Prepares a transaction by gathering the necessary information to send a transaction but does not do signing, returns the unsigned transaction
     fn prepare_tx(
         &self,
         send_amount: &Self::CryptoAmount,
-        public_address: &str,
+        to_public_address: &str,
     ) -> Result<Self::TxType, Self::ErrorType>;
 
+    /// Signs a transaction, returns the signed version of the transaction, does not modify the original transaction
     fn sign_tx(&self, tx: &Self::TxType) -> Result<Self::TxType, Self::ErrorType>;
+
+    /// Checks if the tx is valid and can be sent, returns an error if the tx is invalid
+    fn validate_tx(&self, tx: &Self::TxType) -> Result<(), Self::ErrorType>;
 }
 
 
