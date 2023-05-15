@@ -7,5 +7,5 @@
 
 pub use crate::{
     BlockchainConnector, BlockchainConnectorBuilder, ConnectorType, CryptoAddress, CryptoAmount,
-    CryptoWallet, CryptoWalletBuilder, CryptoTx
+    CryptoTx, CryptoWallet, CryptoWalletBuilder,
 };

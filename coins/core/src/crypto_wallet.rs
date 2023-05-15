@@ -12,11 +12,9 @@ pub trait CryptoTx: Sized + Clone {
     type CryptoAmount: CryptoAmount;
     /// PrivateSigningKey is the type of private key that is used by the CryptoTx to sign transactions
     type PrivateSigningKey;
-    
+
     /// Prepares a transaction by gathering the necessary information to send a transaction but does not do signing, returns the unsigned transaction
-    fn prepare_tx(
-        tx_parameters: &Self::TxParameters,
-    ) -> Result<Self, Self::ErrorType>;
+    fn prepare_tx(tx_parameters: &Self::TxParameters) -> Result<Self, Self::ErrorType>;
 
     /// Signs a transaction, returns the signed version of the transaction, does not modify the original transaction
     fn sign_tx(&self) -> Result<Self, Self::ErrorType>;
@@ -24,7 +22,6 @@ pub trait CryptoTx: Sized + Clone {
     /// Checks if the tx is valid and can be sent, returns an error if the tx is invalid
     fn validate_tx(&self) -> Result<(), Self::ErrorType>;
 }
-
 
 /// Provides common functionality for a crypto wallet. Contains functions to get the balance, send and receive transactions, and sync the wallet with the blockchain.
 #[async_trait]

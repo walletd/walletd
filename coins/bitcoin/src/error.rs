@@ -96,5 +96,5 @@ pub enum Error {
     Overflow(String),
     /// Hex decoding error related to a Bitcoin hash
     #[error("Hex decoding error related to a Bitcoin hash: {0}")]
-    BitcoinHashHex(#[from] bitcoin_hashes::hex::Error)
+    BitcoinHashHex(#[from] bitcoin_hashes::hex::Error),
 }

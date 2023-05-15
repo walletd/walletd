@@ -1,7 +1,7 @@
-use bitcoin::{TxIn, TxOut, ScriptBuf, Witness};
+use crate::blockstream::{BTransaction, Input, Output, Utxo};
+use crate::{BitcoinAddress, BitcoinAmount, BitcoinPrivateKey, BitcoinWallet, CryptoTx, Error};
+use bitcoin::{ScriptBuf, TxIn, TxOut, Witness};
 use std::str::FromStr;
-use crate::{CryptoTx, BitcoinWallet, BitcoinAddress, BitcoinAmount, Error, BitcoinPrivateKey};
-use crate::blockstream::{Utxo, BTransaction, Input, Output};
 
 #[derive(Clone)]
 struct BitcoinTx {
@@ -30,29 +30,37 @@ impl TryFrom<Input> for TxIn {
         }
 
         Ok(Self {
-        previous_output: bitcoin::OutPoint::new(
-            bitcoin::Txid::from_str(&input.txid)?,
-            input.vout),
-        script_sig: ScriptBuf::from_hex(&input.scriptsig)?,
-        sequence: bitcoin::Sequence::from_consensus(input.sequence),
-        witness: Witness::from_slice(witness_slices.as_slice()),
+            previous_output: bitcoin::OutPoint::new(
+                bitcoin::Txid::from_str(&input.txid)?,
+                input.vout,
+            ),
+            script_sig: ScriptBuf::from_hex(&input.scriptsig)?,
+            sequence: bitcoin::Sequence::from_consensus(input.sequence),
+            witness: Witness::from_slice(witness_slices.as_slice()),
+        })
+    }
+}
+
+impl TryFrom<Output> for TxOut {
+    type Error = Error;
+    fn try_from(output: Output) -> Result<Self, Self::Error> {
+        Ok(Self {
+            value: output.value,
+            script_pubkey: ScriptBuf::from_hex(&output.scriptpubkey)?,
+        })
+    }
+}
+
+impl TryFrom<BTransaction> for BitcoinTx {
+    type Error = Error;
+    fn try_from(tx: BTransaction) -> Result<Self, Self::Error> {
+        let mut tx_inputs = vec![];
+        for input in tx.vin {
+            tx_inputs.push(TxIn::try_from(input)?);
         }
-       )
-    }
-}
+        let mut tx_outputs = vec![];
 
-impl From<Output> for TxOut {
-    fn from(output: Output) -> Self {
-        todo!()
-    }
-}
-
-impl From<BTransaction> for BitcoinTx {
-    fn from(tx: BTransaction) -> Self {
-        let tx_inputs = vec![];
-        let tx_outputs = vec![];
-
-        Self {
+        Ok(Self {
             tx: bitcoin::Transaction {
                 version: tx.version,
                 lock_time: bitcoin::absolute::LockTime::from_consensus(tx.locktime),
@@ -60,7 +68,7 @@ impl From<BTransaction> for BitcoinTx {
                 output: tx_outputs,
             },
             signers: vec![],
-        }
+        })
     }
 }
 
@@ -70,15 +78,22 @@ impl CryptoTx for BitcoinTx {
     type TxParameters = BitcoinTxParameters;
     type PrivateSigningKey = BitcoinPrivateKey;
 
-    fn prepare_tx(
-        tx_parameters: &Self::TxParameters,
-    ) -> Result<Self, Self::ErrorType> {
-        let receiver_view_wallet = BitcoinAddress::from_public_address(&tx_parameters.to_public_address, tx_parameters.network)?;
-        let prepared = BitcoinWallet::prepare_transaction(tx_parameters.fee_sat_per_byte, &tx_parameters.utxo_available, &tx_parameters.inputs_available_tx_info, &tx_parameters.send_amount, &receiver_view_wallet, tx_parameters.change_address.clone())?;
-        
+    fn prepare_tx(tx_parameters: &Self::TxParameters) -> Result<Self, Self::ErrorType> {
+        let receiver_view_wallet = BitcoinAddress::from_public_address(
+            &tx_parameters.to_public_address,
+            tx_parameters.network,
+        )?;
+        let prepared = BitcoinWallet::prepare_transaction(
+            tx_parameters.fee_sat_per_byte,
+            &tx_parameters.utxo_available,
+            &tx_parameters.inputs_available_tx_info,
+            &tx_parameters.send_amount,
+            &receiver_view_wallet,
+            tx_parameters.change_address.clone(),
+        )?;
+
         todo!()
     }
-    
 
     fn sign_tx(&self) -> Result<Self, Self::ErrorType> {
         unimplemented!()

@@ -15,5 +15,5 @@ pub mod prelude;
 pub use blockchain_connector::{BlockchainConnector, BlockchainConnectorBuilder, ConnectorType};
 pub use crypto_address::CryptoAddress;
 pub use crypto_amount::CryptoAmount;
-pub use crypto_wallet::{CryptoWallet, CryptoWalletBuilder, CryptoTx};
+pub use crypto_wallet::{CryptoTx, CryptoWallet, CryptoWalletBuilder};
 pub use error::Error;
