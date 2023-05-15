@@ -6,23 +6,23 @@ use walletd_hd_key::{HDKey, HDPathBuilder, Seed};
 pub trait CryptoTx: Sized + Clone {
     /// ErrorType is the type of error that is returned by the CryptoTx
     type ErrorType;
-    /// TxType is the type of transaction that is used by the CryptoTx
-    type TxType;
+    /// TxParameters is the type for the info that is used to prepare a transaction, includes the send amount(s), the receiver address(es), and other needed info from the user or the blockchain such as fee amount
+    type TxParameters;
     /// CryptoAmount is the type of amount that is used by the CryptoTx to represent amounts of cryptocurrency
     type CryptoAmount: CryptoAmount;
+    /// PrivateSigningKey is the type of private key that is used by the CryptoTx to sign transactions
+    type PrivateSigningKey;
     
     /// Prepares a transaction by gathering the necessary information to send a transaction but does not do signing, returns the unsigned transaction
     fn prepare_tx(
-        &self,
-        send_amount: &Self::CryptoAmount,
-        to_public_address: &str,
-    ) -> Result<Self::TxType, Self::ErrorType>;
+        tx_parameters: &Self::TxParameters,
+    ) -> Result<Self, Self::ErrorType>;
 
     /// Signs a transaction, returns the signed version of the transaction, does not modify the original transaction
-    fn sign_tx(&self, tx: &Self::TxType) -> Result<Self::TxType, Self::ErrorType>;
+    fn sign_tx(&self) -> Result<Self, Self::ErrorType>;
 
     /// Checks if the tx is valid and can be sent, returns an error if the tx is invalid
-    fn validate_tx(&self, tx: &Self::TxType) -> Result<(), Self::ErrorType>;
+    fn validate_tx(&self) -> Result<(), Self::ErrorType>;
 }
 
 
