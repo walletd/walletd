@@ -131,3 +131,5 @@ pub use walletd_coin_core::{
 };
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 pub mod prelude;
+
+mod transaction;
