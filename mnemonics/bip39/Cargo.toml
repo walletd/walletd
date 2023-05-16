@@ -28,3 +28,4 @@ pbkdf2 = { version = "0.3.0", features=["parallel"], default-features = false }
 rand = { version = "0.7" }
 sha2 = { version = "0.8", default-features = false }
 thiserror = "1.0.29"
+zeroize = { version = "1.6.0", features = ["zeroize_derive"] }

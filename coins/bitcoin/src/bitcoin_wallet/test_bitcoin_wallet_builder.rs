@@ -54,6 +54,7 @@ fn test_with_mnemonic_seed() -> Result<(), Error> {
     assert_eq!(
         builder
             .mnemonic_seed
+            .clone()
             .expect("should be some due to previous check"),
         seed
     );
@@ -71,6 +72,7 @@ fn test_with_master_hd_key() -> Result<(), Error> {
     assert_eq!(
         builder
             .master_hd_key
+            .clone()
             .expect("should be some due to previous check"),
         master_hd_key
     );

@@ -1,8 +1,9 @@
 use std::str::FromStr;
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
-pub use bitcoin::{
+pub use crate::bitcoin::{
     sighash::EcdsaSighashType, Address as AddressInfo, AddressType, Network,
-    PrivateKey as BitcoinPrivateKey, PublicKey as BitcoinPublicKey, Script,
+    PublicKey as BitcoinPublicKey, Script,
 };
 
 use walletd_coin_core::CryptoAddress;
@@ -12,14 +13,49 @@ use crate::blockstream::Blockstream;
 use crate::BitcoinAmount;
 use crate::Error;
 
+/// Wrapper around bitcoin::PrivateKey which implements Zeroize and zeroizes on drop
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BitcoinPrivateKey(bitcoin::PrivateKey);
+
+impl Drop for BitcoinPrivateKey {
+    fn drop(&mut self) {
+        self.zeroize();
+    }
+}
+
+impl Zeroize for BitcoinPrivateKey {
+    fn zeroize(&mut self) {
+        self.0 = bitcoin::PrivateKey::from_slice(&[1u8; 32], Network::Testnet)
+            .expect("Should be able to create a default BitcoinPrivateKey for zeroize");
+    }
+}
+
+impl BitcoinPrivateKey {
+    /// Creates a new [BitcoinPrivateKey] from a slice of bytes and a [network][Network], uses underlying implementation of [from_slice][bitcoin::PrivateKey::from_slice] from [bitcoin::PrivateKey]
+    pub fn from_slice(bytes: &[u8], network: Network) -> Result<Self, Error> {
+        let private_key = bitcoin::PrivateKey::from_slice(bytes, network)?;
+        Ok(Self(private_key))
+    }
+
+    /// Returns the data from the [BitcoinPrivateKey] as a vector of bytes
+    /// Uses the underlying implementation of [to_bytes][bitcoin::PrivateKey::to_bytes] from [bitcoin::PrivateKey]
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.0.to_bytes()
+    }
+}
+
 /// Represents a Bitcoin address.
 /// Contains the [address details][AddressInfo] and [network][Network]
 /// The [private key][BitcoinPrivateKey] and [public key][BitcoinPublicKey] are optional fields.
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// Implements [ZeroizeOnDrop] for the private_key optional field
+#[derive(Debug, Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
 pub struct BitcoinAddress {
+    #[zeroize(skip)]
     address_info: AddressInfo,
     private_key: Option<BitcoinPrivateKey>,
+    #[zeroize(skip)]
     public_key: Option<BitcoinPublicKey>,
+    #[zeroize(skip)]
     network: Network,
 }
 
@@ -110,8 +146,8 @@ impl BitcoinAddress {
     ///
     /// This method should be used in cases where either it is expected that the [private key][BitcoinPrivateKey] is present or the [Error] is handled in the case that the [private key][BitcoinPrivateKey] is not present.
     pub fn private_key(&self) -> Result<BitcoinPrivateKey, Error> {
-        if let Some(key) = self.private_key {
-            Ok(key)
+        if let Some(key) = &self.private_key {
+            Ok(key.clone())
         } else {
             Err(Error::MissingPrivateKey)
         }
