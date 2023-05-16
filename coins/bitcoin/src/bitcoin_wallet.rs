@@ -6,9 +6,7 @@ use crate::{AddressInfo, BitcoinAddress, BitcoinPrivateKey, BitcoinPublicKey};
 use async_trait::async_trait;
 use std::cmp::Reverse;
 use walletd_bip39::Seed;
-use walletd_coin_core::CryptoAddress;
-use walletd_coin_core::CryptoWalletBuilder;
-use walletd_coin_core::{CryptoAmount, CryptoWallet};
+use walletd_coin_core::{CryptoAddress, CryptoAmount, CryptoWallet, CryptoWalletBuilder};
 use walletd_hd_key::slip44;
 use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 use zeroize::{Zeroize, ZeroizeOnDrop};
@@ -144,7 +142,7 @@ impl CryptoWallet for BitcoinWallet {
         let mut inputs_available_tx_info: Vec<BTransaction> = Vec::new();
         let change_addr = self.next_change_address()?.address_info().clone();
 
-        let mut keys_per_input: Vec<(BitcoinPrivateKey, BitcoinPublicKey)> = Vec::new();
+        let mut keys_per_input: Vec<(&BitcoinPrivateKey, &BitcoinPublicKey)> = Vec::new();
         let mut utxo_addr_index = Vec::new();
         for (i, utxos_i) in available_utxos.iter().enumerate() {
             for utxo in utxos_i.iter() {
@@ -575,7 +573,7 @@ impl BitcoinWallet {
     /// Signs a transaction with the provided private keys and returns the signed transaction.
     pub fn sign_tx(
         tx: &BTransaction,
-        keys_per_input: Vec<(BitcoinPrivateKey, BitcoinPublicKey)>,
+        keys_per_input: Vec<(&BitcoinPrivateKey, &BitcoinPublicKey)>,
     ) -> Result<BTransaction, Error> {
         let mut inputs = tx.vin.clone();
         // Signing and unlocking the inputs
@@ -1007,7 +1005,7 @@ impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
                     _ => HDNetworkType::TestNet,
                 };
 
-                HDKey::new_master(seed.clone(), hd_network_type)?
+                HDKey::new_master(seed, &hd_network_type)?
             }
         };
 

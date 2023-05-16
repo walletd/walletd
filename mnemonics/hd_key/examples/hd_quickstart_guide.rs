@@ -7,7 +7,7 @@ fn main() -> Result<(), walletd_hd_key::Error> {
     // Setting a network type on the HDKey is required, you should select HDNetworkType::TestNet during development and testing purposes and to avoid using real funds and HDNetworkType::MainNet for production level code with caution.
     // Be sure to be consistent with HDNetworkType when connecting to the blockchain, make sure to use a compatible blockchain for the specified network type category
 
-    let master_hd_key = HDKey::new_master(master_seed, HDNetworkType::TestNet)?;
+    let master_hd_key = HDKey::new_master(&master_seed, &HDNetworkType::TestNet)?;
 
     // Wallet Import Format (WIF) is a standard way to encode private keys
     println!("wif of master hd key {}", master_hd_key.to_wif().unwrap());
@@ -83,8 +83,8 @@ fn main() -> Result<(), walletd_hd_key::Error> {
 
     // Shortcut to create a derived key directly from master seed
     let derived_key = HDKey::new(
-        Seed::from_str(seed_hex)?,
-        HDNetworkType::TestNet,
+        &Seed::from_str(seed_hex)?,
+        &HDNetworkType::TestNet,
         &custom_key_path,
     )?;
     assert_eq!(derived_key, custom_key);

@@ -176,7 +176,7 @@ impl HDKey {
     /// If this function encounters an error, it will return an [`Error`] type.
     /// this can happen if the seed is invalid or an error is encountered when
     /// specifying the extended private key and extended public key
-    pub fn new_master(seed: Seed, network_type: HDNetworkType) -> Result<Self, Error> {
+    pub fn new_master(seed: &Seed, network_type: &HDNetworkType) -> Result<Self, Error> {
         let mut mac: HmacSha512 = HmacSha512::new_from_slice(b"Bitcoin seed")
             .map_err(|e| Error::HmacSha512(e.to_string()))?; // the "Bitcoin seed" string is specified in the bip32 protocol
         mac.update(seed.as_bytes());
@@ -190,14 +190,14 @@ impl HDKey {
         let extended_public_key = ExtendedPublicKey::from_private_key(&extended_private_key);
 
         Ok(Self {
-            master_seed: seed,
+            master_seed: seed.clone(),
             chain_code,
             extended_private_key: Some(extended_private_key),
             extended_public_key: Some(extended_public_key),
             depth: 0,
             parent_fingerprint: [0u8; 4],
             derivation_path: HDPath::from_str("m")?,
-            network: network_type,
+            network: *network_type,
             child_index: 0,
             derivation_purpose: HDPurpose::default(),
         })
@@ -212,8 +212,8 @@ impl HDKey {
     /// Returns an [`Error`] with further details if the seed is invalid or the
     /// derivation path is invalid
     pub fn new(
-        seed: Seed,
-        network_type: HDNetworkType,
+        seed: &Seed,
+        network_type: &HDNetworkType,
         derivation_path: &str,
     ) -> Result<Self, Error> {
         Self::new_master(seed, network_type)?.derive(derivation_path)
@@ -515,13 +515,13 @@ mod tests {
     #[test]
     fn test_new() {
         let keys = HDKey::new_master(
-            Seed::new(vec![
+            &Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ]),
-            HDNetworkType::MainNet,
+            &HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(
@@ -568,13 +568,13 @@ mod tests {
     #[test]
     fn test_wif() {
         let keys = HDKey::new_master(
-            Seed::new(vec![
+            &Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ]),
-            HDNetworkType::MainNet,
+            &HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(
@@ -586,13 +586,13 @@ mod tests {
     #[test]
     fn test_private_key() {
         let keys = HDKey::new_master(
-            Seed::new(vec![
+            &Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ]),
-            HDNetworkType::TestNet,
+            &HDNetworkType::TestNet,
         )
         .unwrap();
         assert_eq!(
@@ -604,13 +604,13 @@ mod tests {
     #[test]
     fn test_private_key_0x() {
         let keys = HDKey::new_master(
-            Seed::new(vec![
+            &Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ]),
-            HDNetworkType::TestNet,
+            &HDNetworkType::TestNet,
         )
         .unwrap();
         assert_eq!(
@@ -622,13 +622,13 @@ mod tests {
     #[test]
     fn test_public_key() {
         let keys = HDKey::new_master(
-            Seed::new(vec![
+            &Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ]),
-            HDNetworkType::MainNet,
+            &HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(
@@ -640,13 +640,13 @@ mod tests {
     #[test]
     fn test_public_key_0x() {
         let keys = HDKey::new_master(
-            Seed::new(vec![
+            &Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ]),
-            HDNetworkType::TestNet,
+            &HDNetworkType::TestNet,
         )
         .unwrap();
         assert_eq!(
@@ -671,13 +671,13 @@ mod tests {
     #[test]
     fn test_serialization_extended_private_key() {
         let keys = HDKey::new_master(
-            Seed::new(vec![
+            &Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ]),
-            HDNetworkType::MainNet,
+            &HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(keys.extended_private_key_serialized().unwrap(), "xprv9s21ZrQH143K33HWcGz7ExmrjF485DrDs59ZUMdLGSMKb1D3UTzoG5DDX8T5yYgPWhhayZbrsd1EAuZjJ9b3HnGoSQyt4tdrgHxbFxhgL1W")
@@ -686,13 +686,13 @@ mod tests {
     #[test]
     fn test_serialization_extended_public_key() {
         let keys = HDKey::new_master(
-            Seed::new(vec![
+            &Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ]),
-            HDNetworkType::MainNet,
+            &HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(keys.extended_public_key_serialized().unwrap(), "xpub661MyMwAqRbcFXMyiJX7c6ibHGtcUga5EJ5AGk2wpmtJToYC21K3osXhNPGsUzwLzHJDKShvbH6ZAHF4DB3eCKK9ya271pXyWABaBjRPorF")
@@ -701,13 +701,13 @@ mod tests {
     #[test]
     fn test_hdkey_zeroize() -> Result<(), Error> {
         let mut keys = HDKey::new_master(
-            Seed::new(vec![
+            &Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ]),
-            HDNetworkType::MainNet,
+            &HDNetworkType::MainNet,
         )
         .unwrap();
         assert!(&keys.extended_private_key.is_some());
@@ -720,13 +720,13 @@ mod tests {
     #[test]
     fn test_extended_private_key_zeroize() -> Result<(), Error> {
         let keys = HDKey::new_master(
-            Seed::new(vec![
+            &Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ]),
-            HDNetworkType::MainNet,
+            &HDNetworkType::MainNet,
         )
         .unwrap();
         assert!(&keys.extended_private_key.is_some());

@@ -179,7 +179,7 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
                 ))
             }
             (Some(key), _) => key.clone(),
-            (None, Some(seed)) => HDKey::new_master(seed.clone(), self.network_type)?,
+            (None, Some(seed)) => HDKey::new_master(seed, &self.network_type)?,
         };
 
         let hd_purpose_num = self
@@ -358,8 +358,8 @@ impl EthereumWallet {
     }
 
     /// Returns the public key of the wallet
-    pub fn public_key(&self) -> Result<EthereumPublicKey, Error> {
-        if let Some(key) = self.public_key.clone() {
+    pub fn public_key(&self) -> Result<&EthereumPublicKey, Error> {
+        if let Some(key) = &self.public_key {
             Ok(key)
         } else {
             Err(Error::MissingPublicKey)
@@ -367,27 +367,26 @@ impl EthereumWallet {
     }
 
     /// Returns the private key of the wallet if it exists, otherwise returns an error
-    pub fn private_key(&self) -> Result<EthereumPrivateKey, Error> {
-        if let Some(key) = self.private_key.clone() {
+    pub fn private_key(&self) -> Result<&EthereumPrivateKey, Error> {
+        if let Some(key) = &self.private_key {
             Ok(key)
         } else {
             Err(Error::MissingPrivateKey)
         }
     }
 
-    /// Returns the master HD key of the wallet if it exists, otherwise returns an error
+    /// Returns the master HD key of the wallet if one is associated with it, otherwise returns an error
     pub fn master_hd_key(&self) -> Result<HDKey, Error> {
-        if let Some(key) = self.derived_hd_key.clone() {
-            let master_key = HDKey::new(key.master_seed.clone(), key.network, "m")?;
-            Ok(master_key)
+        if let Some(key) = &self.derived_hd_key {
+            Ok(HDKey::new(&key.master_seed, &key.network, "m")?)
         } else {
             Err(Error::MissingHDKey)
         }
     }
 
     /// Returns the derived HD key of the wallet if it exists, otherwise returns an error
-    pub fn derived_hd_key(&self) -> Result<HDKey, Error> {
-        if let Some(key) = self.derived_hd_key.clone() {
+    pub fn derived_hd_key(&self) -> Result<&HDKey, Error> {
+        if let Some(key) = &self.derived_hd_key {
             Ok(key)
         } else {
             Err(Error::MissingHDKey)

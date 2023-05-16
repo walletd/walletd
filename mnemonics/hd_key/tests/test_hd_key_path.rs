@@ -14,13 +14,13 @@ fn test_network_type() {
 fn test_new_func_bip32_first_account() -> Result<(), Error> {
     let dt = HDPurpose::BIP32;
     let keys = HDKey::new(
-        Seed::new(vec![
+        &Seed::new(vec![
             162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
             182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
             120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
             32, 33, 178, 30, 10, 204, 238,
         ]),
-        HDNetworkType::MainNet,
+        &HDNetworkType::MainNet,
         &format!("m/{}/{}'/0'", dt, Coin::from(Symbol::BTC).id()),
     )?;
 
@@ -60,13 +60,13 @@ fn test_new_func_bip32_first_account() -> Result<(), Error> {
 fn test_bip32_first_account_derive() -> Result<(), Error> {
     let dt = HDPurpose::BIP32;
     let keys = HDKey::new_master(
-        Seed::new(vec![
+        &Seed::new(vec![
             162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
             182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
             120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
             32, 33, 178, 30, 10, 204, 238,
         ]),
-        HDNetworkType::MainNet,
+        &HDNetworkType::MainNet,
     )?;
     assert_eq!(
         keys.derive(&format!("m/{}/{}'/0'", dt, Coin::from(Symbol::BTC).id()))?,
@@ -105,13 +105,13 @@ fn test_bip32_first_account_derive() -> Result<(), Error> {
 fn test_new_func_first_bip32_address() -> Result<(), Error> {
     let dt = HDPurpose::BIP32;
     let keys = HDKey::new(
-        Seed::new(vec![
+        &Seed::new(vec![
             162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
             182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
             120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
             32, 33, 178, 30, 10, 204, 238,
         ]),
-        HDNetworkType::MainNet,
+        &HDNetworkType::MainNet,
         &dt.default_path_specify(Coin::Bitcoin.id(), 0, 0, 0),
     )?;
 
@@ -152,13 +152,13 @@ fn test_new_func_first_bip32_address() -> Result<(), Error> {
 fn test_derive_first_bip32_address() -> Result<(), Error> {
     let dt = HDPurpose::BIP32;
     let keys = HDKey::new_master(
-        Seed::new(vec![
+        &Seed::new(vec![
             162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
             182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
             120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
             32, 33, 178, 30, 10, 204, 238,
         ]),
-        HDNetworkType::MainNet,
+        &HDNetworkType::MainNet,
     )?;
 
     assert_eq!(
@@ -198,13 +198,13 @@ fn test_derive_first_bip32_address() -> Result<(), Error> {
 fn test_derive_change_internal_chain() -> Result<(), Error> {
     let dt = HDPurpose::BIP32;
     let derived = HDKey::new(
-        Seed::new(vec![
+        &Seed::new(vec![
             162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
             182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
             120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
             32, 33, 178, 30, 10, 204, 238,
         ]),
-        HDNetworkType::MainNet,
+        &HDNetworkType::MainNet,
         &dt.default_path_specify(Coin::Bitcoin.id(), 0, 1, 0),
     )?;
     assert_eq!(
@@ -233,13 +233,13 @@ fn test_eth_bip44() -> Result<(), Error> {
         .to_string();
 
     let derived_key = HDKey::new(
-        Seed::new(vec![
+        &Seed::new(vec![
             162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
             182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
             120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
             32, 33, 178, 30, 10, 204, 238,
         ]),
-        HDNetworkType::MainNet,
+        &HDNetworkType::MainNet,
         &dpath,
     )?;
 
@@ -285,13 +285,13 @@ fn test_bip49_first_account() -> Result<(), Error> {
         .no_address_index();
 
     let master_key = HDKey::new_master(
-        Seed::new(vec![
+        &Seed::new(vec![
             162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
             182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
             120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
             32, 33, 178, 30, 10, 204, 238,
         ]),
-        HDNetworkType::MainNet,
+        &HDNetworkType::MainNet,
     )?;
 
     assert_eq!(master_key.derivation_path.to_string(), "m".to_string());
@@ -316,13 +316,13 @@ fn test_bip49_address_one() -> Result<(), Error> {
         .address_index(1);
 
     let derived = HDKey::new(
-        Seed::new(vec![
+        &Seed::new(vec![
             162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
             182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
             120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
             32, 33, 178, 30, 10, 204, 238,
         ]),
-        HDNetworkType::MainNet,
+        &HDNetworkType::MainNet,
         &path_builder.build().to_string(),
     )?;
 

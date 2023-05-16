@@ -18,7 +18,7 @@
 //! # fn import_btc_hd_wallet() -> Result<(), walletd_bitcoin::Error> {
 //! let master_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
 //! let network_type = HDNetworkType::TestNet;
-//! let master_hd_key = HDKey::new_master(master_seed, network_type)?;
+//! let master_hd_key = HDKey::new_master(&master_seed, &network_type)?;
 //! let mut btc_wallet = BitcoinWallet::builder().master_hd_key(master_hd_key).build()?;
 //! # Ok(())
 //! # }
@@ -35,7 +35,7 @@
 //! # fn import_btc_hd_wallet() -> Result<(), walletd_bitcoin::Error> {
 //! # let master_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
 //! # let network_type = HDNetworkType::TestNet;
-//! # let master_hd_key = HDKey::new_master(master_seed, network_type)?;
+//! # let master_hd_key = HDKey::new_master(&master_seed, &network_type)?;
 //! # let mut btc_wallet = BitcoinWallet::builder().master_hd_key(master_hd_key).build()?;
 //!   assert_eq!(btc_wallet.address_format(), bitcoin::AddressType::P2wpkh);
 //!   assert_eq!(btc_wallet.hd_path_builder()?.purpose, Some(HDPurpose::BIP84.to_shortform_num()));
@@ -56,7 +56,7 @@
 //! # async fn import_btc_hd_wallet() -> Result<(), walletd_bitcoin::Error> {
 //! # let master_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
 //! # let network_type = HDNetworkType::TestNet;
-//! # let master_hd_key = HDKey::new_master(master_seed, network_type)?;
+//! # let master_hd_key = HDKey::new_master(&master_seed, &network_type)?;
 //! # let mut btc_wallet = BitcoinWallet::builder().master_hd_key(master_hd_key).build()?;
 //! let btc_client = Blockstream::new("https://blockstream.info/testnet/api")?;
 //! let fee_estimates = btc_client.fee_estimates().await?;
@@ -76,7 +76,7 @@
 //! # async fn import_btc_hd_wallet() -> Result<(), walletd_bitcoin::Error> {
 //! # let master_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
 //! # let network_type = HDNetworkType::TestNet;
-//! # let master_hd_key = HDKey::new_master(master_seed, network_type)?;
+//! # let master_hd_key = HDKey::new_master(&master_seed, &network_type)?;
 //! # let mut btc_wallet = BitcoinWallet::builder().master_hd_key(master_hd_key).build()?;
 //! let btc_client = Blockstream::new("https://blockstream.info/testnet/api")?;
 //! let fee_estimates = btc_client.fee_estimates().await?;

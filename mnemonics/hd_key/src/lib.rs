@@ -23,7 +23,7 @@
 //! # fn main() -> Result<(), walletd_hd_key::Error> {
 //! let seed_hex = "a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee";;
 //! let seed = Seed::from_str(seed_hex)?;
-//! let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
+//! let master_hd_key = HDKey::new_master(&seed, &HDNetworkType::TestNet)?;
 //! assert_eq!(master_hd_key.depth(), 0);
 //! println!("master hd key depth {}", master_hd_key.depth());
 //! # Ok(())
@@ -43,7 +43,7 @@
 //! # use walletd_hd_key::prelude::*;
 //! # fn main() -> Result<(), walletd_hd_key::Error> {
 //! # let seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
-//! # let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
+//! # let master_hd_key = HDKey::new_master(&seed, &HDNetworkType::TestNet)?;
 //!
 //! println!("wif of master hd key {}", master_hd_key.to_wif().unwrap());
 //! println!(
@@ -66,7 +66,7 @@
 //! use slip44::{Coin, Symbol};
 //! # fn main() -> Result<(), walletd_hd_key::Error> {
 //! # let seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
-//! # let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
+//! # let master_hd_key = HDKey::new_master(&seed, &HDNetworkType::TestNet)?;
 //!
 //! let default_deriv_path = HDPath::builder().build().to_string();
 //! // without specifying the purpose, the default derivation path is "m
@@ -95,7 +95,7 @@
 //! # use slip44::{Coin, Symbol};
 //! # fn main() -> Result<(), walletd_hd_key::Error> {
 //! # let seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
-//! # let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
+//! # let master_hd_key = HDKey::new_master(&seed, &HDNetworkType::TestNet)?;
 //! # let account_deriv_path = HDPath::builder()
 //! # .purpose_index(HDPurpose::BIP44.to_shortform_num())
 //! # .coin_type_index(Coin::from(Symbol::ETH).id())
@@ -123,7 +123,7 @@
 //! # use slip44::{Coin, Symbol};
 //! # fn main() -> Result<(), walletd_hd_key::Error> {
 //! # let seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
-//! # let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
+//! # let master_hd_key = HDKey::new_master(&seed, &HDNetworkType::TestNet)?;
 //!let account_deriv_path = HDPath::builder()
 //!.purpose_index(HDPurpose::BIP44.to_shortform_num())
 //!.coin_type_index(Coin::from(Symbol::ETH).id())
@@ -161,8 +161,8 @@
 //!
 //! assert_eq!(custom_key_path, "m/84'/1'/0'/1/0'");
 //! let derived_key = HDKey::new(
-//!    seed,
-//!    HDNetworkType::TestNet,
+//!    &seed,
+//!    &HDNetworkType::TestNet,
 //!    &custom_key_path,
 //! )?;
 //!println!("derived_key: {:?}", derived_key);
