@@ -2,8 +2,8 @@
 //!
 //!
 
+use crate::bitcoin::{Address, AddressType};
 use async_trait::async_trait;
-use bitcoin::{Address, AddressType};
 use bitcoin_hashes::{sha256d, Hash};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -13,11 +13,6 @@ use time::format_description::well_known::Rfc2822;
 use time::{Duration, OffsetDateTime};
 
 use crate::BitcoinAmount;
-
-pub use bitcoin::{
-    sighash::EcdsaSighashType, Network, PrivateKey as BitcoinPrivateKey,
-    PublicKey as BitcoinPublicKey, Script,
-};
 
 use crate::Error;
 

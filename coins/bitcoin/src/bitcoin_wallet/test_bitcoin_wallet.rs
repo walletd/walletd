@@ -81,6 +81,10 @@ fn test_bitcoin_wallet() -> Result<(), Error> {
     let next_address = btc_wallet.next_address()?;
     btc_wallet.add_address_index(1)?;
     assert_eq!(&next_address, btc_wallet.associated_info()[1].address());
+
+    // test zeroize
+    btc_wallet.zeroize();
+    assert_eq!(btc_wallet.addresses().len(), 0);
     Ok(())
 }
 

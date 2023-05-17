@@ -105,12 +105,11 @@
 
 pub use bitcoin;
 pub use bitcoin::{
-    Address as AddressInfo, AddressType, Network, PrivateKey as BitcoinPrivateKey,
-    PublicKey as BitcoinPublicKey, Script,
+    Address as AddressInfo, AddressType, Network, PublicKey as BitcoinPublicKey, Script,
 };
 
 mod bitcoin_address;
-pub use bitcoin_address::BitcoinAddress;
+pub use bitcoin_address::{BitcoinAddress, BitcoinPrivateKey};
 mod bitcoin_wallet;
 pub use bitcoin_wallet::{BitcoinWallet, BitcoinWalletBuilder};
 mod bitcoin_amount;

@@ -11,12 +11,26 @@ use walletd_bip39::Seed;
 use walletd_coin_core::{CryptoWallet, CryptoWalletBuilder};
 use walletd_hd_key::{slip44, HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPurpose};
 use web3::types::{Address, TransactionParameters};
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 use crate::{EthereumAmount, EthereumFormat};
 
 /// Represents a private key for an Ethereum wallet, wraps a [SecretKey] from the secp256k1 crate
 #[derive(Debug, Clone)]
 pub struct EthereumPrivateKey(SecretKey);
+
+impl Zeroize for EthereumPrivateKey {
+    fn zeroize(&mut self) {
+        self.0 = SecretKey::from_slice(&[1u8; 32])
+            .expect("Should be able to create a default EthereumPrivateKey for zeroize");
+    }
+}
+
+impl Drop for EthereumPrivateKey {
+    fn drop(&mut self) {
+        self.zeroize();
+    }
+}
 
 impl EthereumPrivateKey {
     /// Represent the private key as a byte array
@@ -119,11 +133,15 @@ impl LowerHex for EthereumPublicKey {
 }
 
 /// Builder for [EthereumWallet], allows for specification of options for the ethereum wallet
+#[derive(Debug, Clone, Zeroize, ZeroizeOnDrop)]
 pub struct EthereumWalletBuilder {
+    #[zeroize(skip)]
     address_format: EthereumFormat,
     master_hd_key: Option<HDKey>,
     mnemonic_seed: Option<Seed>,
+    #[zeroize(skip)]
     network_type: HDNetworkType,
+    #[zeroize(skip)]
     hd_path_builder: HDPathBuilder,
 }
 
@@ -232,13 +250,18 @@ impl EthereumWalletBuilder {
 }
 
 /// Contains the information needed to interact with an Ethereum wallet with a single public address associated with it.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Zeroize, ZeroizeOnDrop)]
 pub struct EthereumWallet {
+    #[zeroize(skip)]
     address_format: EthereumFormat,
+    #[zeroize(skip)]
     public_address: String,
     private_key: Option<EthereumPrivateKey>,
+    #[zeroize(skip)]
     public_key: Option<EthereumPublicKey>,
+    #[zeroize(skip)]
     network: HDNetworkType,
+    #[zeroize(skip)]
     blockchain_client: Option<EthClient>,
     derived_hd_key: Option<HDKey>,
 }
@@ -355,7 +378,7 @@ impl EthereumWallet {
     /// Returns the master HD key of the wallet if it exists, otherwise returns an error
     pub fn master_hd_key(&self) -> Result<HDKey, Error> {
         if let Some(key) = self.derived_hd_key.clone() {
-            let master_key = HDKey::new(key.master_seed, key.network, "m")?;
+            let master_key = HDKey::new(key.master_seed.clone(), key.network, "m")?;
             Ok(master_key)
         } else {
             Err(Error::MissingHDKey)

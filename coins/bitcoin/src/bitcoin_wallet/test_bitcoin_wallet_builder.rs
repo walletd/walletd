@@ -1,3 +1,4 @@
+use super::*;
 use crate::{AddressType, BitcoinWalletBuilder, Error, HDKey, Network, Seed};
 use std::str::FromStr;
 use walletd_coin_core::CryptoWalletBuilder;
@@ -54,6 +55,7 @@ fn test_with_mnemonic_seed() -> Result<(), Error> {
     assert_eq!(
         builder
             .mnemonic_seed
+            .clone()
             .expect("should be some due to previous check"),
         seed
     );
@@ -71,6 +73,7 @@ fn test_with_master_hd_key() -> Result<(), Error> {
     assert_eq!(
         builder
             .master_hd_key
+            .clone()
             .expect("should be some due to previous check"),
         master_hd_key
     );
@@ -122,5 +125,25 @@ fn test_with_hd_path_builder() -> Result<(), Error> {
         1
     );
 
+    Ok(())
+}
+
+#[test]
+fn test_zeroize() -> Result<(), Error> {
+    let seed_hex = "a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee";
+    let seed = Seed::from_str(seed_hex).unwrap();
+    let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
+    let mut builder = BitcoinWalletBuilder::default();
+    builder.master_hd_key(master_hd_key.clone());
+    assert!(builder.master_hd_key.is_some());
+    assert_eq!(
+        builder
+            .master_hd_key
+            .clone()
+            .expect("should be some due to previous check"),
+        master_hd_key
+    );
+    builder.zeroize();
+    assert!(builder.master_hd_key.is_none());
     Ok(())
 }

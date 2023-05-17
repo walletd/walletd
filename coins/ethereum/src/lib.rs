@@ -42,7 +42,7 @@
 //! # let master_hd_key = HDKey::new_master(master_seed, HDNetworkType::TestNet)?;
 //! # let mut ethereum_wallet = EthereumWallet::builder().master_hd_key(master_hd_key).build()?;
 //! let derived_hd_key = ethereum_wallet.derived_hd_key()?;
-//! let address_derivation_path = derived_hd_key.derivation_path;
+//! let address_derivation_path = &derived_hd_key.clone().derivation_path;
 //! println!("address derivation path: {}", address_derivation_path);
 //! # assert_eq!(address_derivation_path.to_string(), "m/44'/60'/0'/0/0".to_string());
 //! # Ok(())

@@ -1,9 +1,9 @@
+use crate::bitcoin::blockdata::script;
 use crate::blockstream::{BTransaction, Blockstream, FeeEstimates, Input, InputType, Output, Utxo};
-use crate::BitcoinAddress;
 use crate::BitcoinAmount;
 use crate::Error;
+use crate::{AddressInfo, BitcoinAddress, BitcoinPrivateKey, BitcoinPublicKey};
 use async_trait::async_trait;
-use bitcoin::blockdata::script;
 use std::cmp::Reverse;
 use walletd_bip39::Seed;
 use walletd_coin_core::CryptoAddress;
@@ -11,27 +11,28 @@ use walletd_coin_core::CryptoWalletBuilder;
 use walletd_coin_core::{CryptoAmount, CryptoWallet};
 use walletd_hd_key::slip44;
 use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
-use bitcoin::script::PushBytes;
+use crate::bitcoin::script::PushBytes;
 
 use ::secp256k1::{Message, Secp256k1, SecretKey};
 
-pub use bitcoin::{
-    sighash::EcdsaSighashType, Address, AddressType, Network, PrivateKey as BitcoinPrivateKey,
-    PublicKey as BitcoinPublicKey, Script,
-};
+pub use bitcoin::{sighash::EcdsaSighashType, AddressType, Network, Script};
 
 const DEFAULT_GAP_LIMIT: usize = 20;
 
 /// Represents a Hierarchical Deterministic (HD) Bitcoin wallet which can have multiple [BitcoinAddress] structs associated with it which are derived from a single master [HD key][HDKey].
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Zeroize, ZeroizeOnDrop)]
 pub struct BitcoinWallet {
+    #[zeroize(skip)]
     address_format: AddressType,
     associated: Vec<AssociatedAddress>,
+    #[zeroize(skip)]
     blockchain_client: Option<Blockstream>,
     master_hd_key: Option<HDKey>,
     gap_limit: usize,
     account_discovery: bool,
+    #[zeroize(skip)]
     hd_path_builder: Option<HDPathBuilder>,
 }
 
@@ -49,10 +50,17 @@ impl Default for BitcoinWallet {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Zeroize)]
 pub struct AssociatedAddress {
     pub address: BitcoinAddress,
     pub hd_key: HDKey,
+}
+
+impl Drop for AssociatedAddress {
+    fn drop(&mut self) {
+        self.address.zeroize();
+        self.hd_key.zeroize();
+    }
 }
 
 impl AssociatedAddress {
@@ -837,7 +845,7 @@ impl BitcoinWallet {
         inputs_available_tx_info: &[BTransaction],
         send_amount: &BitcoinAmount,
         receiver_view_wallet: &BitcoinAddress,
-        change_addr: Address,
+        change_addr: AddressInfo,
     ) -> Result<(BTransaction, Vec<usize>), Error> {
         // TODO(AS): Add check here to limit the transaction to address types that are supported
         // choose inputs
@@ -887,12 +895,14 @@ impl BitcoinWallet {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
 /// Builder for [BitcoinWallet] that allows for the creation of a [BitcoinWallet] with a custom configuration
 pub struct BitcoinWalletBuilder {
     /// The address format used to generate the wallet, if the address format is not provided, the default address format is P2wpkh
+    #[zeroize(skip)]
     address_format: AddressType,
     /// The HD purpose used to generate the wallet, if the HD purpose is not provided, the default HD purpose will be inferred from the address_format
+    #[zeroize(skip)]
     hd_purpose: Option<HDPurpose>,
     /// The master HD key used to import the wallet
     master_hd_key: Option<HDKey>,
@@ -908,9 +918,11 @@ pub struct BitcoinWalletBuilder {
     mnemonic_seed: Option<Seed>,
     /// The specified network type to use, if the master_hd_key is provided, the network type will be inferred from the master_hd_key and this network_type will be ignored
     /// The default network type is Network::Bitcoin
+    #[zeroize(skip)]
     network_type: Network,
     /// Specifiyng a HDPathBuilder allows for customizing the derivation path used including which indices are hardened and will override the default
     /// The default HDPathBuilder uses hardened indices for the purpose, coin type, account ,and non-hardened indices for the change and address indices
+    #[zeroize(skip)]
     hd_path_builder: HDPathBuilder,
 }
 

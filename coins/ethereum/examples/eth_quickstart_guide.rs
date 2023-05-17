@@ -13,7 +13,7 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
     assert!(ethereum_wallet.private_key().is_ok());
     assert!(ethereum_wallet.public_key().is_ok());
     let derived_hd_key = ethereum_wallet.derived_hd_key()?;
-    let address_derivation_path = derived_hd_key.derivation_path;
+    let address_derivation_path = &derived_hd_key.derivation_path.clone();
     println!("address derivation path: {}", address_derivation_path);
     assert_eq!(
         address_derivation_path.to_string(),

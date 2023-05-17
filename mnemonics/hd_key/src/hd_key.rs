@@ -6,13 +6,27 @@ use std::fmt;
 use std::str::FromStr;
 
 use ripemd::Ripemd160;
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 use crate::{Error, HDPath, HDPathIndex, HDPurpose, Seed};
 
 /// A wrapper around the [secp256k1::SecretKey]
 /// struct to be used with [HDKey].
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExtendedPrivateKey(secp256k1::SecretKey);
+
+impl Zeroize for ExtendedPrivateKey {
+    fn zeroize(&mut self) {
+        self.0 = secp256k1::SecretKey::from_slice(&[1u8; 32])
+            .expect("Should be able to create a default ExtendedPrivateKey for zeroize");
+    }
+}
+
+impl Drop for ExtendedPrivateKey {
+    fn drop(&mut self) {
+        self.zeroize();
+    }
+}
 
 impl ExtendedPrivateKey {
     /// Creates a new [ExtendedPrivateKey] from a slice of bytes.
@@ -124,13 +138,15 @@ impl fmt::Display for HDNetworkType {
 /// [HDKey] also follows the purpose scheme described in BIP43: <https://github.com/bitcoin/bips/blob/master/bip-0043.mediawiki>
 /// The [HDPurpose] enum supports the following purpose types: BIP32, BIP44,
 /// BIP49, and BIP84.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
 pub struct HDKey {
     /// The seed used to create the master node
     pub master_seed: Seed,
     /// The derivation path of the HDKey
+    #[zeroize(skip)]
     pub derivation_path: HDPath,
     /// The derivation purpose associated with the HDKey
+    #[zeroize(skip)]
     pub derivation_purpose: HDPurpose,
     /// The chain code
     pub chain_code: [u8; 32],
@@ -141,10 +157,12 @@ pub struct HDKey {
     /// The extended private key
     pub extended_private_key: Option<ExtendedPrivateKey>,
     /// The extended public key
+    #[zeroize(skip)]
     pub extended_public_key: Option<ExtendedPublicKey>,
     /// The child index value
     pub child_index: u32,
     /// The network type
+    #[zeroize(skip)]
     pub network: HDNetworkType,
 }
 
@@ -212,10 +230,13 @@ impl HDKey {
         let new_deriv_path = HDPath::from_str(derivation_path)?;
         let new_deriv_path_info = new_deriv_path.to_vec();
         let parent_deriv_path = self.derivation_path.to_vec();
-        let mut private_key = self.extended_private_key.expect("Missing private key");
+        let mut private_key = self
+            .extended_private_key
+            .clone()
+            .expect("Missing private key");
         let mut chain_code = self.chain_code;
         let mut parent_fingerprint = [0u8; 4];
-        let mut parent_private_key = private_key;
+        let mut parent_private_key = private_key.clone();
         let mut depth = self.depth;
         let mut child_index = self.child_index;
         let mut start_path_depth = 0;
@@ -278,7 +299,7 @@ impl HDKey {
 
             parent_fingerprint.copy_from_slice(&Self::hash160(&parent_public_key.to_bytes())[0..4]);
 
-            parent_private_key = private_key;
+            parent_private_key = private_key.clone();
             depth += 1;
             deriv_path.push(*item);
         }
@@ -297,7 +318,7 @@ impl HDKey {
 
         let derived_bip32 = Self {
             chain_code,
-            extended_private_key: Some(private_key),
+            extended_private_key: Some(private_key.clone()),
             extended_public_key: Some(ExtendedPublicKey::from_private_key(&private_key)),
             depth,
             parent_fingerprint,
@@ -332,8 +353,8 @@ impl HDKey {
     ///
     /// Returns an [error][Error] if the extended private key is missing
     pub fn extended_private_key(&self) -> Result<ExtendedPrivateKey, Error> {
-        if let Some(private_key) = self.extended_private_key {
-            Ok(private_key)
+        if let Some(private_key) = &self.extended_private_key {
+            Ok(private_key.clone())
         } else {
             Err(Error::MissingPrivateKey)
         }
@@ -387,7 +408,7 @@ impl HDKey {
 
     /// Extended Private Key Serialization
     pub fn extended_private_key_serialized(&self) -> Result<String, Error> {
-        if let Some(extended_private_key) = self.extended_private_key {
+        if let Some(extended_private_key) = &self.extended_private_key {
             let prefix = self.private_key_prefix()?;
             let mut result = [0u8; 82];
             result[0..4].copy_from_slice(&prefix);
@@ -523,7 +544,11 @@ mod tests {
         assert_eq!(keys.depth, 0);
         assert_eq!(keys.parent_fingerprint, [0, 0, 0, 0]);
         assert_eq!(
-            keys.extended_private_key.unwrap().to_bytes().to_vec(),
+            keys.extended_private_key
+                .clone()
+                .unwrap()
+                .to_bytes()
+                .to_vec(),
             vec![
                 187, 155, 125, 202, 210, 84, 109, 146, 31, 102, 123, 180, 222, 16, 98, 160, 17, 84,
                 233, 145, 57, 86, 54, 74, 212, 23, 105, 45, 50, 85, 147, 67
@@ -671,5 +696,43 @@ mod tests {
         )
         .unwrap();
         assert_eq!(keys.extended_public_key_serialized().unwrap(), "xpub661MyMwAqRbcFXMyiJX7c6ibHGtcUga5EJ5AGk2wpmtJToYC21K3osXhNPGsUzwLzHJDKShvbH6ZAHF4DB3eCKK9ya271pXyWABaBjRPorF")
+    }
+
+    #[test]
+    fn test_hdkey_zeroize() -> Result<(), Error> {
+        let mut keys = HDKey::new_master(
+            Seed::new(vec![
+                162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
+                249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
+                30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
+                57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
+            ]),
+            HDNetworkType::MainNet,
+        )
+        .unwrap();
+        assert!(&keys.extended_private_key.is_some());
+        keys.zeroize();
+        assert_eq!(&keys.master_seed.as_bytes(), &[]);
+        assert!(&keys.extended_private_key.is_none());
+        Ok(())
+    }
+
+    #[test]
+    fn test_extended_private_key_zeroize() -> Result<(), Error> {
+        let keys = HDKey::new_master(
+            Seed::new(vec![
+                162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
+                249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
+                30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
+                57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
+            ]),
+            HDNetworkType::MainNet,
+        )
+        .unwrap();
+        assert!(&keys.extended_private_key.is_some());
+        let mut extended_private_key = keys.extended_private_key()?;
+        extended_private_key.zeroize();
+        assert_eq!(extended_private_key.to_bytes(), [1u8; 32]);
+        Ok(())
     }
 }

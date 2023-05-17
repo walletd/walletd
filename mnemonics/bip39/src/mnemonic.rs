@@ -10,13 +10,16 @@ use pbkdf2::pbkdf2;
 use rand::{thread_rng, Rng};
 use sha2::{Digest, Sha256, Sha512};
 use walletd_mnemonics_core::{Mnemonic, MnemonicBuilder, Seed};
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Represents a mnemonic which follows the `BIP39 standard`(<https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki>).
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Zeroize, ZeroizeOnDrop)]
 pub struct Bip39Mnemonic {
     phrase: String,
+    #[zeroize(skip)]
     lang: Bip39Language,
     seed: Seed,
+    #[zeroize(skip)]
     mnemonic_type: Bip39MnemonicType,
 }
 
@@ -598,5 +601,15 @@ mod tests {
                 attribute: "mnemonic_type".to_string(),
             }
         );
+    }
+
+    #[test]
+    fn test_zeroize() -> Result<(), Error> {
+        let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
+        let mut mnemonic = Bip39Mnemonic::builder().mnemonic_phrase(phrase).build()?;
+        mnemonic.zeroize();
+        assert_eq!(mnemonic.seed.as_bytes(), &[]);
+        assert_eq!(mnemonic.phrase, "");
+        Ok(())
     }
 }
