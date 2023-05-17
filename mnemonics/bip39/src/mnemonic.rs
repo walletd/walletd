@@ -602,4 +602,14 @@ mod tests {
             }
         );
     }
+
+    #[test]
+    fn test_zeroize() -> Result<(), Error> {
+        let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
+        let mut mnemonic = Bip39Mnemonic::builder().mnemonic_phrase(phrase).build()?;
+        mnemonic.zeroize();
+        assert_eq!(mnemonic.seed.as_bytes(), &[]);
+        assert_eq!(mnemonic.phrase, "");
+        Ok(())
+    }
 }

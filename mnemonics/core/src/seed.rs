@@ -117,4 +117,17 @@ mod tests {
         assert_eq!(format!("{seed:x}"), "a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee");
         assert_eq!(format!("{seed:#x}"), "0xa2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee");
     }
+
+    #[test]
+    fn test_seed_zeroize() {
+        let mut seed = Seed::new(vec![
+            162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77, 249,
+            182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235, 30, 199,
+            120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102, 57, 122, 195,
+            32, 33, 178, 30, 10, 204, 238,
+        ]);
+
+        seed.zeroize();
+        assert_eq!(seed.as_bytes(), &[]);
+    }
 }

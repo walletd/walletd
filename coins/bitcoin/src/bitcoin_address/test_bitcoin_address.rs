@@ -1,3 +1,4 @@
+use super::*;
 use crate::{AddressType, BitcoinAddress, CryptoAddress, Error, HDKey, HDNetworkType, Seed};
 use std::str::FromStr;
 
@@ -68,5 +69,24 @@ fn test_from_public_address() -> Result<(), Error> {
             .expect("expecting option value due to previous check"),
         AddressType::P2wpkh
     );
+    Ok(())
+}
+
+#[test]
+fn test_zeroize() -> Result<(), Error> {
+    let seed_hex = "a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee";
+    let seed = Seed::from_str(seed_hex)?;
+    let address_format = AddressType::P2wpkh;
+    let hd_key = HDKey::new(seed, HDNetworkType::TestNet, "m/84'/1'/0'/0/0")?;
+    let mut bitcoin_address = BitcoinAddress::from_hd_key(&hd_key, address_format)?;
+    let expected_address = "tb1q2knvzpjltz4uwh6j5wrmqn7lnzccsphpd85jp9";
+    assert_eq!(bitcoin_address.public_address(), expected_address);
+    assert!(bitcoin_address.public_key().is_ok());
+    assert!(bitcoin_address.private_key().is_ok());
+    let mut private_key = bitcoin_address.private_key.clone().unwrap();
+    bitcoin_address.zeroize();
+    assert!(bitcoin_address.private_key.is_none());
+    private_key.zeroize();
+    assert_eq!(private_key.to_bytes(), [1u8; 32]);
     Ok(())
 }
