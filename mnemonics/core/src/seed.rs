@@ -14,24 +14,22 @@ use zeroize::{Zeroize, ZeroizeOnDrop};
 /// (deriving HD wallet addresses is outside the scope of the
 /// walletd_mnemonics_core crate and the BIP39 standard).
 #[derive(Debug, Clone, Eq, PartialEq, Zeroize, ZeroizeOnDrop)]
-pub struct Seed {
-    bytes: Vec<u8>,
-}
+pub struct Seed(pub Vec<u8>);
 
 impl fmt::Display for Seed {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", hex::encode(self.bytes.as_slice()))
+        write!(f, "{}", hex::encode(self.0.as_slice()))
     }
 }
 impl Seed {
     /// Create a new Seed from a byte slice
     pub fn new(bytes: Vec<u8>) -> Self {
-        Seed { bytes }
+        Seed(bytes)
     }
 
     /// Get the raw byte value of the Seed
     pub fn as_bytes(&self) -> &[u8] {
-        &self.bytes
+        &self.0
     }
 }
 
@@ -56,7 +54,7 @@ impl fmt::LowerHex for Seed {
             f.write_str("0x")?;
         }
 
-        for byte in &self.bytes {
+        for byte in &self.0 {
             write!(f, "{:02x}", byte)?;
         }
 
@@ -70,7 +68,7 @@ impl fmt::UpperHex for Seed {
             f.write_str("0x")?;
         }
 
-        for byte in &self.bytes {
+        for byte in &self.0 {
             write!(f, "{:02X}", byte)?;
         }
 

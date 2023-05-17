@@ -21,7 +21,7 @@ async fn main() {
         .build()
         .unwrap();
 
-    let seed = restored_mnemonic.to_seed();
+    let seed = restored_mnemonic.seed();
 
     println!("seed as bytes: {:?}", seed.as_bytes());
 
@@ -31,7 +31,7 @@ async fn main() {
     println!("blockchain_client: {:?}", &blockchain_client);
 
     let mut wallet = EthereumWallet::builder()
-        .mnemonic_seed(seed)
+        .mnemonic_seed(seed.clone())
         .network_type(HDNetworkType::TestNet)
         .build()
         .unwrap();

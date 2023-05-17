@@ -16,12 +16,12 @@ async fn main() -> web3::Result<()> {
     let passphrase: Option<&str> = Some("mypassphrase");
     let restored_mnemonic =
         Bip39Mnemonic::from_phrase(Bip39Language::English, mnemonic_phrase, passphrase).unwrap();
-    let seed = restored_mnemonic.to_seed();
+    let seed = restored_mnemonic.seed();
 
     println!("seed as bytes: {:?}", seed.as_bytes());
 
     let wallet = match EthereumWallet::builder()
-        .mnemonic_seed(seed)
+        .mnemonic_seed(seed.clone())
         .network_type(HDNetworkType::TestNet)
         .build()
     {

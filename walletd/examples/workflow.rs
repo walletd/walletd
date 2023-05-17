@@ -30,7 +30,7 @@ async fn main() -> Result<(), Error> {
     // Generates a KeyPair from the mnemonic, specifying the network and the type of mnemonic, this becomes the HD wallet which can be used to access multiple cryptocurrencies
     let hd_wallet = KeyPair::new(
         my_mnemonic.to_seed(),
-        my_mnemonic.phrase(),
+        my_mnemonic.to_phrase(),
         MnemonicKeyPairType::HDBip39,
         None,
         network,

@@ -14,7 +14,7 @@ fn main() -> () {
         });
     println!("{:?}", mnemonic);
     // get the wallet seed
-    let seed = mnemonic.to_seed();
+    let seed = mnemonic.seed();
     println!("{}", seed);
 
     // Restore a mnemonic struct from a phrase without using the builder pattern
@@ -25,6 +25,6 @@ fn main() -> () {
     let mnemonic = Bip39Mnemonic::from_phrase(Bip39Language::English, phrase, None).unwrap();
     println!("{:?}", mnemonic);
     // get the wallet seed
-    let seed = mnemonic.to_seed();
+    let seed = mnemonic.seed();
     println!("{}", seed);
 }

@@ -118,7 +118,8 @@ impl KeyPairBuilder {
             None => match &self.style {
                 MnemonicKeyPairType::HDBip39 => {
                     Bip39Mnemonic::detect_language(&mnemonic_phrase, self.passphrase.as_deref())?
-                        .to_seed()
+                        .seed()
+                        .clone()
                 }
             },
         };

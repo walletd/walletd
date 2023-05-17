@@ -9,7 +9,7 @@ async fn main() -> Result<(), walletd::Error> {
     let bip39_mnemonic = Bip39Mnemonic::builder()
         .mnemonic_phrase(mnemonic_phrase)
         .build()?;
-    let seed = bip39_mnemonic.to_seed();
+    let seed = bip39_mnemonic.seed();
     println!("seed_hex: {:x}", seed);
     let master_hd_key = HDKey::new_master(&seed, &HDNetworkType::TestNet)?;
     let keypair = KeyPair::builder()

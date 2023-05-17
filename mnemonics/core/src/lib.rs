@@ -47,14 +47,20 @@ pub trait Mnemonic {
     /// Returns the [builder][Self::MnemonicBuilder] for the [mnemonic][Self::Mnemonic].
     fn builder() -> Self::MnemonicBuilder;
 
-    /// Returns the [seed][Seed] associated with the mnemonic phrase.
+    /// Provides a reference to the [Seed] object.
+    fn seed(&self) -> &Seed;
+
+    /// Returns the associated owned [Seed] object.
     fn to_seed(&self) -> Seed;
 
-    // Returns the [language][Self::Language] for the mnemonic.
+    /// Returns the [language][Self::Language] for the mnemonic.
     fn language(&self) -> Self::Language;
 
-    // Returns the mnemonic phrase.
-    fn phrase(&self) -> String;
+    /// Provides a reference to the mnemonic phrase as a [&str].
+    fn phrase(&self) -> &str;
+
+    /// Returns the phrase as a [String].
+    fn to_phrase(&self) -> String;
 
     // Returns the [mnemonic type][Self::MnemonicType].
     fn mnemonic_type(&self) -> Self::MnemonicType;
@@ -82,11 +88,11 @@ pub trait MnemonicBuilder {
     /// If a passphrase is specified with the [passphrase][MnemonicBuilder::passphrase] method, the seed recovered using
     /// the [restore][MnemonicBuilder::restore] or [build][MnemonicBuilder::build] method will be the encrypted version of the seed which takes
     /// into account the passphrase value.
-    fn mnemonic_seed(&mut self, seed: &Seed) -> &mut Self;
+    fn mnemonic_seed(&mut self, seed: Seed) -> &mut Self;
 
     /// Specifies the mnemonic phrase from which the mnemonic struct is
     /// recovered.
-    fn mnemonic_phrase(&mut self, mnemonic_phrase: &str) -> &mut Self;
+    fn mnemonic_phrase(&mut self, mnemonic_phrase: impl Into<String>) -> &mut Self;
 
     /// Specifies the language for the mnemonic phrase, can be used when
     /// recovering a mnemonic phrase or generating a new mnemonic phrase.
@@ -94,7 +100,7 @@ pub trait MnemonicBuilder {
 
     /// Specifies a passphrase to use to offset/encrypt the seed recovered from
     /// the mnemonic phrase.
-    fn passphrase(&mut self, passphrase: &str) -> &mut Self;
+    fn passphrase(&mut self, passphrase: impl Into<String>) -> &mut Self;
 
     /// Specifies the [mnemonic type][Self::mnemonic_type] to use when recovering or generating a
     /// mnemonic phrase.

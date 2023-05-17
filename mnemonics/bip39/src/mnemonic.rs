@@ -161,14 +161,22 @@ impl Mnemonic for Bip39Mnemonic {
         })
     }
 
-    /// Provides the [Seed] object.
+    /// Provides a reference to the [Seed] object.
+    fn seed(&self) -> &Seed {
+        &self.seed
+    }
+
+    /// Returns the associated owned [Seed] object.
     fn to_seed(&self) -> Seed {
         self.seed.clone()
     }
 
-    /// Returns the [mnemonic][Bip39Mnemonic]'s phrase.
-    fn phrase(&self) -> String {
+    fn to_phrase(&self) -> String {
         self.phrase.clone()
+    }
+
+    fn phrase(&self) -> &str {
+        &self.phrase
     }
 
     /// Returns the [language][Bip39Language] of the [mnemonic][Bip39Mnemonic].
@@ -197,13 +205,13 @@ impl MnemonicBuilder for Bip39MnemonicBuilder {
         Self::default()
     }
 
-    fn mnemonic_seed(&mut self, seed: &Seed) -> &mut Self {
-        self.seed = Some(seed.clone());
+    fn mnemonic_seed(&mut self, seed: Seed) -> &mut Self {
+        self.seed = Some(seed);
         self
     }
 
-    fn mnemonic_phrase(&mut self, mnemonic_phrase: &str) -> &mut Self {
-        self.mnemonic_phrase = Some(mnemonic_phrase.to_string());
+    fn mnemonic_phrase(&mut self, mnemonic_phrase: impl Into<String>) -> &mut Self {
+        self.mnemonic_phrase = Some(mnemonic_phrase.into());
         self
     }
 
@@ -212,8 +220,8 @@ impl MnemonicBuilder for Bip39MnemonicBuilder {
         self
     }
 
-    fn passphrase(&mut self, passphrase: &str) -> &mut Self {
-        self.passphrase = Some(passphrase.to_string());
+    fn passphrase(&mut self, passphrase: impl Into<String>) -> &mut Self {
+        self.passphrase = Some(passphrase.into());
         self
     }
 
@@ -288,7 +296,7 @@ impl MnemonicBuilder for Bip39MnemonicBuilder {
                     let wordlist_info = WordList::new(language);
                     let bytes_length = mnemonic_type.entropy_bits() / ENTROPY_OFFSET;
                     let phrase = Bip39Mnemonic::bytes_to_words(
-                        &specified_seed.as_bytes()[0..bytes_length].to_vec(),
+                        &specified_seed.as_bytes()[0..bytes_length],
                         &wordlist_info,
                     )?;
                     // Final seed will be encypted if a passphrase is provided
@@ -346,7 +354,7 @@ impl MnemonicBuilder for Bip39MnemonicBuilder {
 
 impl Bip39Mnemonic {
     /// Converting entropy bytes to the mnemonic words, given a wordlist
-    fn bytes_to_words(entropy_bytes: &Vec<u8>, wordlist_info: &WordList) -> Result<String, Error> {
+    fn bytes_to_words(entropy_bytes: &[u8], wordlist_info: &WordList) -> Result<String, Error> {
         if entropy_bytes.len() % 4 != 0 {
             return Err(Error::InvalidEntropy(
                 "Entropy must be a multiple of 4 bytes (32 bits) in length".to_owned(),
@@ -362,7 +370,7 @@ impl Bip39Mnemonic {
 
         // Take the sh256 hash of the entropy
         let mut sha256 = Sha256::new();
-        sha256.input(entropy_bytes.as_slice());
+        sha256.input(entropy_bytes);
         let hash = sha256.result();
 
         // number of words in mnemonic phrase depends on the number of bits in
@@ -378,7 +386,7 @@ impl Bip39Mnemonic {
         // the end of our entropy.
         let hash_0 = BitVec::<Msb0, u8>::from_element(hash[0]);
         let (checksum, _) = hash_0.split_at(word_count.div(3));
-        let mut encoding = BitVec::<Msb0, u8>::from_vec(entropy_bytes.clone());
+        let mut encoding = BitVec::<Msb0, u8>::from_vec(entropy_bytes.to_vec());
         encoding.append(&mut checksum.to_vec());
 
         // Compute the phrase in 11 bit chunks which encode an index into the word list
@@ -496,15 +504,15 @@ mod tests {
         assert_eq!(mnemonic.phrase(), phrase);
         assert_eq!(mnemonic.language(), Bip39Language::English);
         assert_eq!(
-            mnemonic.to_seed(),
-            Seed::new(vec![
+            mnemonic.seed(),
+            &Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238
             ])
         );
-        assert_eq!(mnemonic.to_seed().to_string(),
+        assert_eq!(mnemonic.seed().to_string(),
 "a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee"
 );
     }
@@ -519,15 +527,15 @@ mod tests {
         assert_eq!(mnemonic.phrase(), phrase);
         assert_eq!(mnemonic.language(), Bip39Language::English);
         assert_eq!(
-            mnemonic.to_seed(),
-            Seed::new(vec![
+            mnemonic.seed(),
+            &Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238
             ])
         );
-        assert_eq!(mnemonic.to_seed().to_string(),
+        assert_eq!(mnemonic.seed().to_string(),
 "a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee"
 );
     }
@@ -544,8 +552,8 @@ mod tests {
         assert_eq!(mnemonic.phrase(), phrase);
         assert_eq!(mnemonic.language(), Bip39Language::English);
         assert_eq!(
-            mnemonic.to_seed(),
-            Seed::new(hex::decode("3c536b023d71d81e6abc58b0b91c64caff8bb08fabf0c9f3cf948a9f3a494e8ecb0790b6e933834796c930a2d437170bd6071c00bc0553d06235d02315f2c229").unwrap())
+            mnemonic.seed(),
+            &Seed::new(hex::decode("3c536b023d71d81e6abc58b0b91c64caff8bb08fabf0c9f3cf948a9f3a494e8ecb0790b6e933834796c930a2d437170bd6071c00bc0553d06235d02315f2c229").unwrap())
         );
     }
 
