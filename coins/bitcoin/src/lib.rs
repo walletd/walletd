@@ -103,6 +103,7 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+pub mod connectors;
 pub use bitcoin;
 pub use bitcoin::{
     Address as AddressInfo, AddressType, Network, PublicKey as BitcoinPublicKey, Script,

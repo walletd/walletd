@@ -1,6 +1,6 @@
 use crate::bitcoin::blockdata::script;
-use crate::blockstream::{BTransaction, Blockstream, FeeEstimates, Input, InputType, Output, Utxo};
-use crate::BitcoinAmount;
+use crate::connectors::{BTransaction, FeeEstimates, Input, InputType, Output, Utxo};
+use crate::{BitcoinAmount, Blockstream};
 use crate::Error;
 use crate::{AddressInfo, BitcoinAddress, BitcoinPrivateKey, BitcoinPublicKey};
 use async_trait::async_trait;
