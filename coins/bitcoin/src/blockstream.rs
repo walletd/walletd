@@ -46,7 +46,7 @@ impl Blockstream {
     }
 
     /// Fetch the block height
-    pub fn block_count(&self) -> Result<u64, Error> {
+    pub fn block_height(&self) -> Result<u64, Error> {
         let body = reqwest::blocking::get(format!("{}/blocks/tip/height", self.url))
             .expect("Error getting block count")
             .text()?;
@@ -117,7 +117,7 @@ impl Blockstream {
     }
 
     /// Broadcast a raw transaction to the network
-    pub async fn post_a_transaction(
+    pub async fn broadcast_tx(
         &self,
         raw_transaction_hex: &'static str,
     ) -> Result<String, Error> {
@@ -167,7 +167,7 @@ mod tests {
             .create();
 
         let bs = Blockstream::new(&server.url()).unwrap();
-        let check_blockcount = bs.block_count().unwrap();
+        let check_blockcount = bs.block_height().unwrap();
         assert_eq!(expected_blockcount, check_blockcount);
     }
 
@@ -638,7 +638,7 @@ mod tests {
         let expected_txid = "c9ec56ecc714e2ec33d51519c647d6adb8469afcbd4b2a6a8052c7db29a00da2";
         // check that the txid is correct
         let bs = Blockstream::new(&server.url()).unwrap();
-        let txid = bs.post_a_transaction(raw_tx_data).await.unwrap();
+        let txid = bs.broadcast_tx(raw_tx_data).await.unwrap();
         assert_eq!(txid, expected_txid);
     }
 }
