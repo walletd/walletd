@@ -1005,7 +1005,7 @@ impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
                     _ => HDNetworkType::TestNet,
                 };
 
-                HDKey::new_master(seed, &hd_network_type)?
+                HDKey::new_master(seed, hd_network_type)?
             }
         };
 

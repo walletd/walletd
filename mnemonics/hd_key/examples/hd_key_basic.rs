@@ -6,7 +6,7 @@ fn main() -> () {
     println!("seed_hex: {}", seed_hex);
 
     let keys =
-        HDKey::new_master(&Seed::from_str(&seed_hex).unwrap(), &HDNetworkType::MainNet).unwrap();
+        HDKey::new_master(&Seed::from_str(&seed_hex).unwrap(), HDNetworkType::MainNet).unwrap();
     println!("{:#?}", keys);
 
     println!("wif of master hd key {}", keys.to_wif().unwrap());

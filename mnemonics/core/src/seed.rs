@@ -41,6 +41,12 @@ impl AsRef<[u8]> for Seed {
     }
 }
 
+impl From<&Seed> for Seed {
+    fn from(seed: &Seed) -> Self {
+        Seed::new(seed.bytes.clone())
+    }
+}
+
 impl FromStr for Seed {
     type Err = hex::FromHexError;
 

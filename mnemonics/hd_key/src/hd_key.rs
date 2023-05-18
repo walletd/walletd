@@ -176,10 +176,11 @@ impl HDKey {
     /// If this function encounters an error, it will return an [`Error`] type.
     /// this can happen if the seed is invalid or an error is encountered when
     /// specifying the extended private key and extended public key
-    pub fn new_master(seed: &Seed, network_type: &HDNetworkType) -> Result<Self, Error> {
+    pub fn new_master(seed: impl Into<Seed>, network_type: HDNetworkType) -> Result<Self, Error> {
+        let master_seed: Seed = seed.into();
         let mut mac: HmacSha512 = HmacSha512::new_from_slice(b"Bitcoin seed")
             .map_err(|e| Error::HmacSha512(e.to_string()))?; // the "Bitcoin seed" string is specified in the bip32 protocol
-        mac.update(seed.as_bytes());
+        mac.update(master_seed.as_bytes());
         let hmac = mac.finalize().into_bytes();
 
         let mut extended_private_key_bytes = [0u8; 32];
@@ -190,14 +191,14 @@ impl HDKey {
         let extended_public_key = ExtendedPublicKey::from_private_key(&extended_private_key);
 
         Ok(Self {
-            master_seed: seed.clone(),
+            master_seed,
             chain_code,
             extended_private_key: Some(extended_private_key),
             extended_public_key: Some(extended_public_key),
             depth: 0,
             parent_fingerprint: [0u8; 4],
             derivation_path: HDPath::from_str("m")?,
-            network: *network_type,
+            network: network_type,
             child_index: 0,
             derivation_purpose: HDPurpose::default(),
         })
@@ -212,11 +213,11 @@ impl HDKey {
     /// Returns an [`Error`] with further details if the seed is invalid or the
     /// derivation path is invalid
     pub fn new(
-        seed: &Seed,
-        network_type: &HDNetworkType,
-        derivation_path: &str,
+        seed: impl Into<Seed>,
+        network_type: HDNetworkType,
+        derivation_path: impl Into<String>,
     ) -> Result<Self, Error> {
-        Self::new_master(seed, network_type)?.derive(derivation_path)
+        Self::new_master(seed, network_type)?.derive(&derivation_path.into())
     }
 
     /// Hashes a byte array using the SHA256 algorithm
@@ -521,7 +522,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ]),
-            &HDNetworkType::MainNet,
+            HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(
@@ -574,7 +575,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ]),
-            &HDNetworkType::MainNet,
+            HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(
@@ -592,7 +593,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ]),
-            &HDNetworkType::TestNet,
+            HDNetworkType::TestNet,
         )
         .unwrap();
         assert_eq!(
@@ -610,7 +611,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ]),
-            &HDNetworkType::TestNet,
+            HDNetworkType::TestNet,
         )
         .unwrap();
         assert_eq!(
@@ -628,7 +629,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ]),
-            &HDNetworkType::MainNet,
+            HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(
@@ -646,7 +647,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ]),
-            &HDNetworkType::TestNet,
+            HDNetworkType::TestNet,
         )
         .unwrap();
         assert_eq!(
@@ -677,7 +678,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ]),
-            &HDNetworkType::MainNet,
+            HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(keys.extended_private_key_serialized().unwrap(), "xprv9s21ZrQH143K33HWcGz7ExmrjF485DrDs59ZUMdLGSMKb1D3UTzoG5DDX8T5yYgPWhhayZbrsd1EAuZjJ9b3HnGoSQyt4tdrgHxbFxhgL1W")
@@ -692,7 +693,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ]),
-            &HDNetworkType::MainNet,
+            HDNetworkType::MainNet,
         )
         .unwrap();
         assert_eq!(keys.extended_public_key_serialized().unwrap(), "xpub661MyMwAqRbcFXMyiJX7c6ibHGtcUga5EJ5AGk2wpmtJToYC21K3osXhNPGsUzwLzHJDKShvbH6ZAHF4DB3eCKK9ya271pXyWABaBjRPorF")
@@ -707,7 +708,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ]),
-            &HDNetworkType::MainNet,
+            HDNetworkType::MainNet,
         )
         .unwrap();
         assert!(&keys.extended_private_key.is_some());
@@ -726,7 +727,7 @@ mod tests {
                 30, 199, 120, 151, 43, 248, 69, 195, 45, 90, 232, 60, 117, 54, 153, 155, 86, 102,
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238,
             ]),
-            &HDNetworkType::MainNet,
+            HDNetworkType::MainNet,
         )
         .unwrap();
         assert!(&keys.extended_private_key.is_some());

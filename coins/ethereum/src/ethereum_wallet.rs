@@ -179,7 +179,7 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
                 ))
             }
             (Some(key), _) => key.clone(),
-            (None, Some(seed)) => HDKey::new_master(seed, &self.network_type)?,
+            (None, Some(seed)) => HDKey::new_master(seed, self.network_type)?,
         };
 
         let hd_purpose_num = self
@@ -378,7 +378,7 @@ impl EthereumWallet {
     /// Returns the master HD key of the wallet if one is associated with it, otherwise returns an error
     pub fn master_hd_key(&self) -> Result<HDKey, Error> {
         if let Some(key) = &self.derived_hd_key {
-            Ok(HDKey::new(&key.master_seed, &key.network, "m")?)
+            Ok(HDKey::new(&key.master_seed, key.network, "m")?)
         } else {
             Err(Error::MissingHDKey)
         }

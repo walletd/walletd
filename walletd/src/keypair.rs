@@ -176,7 +176,7 @@ impl KeyPair {
 
     /// Returns the master HD key
     pub fn to_master_key(&self) -> HDKey {
-        HDKey::new_master(&self.mnemonic_seed, &self.network_type)
+        HDKey::new_master(&self.mnemonic_seed, self.network_type)
             .expect("Failed to create master key")
     }
 
