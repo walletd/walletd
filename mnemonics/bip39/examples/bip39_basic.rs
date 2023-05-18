@@ -16,7 +16,7 @@ fn main() -> () {
         .expect("should be valid mnemonic");
     println!("{:?}", mnemonic);
     // get the wallet seed
-    let seed = mnemonic.seed();
+    let seed = mnemonic.as_seed();
     println!("{}", seed);
 
     // example of how to generate a mnemonic phrase without using the builder
@@ -33,6 +33,6 @@ fn main() -> () {
        // Some(passphrase)
     println!("{:?}", mnemonic);
     // get the wallet seed
-    let seed = mnemonic.seed();
+    let seed = mnemonic.as_seed();
     println!("{}", seed);
 }

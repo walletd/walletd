@@ -16,7 +16,7 @@ async fn main() -> web3::Result<()> {
     let passphrase: Option<&str> = Some("mypassphrase");
     let restored_mnemonic =
         Bip39Mnemonic::from_phrase(Bip39Language::English, mnemonic_phrase, passphrase).unwrap();
-    let seed = restored_mnemonic.seed();
+    let seed = restored_mnemonic.as_seed();
 
     println!("seed as bytes: {:?}", seed.as_bytes());
 

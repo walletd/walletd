@@ -162,7 +162,7 @@ impl Mnemonic for Bip39Mnemonic {
     }
 
     /// Provides a reference to the [Seed] object.
-    fn seed(&self) -> &Seed {
+    fn as_seed(&self) -> &Seed {
         &self.seed
     }
 
@@ -175,7 +175,7 @@ impl Mnemonic for Bip39Mnemonic {
         self.phrase.clone()
     }
 
-    fn phrase(&self) -> &str {
+    fn as_phrase(&self) -> &str {
         &self.phrase
     }
 
@@ -205,8 +205,8 @@ impl MnemonicBuilder for Bip39MnemonicBuilder {
         Self::default()
     }
 
-    fn mnemonic_seed(&mut self, seed: Seed) -> &mut Self {
-        self.seed = Some(seed);
+    fn mnemonic_seed(&mut self, seed: impl Into<Seed>) -> &mut Self {
+        self.seed = Some(seed.into());
         self
     }
 
@@ -450,7 +450,7 @@ mod tests {
             .mnemonic_phrase(phrase)
             .build()
             .unwrap();
-        assert_eq!(mnemonic.phrase(), phrase);
+        assert_eq!(mnemonic.as_phrase(), phrase);
         assert_eq!(mnemonic.language(), Bip39Language::English);
         assert_eq!(mnemonic.mnemonic_type(), Bip39MnemonicType::Words12);
     }
@@ -501,10 +501,10 @@ mod tests {
             .mnemonic_phrase(phrase)
             .build()
             .unwrap();
-        assert_eq!(mnemonic.phrase(), phrase);
+        assert_eq!(mnemonic.as_phrase(), phrase);
         assert_eq!(mnemonic.language(), Bip39Language::English);
         assert_eq!(
-            mnemonic.seed(),
+            mnemonic.as_seed(),
             &Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
@@ -512,7 +512,7 @@ mod tests {
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238
             ])
         );
-        assert_eq!(mnemonic.seed().to_string(),
+        assert_eq!(mnemonic.as_seed().to_string(),
 "a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee"
 );
     }
@@ -524,10 +524,10 @@ mod tests {
         mnemonic_builder.language = None;
         mnemonic_builder.mnemonic_type = None;
         let mnemonic = mnemonic_builder.mnemonic_phrase(phrase).restore().unwrap();
-        assert_eq!(mnemonic.phrase(), phrase);
+        assert_eq!(mnemonic.as_phrase(), phrase);
         assert_eq!(mnemonic.language(), Bip39Language::English);
         assert_eq!(
-            mnemonic.seed(),
+            mnemonic.as_seed(),
             &Seed::new(vec![
                 162, 253, 156, 5, 34, 216, 77, 82, 238, 76, 133, 51, 220, 2, 212, 182, 155, 77,
                 249, 182, 37, 94, 26, 242, 12, 159, 29, 77, 105, 22, 137, 242, 163, 134, 55, 235,
@@ -535,7 +535,7 @@ mod tests {
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238
             ])
         );
-        assert_eq!(mnemonic.seed().to_string(),
+        assert_eq!(mnemonic.as_seed().to_string(),
 "a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee"
 );
     }
@@ -549,10 +549,10 @@ mod tests {
             .passphrase(passphrase)
             .build()
             .unwrap();
-        assert_eq!(mnemonic.phrase(), phrase);
+        assert_eq!(mnemonic.as_phrase(), phrase);
         assert_eq!(mnemonic.language(), Bip39Language::English);
         assert_eq!(
-            mnemonic.seed(),
+            mnemonic.as_seed(),
             &Seed::new(hex::decode("3c536b023d71d81e6abc58b0b91c64caff8bb08fabf0c9f3cf948a9f3a494e8ecb0790b6e933834796c930a2d437170bd6071c00bc0553d06235d02315f2c229").unwrap())
         );
     }

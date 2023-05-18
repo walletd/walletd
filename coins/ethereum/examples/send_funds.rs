@@ -21,7 +21,7 @@ async fn main() {
         .build()
         .unwrap();
 
-    let seed = restored_mnemonic.seed();
+    let seed = restored_mnemonic.as_seed();
 
     println!("seed as bytes: {:?}", seed.as_bytes());
 

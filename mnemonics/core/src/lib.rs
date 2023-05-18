@@ -48,7 +48,7 @@ pub trait Mnemonic {
     fn builder() -> Self::MnemonicBuilder;
 
     /// Provides a reference to the [Seed] object.
-    fn seed(&self) -> &Seed;
+    fn as_seed(&self) -> &Seed;
 
     /// Returns the associated owned [Seed] object.
     fn to_seed(&self) -> Seed;
@@ -57,7 +57,7 @@ pub trait Mnemonic {
     fn language(&self) -> Self::Language;
 
     /// Provides a reference to the mnemonic phrase as a [&str].
-    fn phrase(&self) -> &str;
+    fn as_phrase(&self) -> &str;
 
     /// Returns the phrase as a [String].
     fn to_phrase(&self) -> String;
@@ -88,7 +88,7 @@ pub trait MnemonicBuilder {
     /// If a passphrase is specified with the [passphrase][MnemonicBuilder::passphrase] method, the seed recovered using
     /// the [restore][MnemonicBuilder::restore] or [build][MnemonicBuilder::build] method will be the encrypted version of the seed which takes
     /// into account the passphrase value.
-    fn mnemonic_seed(&mut self, seed: Seed) -> &mut Self;
+    fn mnemonic_seed(&mut self, seed: impl Into<Seed>) -> &mut Self;
 
     /// Specifies the mnemonic phrase from which the mnemonic struct is
     /// recovered.
