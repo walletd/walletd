@@ -40,6 +40,11 @@ impl ExtendedPrivateKey {
         *self.0.as_ref()
     }
 
+    /// Returns the [ExtendedPrivateKey] as a slice of bytes.
+    pub fn as_slice(&self) -> &[u8] {
+        self.0.as_ref()
+    }
+
     /// Converts the [ExtendedPrivateKey] to an [ExtendedPublicKey].
     pub fn to_public_key(&self) -> ExtendedPublicKey {
         ExtendedPublicKey(secp256k1::PublicKey::from_secret_key(

@@ -196,7 +196,7 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
 
         let derived_key = master_hd_key.derive(&hd_path_builder.build().to_string())?;
         let private_key =
-            EthereumPrivateKey::from_slice(&derived_key.extended_private_key()?.to_bytes())?;
+            EthereumPrivateKey::from_slice(&derived_key.extended_private_key()?.as_slice())?;
         let public_key =
             EthereumPublicKey::from_slice(&derived_key.extended_public_key()?.to_bytes())?;
         let public_address = public_key.to_public_address(self.address_format)?;
