@@ -1,4 +1,4 @@
-//! This module contains the implementation of the handling getting information to and from the bitcoin blockchain using the https://mempool.space/ Esplora JSON over HTTP API <https://mempool.space/docs/api/rest>
+//! This module contains the implementation of the handling getting information to and from the bitcoin blockchain using the mempool.space Esplora JSON over HTTP API <https://mempool.space/docs/api/rest>
 //!
 
 // signet - https://mempool.space/signet/api
