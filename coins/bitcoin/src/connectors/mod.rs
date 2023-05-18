@@ -1,3 +1,8 @@
+//! # WalletD Connectors
+//!
+//! Provides interfaces for common connectors to blockchain data.
+//!
+
 use crate::bitcoin::{Address, AddressType};
 use bitcoin_hashes::{sha256d, Hash};
 use serde::{Deserialize, Serialize};
