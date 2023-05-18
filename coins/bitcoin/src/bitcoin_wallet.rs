@@ -192,8 +192,8 @@ impl CryptoWallet for BitcoinWallet {
         Ok(tx_id)
     }
 
-    fn set_blockchain_client(&mut self, client: Self::BlockchainClient) {
-        self.blockchain_client = Some(client);
+    fn set_blockchain_client(&mut self, client: impl Into<Self::BlockchainClient>) {
+        self.blockchain_client = Some(client.into());
     }
 
     async fn sync(&mut self) -> Result<(), Error> {

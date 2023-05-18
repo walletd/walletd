@@ -321,8 +321,8 @@ impl CryptoWallet for EthereumWallet {
         Ok(hash)
     }
 
-    fn set_blockchain_client(&mut self, client: Self::BlockchainClient) {
-        self.blockchain_client = Some(client);
+    fn set_blockchain_client(&mut self, client: impl Into<Self::BlockchainClient>) {
+        self.blockchain_client = Some(client.into());
     }
 
     async fn sync(&mut self) -> Result<(), Error> {

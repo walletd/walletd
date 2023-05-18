@@ -41,7 +41,7 @@ async fn main() -> Result<(), Error> {
 
     // more options can be added here later such as for username/password api key etc.
     let btc_blockchain_client = BlockchainConnectorBuilder::<Blockstream>::new()
-        .url(BTC_TESTNET_URL.into())
+        .url(BTC_TESTNET_URL)
         .build()?;
 
     // derive the Bitcoin wallet from the HD wallet
@@ -56,7 +56,7 @@ async fn main() -> Result<(), Error> {
 
     // Going to switch to ETH
     // This is another way to use the builder pattern to create the blockchain client instead of using the pattern written out for the btc_blockchain_client
-    let eth_blockchain_client = EthClient::builder().url(ETH_TESTNET_URL.into()).build()?;
+    let eth_blockchain_client = EthClient::builder().url(ETH_TESTNET_URL).build()?;
 
     let mut eth_wallet = hd_wallet.derive_wallet::<EthereumWallet>()?;
 

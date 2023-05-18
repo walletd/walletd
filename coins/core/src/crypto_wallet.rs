@@ -19,7 +19,7 @@ pub trait CryptoWallet: Sized + Clone {
     type AddressFormat;
 
     /// Associates a particular blockchain client with the CryptoWallet
-    fn set_blockchain_client(&mut self, client: Self::BlockchainClient);
+    fn set_blockchain_client(&mut self, client: impl Into<Self::BlockchainClient>);
     /// Returns the blockchain client that is associated with the CryptoWallet if it exists, otherwise returns an error
     fn blockchain_client(&self) -> Result<&Self::BlockchainClient, Self::ErrorType>;
 
