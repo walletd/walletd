@@ -118,7 +118,7 @@ pub use bitcoin_amount::BitcoinAmount;
 
 #[doc(hidden)]
 pub mod blockstream;
-
+pub mod mempool_space;
 pub use blockstream::Blockstream;
 
 mod error;
