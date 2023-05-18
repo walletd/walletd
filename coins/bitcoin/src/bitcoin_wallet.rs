@@ -1,8 +1,8 @@
 use crate::bitcoin::blockdata::script;
 use crate::connectors::{BTransaction, FeeEstimates, Input, InputType, Output, Utxo};
-use crate::{BitcoinAmount, Blockstream};
 use crate::Error;
 use crate::{AddressInfo, BitcoinAddress, BitcoinPrivateKey, BitcoinPublicKey};
+use crate::{BitcoinAmount, Blockstream};
 use async_trait::async_trait;
 use std::cmp::Reverse;
 use walletd_bip39::Seed;

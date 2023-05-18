@@ -3,9 +3,12 @@
 
 // signet - https://mempool.space/signet/api
 // mainnet - https://mempool.space/api
+use crate::{
+    connectors::{BTransaction, FeeEstimates, Utxos},
+    Error,
+};
 use async_trait::async_trait;
 use walletd_coin_core::BlockchainConnector;
-use crate::{Error, connectors::{BTransaction, Utxos, FeeEstimates}};
 
 /// A blockchain connector for Bitcoin which follows [`the Mempool Space API`](https://mempool.space/docs/api/rest).
 #[derive(Clone, Default, Debug)]
@@ -106,10 +109,7 @@ impl MempoolSpace {
     }
 
     /// Broadcast a raw transaction to the network
-    pub async fn broadcast_tx(
-        &self,
-        raw_transaction_hex: &'static str,
-    ) -> Result<String, Error> {
+    pub async fn broadcast_tx(&self, raw_transaction_hex: &'static str) -> Result<String, Error> {
         let trans_resp = self
             .client
             .post(format!("{}/tx", self.url))

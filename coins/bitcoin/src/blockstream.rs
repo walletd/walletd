@@ -1,9 +1,12 @@
 //! This module contains the implementation of the handling getting information to and from the bitcoin blockchain using the Blockstream Esplora JSON over HTTP API <https://github.com/Blockstream/esplora/blob/master/API.md>
 //!
 
+use crate::{
+    connectors::{BTransaction, FeeEstimates, Utxos},
+    Error,
+};
 use async_trait::async_trait;
 use walletd_coin_core::BlockchainConnector;
-use crate::{Error, connectors::{BTransaction, Utxos, FeeEstimates}};
 
 /// A blockchain connector for Bitcoin which follows [`the Blockstream API`](https://github.com/Blockstream/esplora/blob/master/API.md).
 #[derive(Clone, Default, Debug)]
@@ -117,10 +120,7 @@ impl Blockstream {
     }
 
     /// Broadcast a raw transaction to the network
-    pub async fn broadcast_tx(
-        &self,
-        raw_transaction_hex: &'static str,
-    ) -> Result<String, Error> {
+    pub async fn broadcast_tx(&self, raw_transaction_hex: &'static str) -> Result<String, Error> {
         let trans_resp = self
             .client
             .post(format!("{}/tx", self.url))

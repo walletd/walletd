@@ -1,6 +1,6 @@
+use walletd_bitcoin::mempool_space::MempoolSpace;
 use walletd_bitcoin::prelude::*;
 use walletd_hd_key::prelude::*;
-use walletd_bitcoin::mempool_space::MempoolSpace;
 
 #[tokio::main]
 async fn main() -> Result<(), walletd_bitcoin::Error> {
@@ -9,9 +9,9 @@ async fn main() -> Result<(), walletd_bitcoin::Error> {
     let btc_wallet = BitcoinWallet::builder()
         .master_hd_key(master_hd_key)
         .build()?;
-      // first address = tb1q344p7ttvrpyhxj9xglkwxx6dxytxxjzexth0du
-      let address = btc_wallet.next_address()?;
-      println!("address: {:?}", address);
+    // first address = tb1q344p7ttvrpyhxj9xglkwxx6dxytxxjzexth0du
+    let address = btc_wallet.next_address()?;
+    println!("address: {:?}", address);
     let btc_client = MempoolSpace::new("https://mempool.space/signet/api")?;
     // let height = btc_client.block_height().await?;
     // println!("block height: {:?}", height);
