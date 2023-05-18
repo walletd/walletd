@@ -49,10 +49,11 @@ impl Blockstream {
     }
 
     /// Fetch the block height
-    pub fn block_height(&self) -> Result<u64, Error> {
-        let body = reqwest::blocking::get(format!("{}/blocks/tip/height", self.url))
-            .expect("Error getting block count")
-            .text()?;
+    pub async fn block_height(&self) -> Result<u64, Error> {
+        let body = reqwest::get(format!("{}/blocks/tip/height", self.url))
+            .await?
+            .text()
+            .await?;
         let block_count = body
             .parse::<u64>()
             .map_err(|e| Error::FromStr(e.to_string()))?;
@@ -155,8 +156,8 @@ mod tests {
     use mockito::Server;
     use serde_json::{json, Number, Value};
 
-    #[test]
-    fn test_block_count() {
+    #[tokio::test]
+    async fn test_block_count() {
         let mut server = Server::new();
         let expected_blockcount = 773876;
         server
@@ -167,7 +168,7 @@ mod tests {
             .create();
 
         let bs = Blockstream::new(&server.url()).unwrap();
-        let check_blockcount = bs.block_height().unwrap();
+        let check_blockcount = bs.block_height().await.unwrap();
         assert_eq!(expected_blockcount, check_blockcount);
     }
 
