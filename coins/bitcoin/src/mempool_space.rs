@@ -69,11 +69,12 @@ impl MempoolSpace {
     }
 
     /// Fetch mempool transactions
-    pub fn mempool_transactions(&self, address: &str) -> Result<Vec<BTransaction>, Error> {
-        let body = reqwest::blocking::get(format!("{}/address/{}/txs/mempool", self.url, address))
-            .expect("Error getting transactions")
-            .text();
-        let transactions: Vec<BTransaction> = serde_json::from_str(&body?)?;
+    pub async fn mempool_transactions(&self, address: &str) -> Result<Vec<BTransaction>, Error> {
+        let body = reqwest::get(format!("{}/address/{}/txs/mempool", self.url, address))
+            .await?
+            .text()
+            .await?;
+        let transactions: Vec<BTransaction> = serde_json::from_str(&body)?;
         Ok(transactions)
     }
 
@@ -323,8 +324,8 @@ mod tests {
         assert_eq!(transactions_data, expected_transactions_data);
     }
 
-    #[test]
-    fn test_mnempool_transactions() {
+    #[tokio::test]
+    async fn test_mnempool_transactions() {
         let mut server = Server::new();
         let expected_mempool_transactions: Vec<BTransaction> = vec![
         BTransaction {
@@ -395,7 +396,7 @@ mod tests {
             .create();
 
         let bs = MempoolSpace::new(&server.url()).unwrap();
-        let transactions_data = bs.mempool_transactions(for_address).unwrap();
+        let transactions_data = bs.mempool_transactions(for_address).await.unwrap();
         assert_eq!(transactions_data, expected_mempool_transactions);
     }
 
