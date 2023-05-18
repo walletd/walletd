@@ -11,7 +11,7 @@ async fn main() -> Result<(), walletd::Error> {
         .build()?;
     let seed = bip39_mnemonic.to_seed();
     println!("seed_hex: {:x}", seed);
-    let master_hd_key = HDKey::new_master(&seed, HDNetworkType::TestNet)?;
+    let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
     let keypair = KeyPair::builder()
         .mnemonic_phrase(mnemonic_phrase.into())
         .network_type(HDNetworkType::TestNet)

@@ -66,7 +66,7 @@ fn test_with_mnemonic_seed() -> Result<(), Error> {
 fn test_with_master_hd_key() -> Result<(), Error> {
     let seed_hex = "a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee";
     let seed = Seed::from_str(seed_hex).unwrap();
-    let master_hd_key = HDKey::new_master(&seed, HDNetworkType::TestNet)?;
+    let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
     let mut builder = BitcoinWalletBuilder::default();
     builder.master_hd_key(master_hd_key.clone());
     assert!(builder.master_hd_key.is_some());

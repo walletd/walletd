@@ -32,7 +32,7 @@
 //! let bip39_mnemonic = Bip39Mnemonic::builder().mnemonic_phrase(mnemonic_phrase).build()?;
 //! let seed = bip39_mnemonic.to_seed();
 //! println!("seed_hex: {:x}", seed);
-//! let master_hd_key = HDKey::new_master(&seed, HDNetworkType::TestNet)?;
+//! let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
 //! let keypair = KeyPair::builder().mnemonic_phrase(mnemonic_phrase.into()).network_type(HDNetworkType::TestNet).build()?;
 //! assert_eq!(keypair.to_master_key(), master_hd_key);
 //! # Ok(())
@@ -53,7 +53,7 @@
 //! # let bip39_mnemonic = Bip39Mnemonic::builder().mnemonic_phrase(mnemonic_phrase).build()?;
 //! # let seed = bip39_mnemonic.to_seed();
 //! # println!("seed_hex: {:x}", seed);
-//! # let master_hd_key = HDKey::new_master(&seed, HDNetworkType::TestNet)?;
+//! # let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
 //! # let keypair = KeyPair::builder().mnemonic_phrase(mnemonic_phrase.into()).network_type(HDNetworkType::TestNet).build()?;
 //! let mut btc_wallet = keypair.derive_wallet::<BitcoinWallet>()?;
 //! let mut eth_wallet = keypair.derive_wallet::<EthereumWallet>()?;

@@ -20,7 +20,7 @@
 //!
 //! # fn ethereum() -> Result<(), walletd_ethereum::Error> {
 //! let master_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
-//! let master_hd_key = HDKey::new_master(&master_seed, HDNetworkType::TestNet)?;
+//! let master_hd_key = HDKey::new_master(master_seed, HDNetworkType::TestNet)?;
 //! let mut ethereum_wallet = EthereumWallet::builder().master_hd_key(master_hd_key).build()?;
 //! let public_address = ethereum_wallet.public_address();
 //! println!("ethereum wallet public address: {}", public_address);
@@ -39,7 +39,7 @@
 //! # use walletd_hd_key::prelude::*;
 //! # fn ethereum() -> Result<(), walletd_ethereum::Error> {
 //! # let master_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
-//! # let master_hd_key = HDKey::new_master(&master_seed, HDNetworkType::TestNet)?;
+//! # let master_hd_key = HDKey::new_master(master_seed, HDNetworkType::TestNet)?;
 //! # let mut ethereum_wallet = EthereumWallet::builder().master_hd_key(master_hd_key).build()?;
 //! let derived_hd_key = ethereum_wallet.derived_hd_key()?;
 //! let address_derivation_path = &derived_hd_key.clone().derivation_path;
@@ -64,7 +64,7 @@
 //! # use walletd_hd_key::prelude::*;
 //! # fn ethereum() -> Result<(), walletd_ethereum::Error> {
 //! # let master_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
-//! # let master_hd_key = HDKey::new_master(&master_seed, HDNetworkType::TestNet)?;
+//! # let master_hd_key = HDKey::new_master(master_seed, HDNetworkType::TestNet)?;
 //! # let mut ethereum_wallet = EthereumWallet::builder().master_hd_key(master_hd_key).build()?;
 //!  let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 //!  let eth_client = EthClient::new(ethclient_url)?;

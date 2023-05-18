@@ -37,7 +37,7 @@ fn test_default() -> Result<(), Error> {
 fn test_associated_address() -> Result<(), Error> {
     let seed = Seed::from_str(BTC_WALLET_TEST_SEED)?;
     let address_format = AddressType::P2wpkh;
-    let hd_key = HDKey::new(&seed, HDNetworkType::TestNet, "m/84'/1'/0'/0/0")?;
+    let hd_key = HDKey::new(seed, HDNetworkType::TestNet, "m/84'/1'/0'/0/0")?;
     let bitcoin_address = BitcoinAddress::from_hd_key(&hd_key, address_format)?;
     let associated = AssociatedAddress::new(bitcoin_address.clone(), hd_key.clone());
     assert_eq!(associated.address(), &bitcoin_address);
