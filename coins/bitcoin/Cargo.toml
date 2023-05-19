@@ -14,6 +14,11 @@ categories = ["cryptography::cryptocurrencies"]
 name = "walletd_bitcoin"
 path = "src/lib.rs"
 
+
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+tokio = { version = "1.0", default-features = false, features = ["net", "time"] }
+
+
 [dev-dependencies]
 mockito = "1.0.2"
 tokio = "1.27.0"
