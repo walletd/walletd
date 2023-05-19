@@ -34,7 +34,6 @@ futures = "0.3.5"
 futures-timer = "3.0.2"
 async-native-tls = { package = "web3-async-native-tls", version = "0.4", optional = true, default-features = false }
 async-std = { version = "1.6", optional = true }
-tokio = { version = "1.0", optional = true, features = ["full"] }
 tokio-stream = { version = "0.1", optional = true }
 tokio-util = { version = "0.7", optional = true, features = ["compat", "io"] }
 soketto = { version = "0.7.0", optional = true }
