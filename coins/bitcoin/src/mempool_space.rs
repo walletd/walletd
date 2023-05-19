@@ -1,6 +1,8 @@
-//! This module contains the implementation of the handling getting information to and from the bitcoin blockchain using the Blockstream Esplora JSON over HTTP API <https://github.com/Blockstream/esplora/blob/master/API.md>
+//! This module contains the implementation of the handling getting information to and from the bitcoin blockchain using the mempool.space Esplora JSON over HTTP API <https://mempool.space/docs/api/rest>
 //!
 
+// signet - https://mempool.space/signet/api
+// mainnet - https://mempool.space/api
 use crate::{
     connectors::{BTransaction, FeeEstimates, Utxos},
     Error,
@@ -8,9 +10,9 @@ use crate::{
 use async_trait::async_trait;
 use walletd_coin_core::BlockchainConnector;
 
-/// A blockchain connector for Bitcoin which follows [`the Blockstream API`](https://github.com/Blockstream/esplora/blob/master/API.md).
+/// A blockchain connector for Bitcoin which follows [`the Mempool Space API`](https://mempool.space/docs/api/rest).
 #[derive(Clone, Default, Debug)]
-pub struct Blockstream {
+pub struct MempoolSpace {
     /// The client used to make requests to the API
     pub client: reqwest::Client,
     /// The url of the API
@@ -18,7 +20,7 @@ pub struct Blockstream {
 }
 
 #[async_trait]
-impl BlockchainConnector for Blockstream {
+impl BlockchainConnector for MempoolSpace {
     type ErrorType = Error;
 
     fn new(url: &str) -> Result<Self, Error> {
@@ -33,21 +35,7 @@ impl BlockchainConnector for Blockstream {
     }
 }
 
-impl Blockstream {
-    /// Checks if the given address has had an past transactions, returns true if it has and false if it has not
-    /// Errors if the address is invalid or if the API returns an error
-    pub async fn check_if_past_transactions_exist(
-        &self,
-        public_address: &str,
-    ) -> Result<bool, Error> {
-        let transactions = self.transactions(public_address).await?;
-        if transactions.is_empty() {
-            Ok(false)
-        } else {
-            Ok(true)
-        }
-    }
-
+impl MempoolSpace {
     /// Fetch the block height
     pub async fn block_height(&self) -> Result<u64, Error> {
         let body = reqwest::get(format!("{}/blocks/tip/height", self.url))
@@ -62,7 +50,7 @@ impl Blockstream {
 
     /// Fetch fee estimates
     pub async fn fee_estimates(&self) -> Result<FeeEstimates, Error> {
-        let body = reqwest::get(format!("{}/fee-estimates", self.url))
+        let body = reqwest::get(format!("{}/v1/fees/recommended", self.url))
             .await?
             .text()
             .await?;
@@ -167,7 +155,7 @@ mod tests {
             .with_body(expected_blockcount.to_string())
             .create();
 
-        let bs = Blockstream::new(&server.url()).unwrap();
+        let bs = MempoolSpace::new(&server.url()).unwrap();
         let check_blockcount = bs.block_height().await.unwrap();
         assert_eq!(expected_blockcount, check_blockcount);
     }
@@ -177,126 +165,34 @@ mod tests {
         let mut server = Server::new();
         let mut expected_fee_map = serde_json::Map::new();
         expected_fee_map.insert(
-            String::from("1"),
+            String::from("economyFee"),
             Value::Number(Number::from_f64(1.0).unwrap()),
         );
         expected_fee_map.insert(
-            String::from("10"),
+            String::from("fastestFee"),
             Value::Number(Number::from_f64(1.0).unwrap()),
         );
         expected_fee_map.insert(
-            String::from("1008"),
+            String::from("halfHourFee"),
             Value::Number(Number::from_f64(1.0).unwrap()),
         );
         expected_fee_map.insert(
-            String::from("11"),
+            String::from("hourFee"),
             Value::Number(Number::from_f64(1.0).unwrap()),
         );
         expected_fee_map.insert(
-            String::from("12"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("13"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("14"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("144"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("15"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("16"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("17"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("18"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("19"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("2"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("20"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("21"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("22"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("23"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("24"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("25"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("3"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("4"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("5"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("504"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("6"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("7"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("8"),
-            Value::Number(Number::from_f64(1.0).unwrap()),
-        );
-        expected_fee_map.insert(
-            String::from("9"),
+            String::from("minimumFee"),
             Value::Number(Number::from_f64(1.0).unwrap()),
         );
 
         server
-            .mock("GET", "/fee-estimates")
+            .mock("GET", "/v1/fees/recommended")
             .with_status(200)
             .with_header("content-type", "application/json")
             .with_body(&Value::Object(expected_fee_map.clone()).to_string())
             .create();
 
-        let bs = Blockstream::new(&server.url()).unwrap();
+        let bs = MempoolSpace::new(&server.url()).unwrap();
         let fee_estimates = bs.fee_estimates().await.unwrap();
         assert_eq!(fee_estimates.0, expected_fee_map);
     }
@@ -422,7 +318,7 @@ mod tests {
             .with_body(&json_data_str)
             .create();
 
-        let bs = Blockstream::new(&server.url()).unwrap();
+        let bs = MempoolSpace::new(&server.url()).unwrap();
         let transactions_data = bs.transactions(for_address).await.unwrap();
         assert_eq!(transactions_data, expected_transactions_data);
     }
@@ -498,7 +394,7 @@ mod tests {
             .with_body(&json_data_str)
             .create();
 
-        let bs = Blockstream::new(&server.url()).unwrap();
+        let bs = MempoolSpace::new(&server.url()).unwrap();
         let transactions_data = bs.mempool_transactions(for_address).unwrap();
         assert_eq!(transactions_data, expected_mempool_transactions);
     }
@@ -527,7 +423,7 @@ mod tests {
             .with_header("content-type", "application/json")
             .with_body(&json_data_str)
             .create();
-        let bs = Blockstream::new(&server.url()).unwrap();
+        let bs = MempoolSpace::new(&server.url()).unwrap();
         let utxos = bs.utxo(for_address).await.unwrap();
         assert_eq!(utxos, expected_utxos);
     }
@@ -544,7 +440,7 @@ mod tests {
             .with_header("content-type", "application/json")
             .with_body(&expected_tx_hex)
             .create();
-        let bs = Blockstream::new(&server.url()).unwrap();
+        let bs = MempoolSpace::new(&server.url()).unwrap();
         let raw_tx_hex = bs.raw_transaction_hex(for_txid).await.unwrap();
         assert_eq!(raw_tx_hex, expected_tx_hex);
     }
@@ -617,7 +513,7 @@ mod tests {
             .with_header("content-type", "application/json")
             .with_body(&json_data_str)
             .create();
-        let bs = Blockstream::new(&server.url()).unwrap();
+        let bs = MempoolSpace::new(&server.url()).unwrap();
         let tx = bs.transaction(for_txid).await.unwrap();
         assert_eq!(tx, expected_tx);
     }
@@ -638,7 +534,7 @@ mod tests {
 
         let expected_txid = "c9ec56ecc714e2ec33d51519c647d6adb8469afcbd4b2a6a8052c7db29a00da2";
         // check that the txid is correct
-        let bs = Blockstream::new(&server.url()).unwrap();
+        let bs = MempoolSpace::new(&server.url()).unwrap();
         let txid = bs.broadcast_tx(raw_tx_data).await.unwrap();
         assert_eq!(txid, expected_txid);
     }

@@ -103,6 +103,7 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+pub mod connectors;
 pub use bitcoin;
 pub use bitcoin::{
     Address as AddressInfo, AddressType, Network, PublicKey as BitcoinPublicKey, Script,
@@ -117,7 +118,7 @@ pub use bitcoin_amount::BitcoinAmount;
 
 #[doc(hidden)]
 pub mod blockstream;
-
+pub mod mempool_space;
 pub use blockstream::Blockstream;
 
 mod error;

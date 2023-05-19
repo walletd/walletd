@@ -1,7 +1,7 @@
 extern crate walletd_bitcoin;
 
 use hex;
-use walletd_bitcoin::blockstream::{BTransaction, Input, Output, Status};
+use walletd_bitcoin::connectors::{BTransaction, Input, Output, Status};
 use walletd_bitcoin::{BitcoinPrivateKey, BitcoinWallet, Network};
 fn main() {
     println!("Recreating an example found online here for testing/validation");
