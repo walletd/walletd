@@ -27,22 +27,7 @@ log = "0.4.17"
 secp256k1 = { version = "0.21.0", features = ["rand-std"] }
 thiserror = "1.0.38"
 tiny-keccak = { version = "2.0.2" }
-web3 = "0.18.0"
 zeroize = { version = "1.6.0", features = ["zeroize_derive"] }
-
-futures = "0.3.5"
-futures-timer = "3.0.2"
-async-native-tls = { package = "web3-async-native-tls", version = "0.4", optional = true, default-features = false }
-async-std = { version = "1.6", optional = true }
-tokio-stream = { version = "0.1", optional = true }
-tokio-util = { version = "0.7", optional = true, features = ["compat", "io"] }
-soketto = { version = "0.7.0", optional = true }
-
-### This is a transitive dependency, only here so we can turn on its wasm_bindgen feature
-rand = { version = "0.8.1", optional = true }
-getrandom = { version = "0.2", features = ["js"], optional = true }
-wasm-bindgen = { version = "0.2.68", optional = true, features = ["serde-serialize"] }
-wasm-bindgen-futures = { version = "0.4.18", optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 tokio = { version = "1", features = ["full"] }
