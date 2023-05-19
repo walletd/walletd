@@ -201,8 +201,9 @@ impl CryptoWallet for BitcoinWallet {
     }
 
     async fn sync(&mut self) -> Result<(), Error> {
-        self.add_previously_used_addresses().await?;
-        Ok(())
+        unimplemented!()
+        // self.add_previously_used_addresses().await?;
+        // Ok(())
     }
 
     fn receive_address(&self) -> Result<String, Error> {
