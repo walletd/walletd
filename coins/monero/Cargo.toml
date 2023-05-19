@@ -14,6 +14,9 @@ categories = ["cryptography::cryptocurrencies"]
 name = "walletd_monero"
 path = "src/lib.rs"
 
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { version = "1", features = ["full"] }
+
 [dependencies]
 walletd_coin_core = {path = "../core", version="0.1"}
 walletd_monero_mnemonic = {path = "../../mnemonics/monero"}
@@ -33,7 +36,6 @@ multiexp = "0.2.0"
 num = "0.4.0"
 tiny-keccak = { version = "2.0.2" }
 thiserror = "1.0.38"
-tokio = { version = "1", features = ["full"] }
 rand = "0.8.5"
 reqwest = { version = "0.11.18", features = ["json"] }
 serde = {version = "1.0.148", features = ["derive"]}
