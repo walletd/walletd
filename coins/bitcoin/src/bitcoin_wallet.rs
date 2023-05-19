@@ -87,13 +87,14 @@ impl CryptoWallet for BitcoinWallet {
     type AddressFormat = AddressType;
 
     async fn balance(&self) -> Result<BitcoinAmount, Error> {
-        let client = self.blockchain_client()?;
-        let mut total_balance = BitcoinAmount::new();
-        for addr in self.addresses() {
-            let balance = addr.balance(client).await?;
-            total_balance = (total_balance + balance)?;
-        }
-        Ok(total_balance)
+        unimplemented!()
+        // let client = self.blockchain_client()?;
+        // let mut total_balance = BitcoinAmount::new();
+        // for addr in self.addresses() {
+        //     let balance = addr.balance(client).await?;
+        //     total_balance = (total_balance + balance)?;
+        // }
+        // Ok(total_balance)
     }
 
     fn builder() -> Self::WalletBuilder {
@@ -105,93 +106,94 @@ impl CryptoWallet for BitcoinWallet {
         send_amount: &BitcoinAmount,
         to_public_address: &str,
     ) -> Result<String, Error> {
-        let client = self.blockchain_client()?;
-        let receiver_view_wallet =
-            BitcoinAddress::from_public_address(to_public_address, self.network()?)?;
+        unimplemented!()
+        // let client = self.blockchain_client()?;
+        // let receiver_view_wallet =
+        //     BitcoinAddress::from_public_address(to_public_address, self.network()?)?;
 
-        // first checking existing endpoints with blockstream
-        let fee_estimates: FeeEstimates = client.fee_estimates().await?;
-        let confirmation_target: u32 = 6; // this variable specifies how many blocks need to include this transaction
-                                          // before it's considered "confirmed"
+        // // first checking existing endpoints with blockstream
+        // let fee_estimates: FeeEstimates = client.fee_estimates().await?;
+        // let confirmation_target: u32 = 6; // this variable specifies how many blocks need to include this transaction
+        //                                   // before it's considered "confirmed"
 
-        let fee_map = &fee_estimates.0;
-        let fee_sat_per_byte = if !fee_map.is_empty() {
-            fee_map
-                .get(confirmation_target.to_string().as_str())
-                .expect("fee_map missing key")
-                .as_f64()
-                .expect("Unable to convert to f64")
-        } else {
-            return Err(Error::MissingFeeMap);
-        };
+        // let fee_map = &fee_estimates.0;
+        // let fee_sat_per_byte = if !fee_map.is_empty() {
+        //     fee_map
+        //         .get(confirmation_target.to_string().as_str())
+        //         .expect("fee_map missing key")
+        //         .as_f64()
+        //         .expect("Unable to convert to f64")
+        // } else {
+        //     return Err(Error::MissingFeeMap);
+        // };
 
-        // Build the transaction
-        // Specify the inputs and outputs, the difference between the amount of the
-        // inputs and the amount of the outputs is the transaction fee
-        // Input(s) should cover the total amount
-        // Inputs need to come from the utxo
-        // Look through all the associated owned addresses for available utxos
-        let mut available_utxos = Vec::new();
-        for addr in self.addresses() {
-            let utxos = client.utxo(&addr.public_address()).await?;
-            available_utxos.push(utxos);
-        }
+        // // Build the transaction
+        // // Specify the inputs and outputs, the difference between the amount of the
+        // // inputs and the amount of the outputs is the transaction fee
+        // // Input(s) should cover the total amount
+        // // Inputs need to come from the utxo
+        // // Look through all the associated owned addresses for available utxos
+        // let mut available_utxos = Vec::new();
+        // for addr in self.addresses() {
+        //     let utxos = client.utxo(&addr.public_address()).await?;
+        //     available_utxos.push(utxos);
+        // }
 
-        // sum total value with confirmed status, also count number of utxos with
-        // confirmed status
-        let mut total_value_from_utxos = 0;
-        let mut inputs_available: Vec<Utxo> = Vec::new();
-        let mut inputs_available_tx_info: Vec<BTransaction> = Vec::new();
-        let change_addr = self.next_change_address()?.address_info().clone();
+        // // sum total value with confirmed status, also count number of utxos with
+        // // confirmed status
+        // let mut total_value_from_utxos = 0;
+        // let mut inputs_available: Vec<Utxo> = Vec::new();
+        // let mut inputs_available_tx_info: Vec<BTransaction> = Vec::new();
+        // let change_addr = self.next_change_address()?.address_info().clone();
 
-        let mut keys_per_input: Vec<(BitcoinPrivateKey, BitcoinPublicKey)> = Vec::new();
-        let mut utxo_addr_index = Vec::new();
-        for (i, utxos_i) in available_utxos.iter().enumerate() {
-            for utxo in utxos_i.iter() {
-                if utxo.status.confirmed {
-                    total_value_from_utxos += &utxo.value;
-                    let tx_info = client.transaction(utxo.txid.as_str()).await?;
-                    inputs_available.push(utxo.clone());
-                    inputs_available_tx_info.push(tx_info);
-                    utxo_addr_index.push(i);
-                }
-            }
-        }
+        // let mut keys_per_input: Vec<(BitcoinPrivateKey, BitcoinPublicKey)> = Vec::new();
+        // let mut utxo_addr_index = Vec::new();
+        // for (i, utxos_i) in available_utxos.iter().enumerate() {
+        //     for utxo in utxos_i.iter() {
+        //         if utxo.status.confirmed {
+        //             total_value_from_utxos += &utxo.value;
+        //             let tx_info = client.transaction(utxo.txid.as_str()).await?;
+        //             inputs_available.push(utxo.clone());
+        //             inputs_available_tx_info.push(tx_info);
+        //             utxo_addr_index.push(i);
+        //         }
+        //     }
+        // }
 
-        let available_input_max = BitcoinAmount {
-            satoshi: total_value_from_utxos,
-        };
+        // let available_input_max = BitcoinAmount {
+        //     satoshi: total_value_from_utxos,
+        // };
 
-        if available_input_max < *send_amount {
-            return Err(Error::InsufficientFunds("Insufficient funds".into()));
-        }
+        // if available_input_max < *send_amount {
+        //     return Err(Error::InsufficientFunds("Insufficient funds".into()));
+        // }
 
-        let prepared = Self::prepare_transaction(
-            fee_sat_per_byte,
-            &inputs_available,
-            &inputs_available_tx_info,
-            send_amount,
-            &receiver_view_wallet,
-            change_addr,
-        )?;
+        // let prepared = Self::prepare_transaction(
+        //     fee_sat_per_byte,
+        //     &inputs_available,
+        //     &inputs_available_tx_info,
+        //     send_amount,
+        //     &receiver_view_wallet,
+        //     change_addr,
+        // )?;
 
-        let transaction = prepared.0;
-        let chosen_indices = prepared.1;
+        // let transaction = prepared.0;
+        // let chosen_indices = prepared.1;
 
-        for ind in chosen_indices {
-            let index = utxo_addr_index[ind];
-            let private_key = self.associated[index].address().private_key()?;
-            let public_key = self.associated[index].address().public_key()?;
-            let key_pair = (private_key, public_key);
-            keys_per_input.push(key_pair);
-        }
+        // for ind in chosen_indices {
+        //     let index = utxo_addr_index[ind];
+        //     let private_key = self.associated[index].address().private_key()?;
+        //     let public_key = self.associated[index].address().public_key()?;
+        //     let key_pair = (private_key, public_key);
+        //     keys_per_input.push(key_pair);
+        // }
 
-        let signed_tx = Self::sign_tx(&transaction, keys_per_input)?;
+        // let signed_tx = Self::sign_tx(&transaction, keys_per_input)?;
 
-        let transaction_hex = BTransaction::serialize(&signed_tx)?;
-        let raw_transaction_hex: &'static str = Box::leak(transaction_hex.into_boxed_str());
-        let tx_id = client.broadcast_tx(raw_transaction_hex).await?;
-        Ok(tx_id)
+        // let transaction_hex = BTransaction::serialize(&signed_tx)?;
+        // let raw_transaction_hex: &'static str = Box::leak(transaction_hex.into_boxed_str());
+        // let tx_id = client.broadcast_tx(raw_transaction_hex).await?;
+        // Ok(tx_id)
     }
 
     fn set_blockchain_client(&mut self, client: Self::BlockchainClient) {
