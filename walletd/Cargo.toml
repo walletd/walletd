@@ -30,5 +30,4 @@ walletd_hd_key = {path = "../mnemonics/hd_key", version="0.2"}
 anyhow = "1.0.68"
 hex = { version = "0.4.2" }
 thiserror = "1.0.40"
-web3 = "0.18.0"
 
