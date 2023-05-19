@@ -8,7 +8,7 @@ pub trait CryptoWallet: Sized + Clone {
     /// ErrorType is the type of error that is returned by the CryptoWallet
     type ErrorType: std::error::Error + Send + Sync + 'static;
     /// CryptoAmount is the type of amount that is used by the CryptoWallet to represent amounts of cryptocurrency
-    type CryptoAmount: CryptoAmount;
+    type CryptoAmount: CryptoAmount + Send + Sync;
     /// BlockchainClient is the type of BlockchainConnector that is used by the CryptoWallet to connect to the blockchain
     type BlockchainClient: BlockchainConnector;
     /// NetworkType is the type of network that the CryptoWallet is connected to

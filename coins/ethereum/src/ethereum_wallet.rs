@@ -280,11 +280,12 @@ impl CryptoWallet for EthereumWallet {
     }
 
     async fn balance(&self) -> Result<Self::CryptoAmount, Error> {
-        let blockchain_client = self.blockchain_client()?;
-        let address = web3::types::H160::from_str(&self.public_address())
-            .map_err(|e| (Error::FromStr(e.to_string())))?;
-        let balance = blockchain_client.balance(address).await?;
-        Ok(balance)
+        unimplemented!()
+        // let blockchain_client = self.blockchain_client()?;
+        // let address = web3::types::H160::from_str(&self.public_address())
+        //     .map_err(|e| (Error::FromStr(e.to_string())))?;
+        // let balance = blockchain_client.balance(address).await?;
+        // Ok(balance)
     }
 
     async fn transfer(
@@ -292,33 +293,34 @@ impl CryptoWallet for EthereumWallet {
         send_amount: &Self::CryptoAmount,
         to_address: &str,
     ) -> Result<String, Error> {
-        let blockchain_client = self.blockchain_client()?;
-        let to = Address::from_str(to_address).map_err(|e| Error::FromStr(e.to_string()))?;
-        let amount = send_amount.wei();
+        unimplemented!()
+        // let blockchain_client = self.blockchain_client()?;
+        // let to = Address::from_str(to_address).map_err(|e| Error::FromStr(e.to_string()))?;
+        // let amount = send_amount.wei();
 
-        let tx_object = TransactionParameters {
-            to: Some(to),
-            value: amount,
-            ..Default::default()
-        };
+        // let tx_object = TransactionParameters {
+        //     to: Some(to),
+        //     value: amount,
+        //     ..Default::default()
+        // };
 
-        let secret_key = self.private_key()?.0;
+        // let secret_key = self.private_key()?.0;
 
-        // sign the tx
-        let signed = blockchain_client
-            .web3()
-            .accounts()
-            .sign_transaction(tx_object, &secret_key)
-            .await?;
+        // // sign the tx
+        // let signed = blockchain_client
+        //     .web3()
+        //     .accounts()
+        //     .sign_transaction(tx_object, &secret_key)
+        //     .await?;
 
-        let result = blockchain_client
-            .eth()
-            .send_raw_transaction(signed.raw_transaction)
-            .await?;
+        // let result = blockchain_client
+        //     .eth()
+        //     .send_raw_transaction(signed.raw_transaction)
+        //     .await?;
 
-        let hash = hex::encode(result.as_bytes());
+        // let hash = hex::encode(result.as_bytes());
 
-        Ok(hash)
+        // Ok(hash)
     }
 
     fn set_blockchain_client(&mut self, client: Self::BlockchainClient) {
