@@ -5,7 +5,7 @@ use async_trait::async_trait;
 #[async_trait]
 pub trait BlockchainConnector{
     /// The type of error that is returned by the BlockchainConnector.
-    type ErrorType: std::error::Error + Send + Sync + 'static;
+    type ErrorType: std::error::Error;
 
     /// Creates a new BlockchainConnector with a given url.
     fn new(url: &str) -> Result<Self, Self::ErrorType>

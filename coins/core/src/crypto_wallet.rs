@@ -6,7 +6,7 @@ use walletd_hd_key::{HDKey, HDPathBuilder, Seed};
 #[async_trait]
 pub trait CryptoWallet: Sized + Clone {
     /// ErrorType is the type of error that is returned by the CryptoWallet
-    type ErrorType: std::error::Error + Send + Sync + 'static;
+    type ErrorType: std::error::Error;
     /// CryptoAmount is the type of amount that is used by the CryptoWallet to represent amounts of cryptocurrency
     type CryptoAmount: CryptoAmount;
     /// BlockchainClient is the type of BlockchainConnector that is used by the CryptoWallet to connect to the blockchain
