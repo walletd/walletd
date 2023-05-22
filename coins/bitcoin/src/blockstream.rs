@@ -569,7 +569,7 @@ impl Default for Input {
 
 impl Output {
     /// Sets the scriptpubkey info for the output based on the address
-    pub fn set_scriptpubkey_info(&mut self, address_info: Address) -> Result<(), Error> {
+    pub fn set_scriptpubkey_info(&mut self, address_info: &Address) -> Result<(), Error> {
         self.scriptpubkey_address = address_info.to_string();
         let address_type = address_info.address_type().expect("address type missing");
         match address_type {

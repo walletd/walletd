@@ -186,6 +186,11 @@ impl BitcoinAddress {
     pub fn address_info(&self) -> &AddressInfo {
         &self.address_info
     }
+
+    /// Returns the [AddressInfo] of the [BitcoinAddress] 
+    pub fn to_address(&self) -> AddressInfo {
+        self.address_info.clone()
+    }
 }
 
 #[cfg(test)]

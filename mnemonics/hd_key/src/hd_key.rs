@@ -171,6 +171,12 @@ pub struct HDKey {
     pub network: HDNetworkType,
 }
 
+impl From<&HDKey> for HDKey {
+    fn from(hd_key: &HDKey) -> Self {
+        hd_key.clone()
+    }
+}
+
 impl HDKey {
     /// Create new master node for a HD wallet based on a seed
     ///

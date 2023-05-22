@@ -54,6 +54,15 @@ pub struct AssociatedAddress {
     pub hd_key: HDKey,
 }
 
+impl From<&AssociatedAddress> for AssociatedAddress {
+    fn from(associated: &AssociatedAddress) -> Self {
+        Self {
+            address: associated.address.clone(),
+            hd_key: associated.hd_key.clone(),
+        }
+    }
+}
+
 impl Drop for AssociatedAddress {
     fn drop(&mut self) {
         self.address.zeroize();
@@ -138,9 +147,9 @@ impl CryptoWallet for BitcoinWallet {
         // sum total value with confirmed status, also count number of utxos with
         // confirmed status
         let mut total_value_from_utxos = 0;
-        let mut inputs_available: Vec<Utxo> = Vec::new();
+        let mut inputs_available: Vec<&Utxo> = Vec::new();
         let mut inputs_available_tx_info: Vec<BTransaction> = Vec::new();
-        let change_addr = self.next_change_address()?.address_info().clone();
+        let change_addr = self.next_change_address()?.to_address();
 
         let mut keys_per_input: Vec<(&BitcoinPrivateKey, &BitcoinPublicKey)> = Vec::new();
         let mut utxo_addr_index = Vec::new();
@@ -149,7 +158,7 @@ impl CryptoWallet for BitcoinWallet {
                 if utxo.status.confirmed {
                     total_value_from_utxos += &utxo.value;
                     let tx_info = client.transaction(utxo.txid.as_str()).await?;
-                    inputs_available.push(utxo.clone());
+                    inputs_available.push(utxo);
                     inputs_available_tx_info.push(tx_info);
                     utxo_addr_index.push(i);
                 }
@@ -170,7 +179,7 @@ impl CryptoWallet for BitcoinWallet {
             &inputs_available_tx_info,
             send_amount,
             &receiver_view_wallet,
-            change_addr,
+            &change_addr,
         )?;
 
         let transaction = prepared.0;
@@ -216,11 +225,12 @@ impl CryptoWallet for BitcoinWallet {
 
 impl BitcoinWallet {
     /// Adds an [associated Bitcoin address][BitcoinAddress] to the [wallet][BitcoinWallet] if it is not already associated to it while also keeping track of the [associated Bitcoin address][BitcoinAddress]'s [derived HD key][HDKey].
-    pub fn add(&mut self, associated: &AssociatedAddress) {
+    pub fn add(&mut self, associated: impl Into<AssociatedAddress>) {
+        let associated = associated.into();
         if self.addresses().contains(&associated.address) {
             return;
         }
-        self.associated.push(associated.clone());
+        self.associated.push(associated);
     }
 
     /// Returns the associated info: info on the [associated Bitcoin addresses][BitcoinAddress] paired with their [derived HD key][HDKey].
@@ -637,7 +647,7 @@ impl BitcoinWallet {
     /// change amount that is smaller than what the fee would be to spend that
     /// amount.
     pub fn choose_inputs_and_set_fee(
-        utxo_available: &Vec<Utxo>,
+        utxo_available: &Vec<&Utxo>,
         send_amount: &BitcoinAmount,
         inputs_available_tx_info: &[BTransaction],
         byte_fee: f64,
@@ -839,11 +849,11 @@ impl BitcoinWallet {
     /// Prepares a transaction to be signed and broadcasted.
     pub fn prepare_transaction(
         fee_sat_per_byte: f64,
-        utxo_available: &Vec<Utxo>,
+        utxo_available: &Vec<&Utxo>,
         inputs_available_tx_info: &[BTransaction],
         send_amount: &BitcoinAmount,
         receiver_view_wallet: &BitcoinAddress,
-        change_addr: AddressInfo,
+        change_addr: &AddressInfo,
     ) -> Result<(BTransaction, Vec<usize>), Error> {
         // TODO(AS): Add check here to limit the transaction to address types that are supported
         // choose inputs
@@ -871,7 +881,7 @@ impl BitcoinWallet {
             ..Default::default()
         };
         output_send.value = send_amount.satoshi();
-        output_send.set_scriptpubkey_info(receiver_view_wallet.address_info().clone())?;
+        output_send.set_scriptpubkey_info(&receiver_view_wallet.to_address())?;
         outputs.push(output_send);
         let mut output_change = Output {
             ..Default::default()
