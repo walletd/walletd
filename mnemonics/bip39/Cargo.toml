@@ -20,7 +20,7 @@ path = "src/lib.rs"
 rand = { version = "0.8.5" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-rand = {version = "0.8.5", optional = true}
+rand = {version = "0.8.5"}
 getrandom = { version = "0.2", features = ["js"]} # for wasm
 
 
