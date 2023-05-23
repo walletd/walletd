@@ -17,6 +17,7 @@ path = "src/lib.rs"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 tokio = { version = "1", features = ["full"] }
+web3 = "0.18.0"
 
 
 [dependencies]
@@ -35,5 +36,5 @@ tiny-keccak = { version = "2.0.2" }
 zeroize = { version = "1.6.0", features = ["zeroize_derive"] }
 
 # web3 = {version = "0.18.0", default-features = false, features = ["wasm", "http"]}
-web3 = "0.18.0"
+# web3 = "0.18.0"
 
