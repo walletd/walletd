@@ -16,14 +16,6 @@ categories = ["cryptography::cryptocurrencies"]
 name = "walletd_bip39"
 path = "src/lib.rs"
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-rand = { version = "0.8.5" }
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-rand = {version = "0.8.5"}
-getrandom = { version = "0.2", features = ["js"]} # for wasm
-
-
 [dependencies]
 walletd_mnemonics_core = {path = "../core", version="0.2"}
 bitvec = { version = "0.17.4" }
@@ -36,3 +28,6 @@ pbkdf2 = { version = "0.3.0", features=["parallel"], default-features = false }
 sha2 = { version = "0.8", default-features = false }
 thiserror = "1.0.29"
 zeroize = { version = "1.6.0", features = ["zeroize_derive"] }
+
+rand = {version = "0.8.5"}
+getrandom = { version = "0.2", features = ["js"]} # for wasm
