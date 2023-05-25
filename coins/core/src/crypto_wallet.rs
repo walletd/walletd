@@ -4,9 +4,9 @@ use walletd_hd_key::{HDKey, HDPathBuilder, Seed};
 
 /// Provides common functionality for a crypto wallet. Contains functions to get the balance, send and receive transactions, and sync the wallet with the blockchain.
 #[async_trait]
-pub trait CryptoWallet: Sized + Clone {
+pub trait CryptoWallet: Clone {
     /// ErrorType is the type of error that is returned by the CryptoWallet
-    type ErrorType: std::error::Error + Send + Sync + 'static;
+    type ErrorType: std::error::Error;
     /// CryptoAmount is the type of amount that is used by the CryptoWallet to represent amounts of cryptocurrency
     type CryptoAmount: CryptoAmount;
     /// BlockchainClient is the type of BlockchainConnector that is used by the CryptoWallet to connect to the blockchain
@@ -46,7 +46,7 @@ pub trait CryptoWallet: Sized + Clone {
 /// Provides a common interface for building a [CryptoWallet].
 pub trait CryptoWalletBuilder<T>
 where
-    T: CryptoWallet + Clone,
+    T: CryptoWallet + Clone + Sized,
 {
     /// Constructs a new [CryptoWalletBuilder].
     fn new() -> Self;

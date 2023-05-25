@@ -14,6 +14,9 @@ categories = ["cryptography::cryptocurrencies"]
 name = "walletd_hd_key"
 path = "src/lib.rs"
 
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { version = "1", features = ["full"] }
+
 [dependencies]
 walletd_mnemonics_core = { path = "../core", version="0.2" }
 base58 = { version = "0.2.0" }

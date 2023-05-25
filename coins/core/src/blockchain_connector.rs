@@ -3,9 +3,9 @@ use async_trait::async_trait;
 
 /// Used to connect to a blockchain and send and receive information to and from the blockchain.
 #[async_trait]
-pub trait BlockchainConnector {
+pub trait BlockchainConnector: Send {
     /// The type of error that is returned by the BlockchainConnector.
-    type ErrorType: std::error::Error + Send + Sync + 'static;
+    type ErrorType: std::error::Error;
 
     /// Creates a new BlockchainConnector with a given url.
     fn new(url: &str) -> Result<Self, Self::ErrorType>

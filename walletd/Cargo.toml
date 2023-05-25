@@ -14,6 +14,10 @@ categories = ["cryptography::cryptocurrencies"]
 name = "walletd"
 path = "src/lib.rs"
 
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = "1.23.0"
+
 [dependencies]
 
 walletd_bip39 = {path = "../mnemonics/bip39", version="0.2"}
@@ -26,5 +30,4 @@ walletd_hd_key = {path = "../mnemonics/hd_key", version="0.2"}
 anyhow = "1.0.68"
 hex = { version = "0.4.2" }
 thiserror = "1.0.40"
-tokio = "1.23.0"
-web3 = "0.18.0"
+
