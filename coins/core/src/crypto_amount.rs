@@ -1,6 +1,6 @@
 /// Provides a common interface for handling amounts of a cryptocurrency.
 /// Has functions to convert to and from the main unit and the smallest unit of the coin.
-pub trait CryptoAmount {
+pub trait CryptoAmount: Send {
     /// In the units of main "big" unit (a floating point number, not an integer
     /// subdivision) using decimal value, for bitcoin BTC, ethereum ETH, etc.
     /// The CryptoAmount is a wrapper around a floating point number and the default integer value stored is in the smallest unit of the coin.
