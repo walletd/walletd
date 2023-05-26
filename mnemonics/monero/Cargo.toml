@@ -19,6 +19,7 @@ crc = { version = "1.8.1" }
 curve25519-dalek = { version = "2.1.0" }
 enum-iterator = "1.2.0"
 hex = { version = "0.4.2" }
-rand = { version = "0.7" }
+rand = { version = "0.8.5" }
+getrandom = { version = "0.2", features = ["js"]} # for wasm
 sha3 = "0.10.6"
 thiserror = "1.0.39"
