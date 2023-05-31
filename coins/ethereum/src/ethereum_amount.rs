@@ -99,3 +99,4 @@ impl CryptoAmount for EthereumAmount {
         self.wei.as_u64()
     }
 }
+s

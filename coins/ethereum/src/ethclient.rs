@@ -10,6 +10,7 @@ use web3::helpers as w3h;
 use web3::transports::Http;
 use web3::types::Address;
 use web3::types::{BlockId, BlockNumber, TransactionId, H160, H256, U64};
+use ethers::prelude::*;
 
 #[allow(dead_code)]
 pub enum TransportType {
