@@ -11,6 +11,12 @@ use web3::transports::Http;
 use web3::types::Address;
 use web3::types::{BlockId, BlockNumber, TransactionId, H160, H256, U64};
 use ethers::prelude::*;
+use ethers::*;
+use ethers::providers::{Middleware, Provider};
+use ethers::providers::Http as ethersHttp;
+use std::convert::TryFrom;
+
+
 
 #[allow(dead_code)]
 pub enum TransportType {
@@ -23,6 +29,7 @@ pub enum TransportType {
 #[allow(dead_code)]
 pub struct EthClient {
     web3: web3::Web3<web3::transports::Http>,
+    ethers: Provider<ethersHttp>,
     endpoint: String,
 }
 
@@ -32,6 +39,11 @@ impl EthClient {
     pub fn web3(&self) -> web3::Web3<web3::transports::Http> {
         self.web3.clone()
     }
+
+    pub fn ethers(&self) -> Provider<ethersHttp> {
+        self.ethers.clone()
+    }
+
     /// Returns the eth instance from the web3 instance.
     pub fn eth(&self) -> web3::api::Eth<web3::transports::Http> {
         self.web3.eth()
@@ -294,7 +306,9 @@ impl EthClient {
 
     /// Get the latest block number for the current network chain.
     pub async fn current_block_number(&self) -> web3::Result<u64> {
-        let block_number = self.web3.eth().block_number().await?;
+        //let block_number = &self.ethers.block_number().await?;
+        // Ok(block_number.as_u64())
+        let block_number: ethers::types::U64 = self.ethers.get_block_number().await.unwrap();
         Ok(block_number.as_u64())
     }
 
@@ -359,14 +373,23 @@ impl BlockchainConnector for EthClient {
     /// Returns an [error][Error] if the endpoint is invalid or the transport fails to connect.
     fn new(endpoint: &str) -> Result<Self, Error> {
         // TODO(#71): Change transport to support web sockets
+        //ethers
+        
+        // change this to endpoint
+        let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
+        //let ethers = Provider::<ethersHttp::Http>::new(ethclient_url)?;
+        let ethers = Provider::<ethersHttp>::try_from(ethclient_url).unwrap();
+        // web3
+        
         let transport = web3::transports::Http::new(endpoint)?;
         let web3 = web3::Web3::new(transport);
+        let eth_client = EthClient::new(ethclient_url)?;
         Ok(Self {
             web3,
+            ethers,
             endpoint: endpoint.to_string(), // web3 uses an &str for endpoint
         })
     }
-
     /// Returns the url of the endpoint associated with the [EthClient].
     fn url(&self) -> &str {
         &self.endpoint
