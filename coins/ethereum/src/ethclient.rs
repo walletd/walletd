@@ -8,12 +8,12 @@ use web3::contract::{Contract, Options};
 use web3::ethabi::Uint;
 use web3::helpers as w3h;
 use web3::transports::Http;
-use web3::types::Address;
-use web3::types::{BlockId, BlockNumber, TransactionId, H160, H256, U64};
+use ethers::types::Address;
+use web3::types::{ H160 as oldH160, H256 as oldH256, U64 as oldU64};
 use ethers::prelude::*;
-use ethers::*;
 use ethers::providers::{Middleware, Provider};
 use ethers::providers::Http as ethersHttp;
+use ethers::types::{BlockId, Block, BlockNumber, H160, H256, U64};
 use std::convert::TryFrom;
 
 
@@ -51,7 +51,7 @@ impl EthClient {
 
     /// Returns the balance of an address as an [EthereumAmount].
     pub async fn balance(&self, address: H160) -> Result<EthereumAmount, Error> {
-        let balance = self.web3.eth().balance(address, None).await?;
+        let balance = self.ethers().get_balance(address, None).await.unwrap();
         Ok(EthereumAmount { wei: balance })
     }
 
@@ -78,107 +78,113 @@ impl EthClient {
         &self,
         tx_hash: &str,
     ) -> Result<web3::types::Transaction, Error> {
-        let transaction_hash: H256 =
-            H256::from_str(tx_hash).map_err(|e| Error::FromStr(e.to_string()))?;
-        match self
-            .web3
-            .eth()
-            .transaction(TransactionId::Hash(transaction_hash))
-            .await
-        {
-            Ok(tx) => {
-                if tx.is_none() {
-                    Err(Error::TxResponse(format!(
-                        "Transaction with tx_hash {} not found",
-                        tx_hash
-                    )))
-                } else {
-                    Ok(tx.unwrap())
-                }
-            }
-            Err(error) => Err(Error::TxResponse(error.to_string())),
-        }
+        todo!()
+        // let transaction_hash: H256 =
+        //     H256::from_str(tx_hash).map_err(|e| Error::FromStr(e.to_string()))?;
+
+        // let transaction_hash: H256 =
+        //     H256::from_str(tx_hash).map_err(|e| Error::FromStr(e.to_string()))?;
+        // match self
+        //     .web3
+        //     .eth()
+        //     .transaction(TransactionId::Hash(transaction_hash))
+        //     .await
+        // {
+        //     Ok(tx) => {
+        //         if tx.is_none() {
+        //             Err(Error::TxResponse(format!(
+        //                 "Transaction with tx_hash {} not found",
+        //                 tx_hash
+        //             )))
+        //         } else {
+        //             Ok(tx.unwrap())
+        //         }
+        //     }
+        //     Err(error) => Err(Error::TxResponse(error.to_string())),
+        // }
     }
 
     // TODO(#70): Remove this after write-only functionality is finished
     /// Debug transaction for adding smart contract functionality
     async fn print_txdata_for_block(&self, block: &web3::types::Block<H256>) {
-        for transaction_hash in &block.transactions {
-            let tx = match self
-                .web3
-                .eth()
-                .transaction(TransactionId::Hash(*transaction_hash))
-                .await
-            {
-                Ok(Some(tx)) => tx,
-                _ => {
-                    continue;
-                }
-            };
-            let from_addr = tx.from.unwrap_or(H160::zero());
-            let to_addr = tx.to.unwrap_or(H160::zero());
-            info!(
-                "[{}] from {}, to {}, value {}, gas {}, gas price {:?}",
-                tx.transaction_index.unwrap_or(U64::from(0)),
-                w3h::to_string(&from_addr),
-                w3h::to_string(&to_addr),
-                tx.value,
-                tx.gas,
-                tx.gas_price,
-            );
-        }
+        todo!()
+        // for transaction_hash in &block.transactions {
+        //     let tx = match self
+        //         .ethers()
+        //         .get_transaction(transaction_hash)
+        //         .await
+        //         .unwrap()
+        //     {
+        //         Ok(Some(tx)) => tx,
+        //         _ => {
+        //             continue;
+        //         }
+        //     };
+        //     let from_addr = tx.from.unwrap_or(H160::zero());
+        //     let to_addr = tx.to.unwrap_or(H160::zero());
+        //     info!(
+        //         "[{}] from {}, to {}, value {}, gas {}, gas price {:?}",
+        //         tx.transaction_index.unwrap_or(U64::from(0)),
+        //         w3h::to_string(&from_addr),
+        //         w3h::to_string(&to_addr),
+        //         tx.value,
+        //         tx.gas,
+        //         tx.gas_price,
+        //     );
+        // }
     }
 
     ///  Prints out info on a smart contract transaction from a block hash
     async fn get_smart_contract_tx_vec_from_block_hash(&self, block: &web3::types::Block<H256>) {
-        for transaction_hash in &block.transactions {
-            let tx = match self
-                .web3
-                .eth()
-                .transaction(TransactionId::Hash(*transaction_hash))
-                .await
-            {
-                Ok(Some(tx)) => Ok(tx),
-                Ok(None) => Err(Error::TxResponse(format!(
-                    "Transaction hash {} not found",
-                    transaction_hash
-                ))),
-                Err(error) => Err(Error::TxResponse(error.to_string())),
-            };
+        todo!()
+        // for transaction_hash in &block.transactions {
+        //     let tx = match self
+        //         .web3
+        //         .eth()
+        //         .transaction(TransactionId::Hash(*transaction_hash))
+        //         .await
+        //     {
+        //         Ok(Some(tx)) => Ok(tx),
+        //         Ok(None) => Err(Error::TxResponse(format!(
+        //             "Transaction hash {} not found",
+        //             transaction_hash
+        //         ))),
+        //         Err(error) => Err(Error::TxResponse(error.to_string())),
+        //     };
 
-            match tx.unwrap().to {
-                Some(addr) => match &self.web3.eth().code(addr, None).await {
-                    Ok(code) => {
-                        if code == &web3::types::Bytes::from([]) {
-                            // "Empty code, skipping
-                            continue;
-                        } else {
-                            // "Non empty code, this address has bytecode we have retrieved
-                            // Attempt to initialise an instance of an ERC20 contract at this
-                            // address
-                            let smart_contract = self.initialise_contract(addr).unwrap();
-                            let token_name: String =
-                                self.get_token_name(&smart_contract).await.unwrap();
+        //     match tx.unwrap().to {
+        //         Some(addr) => match &self.web3.eth().code(addr, None).await {
+        //             Ok(code) => {
+        //                 if code == &web3::types::Bytes::from([]) {
+        //                     // "Empty code, skipping
+        //                     continue;
+        //                 } else {
+        //                     // "Non empty code, this address has bytecode we have retrieved
+        //                     // Attempt to initialise an instance of an ERC20 contract at this
+        //                     // address
+        //                     let smart_contract = self.initialise_contract(addr).unwrap();
+        //                     let token_name: String =
+        //                         self.get_token_name(&smart_contract).await.unwrap();
 
-                            // Attempt to get and print the total supply of an ERC20-compliant
-                            // contract
-                            let total_supply: Uint =
-                                self.total_supply(&smart_contract).await.unwrap();
+        //                     // Attempt to get and print the total supply of an ERC20-compliant
+        //                     // contract
+        //                     let total_supply: Uint =
+        //                         self.total_supply(&smart_contract).await.unwrap();
 
-                            info!("token name {:#?}", token_name);
-                            info!("token supply {:#?}", total_supply);
-                        }
-                    }
-                    _ => {
-                        continue;
-                    }
-                },
-                _ => {
-                    info!("To address is not a valid address, skipping.");
-                    continue;
-                }
-            }
-        }
+        //                     info!("token name {:#?}", token_name);
+        //                     info!("token supply {:#?}", total_supply);
+        //                 }
+        //             }
+        //             _ => {
+        //                 continue;
+        //             }
+        //         },
+        //         _ => {
+        //             info!("To address is not a valid address, skipping.");
+        //             continue;
+        //         }
+        //     }
+        // }
     }
 
     /// Filters a block for all ERC-20 compliant transactions
@@ -186,9 +192,8 @@ impl EthClient {
     async fn smart_contract_transactions(&self, block: &web3::types::Block<H256>) {
         for transaction_hash in &block.transactions {
             let tx = match self
-                .web3
-                .eth()
-                .transaction(TransactionId::Hash(*transaction_hash))
+                .ethers()
+                .get_transaction(TransactionId::Hash(*transaction_hash))
                 .await
             {
                 Ok(tx) => Ok(tx),
@@ -243,7 +248,8 @@ impl EthClient {
     /// Given a specified address, retrieves the [Ethereum balance][EthereumAmount] of that
     /// [address][Address].
     pub async fn balance_of_account(&self, address: Address) -> Result<EthereumAmount, Error> {
-        let balance_of_account = self.web3.eth().balance(address, None).await?;
+        // let balance_of_account = self.web3.eth().balance(address, None).await?;
+        let balance_of_account: U256 = self.ethers.get_balance(address, None).await.unwrap();
         Ok(EthereumAmount {
             wei: balance_of_account,
         })
@@ -290,18 +296,23 @@ impl EthClient {
     /// subsequently interact with
     // erc20_abi.json describes standard ERC20 functions
     fn initialise_contract(&self, addr: H160) -> Result<web3::contract::Contract<Http>, Error> {
-        Ok(Contract::from_json(
-            self.web3.eth(),
-            addr,
-            include_bytes!("./abi/erc20_abi.json"),
-        )?)
+        todo!()
+        // Ok(Contract::from_json(
+        //     self.web3.eth(),
+        //     addr,
+        //     include_bytes!("./abi/erc20_abi.json"),
+        // )?)
     }
 
     /// Get the current price of gas as an [EthereumAmount].
     pub async fn gas_price(&self) -> Result<EthereumAmount, Error> {
         // getting gas price
-        let gas_price = self.web3.eth().gas_price().await?;
+        let gas_price = self.ethers.get_gas_price().await.unwrap();
         Ok(EthereumAmount { wei: gas_price })
+
+
+        // let gas_price = self.web3.eth().gas_price().await?;
+        // Ok(EthereumAmount { wei: gas_price })
     }
 
     /// Get the latest block number for the current network chain.
@@ -313,16 +324,25 @@ impl EthClient {
     }
 
     /// Gets the latest block's data.
-    pub async fn latest_block(&self) -> web3::Result<web3::types::Block<H256>> {
+    pub async fn latest_block(&self) -> Result<Block<Transaction>, Error> {
         let block_data = &self
-            .web3
-            .eth()
-            .block(BlockId::Number(BlockNumber::Latest))
+            .ethers
+            .get_block_with_txs(ethers::types::BlockId::Number(ethers::types::BlockNumber::Latest))
             .await
             .unwrap()
             .unwrap();
+
         let output_block_data = block_data.clone();
-        Ok(output_block_data)
+        Ok(output_block_data)        
+        // let block_data = &self
+        //     .web3
+        //     .eth()
+        //     .block(BlockId::Number(BlockNumber::Latest))
+        //     .await
+        //     .unwrap()
+        //     .unwrap();
+        // let output_block_data = block_data.clone();
+        // Ok(output_block_data)
     }
 
     /// Gets current chain's block using a specified block number. This requires an
@@ -350,14 +370,13 @@ impl EthClient {
     async fn block_data_from_numeric_string(
         &self,
         block_id: &str,
-    ) -> web3::Result<web3::types::Block<H256>> {
+    ) -> web3::Result<ethers::types::Block<H256>> {
         // we're using a string because U64 is a web3 type
         let block_number = block_id.parse::<U64>().unwrap();
         let blockid = BlockNumber::Number(block_number);
         let block_data = &self
-            .web3
-            .eth()
-            .block(BlockId::Number(blockid))
+            .ethers()
+            .get_block(blockid)
             .await
             .unwrap()
             .unwrap();
