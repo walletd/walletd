@@ -260,8 +260,9 @@ impl EthClient {
     async fn balance_of_smart_contract(
         &self,
         smart_contract: &web3::contract::Contract<Http>,
-        address: Address,
+        address: ethers::types::Address,
     ) -> Result<String, Error> {
+        todo!();
         let balance = smart_contract
             .query("balanceOf", address, None, Options::default(), None)
             .await?;
@@ -352,12 +353,11 @@ impl EthClient {
     // no transaction data returned by Web3's block struct. This appears to be a bug
     // in Web3
     #[allow(non_snake_case)]
-    async fn block_data_from_U64(&self, block_id: U64) -> web3::Result<web3::types::Block<H256>> {
+    async fn block_data_from_U64(&self, block_id: U64) -> web3::Result<Block<H256>> {
         let blockid = BlockNumber::Number(block_id);
         let block_data = &self
-            .web3
-            .eth()
-            .block(BlockId::Number(blockid))
+            .ethers()
+            .get_block(BlockId::Number(blockid))
             .await
             .unwrap()
             .unwrap();
