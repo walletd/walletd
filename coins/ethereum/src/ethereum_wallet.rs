@@ -1,4 +1,4 @@
-use core::fmt;
+use ::core::fmt;
 use std::fmt::LowerHex;
 use std::str::FromStr;
 
@@ -10,10 +10,17 @@ use tiny_keccak::{Hasher, Keccak};
 use walletd_bip39::Seed;
 use walletd_coin_core::{CryptoWallet, CryptoWalletBuilder};
 use walletd_hd_key::{slip44, HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPurpose};
-use web3::types::{Address, TransactionParameters};
+//use web3::types::{Address, TransactionParameters};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 use crate::{EthereumAmount, EthereumFormat};
+
+use web3::types::{ H160 as oldH160, H256 as oldH256, U64 as oldU64};
+use ethers::prelude::*;
+use ethers::providers::{Middleware, Provider};
+use ethers::providers::Http as ethersHttp;
+use ethers::types::{Address, TransactionRequest, U256};
+use ethers::types::{BlockId, Block, BlockNumber, H160, H256, U64};
 
 /// Represents a private key for an Ethereum wallet, wraps a [SecretKey] from the secp256k1 crate
 #[derive(Debug, Clone)]
@@ -281,7 +288,7 @@ impl CryptoWallet for EthereumWallet {
 
     async fn balance(&self) -> Result<Self::CryptoAmount, Error> {
         let blockchain_client = self.blockchain_client()?;
-        let address = web3::types::H160::from_str(&self.public_address())
+        let address = ethers::types::Address::from_str(&self.public_address())
             .map_err(|e| (Error::FromStr(e.to_string())))?;
         let balance = blockchain_client.balance(address).await?;
         Ok(balance)
@@ -292,33 +299,36 @@ impl CryptoWallet for EthereumWallet {
         send_amount: &Self::CryptoAmount,
         to_address: &str,
     ) -> Result<String, Error> {
-        let blockchain_client = self.blockchain_client()?;
-        let to = Address::from_str(to_address).map_err(|e| Error::FromStr(e.to_string()))?;
-        let amount = send_amount.wei();
+        todo!()
 
-        let tx_object = TransactionParameters {
-            to: Some(to),
-            value: amount,
-            ..Default::default()
-        };
+        // let blockchain_client = self.blockchain_client()?;
+        // let to = Address::from_str(to_address).map_err(|e| Error::FromStr(e.to_string()))?;
+        // let amount: ethers::types::U256 = send_amount.wei();
 
-        let secret_key = self.private_key()?.0;
+        // // TODO for Ethers
+        // let tx_object = TransactionParameters {
+        //     to: Some(to),
+        //     value: amount,
+        //     ..Default::default()
+        // };
 
-        // sign the tx
-        let signed = blockchain_client
-            .web3()
-            .accounts()
-            .sign_transaction(tx_object, &secret_key)
-            .await?;
+        // let secret_key = self.private_key()?.0;
 
-        let result = blockchain_client
-            .eth()
-            .send_raw_transaction(signed.raw_transaction)
-            .await?;
+        // // sign the tx
+        // let signed = blockchain_client
+        //     .ethers()
+        //     .accounts()
+        //     .sign_transaction(tx_object, &secret_key)
+        //     .await?;
 
-        let hash = hex::encode(result.as_bytes());
+        // let result = blockchain_client
+        //     .eth()
+        //     .send_raw_transaction(signed.raw_transaction)
+        //     .await?;
 
-        Ok(hash)
+        // let hash = hex::encode(result.as_bytes());
+
+        // Ok(hash)
     }
 
     fn set_blockchain_client(&mut self, client: Self::BlockchainClient) {
