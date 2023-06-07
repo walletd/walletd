@@ -11,7 +11,9 @@ async fn main() -> web3::Result<()> {
     // Transport can be one of Http, WebSocket, Ipc
     let eth_client = EthClient::new(&INFURA_GOERLI_ENDPOINT.to_string()).unwrap();
     let _block_number: U64 = U64::from(8455626);
+    print!("block_number: {:?}", &_block_number);
+    let _latest_block_data = EthClient::latest_block(&eth_client).await.is_err();
 
-    let _latest_block_data = EthClient::latest_block(&eth_client);
+    assert_eq!(_latest_block_data, false);
     Ok(())
 }
