@@ -28,7 +28,7 @@ pub enum TransportType {
 #[derive(Clone, Debug)]
 #[allow(dead_code)]
 pub struct EthClient {
-    web3: web3::Web3<web3::transports::Http>,
+    //web3: web3::Web3<web3::transports::Http>,
     ethers: Provider<ethersHttp>,
     endpoint: String,
 }
@@ -36,8 +36,8 @@ pub struct EthClient {
 #[allow(unused)]
 impl EthClient {
     /// Returns the web3 instance.
-    pub fn web3(&self) -> web3::Web3<web3::transports::Http> {
-        self.web3.clone()
+    pub fn web3(&self) -> Provider<ethersHttp> {
+        self.ethers.clone()
     }
 
     pub fn ethers(&self) -> Provider<ethersHttp> {
@@ -50,7 +50,7 @@ impl EthClient {
     // }
 
     /// Returns the balance of an address as an [EthereumAmount].
-    pub async fn balance(&self, address: H160) -> Result<EthereumAmount, Error> {
+    pub async fn balance(&self, address: Address) -> Result<EthereumAmount, Error> {
         let balance = self.ethers().get_balance(address, None).await.unwrap();
         Ok(EthereumAmount { wei: balance })
     }
@@ -392,6 +392,7 @@ impl BlockchainConnector for EthClient {
     /// Create a new instance of [EthClient] based on a given endpoint url.
     /// Returns an [error][Error] if the endpoint is invalid or the transport fails to connect.
     fn new(endpoint: &str) -> Result<Self, Error> {
+        println!("endpoint: {:?}", endpoint);
         // TODO(#71): Change transport to support web sockets
         //ethers
         
@@ -400,12 +401,13 @@ impl BlockchainConnector for EthClient {
         //let ethers = Provider::<ethersHttp::Http>::new(ethclient_url)?;
         let ethers = Provider::<ethersHttp>::try_from(ethclient_url).unwrap();
         // web3
-        
-        let transport = web3::transports::Http::new(endpoint)?;
-        let web3 = web3::Web3::new(transport);
-        let eth_client = EthClient::new(ethclient_url)?;
+        println!("ethers");
+        // let transport = web3::transports::Http::new(endpoint)?;
+        // let web3 = &ethers.clone();
+        // let eth_client = EthClient::new(ethclient_url)?;
+
         Ok(Self {
-            web3,
+            // web3,
             ethers,
             endpoint: endpoint.to_string(), // web3 uses an &str for endpoint
         })
