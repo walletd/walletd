@@ -362,6 +362,11 @@ impl EthereumWallet {
         self.public_address.clone()
     }
 
+    /// A convenience method for retrieving the string of a public_address
+    pub fn address(&self) -> String {
+        return self.public_address().to_string();
+    }
+
     /// Returns the network type used by the wallet
     pub fn network(&self) -> HDNetworkType {
         self.network
