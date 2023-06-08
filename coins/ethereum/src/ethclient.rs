@@ -9,7 +9,7 @@ use web3::ethabi::Uint;
 use web3::helpers as w3h;
 use web3::transports::Http;
 use ethers::types::Address;
-use web3::types::{ H160 as oldH160, H256 as oldH256, U64 as oldU64};
+// use web3::types::{ H160 as oldH160, H256 as oldH256, U64 as oldU64};
 use ethers::prelude::*;
 use ethers::providers::{Middleware, Provider};
 use ethers::providers::Http as ethersHttp;
