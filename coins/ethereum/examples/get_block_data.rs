@@ -4,8 +4,9 @@ pub const INFURA_GOERLI_ENDPOINT: &str =
     "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 use walletd_coin_core::BlockchainConnector;
 use walletd_ethereum::EthClient;
-use web3::types::U64;
+use ethers::types::U64;
 
+// Works with ethers
 #[tokio::main]
 async fn main() -> web3::Result<()> {
     // Transport can be one of Http, WebSocket, Ipc
@@ -15,5 +16,6 @@ async fn main() -> web3::Result<()> {
     let _latest_block_data = EthClient::latest_block(&eth_client).await.is_err();
 
     assert_eq!(_latest_block_data, false);
+    print!("If you see this, it means that block 8455626 was retrieved without error.");
     Ok(())
 }
