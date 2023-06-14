@@ -6,6 +6,7 @@ pub const INFURA_GOERLI_ENDPOINT: &str =
 use walletd_coin_core::BlockchainConnector;
 use walletd_ethereum::EthClient;
 
+// Works with ethers.js
 #[tokio::main]
 async fn main() -> web3::Result<()> {
     // Transport can be one of Http, WebSocket, Ipc
