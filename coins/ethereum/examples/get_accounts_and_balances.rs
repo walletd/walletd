@@ -1,58 +1,97 @@
-// TODO:
+// EthereumAmount.new_from_eth(u64)
+// use std::str::FromStr;
 
-extern crate walletd_ethereum;
+use walletd_bip39::{Bip39Mnemonic, Mnemonic, MnemonicBuilder};
 
-// use walletd_bip39::MnemonicExt;
-// use walletd_coin_core::crypto_wallet::CryptoWallet;
-// use hex_literal::hex;
-// use walletd_hd_key::HDKey;
-// use walletd_coin_core::CryptoWallet;
-// use walletd_hd_key::NetworkType;
-use walletd_coin_core::BlockchainConnector;
-use web3::types::H160;
+use walletd_coin_core::{BlockchainConnector, CryptoWallet, CryptoWalletBuilder};
+use walletd_ethereum::{EthClient, EthereumAmount, EthereumWallet};
+use walletd_hd_key::HDNetworkType;
 
-// const GOERLI_TEST_ADDRESS: &str =
-// "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
 
-// use web3::transports::Http;
-pub const INFURA_GOERLI_ENDPOINT: &str =
-    "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-
-use walletd_ethereum::EthClient;
-
+use ethers::{
+    core::{types::TransactionRequest, utils::Anvil},
+    middleware::SignerMiddleware,
+    providers::{Http, Middleware, Provider},
+    signers::{LocalWallet, Signer},
+    types::Address
+};
+//use eyre::Result;
+use std::convert::TryFrom;
+const GOERLI_TEST_ADDRESS: &str = "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
 #[tokio::main]
-async fn main() {
-    // Stubbed, should ultimately use instance of EthereumWallet to determine
-    // accounts and balances // Should now instantiate wallet with transport
-    // let transport = web3::transports::Http::new("http://localhost:8545")?;
-    // let web3 = web3::Web3::new(transport);
-    // println!("Busy retrieving a list of accounts from localhost:8545");
-    // let mut accounts = web3.eth().accounts().await?;
-    // println!("Accounts: {:?}", accounts);
-    // accounts.push("00a329c0648769a73afac7f9381e08fb43dbea72".parse().unwrap());
+async fn main() -> () {
+    println!("Main");
 
-    // println!("Calling balance.");
-    // for account in accounts {
-    //     let balance = web3.eth().balance(account, None).await?;
-    //     println!("Balance of {:?}: {}", account, balance);
-    // }
-    // Remote transport example
-    // let transport = web3::transports::Http::new(INFURA_GOERLI_ENDPOINT)?;
-    let eth_client = EthClient::new(&INFURA_GOERLI_ENDPOINT.to_string()).unwrap();
-    // let mut accounts = web3.eth().accounts().await?;
-    // let mut addresses: Vec<H160> = Vec::new();
-    // addresses.push("00a329c0648769a73afac7f9381e08fb43dbea72".parse().unwrap());
-    let address: H160 = "00a329c0648769a73afac7f9381e08fb43dbea72".parse().unwrap();
+    let mnemonic_phrase: &str =
+        "mandate rude write gather vivid inform leg swift usual early bamboo element";
+    let restored_mnemonic = Bip39Mnemonic::builder()
+        .mnemonic_phrase(mnemonic_phrase)
+        .detect_language()
+        .build()
+        .unwrap();
 
-    let _balance = eth_client.balance(address).await.unwrap();
-    // &INFURA_GOERLI_ENDPOINT.to_string());
-    // let mut addresses: Vec<H160>::new();
+    let seed = restored_mnemonic.to_seed();
 
-    // Stubbed, should use instance of EthereumWallet to determine accounts and
-    // balances let transport =
-    // web3::transports::Http::new(INFURA_GOERLI_ENDPOINT)?;
-    let _eth_client = EthClient::new(&INFURA_GOERLI_ENDPOINT.to_string());
+    println!("seed as bytes: {:?}", seed.as_bytes());
 
-    // Should now instantiate wallet with transport
-    todo!()
+    let blockchain_client =
+        EthClient::new("https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161").unwrap();
+
+    println!("blockchain_client: {:?}", &blockchain_client);
+
+    let mut wallet = EthereumWallet::builder()
+        .mnemonic_seed(seed)
+        .network_type(HDNetworkType::TestNet)
+        .build()
+        .unwrap();
+
+    // let wallet_lw: LocalWallet = LocalWallet::
+
+    // print!("{}", wallet_lw);
+
+    let from: Address = wallet.public_address().as_str().parse().unwrap();
+    print!("from: {:?}", &from);
+    let balance_before = &blockchain_client.ethers().get_balance(from, None).await.unwrap();
+    print!("balance_before: {:?}", &balance_before);
+    let nonce= &blockchain_client.ethers().get_transaction_count(from, None).await.unwrap();
+    print!("nonce: {:?}", &nonce);
+    // wallet.set_blockchain_client(blockchain_client);
+    // // This example now assumes that the wallet has been funded with some testnet ETH
+    // println!("wallet: {:#?}", &wallet);
+
+    //println!("balance: {:?}", &wallet.balance().await.unwrap());
+
+    // let tx = TransactionRequest::new()
+    //     .to(GOERLI_TEST_ADDRESS)
+    //     .value(1000)
+    //     .from(from);
+    // let client = SignerMiddleware::new(blockchain_client.ethers(), 1);
+
+    let to: Address = GOERLI_TEST_ADDRESS.parse().unwrap();
+    let tx = TransactionRequest::new().to(to).value(1000).from(from); // specify the `from` field so that the client knows which account to use
+
+    let tx = blockchain_client.ethers().send_transaction(tx, None).await.unwrap().await.unwrap();
+    
+    // Broadcast the tx to the mempool
+    //let txr = test.ethers().send_transaction(test, None).await.unwrap();
+    println!("tx: {:?}", &tx);
+    
+    //println!("{}", serde_json::to_string(tx).unwrap());
+
+    let nonce2 = blockchain_client.ethers().get_transaction_count(from, None).await.unwrap();
+    
+    // let sa = ethers::types::U256::from(10000);
+    // let send_amount = EthereumAmount::from_wei(sa);
+    //assert!(nonce < *nonce2);
+
+    let balance_after = blockchain_client.balance(from).await.unwrap();
+    //assert!(balance_after < balance_before);
+
+    println!("Balance before {balance_before}");
+    // let tx_hash = wallet
+    //     .transfer(&send_amount, GOERLI_TEST_ADDRESS)
+    //     .await
+    //     .unwrap();
+
+    return ();
 }
