@@ -77,31 +77,30 @@ impl EthClient {
     pub async fn transaction_data_from_hash(
         &self,
         tx_hash: &str,
-    ) -> Result<web3::types::Transaction, Error> {
-        todo!()
-        // let transaction_hash: H256 =
-        //     H256::from_str(tx_hash).map_err(|e| Error::FromStr(e.to_string()))?;
+    ) -> Result<ethers::types::Transaction, Error> {
+        let transaction_hash: H256 =
+            H256::from_str(tx_hash).map_err(|e| Error::FromStr(e.to_string()))?;
 
-        // let transaction_hash: H256 =
-        //     H256::from_str(tx_hash).map_err(|e| Error::FromStr(e.to_string()))?;
-        // match self
-        //     .web3
-        //     .eth()
-        //     .transaction(TransactionId::Hash(transaction_hash))
-        //     .await
-        // {
-        //     Ok(tx) => {
-        //         if tx.is_none() {
-        //             Err(Error::TxResponse(format!(
-        //                 "Transaction with tx_hash {} not found",
-        //                 tx_hash
-        //             )))
-        //         } else {
-        //             Ok(tx.unwrap())
-        //         }
-        //     }
-        //     Err(error) => Err(Error::TxResponse(error.to_string())),
-        // }
+        let transaction_hash: H256 =
+            H256::from_str(tx_hash).map_err(|e| Error::FromStr(e.to_string()))?;
+
+        match self
+            .ethers
+            .get_transaction(transaction_hash)
+            .await
+        {
+            Ok(tx) => {
+                if tx.is_none() {
+                    Err(Error::TxResponse(format!(
+                        "Transaction with tx_hash {} not found",
+                        tx_hash
+                    )))
+                } else {
+                    Ok(tx.unwrap())
+                }
+            }
+            Err(error) => Err(Error::TxResponse(error.to_string())),
+        }
     }
 
     // TODO(#70): Remove this after write-only functionality is finished
