@@ -393,17 +393,9 @@ impl BlockchainConnector for EthClient {
     fn new(endpoint: &str) -> Result<Self, Error> {
         println!("endpoint: {:?}", endpoint);
         // TODO(#71): Change transport to support web sockets
-        //ethers
-        
-        // change this to endpoint
         let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-        //let ethers = Provider::<ethersHttp::Http>::new(ethclient_url)?;
         let ethers = Provider::<ethersHttp>::try_from(ethclient_url).unwrap();
-        // web3
-        println!("ethers");
-        // let transport = web3::transports::Http::new(endpoint)?;
-        // let web3 = &ethers.clone();
-        // let eth_client = EthClient::new(ethclient_url)?;
+        // With these latest changes, we can only possibly be using ethers when we leverage EthClient correctly
 
         Ok(Self {
             // web3,
