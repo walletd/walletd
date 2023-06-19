@@ -45,39 +45,24 @@ async fn main() -> () {
         .build()
         .unwrap();
 
-    // let wallet_lw: LocalWallet = LocalWallet::
-
-    // print!("{}", wallet_lw);
-
+    
     let from: Address = wallet.public_address().as_str().parse().unwrap();
     print!("from: {:?}", &from);
     let balance_before = &blockchain_client.ethers().get_balance(from, None).await.unwrap();
     print!("balance_before: {:?}", &balance_before);
+
+    // Not that we need to, but we can determine the nonce manually
     let nonce= &blockchain_client.ethers().get_transaction_count(from, None).await.unwrap();
     print!("nonce: {:?}", &nonce);
-    // wallet.set_blockchain_client(blockchain_client);
-    // // This example now assumes that the wallet has been funded with some testnet ETH
-    // println!("wallet: {:#?}", &wallet);
-
-    //println!("balance: {:?}", &wallet.balance().await.unwrap());
-
-    // let tx = TransactionRequest::new()
-    //     .to(GOERLI_TEST_ADDRESS)
-    //     .value(1000)
-    //     .from(from);
-    // let client = SignerMiddleware::new(blockchain_client.ethers(), 1);
+   
 
     let to: Address = GOERLI_TEST_ADDRESS.parse().unwrap();
     let tx = TransactionRequest::new().to(to).value(1000).from(from); // specify the `from` field so that the client knows which account to use
 
     let tx = blockchain_client.ethers().send_transaction(tx, None).await.unwrap().await.unwrap();
     
-    // Broadcast the tx to the mempool
-    //let txr = test.ethers().send_transaction(test, None).await.unwrap();
     println!("tx: {:?}", &tx);
-    
-    //println!("{}", serde_json::to_string(tx).unwrap());
-
+   
     let nonce2 = blockchain_client.ethers().get_transaction_count(from, None).await.unwrap();
     
     // let sa = ethers::types::U256::from(10000);
