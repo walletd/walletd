@@ -39,7 +39,7 @@ async fn main() {
     // let provider = Provider::<Http>::connect(PROV_URL).await.unwrap();
     
     let phrase = "mandate rude write gather vivid inform leg swift usual early bamboo element";
-    let index = 1u32; // The wallet number's index
+    let index = 0u32; // The wallet number's index
 
     let provider = Provider::try_from(PROV_URL).unwrap();
 
@@ -53,11 +53,11 @@ async fn main() {
     println!("provider: {:?}", &provider);
 
     // 5 = goerli chain id
-    let client = SignerMiddleware::new(provider, wallet_nonlocal);
+    let client = SignerMiddleware::new(provider, wallet_nonlocal.with_chain_id(5u64));
 
     let tx = TransactionRequest::new()
-        .to("vitalik.eth")
-        .chain_id(5u64)
+        .to("0x681dA56258fF429026449F1435aE87e1B6e9F85b")
+        .gas(21000)
         .value(10000);
     
     
