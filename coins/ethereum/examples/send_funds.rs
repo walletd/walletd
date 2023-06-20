@@ -39,7 +39,7 @@ async fn main() {
     // let provider = Provider::<Http>::connect(PROV_URL).await.unwrap();
     
     let phrase = "mandate rude write gather vivid inform leg swift usual early bamboo element";
-    let index = 0u32;
+    let index = 1u32; // The wallet number's index
 
     let provider = Provider::try_from(PROV_URL).unwrap();
 
@@ -57,8 +57,11 @@ async fn main() {
 
     let tx = TransactionRequest::new()
         .to("vitalik.eth")
+        .chain_id(5u64)
         .value(10000);
     
+    
+
     let pending_tx = client.send_transaction(tx, None).await.unwrap();
 
     let receipt = pending_tx.await.unwrap().ok_or_else(|| println!("tx dropped from mempool")).unwrap();
