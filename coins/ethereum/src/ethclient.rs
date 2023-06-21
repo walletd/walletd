@@ -7,12 +7,11 @@ use walletd_coin_core::BlockchainConnector;
 use web3::contract::{Contract, Options};
 use web3::ethabi::Uint;
 use web3::helpers as w3h;
-use web3::transports::Http;
 use ethers::types::Address;
 // use web3::types::{ H160 as oldH160, H256 as oldH256, U64 as oldU64};
 use ethers::prelude::*;
 use ethers::providers::{Middleware, Provider};
-use ethers::providers::Http as ethersHttp;
+use ethers::providers::Http;
 use ethers::types::{BlockId, Block, BlockNumber, H160, H256, U64};
 use std::convert::TryFrom;
 
@@ -29,25 +28,17 @@ pub enum TransportType {
 #[allow(dead_code)]
 pub struct EthClient {
     //web3: web3::Web3<web3::transports::Http>,
-    ethers: Provider<ethersHttp>,
+    ethers: Provider<Http>,
     endpoint: String,
 }
 
 #[allow(unused)]
 impl EthClient {
-    /// Returns the web3 instance.
-    pub fn web3(&self) -> Provider<ethersHttp> {
+
+    /// Returns the ethers Provider instance.
+    pub fn ethers(&self) -> Provider<Http> {
         self.ethers.clone()
     }
-
-    pub fn ethers(&self) -> Provider<ethersHttp> {
-        self.ethers.clone()
-    }
-
-    /// Returns the eth instance from the web3 instance.
-    // pub fn eth(&self) -> web3::api::Eth<web3::transports::Http> {
-    //     self.ethers.eth()
-    // }
 
     /// Returns the balance of an address as an [EthereumAmount].
     pub async fn balance(&self, address: Address) -> Result<EthereumAmount, Error> {
@@ -271,39 +262,42 @@ impl EthClient {
 
     /// Given a specified contract instance, determine the total supply of
     /// tokens
-    async fn total_supply(
-        &self,
-        smart_contract: &web3::contract::Contract<Http>,
-    ) -> Result<Uint, ()> {
-        let total_supply = smart_contract
-            .query("totalSupply", (), None, Options::default(), None)
-            .await;
+    // TODO: Migrate 
+    // async fn total_supply(
+    //     &self,
+    //     smart_contract: &web3::contract::Contract<Http>,
+    // ) -> Result<Uint, ()> {
+    //     let total_supply = smart_contract
+    //         .query("totalSupply", (), None, Options::default(), None)
+    //         .await;
 
-        Ok(total_supply.unwrap())
-    }
+    //     Ok(total_supply.unwrap())
+    // }
 
     /// Given a specified contract instance, retrieve the name of the token
-    async fn get_token_name(
-        &self,
-        contract: &web3::contract::Contract<Http>,
-    ) -> Result<String, ()> {
-        let token_name = contract
-            .query("name", (), None, Options::default(), None)
-            .await;
-        Ok(token_name.unwrap())
-    }
+    // TODO: Migrate
+    // async fn get_token_name(
+    //     &self,
+    //     contract: &web3::contract::Contract<Http>,
+    // ) -> Result<String, ()> {
+    //     let token_name = contract
+    //         .query("name", (), None, Options::default(), None)
+    //         .await;
+    //     Ok(token_name.unwrap())
+    // }
 
     /// Initialises an instance of an ERC20-compliant smart contract we can
     /// subsequently interact with
     // erc20_abi.json describes standard ERC20 functions
-    fn initialise_contract(&self, addr: H160) -> Result<web3::contract::Contract<Http>, Error> {
-        todo!()
-        // Ok(Contract::from_json(
-        //     self.web3.eth(),
-        //     addr,
-        //     include_bytes!("./abi/erc20_abi.json"),
-        // )?)
-    }
+    // TODO: migrate still
+    // fn initialise_contract(&self, addr: H160) -> Result<web3::contract::Contract<Http>, Error> {
+    //     todo!()
+    //     // Ok(Contract::from_json(
+    //     //     self.web3.eth(),
+    //     //     addr,
+    //     //     include_bytes!("./abi/erc20_abi.json"),
+    //     // )?)
+    // }
 
     /// Get the current price of gas as an [EthereumAmount].
     pub async fn gas_price(&self) -> Result<EthereumAmount, Error> {
@@ -394,7 +388,7 @@ impl BlockchainConnector for EthClient {
         println!("endpoint: {:?}", endpoint);
         // TODO(#71): Change transport to support web sockets
         let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-        let ethers = Provider::<ethersHttp>::try_from(ethclient_url).unwrap();
+        let ethers = Provider::<Http>::try_from(ethclient_url).unwrap();
         // With these latest changes, we can only possibly be using ethers when we leverage EthClient correctly
 
         Ok(Self {
