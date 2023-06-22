@@ -40,6 +40,12 @@ impl EthClient {
         self.ethers.clone()
     }
 
+    /// Returns the chain id of the current network the ethers instance is connected to.
+    pub async fn chain_id(&self) -> U256 {
+        let chain_id = self.ethers.get_chainid().await.unwrap();
+        chain_id
+    }
+
     /// Returns the balance of an address as an [EthereumAmount].
     pub async fn balance(&self, address: Address) -> Result<EthereumAmount, Error> {
         let balance = self.ethers().get_balance(address, None).await.unwrap();
@@ -388,7 +394,7 @@ impl BlockchainConnector for EthClient {
         println!("endpoint: {:?}", endpoint);
         // TODO(#71): Change transport to support web sockets
         let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-        let ethers = Provider::<Http>::try_from(ethclient_url).unwrap();
+        let ethers = Provider::try_from(ethclient_url).unwrap();
         // With these latest changes, we can only possibly be using ethers when we leverage EthClient correctly
 
         Ok(Self {
