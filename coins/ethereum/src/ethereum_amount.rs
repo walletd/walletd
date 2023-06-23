@@ -1,7 +1,6 @@
 use crate::Error;
 use std::ops;
 use walletd_coin_core::CryptoAmount;
-use web3::ethabi::ethereum_types::U256 as oldU256;
 use ethers::types::U256;
 
 
