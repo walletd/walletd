@@ -1,6 +1,5 @@
 extern crate walletd_bitcoin;
 
-
 use walletd_bitcoin::connectors::{BTransaction, Input, Output, Status};
 use walletd_bitcoin::{BitcoinPrivateKey, BitcoinWallet, Network};
 fn main() {
