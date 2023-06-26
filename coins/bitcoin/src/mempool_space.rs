@@ -5,10 +5,9 @@
 // mainnet - https://mempool.space/api
 use crate::{
     connectors::{BTransaction, FeeEstimates, Utxos},
-    Error,
+    BitcoinConnector, Error,
 };
 use async_trait::async_trait;
-use walletd_coin_core::BlockchainConnector;
 
 /// A blockchain connector for Bitcoin which follows [`the Mempool Space API`](https://mempool.space/docs/api/rest).
 #[derive(Clone, Default, Debug)]
@@ -19,25 +18,34 @@ pub struct MempoolSpace {
     pub url: String,
 }
 
-#[async_trait]
-impl BlockchainConnector for MempoolSpace {
-    type ErrorType = Error;
-
-    fn new(url: &str) -> Result<Self, Error> {
+impl MempoolSpace {
+    pub fn new(url: &str) -> Result<Self, Error> {
         Ok(Self {
             client: reqwest::Client::new(),
             url: url.to_string(),
         })
     }
 
-    fn url(&self) -> &str {
+    pub fn url(&self) -> &str {
         &self.url
     }
 }
 
-impl MempoolSpace {
+#[async_trait]
+impl BitcoinConnector for MempoolSpace {
+    /// Checks if the given address has had an past transactions, returns true if it has and false if it has not
+    /// Errors if the address is invalid or if the API returns an error
+    async fn check_if_past_transactions_exist(&self, public_address: &str) -> Result<bool, Error> {
+        let transactions = self.transactions(public_address).await?;
+        if transactions.is_empty() {
+            Ok(false)
+        } else {
+            Ok(true)
+        }
+    }
+
     /// Fetch the block height
-    pub async fn block_height(&self) -> Result<u64, Error> {
+    async fn block_height(&self) -> Result<u64, Error> {
         let body = reqwest::get(format!("{}/blocks/tip/height", self.url))
             .await?
             .text()
@@ -49,7 +57,7 @@ impl MempoolSpace {
     }
 
     /// Fetch fee estimates
-    pub async fn fee_estimates(&self) -> Result<FeeEstimates, Error> {
+    async fn fee_estimates(&self) -> Result<FeeEstimates, Error> {
         let body = reqwest::get(format!("{}/v1/fees/recommended", self.url))
             .await?
             .text()
@@ -59,7 +67,7 @@ impl MempoolSpace {
     }
 
     /// Fetch transactions
-    pub async fn transactions(&self, address: &str) -> Result<Vec<BTransaction>, Error> {
+    async fn transactions(&self, address: &str) -> Result<Vec<BTransaction>, Error> {
         let body = reqwest::get(format!("{}/address/{}/txs", self.url, address))
             .await?
             .text()
@@ -69,7 +77,7 @@ impl MempoolSpace {
     }
 
     /// Fetch mempool transactions
-    pub async fn mempool_transactions(&self, address: &str) -> Result<Vec<BTransaction>, Error> {
+    async fn mempool_transactions(&self, address: &str) -> Result<Vec<BTransaction>, Error> {
         let body = reqwest::get(format!("{}/address/{}/txs/mempool", self.url, address))
             .await?
             .text()
@@ -79,7 +87,7 @@ impl MempoolSpace {
     }
 
     /// Fetch UTXOs
-    pub async fn utxo(&self, address: &str) -> Result<Utxos, Error> {
+    async fn utxo(&self, address: &str) -> Result<Utxos, Error> {
         let body = reqwest::get(format!("{}/address/{}/utxo", self.url, address))
             .await?
             .text()
@@ -90,7 +98,7 @@ impl MempoolSpace {
     }
 
     /// Fetch raw transaction hex for a given txid
-    pub async fn raw_transaction_hex(&self, txid: &str) -> Result<String, Error> {
+    async fn raw_transaction_hex(&self, txid: &str) -> Result<String, Error> {
         let body = reqwest::get(format!("{}/tx/{}/hex", self.url, txid))
             .await?
             .text()
@@ -99,7 +107,7 @@ impl MempoolSpace {
     }
 
     /// Fetch transaction info
-    pub async fn transaction(&self, txid: &str) -> Result<BTransaction, Error> {
+    async fn transaction(&self, txid: &str) -> Result<BTransaction, Error> {
         let body = reqwest::get(format!("{}/tx/{}", self.url, txid))
             .await?
             .text()
@@ -110,7 +118,7 @@ impl MempoolSpace {
     }
 
     /// Broadcast a raw transaction to the network
-    pub async fn broadcast_tx(&self, raw_transaction_hex: &'static str) -> Result<String, Error> {
+    async fn broadcast_tx(&self, raw_transaction_hex: &'static str) -> Result<String, Error> {
         let trans_resp = self
             .client
             .post(format!("{}/tx", self.url))

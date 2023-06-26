@@ -104,7 +104,9 @@
 #![warn(missing_docs)]
 
 pub mod connectors;
+use async_trait::async_trait;
 pub use bitcoin;
+use bitcoin::Block;
 pub use bitcoin::{
     Address as AddressInfo, AddressType, Network, PublicKey as BitcoinPublicKey, Script,
 };
@@ -131,3 +133,18 @@ pub use walletd_coin_core::{
 };
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 pub mod prelude;
+
+use crate::connectors::{BTransaction, FeeEstimates, Utxos};
+
+#[async_trait]
+pub trait BitcoinConnector {
+    async fn check_if_past_transactions_exist(&self, public_address: &str) -> Result<bool, Error>;
+    async fn block_height(&self) -> Result<u64, Error>;
+    async fn fee_estimates(&self) -> Result<FeeEstimates, Error>;
+    async fn transactions(&self, address: &str) -> Result<Vec<BTransaction>, Error>;
+    async fn mempool_transactions(&self, address: &str) -> Result<Vec<BTransaction>, Error>;
+    async fn utxo(&self, address: &str) -> Result<Utxos, Error>;
+    async fn raw_transaction_hex(&self, txid: &str) -> Result<String, Error>;
+    async fn transaction(&self, txid: &str) -> Result<BTransaction, Error>;
+    async fn broadcast_tx(&self, raw_transaction_hex: &'static str) -> Result<String, Error>;
+}

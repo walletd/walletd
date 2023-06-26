@@ -1,6 +1,7 @@
-use crate::{
-    BitcoinWallet, Error, EthereumWallet, HDNetworkType, KeyPair, MnemonicKeyPairType, Seed,
-};
+use walletd_bitcoin::BitcoinWalletBuilder;
+use walletd_ethereum::EthereumWalletBuilder;
+
+use crate::{Error, HDNetworkType, KeyPair, MnemonicKeyPairType, Seed};
 use std::str::FromStr;
 
 #[test]
@@ -34,11 +35,17 @@ fn test_keypair() -> Result<(), Error> {
     assert_eq!(keypair, keypair_new);
 
     // Test deriving a BitcoinWallet from the KeyPair
-    let bitcoin_wallet_result = keypair.derive_wallet::<BitcoinWallet>();
+    let bitcoin_wallet_result = BitcoinWalletBuilder::new()
+        .master_hd_key(keypair.to_master_key())
+        .build();
+    // let bitcoin_wallet_result = keypair.derive_wallet::<BitcoinWallet>();
     assert!(bitcoin_wallet_result.is_ok());
 
     // Test deriving a EthereumWallet from the KeyPair
-    let ethereum_wallet_result = keypair.derive_wallet::<EthereumWallet>();
+    let ethereum_wallet_result = EthereumWalletBuilder::new()
+        .master_hd_key(keypair.to_master_key())
+        .build();
+    // let ethereum_wallet_result = keypair.derive_wallet::<EthereumWallet>();
     assert!(ethereum_wallet_result.is_ok());
 
     Ok(())
