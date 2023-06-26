@@ -17,7 +17,7 @@ async fn main() -> Result<(), walletd_bitcoin::Error> {
         println!(
             "address: {}, derivation path {}",
             addr.address.public_address(),
-            addr.hd_key().derivation_path().to_string()
+            addr.hd_key().derivation_path()
         );
     }
     println!("next receive address: {}", btc_wallet.receive_address()?);

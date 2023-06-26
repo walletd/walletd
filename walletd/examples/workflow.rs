@@ -40,7 +40,7 @@ async fn main() -> Result<(), Error> {
     println!("HD Wallet Information:\n{:#?}", hd_wallet);
 
     // more options can be added here later such as for username/password api key etc.
-    let btc_blockchain_client = Box::new(Blockstream::new(BTC_TESTNET_URL.into())?);
+    let btc_blockchain_client = Box::new(Blockstream::new(BTC_TESTNET_URL)?);
     // let btc_blockchain_client = BlockchainConnectorBuilder::<Blockstream>::new()
     //     .url(BTC_TESTNET_URL.into())
     //     .build()?;

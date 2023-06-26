@@ -25,8 +25,8 @@ fn test_keypair() -> Result<(), Error> {
     assert_eq!(keypair.style(), MnemonicKeyPairType::HDBip39);
 
     let keypair_new = KeyPair::new(
-        mnemonic_seed.clone(),
-        mnemonic_phrase.clone(),
+        mnemonic_seed,
+        mnemonic_phrase,
         MnemonicKeyPairType::HDBip39,
         Some(passphrase),
         network,

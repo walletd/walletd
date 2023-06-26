@@ -199,7 +199,7 @@ mod tests {
             .mock("GET", "/v1/fees/recommended")
             .with_status(200)
             .with_header("content-type", "application/json")
-            .with_body(&Value::Object(expected_fee_map.clone()).to_string())
+            .with_body(Value::Object(expected_fee_map.clone()).to_string())
             .create();
 
         let bs = MempoolSpace::new(&server.url()).unwrap();
@@ -448,7 +448,7 @@ mod tests {
             .mock("GET", get_path.as_str())
             .with_status(200)
             .with_header("content-type", "application/json")
-            .with_body(&expected_tx_hex)
+            .with_body(expected_tx_hex)
             .create();
         let bs = MempoolSpace::new(&server.url()).unwrap();
         let raw_tx_hex = bs.raw_transaction_hex(for_txid).await.unwrap();
