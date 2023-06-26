@@ -41,7 +41,7 @@
 //!
 //! ### Derive Wallets
 //!
-//! The [`KeyPair::derive_wallet`] method can be used to derive a [cryptowallet][CryptoWallet] for a specific cryptocurrency from a [KeyPair].
+//! The method can be used to derive a [cryptowallet][CryptoWallet] for a specific cryptocurrency from a [KeyPair].
 //! You can specify a concrete struct that implements the [CryptoWallet] trait such as [BitcoinWallet]  or [EthereumWallet] to derive a cryptowallet from the `keypair` of the specified concrete type.
 //! ```
 //! # use walletd::prelude::*;
