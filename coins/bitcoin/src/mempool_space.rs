@@ -19,13 +19,14 @@ pub struct MempoolSpace {
 }
 
 impl MempoolSpace {
+    /// Create a new instance of the MempoolSpace blockchain connector
     pub fn new(url: &str) -> Result<Self, Error> {
         Ok(Self {
             client: reqwest::Client::new(),
             url: url.to_string(),
         })
     }
-
+    /// Returns the url being used by MempoolSpace connector
     pub fn url(&self) -> &str {
         &self.url
     }

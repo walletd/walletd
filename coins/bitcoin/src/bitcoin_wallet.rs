@@ -76,6 +76,7 @@ impl AssociatedAddress {
 }
 
 impl BitcoinWallet {
+    /// Returns the bitcoin balance of the wallet.
     pub async fn balance(&self) -> Result<BitcoinAmount, Error> {
         let client = self.blockchain_client()?;
         let mut total_balance = BitcoinAmount::new();
@@ -85,7 +86,7 @@ impl BitcoinWallet {
         }
         Ok(total_balance)
     }
-
+    /// Builds and sends a transaction to the blockchain.
     pub async fn transfer(
         &self,
         send_amount: &BitcoinAmount,
@@ -179,21 +180,21 @@ impl BitcoinWallet {
         let tx_id = client.broadcast_tx(raw_transaction_hex).await?;
         Ok(tx_id)
     }
-
+    /// Set the Blockchain Client on the Wallet
     pub fn set_blockchain_client(&mut self, client: Box<dyn BitcoinConnector + Send + Sync>) {
         self.blockchain_client = Some(client);
     }
-
+    /// Syncs the wallet with the blockchain by adding previously used addresses to the wallet.
     pub async fn sync(&mut self) -> Result<(), Error> {
         self.add_previously_used_addresses().await?;
         Ok(())
     }
-
+    /// Retrieves the next recevie address of the wallet.
     pub fn receive_address(&self) -> Result<String, Error> {
         let next_receive_address = self.next_address()?;
         Ok(next_receive_address.public_address())
     }
-
+    /// Returns the Blockchain client.
     pub fn blockchain_client(&self) -> Result<&Box<dyn BitcoinConnector + Send + Sync>, Error> {
         match &self.blockchain_client {
             Some(client) => Ok(client),
@@ -880,6 +881,7 @@ impl BitcoinWallet {
         Ok((transaction, chosen_indices))
     }
 
+    /// Returns the Builder for [BitcoinWallet]
     pub fn builder() -> BitcoinWalletBuilder {
         BitcoinWalletBuilder::new()
     }

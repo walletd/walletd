@@ -165,10 +165,11 @@ impl Default for EthereumWalletBuilder {
 }
 
 impl EthereumWalletBuilder {
+    /// Creates a new EthereumWalletBuilder with defaults.
     pub fn new() -> Self {
         Self::default()
     }
-
+    /// Builds the EthereumWallet with the specified options
     pub fn build(&self) -> Result<EthereumWallet, Error> {
         let master_hd_key = match (&self.master_hd_key, &self.mnemonic_seed) {
             (None, None) => {
@@ -234,12 +235,12 @@ impl EthereumWalletBuilder {
         self.network_type = network_type;
         self
     }
-
+    /// Allows specification of the HDPathBuilder for the wallet.
     pub fn hd_path_builder(&mut self, hd_path_builder: HDPathBuilder) -> &mut Self {
         self.hd_path_builder = hd_path_builder;
         self
     }
-
+    /// Sets the default HD Purpose
     pub fn default_hd_purpose() -> HDPurpose {
         HDPurpose::BIP44
     }
@@ -263,10 +264,11 @@ pub struct EthereumWallet {
 }
 
 impl EthereumWallet {
+    /// Returns the builder for the [EthereumWallet].
     pub fn builder() -> EthereumWalletBuilder {
         EthereumWalletBuilder::new()
     }
-
+    ///  Returns the blance for this Ethereum Wallet.
     pub async fn balance(&self) -> Result<EthereumAmount, Error> {
         let blockchain_client = self.blockchain_client()?;
         let address = web3::types::H160::from_str(&self.public_address())
@@ -274,7 +276,7 @@ impl EthereumWallet {
         let balance = blockchain_client.balance(address).await?;
         Ok(balance)
     }
-
+    /// Creates and sends a transfer transaction to the Ethereum blockchain.
     pub async fn transfer(
         &self,
         send_amount: EthereumAmount,
@@ -308,19 +310,19 @@ impl EthereumWallet {
 
         Ok(hash)
     }
-
+    /// Set the Blockchain Client on the Wallet
     pub fn set_blockchain_client(&mut self, client: EthClient) {
         self.blockchain_client = Some(client);
     }
-
+    /// Syncs the wallet with the blockchain by adding previously used addresses to the wallet.
     pub async fn sync(&mut self) -> Result<(), Error> {
         Ok(())
     }
-
+    /// Retrieves the next recevie address of the wallet.
     pub fn receive_address(&self) -> Result<String, Error> {
         Ok(self.public_address())
     }
-
+    /// Returns the Blockchain client.
     pub fn blockchain_client(&self) -> Result<&EthClient, Error> {
         match &self.blockchain_client {
             Some(client) => Ok(client),
