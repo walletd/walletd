@@ -26,7 +26,7 @@ pub struct BitcoinWallet {
     address_format: AddressType,
     associated: Vec<AssociatedAddress>,
     #[zeroize(skip)]
-    blockchain_client: Option<Box<dyn BitcoinConnector + Send>>,
+    blockchain_client: Option<Box<dyn BitcoinConnector + Send + Sync>>,
     master_hd_key: Option<HDKey>,
     gap_limit: usize,
     account_discovery: bool,
@@ -180,7 +180,7 @@ impl BitcoinWallet {
         Ok(tx_id)
     }
 
-    pub fn set_blockchain_client(&mut self, client: Box<dyn BitcoinConnector + Send>) {
+    pub fn set_blockchain_client(&mut self, client: Box<dyn BitcoinConnector + Send + Sync>) {
         self.blockchain_client = Some(client);
     }
 
@@ -194,7 +194,7 @@ impl BitcoinWallet {
         Ok(next_receive_address.public_address())
     }
 
-    pub fn blockchain_client(&self) -> Result<&Box<dyn BitcoinConnector + Send>, Error> {
+    pub fn blockchain_client(&self) -> Result<&Box<dyn BitcoinConnector + Send + Sync>, Error> {
         match &self.blockchain_client {
             Some(client) => Ok(client),
             None => Err(Error::MissingBlockchainClient),
