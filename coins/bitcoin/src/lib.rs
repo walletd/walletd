@@ -58,7 +58,7 @@
 //! # let network_type = HDNetworkType::TestNet;
 //! # let master_hd_key = HDKey::new_master(master_seed, network_type)?;
 //! # let mut btc_wallet = BitcoinWallet::builder().master_hd_key(master_hd_key).build()?;
-//! let btc_client = Blockstream::new("https://blockstream.info/testnet/api")?;
+//! let btc_client = Box::new(Blockstream::new("https://blockstream.info/testnet/api")?);
 //! let fee_estimates = btc_client.fee_estimates().await?;
 //! println!("fee estimates: {:?}", fee_estimates);
 //! btc_wallet.set_blockchain_client(btc_client);
@@ -78,7 +78,7 @@
 //! # let network_type = HDNetworkType::TestNet;
 //! # let master_hd_key = HDKey::new_master(master_seed, network_type)?;
 //! # let mut btc_wallet = BitcoinWallet::builder().master_hd_key(master_hd_key).build()?;
-//! let btc_client = Blockstream::new("https://blockstream.info/testnet/api")?;
+//! let btc_client = Box::new(Blockstream::new("https://blockstream.info/testnet/api")?);
 //! let fee_estimates = btc_client.fee_estimates().await?;
 //! println!("fee estimates: {:?}", fee_estimates);
 //! btc_wallet.set_blockchain_client(btc_client);
