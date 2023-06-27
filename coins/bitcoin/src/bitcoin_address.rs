@@ -104,7 +104,7 @@ impl BitcoinAddress {
     /// Returns the balance of this particular [BitcoinAddress] as a [BitcoinAmount] struct.
     pub async fn balance(
         &self,
-        blockchain_client: &Box<dyn BitcoinConnector + Send + Sync>,
+        blockchain_client: &(dyn BitcoinConnector + Send + Sync),
     ) -> Result<BitcoinAmount, Error> {
         let utxo_info = blockchain_client.utxo(&self.public_address()).await?;
         let amount = utxo_info.sum()?;

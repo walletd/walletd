@@ -195,9 +195,9 @@ impl BitcoinWallet {
         Ok(next_receive_address.public_address())
     }
     /// Returns the Blockchain client.
-    pub fn blockchain_client(&self) -> Result<&Box<dyn BitcoinConnector + Send + Sync>, Error> {
+    pub fn blockchain_client(&self) -> Result<&(dyn BitcoinConnector + Send + Sync), Error> {
         match &self.blockchain_client {
-            Some(client) => Ok(client),
+            Some(client) => Ok(client.as_ref()),
             None => Err(Error::MissingBlockchainClient),
         }
     }
