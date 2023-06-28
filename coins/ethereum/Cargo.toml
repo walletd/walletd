@@ -33,6 +33,6 @@ tiny-keccak = { version = "2.0.2" }
 zeroize = { version = "1.6.0", features = ["zeroize_derive"] }
 
 # for Ethereum
-ethers = { version = "2", features = ["rustls", "ws", "ipc"] }
+ethers = { version = "2.0.7", features = ["rustls", "ws", "ipc"] }
 tokio = { version = "1", features = ["full"] }
 

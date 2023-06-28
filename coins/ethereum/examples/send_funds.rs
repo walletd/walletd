@@ -50,16 +50,20 @@ async fn main() {
         .build()
         .unwrap();
 
+    println!("wallet_nonlocal: {:?}", &wallet_nonlocal);
     println!("provider: {:?}", &provider);
 
     // 5 = goerli chain id 
     let client = SignerMiddleware::new(provider, wallet_nonlocal.with_chain_id(5u64));
+    println!("client: {:?}", &client);
 
     let tx = TransactionRequest::new()
         .to("0x681dA56258fF429026449F1435aE87e1B6e9F85b")
         .gas(21000)
         .value(10000);
-     
+
+    println!("tx: {:?}", &tx);
+
     let pending_tx = client.send_transaction(tx, None).await.unwrap();
 
     let receipt = pending_tx.await.unwrap().ok_or_else(|| println!("tx dropped from mempool")).unwrap();

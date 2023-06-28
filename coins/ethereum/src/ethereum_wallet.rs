@@ -12,7 +12,8 @@ use walletd_coin_core::{CryptoWallet, CryptoWalletBuilder};
 use walletd_hd_key::{slip44, HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPurpose};
 //use web3::types::{Address, TransactionParameters};
 use zeroize::{Zeroize, ZeroizeOnDrop};
-
+use walletd_hd_key::prelude::*;
+use walletd_hd_key::slip44::{Coin, Symbol};
 use crate::{EthereumAmount, EthereumFormat};
 
 use web3::types::{ H160 as oldH160, H256 as oldH256, U64 as oldU64};
@@ -21,6 +22,10 @@ use ethers::providers::{Middleware, Provider};
 use ethers::providers::Http as ethersHttp;
 use ethers::types::{Address, TransactionRequest, U256};
 use ethers::types::{BlockId, Block, BlockNumber, H160, H256, U64};
+use ethers::signers::Wallet as EthersWallet;
+
+use ethers::core::rand::thread_rng;
+use ethers::signers::{LocalWallet, Signer};
 
 /// Represents a private key for an Ethereum wallet, wraps a [SecretKey] from the secp256k1 crate
 #[derive(Debug, Clone)]
@@ -45,8 +50,17 @@ impl EthereumPrivateKey {
         self.0.serialize_secret()
     }
 
+    pub fn get_secret_key(&self) -> SecretKey {
+        self.0
+    }
+
+    pub fn get_key(&self) -> SecretKey {
+        self.0
+    }
+
     /// Instantiate the private key from a slice of bytes, errors if given invalid bytes
     pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
+        println!("fs in EPK: {:?}", bytes);
         let secret_key = SecretKey::from_slice(bytes)?;
         Ok(EthereumPrivateKey(secret_key))
     }
@@ -188,7 +202,7 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
             (Some(key), _) => key.clone(),
             (None, Some(seed)) => HDKey::new_master(seed.clone(), self.network_type)?,
         };
-
+        println!("{:?}", &self.mnemonic_seed);
         let hd_purpose_num = self
             .hd_path_builder
             .purpose
@@ -202,11 +216,23 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
             .hardened_coin_type();
 
         let derived_key = master_hd_key.derive(&hd_path_builder.build().to_string())?;
-        let private_key =
+        
+        let private_key: EthereumPrivateKey =
             EthereumPrivateKey::from_slice(&derived_key.extended_private_key()?.to_bytes())?;
+        println!("pk: {:?}", private_key);
+
+        let private_key2 = &derived_key.extended_private_key_serialized().unwrap();
+        println!("pk2: {:?}", private_key2);
+
         let public_key =
             EthereumPublicKey::from_slice(&derived_key.extended_public_key()?.to_bytes())?;
         let public_address = public_key.to_public_address(self.address_format)?;
+        println!("public k 3: {:?}", public_key);
+
+        println!("We want this for signing:");
+        println!("{:?}", public_key);
+        println!("{:?}", private_key);
+        println!("{:?}", derived_key);
 
         let wallet = EthereumWallet {
             address_format: self.address_format,
@@ -217,6 +243,7 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
             blockchain_client: None,
             derived_hd_key: Some(derived_key),
         };
+        println!("wallet: {:?}", wallet);
         Ok(wallet)
     }
 
@@ -238,6 +265,7 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
         self
     }
 
+    // TODO: This network type is an oversimplification that we should consider refactoring. Eth has chain_ids and network_ids
     /// Allows specification of the network type for the wallet, the default is HDNetworkType::MainNet
     fn network_type(&mut self, network_type: HDNetworkType) -> &mut Self {
         self.network_type = network_type;
@@ -299,27 +327,113 @@ impl CryptoWallet for EthereumWallet {
         send_amount: &Self::CryptoAmount,
         to_address: &str,
     ) -> Result<String, Error> {
-        todo!()
+        println!("self: {:?}", &self);
+        let secret_key: &Result<EthereumPrivateKey, Error> = &self.private_key();
+        println!("secret_key: {:?}", secret_key);
+        // let wallet: LocalWallet = LocalWallet::from(secret_key).with_chain_id(5);
+        // println!("the wallet {:?}", wallet);
+        // let wallet_nonlocal = MnemonicBuilder::<English>::default()
+        //     .phrase(phrase)
+        //     .index(index)
+        //     .unwrap()
+        //     .build()
+        //     .unwrap();
+        // LocalWallet = Wallet<ethers_core::k256::ecdsa::SigningKey>;
+        // let secp = Secp256k1::new();
+        // let (secret_key, public_key) = secp.generate_keypair(&mut OsRng);
 
-        // let blockchain_client = self.blockchain_client()?;
+        //let local_wallet = LocalWallet::from() 
+        // let key = "4c0883a69102937d6231471b5dbb6204fe5129617082792ae468d01a3f362318"
+        //     .parse::<LocalWallet>()
+        //     .unwrap();
+        // println!("{:?}", &wallet_nonlocal);
+        
+
+        // 
+        // let ourhdkey = &self.derived_hd_key()?;
+
+        // let key_we_want: &SecretKey = &private_key.0;
+        // let public_key: &EthereumPublicKey = &self.public_key()?;
+        // let private_key = self.private_key()?.0;
+
+        // let derived = &self.master_hd_key()?;
+        // println!("derived: {:?}", derived);
+        // //let wallet_nonlocal = LocalWallet::from(key_we_want.clone());
+        // // a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee
+        // // 6ccb54994cfdc2f95895b51989f0fcaa37266421c6ec39dbdc3f2026209efd83988a9b19d7ea245fde0de423d5af973d733c4dc317dc551ca5fdecad4bd47447
+        // // println!("wallet_nonlocal: {:?}", wallet_nonlocal);
+
+        // //let Wallet = Wallet::from(private_key).unwrap();
+
+        // //println!("Wallet: {:?}", Wallet);
+
+        // // println!("kww: {:?}", key_we_want);
+        // // println!("{:?}", private_key);
+        // // println!("{:?}", &self);
+        // // println!("private key: {:?}", &self.private_key());
+        // let test = private_key.clone();
+        // // println!("test: {:?}", test);
+        // // let secret_key = test.unwrap();
+
+        // // let wallet_nonlocal: Wallet = Wallet::from(&test); 
+        // let wallet = LocalWallet::new(&mut thread_rng());
+        // let test2 = &mut thread_rng();
+        // // println!("thread_rng: {:?}", test2);
+
+        
+        // // let blockchain_client = self.blockchain_client()?;
         // let to = Address::from_str(to_address).map_err(|e| Error::FromStr(e.to_string()))?;
         // let amount: ethers::types::U256 = send_amount.wei();
 
-        // // TODO for Ethers
-        // let tx_object = TransactionParameters {
-        //     to: Some(to),
-        //     value: amount,
-        //     ..Default::default()
-        // };
+        // // // TODO for Ethers
+        // // let tx_object = TransactionParameters {
+        // //     to: Some(to),
+        // //     value: amount,
+        // //     ..Default::default()
+        // // };
+        
+        // let tx = ethers::types::TransactionRequest::new()
+        //     .to("0x681dA56258fF429026449F1435aE87e1B6e9F85b")
+        //     .gas(21000)
+        //     .value(10000);
 
+        
+
+        // // let wallet: LocalWallet = EthersWallet::from_bytes(&private_key.to_bytes()).unwrap();
+        // // println!("wallet: {:?}", wallet);
+
+        // let i = &self.index(0);
+        // println!("i: {:?}", i);
+
+        // let derived_hd_key = &self.derived_hd_key()?;
+        // //println!("account_deriv_path: {:?}", &account_deriv_path);
+        // println!("self: {:?}", &self);
+
+        // println!("master hd key {:?}", &self.master_hd_key());
+        // println!("derived hd key {:?}", derived_hd_key);
+        
+        // println!("derived: {:?}", derived);
+        // //println!("address derivation path: {}", address_derivation_path);
+
+        // let eth_first_account_key = &self.master_hd_key().unwrap().derive("m/44'/60'/0'/0")?;
+        // // the master seed should be the same for a child HD Key and it's parent HD Key
+
+        // println!("{:?}", eth_first_account_key);
+        // println!(
+        //     "eth_first_account_key depth {} {:?}",
+        //     eth_first_account_key.depth(),
+        //     eth_first_account_key.extended_private_key()
+        // );
         // let secret_key = self.private_key()?.0;
+        // println!("{:?}", secret_key);
+        // let signed = &self.blockchain_client()?.ethers().sign_transaction(&tx, &secret_key).await.unwrap();
+            // .ethers()
+            // .accounts()
+            // .sign_transaction(tx_object, &secret_key)
+            // .await?;
+        todo!();
 
         // // sign the tx
-        // let signed = blockchain_client
-        //     .ethers()
-        //     .accounts()
-        //     .sign_transaction(tx_object, &secret_key)
-        //     .await?;
 
         // let result = blockchain_client
         //     .eth()
@@ -367,6 +481,31 @@ impl EthereumWallet {
         return self.public_address().to_string();
     }
 
+    /// Return the pub/priv keys at a specified index
+    /// For now, we're assuming that the path we're using for derivation is the default (m/44'/60'/0'/0/{index})
+    pub fn index(&self, index: u64) -> (String, String) {
+        
+        // // A wallet 
+
+        // let account_deriv_path = HDPath::builder()
+        //     .purpose_index(HDPurpose::BIP44.to_shortform_num()) // 44' for Eth
+        //     .coin_type_index(Coin::from(Symbol::ETH).id()) // 60' for Eth
+        //     .account_index(0) // we'll work from acc 0
+        //     .change_index(0) 
+        //     .no_address_index()
+        //     .build().to_string();
+
+        // println!("account_deriv_path: {:?}", &account_deriv_path);
+        //println!("self: {:?}", &self);
+        //let derived_hd_key = master_hd_key.derive("m/84'/1'/0'/0/0")?;
+        // let first_address_hd_key = HDKey::new(
+        //     Seed::from_str(BTC_WALLET_TEST_SEED)?,
+        //     HDNetworkType::TestNet,
+        //     "m/84'/1'/0'/0/0",
+        // )?;
+        ("Yes".to_string(), "No".to_string())
+    }
+
     /// Returns the network type used by the wallet
     pub fn network(&self) -> HDNetworkType {
         self.network
@@ -383,6 +522,7 @@ impl EthereumWallet {
 
     /// Returns the private key of the wallet if it exists, otherwise returns an error
     pub fn private_key(&self) -> Result<EthereumPrivateKey, Error> {
+        println!("{:?}", &self.private_key);
         if let Some(key) = self.private_key.clone() {
             Ok(key)
         } else {
