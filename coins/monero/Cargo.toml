@@ -20,7 +20,7 @@ tokio = { version = "1", features = ["full"] }
 [dependencies]
 walletd_coin_core = {path = "../core", version="0.1"}
 walletd_monero_mnemonic = {path = "../../mnemonics/monero"}
-walletd_hd_key = {path = "../../mnemonics/hd_key", version="0.1"}
+walletd_hd_key = {path = "../../key_manager/hd_key", version="0.1"}
 
 anyhow = "1.0.68"
 async-trait = "0.1.60"

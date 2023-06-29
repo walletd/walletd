@@ -16,7 +16,7 @@ path = "src/lib.rs"
 
 [dependencies]
 
-walletd_hd_key = {path = "../../mnemonics/hd_key", version="0.2"}
+walletd_hd_key = {path = "../../key_manager/hd_key", version="0.2"}
 walletd_mnemonics_core = {path = "../../mnemonics/core", version="0.2"}
 
 anyhow = "1.0.68"

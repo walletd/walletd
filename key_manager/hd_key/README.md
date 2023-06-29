@@ -53,8 +53,8 @@ Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in `hd_key` by you, shall be licensed as MIT, without any
 additional terms or conditions.
 
-[readme-example]: https://github.com/walletd/mnemoincs/hd_key/tree/main/examples/readme
-[examples]: https://github.com/walletd/walletd/tree/main/mnemonics/hd_key/examples
+[readme-example]: https://github.com/walletd/key_manager/hd_key/tree/main/examples/readme
+[examples]: https://github.com/walletd/walletd/tree/main/key_manager/hd_key/examples
 [docs]: https://docs.rs/walletd_hd_key
 [contributing]: https://github.com/walletd/hd_key/blob/main/CONTRIBUTING.md
 [discussion]: https://github.com/walletd/hd_key/discussions/new?category=q-a
