@@ -3,6 +3,7 @@ use walletd_hd_key::prelude::*;
 use ethers::prelude::*;
 
 
+//const PROVIDER_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 const PROVIDER_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 #[tokio::main]
 async fn main() -> Result<(), walletd_ethereum::Error> {
@@ -11,38 +12,35 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
     let mut ethereum_wallet = EthereumWallet::builder()
         .master_hd_key(master_hd_key)
         .build()?;
+    
     let public_address = ethereum_wallet.public_address();
+    
     println!("ethereum wallet public address: {}", public_address);
+    
     assert!(ethereum_wallet.private_key().is_ok());
     assert!(ethereum_wallet.public_key().is_ok());
-    println!("{:?}", ethereum_wallet.private_key().unwrap());
+    
     let derived_hd_key = ethereum_wallet.derived_hd_key()?;
     let private_key =
             EthereumPrivateKey::from_slice(&derived_hd_key.extended_private_key()?.to_bytes())?;
     let address_derivation_path = &derived_hd_key.derivation_path.clone();
-    println!("address derivation path: {}", address_derivation_path);
-
+    
+    // EthereumWallet stores the private key as a 32 byte array
     let secret_bytes = private_key.to_bytes();
 
+    // Instantiate a provider (connecttion) pointing to the endpoint we want to use
     let provider = Provider::try_from(PROVIDER_URL).unwrap();
-    //println!("wfb: {:?}", wfb);
-    println!("secret key: {:?}", secret_bytes);
 
-    let secret_bytes_to_string = secret_bytes.to_ascii_lowercase();
-
-    println!("Over here: {:?}", secret_bytes_to_string);
-
+    // Instantiate a ethers local wallet from the wallet's secret bytes
     let wfbres = Wallet::from_bytes(&secret_bytes);
 
     let wfb = wfbres.unwrap();
-
-    println!("wfb: {:?}", &wfb);
-    //println!("provider: {:?}", &provider);
-
     // 5 = goerli chain id 
-    let client = SignerMiddleware::new(provider, wfb.with_chain_id(5u64));
-    println!("client: {:?}", &client);
 
+    // Link our wallet instance to our provider for signing our transactions
+    let client = SignerMiddleware::new(provider, wfb.with_chain_id(5u64));    
+
+    // Create a transaction request to send 10000 wei to the Goerli address
     let tx = TransactionRequest::new()
         .to("0x681dA56258fF429026449F1435aE87e1B6e9F85b")
         .gas(21000)
