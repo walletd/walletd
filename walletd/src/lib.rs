@@ -137,7 +137,6 @@ pub use walletd_bitcoin::blockstream;
 pub use walletd_bitcoin::blockstream::Blockstream;
 pub use walletd_bitcoin::{BitcoinAmount, BitcoinWallet};
 
-
 pub use walletd_coin_core::ConnectorType;
 
 pub use walletd_coin_core::{
