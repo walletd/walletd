@@ -50,17 +50,8 @@ impl EthereumPrivateKey {
         self.0.serialize_secret()
     }
 
-    pub fn get_secret_key(&self) -> SecretKey {
-        self.0
-    }
-
-    pub fn get_key(&self) -> SecretKey {
-        self.0
-    }
-
     /// Instantiate the private key from a slice of bytes, errors if given invalid bytes
     pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
-        println!("fs in EPK: {:?}", bytes);
         let secret_key = SecretKey::from_slice(bytes)?;
         Ok(EthereumPrivateKey(secret_key))
     }
@@ -322,6 +313,8 @@ impl CryptoWallet for EthereumWallet {
         Ok(balance)
     }
 
+    // TODO: take chain_id as a parameter
+    // TODO: Take index as a parameter and use that for deriving the wallet we want (refactor keystore)
     async fn transfer(
         &self,
         send_amount: &Self::CryptoAmount,
@@ -330,6 +323,41 @@ impl CryptoWallet for EthereumWallet {
         println!("self: {:?}", &self);
         let secret_key: &Result<EthereumPrivateKey, Error> = &self.private_key();
         println!("secret_key: {:?}", secret_key);
+
+        let derived_hd_key = &self.derived_hd_key()?;
+        let private_key =
+                EthereumPrivateKey::from_slice(&derived_hd_key.extended_private_key()?.to_bytes())?;
+        let address_derivation_path = &derived_hd_key.derivation_path.clone();
+        
+        // EthereumWallet stores the private key as a 32 byte array
+        let secret_bytes = private_key.to_bytes();
+
+        let wallet_from_bytes = Wallet::from_bytes(&secret_bytes).unwrap();
+
+        let provider = &self.blockchain_client().unwrap().ethers();
+
+        // Instantiate a ethers local wallet from the wallet's secret bytes
+
+        // 5 = goerli chain id 
+
+        // Link our wallet instance to our provider for signing our transactions
+        let client = SignerMiddleware::new(provider, wallet_from_bytes.with_chain_id(5u64));    
+
+        // Create a transaction request to send 10000 wei to the Goerli address
+        let tx = TransactionRequest::new()
+            .to("0x681dA56258fF429026449F1435aE87e1B6e9F85b")
+            .gas(21000)
+            .value(10000)
+            .chain_id(5u64);
+
+
+        println!("Initialising send: {:?}", &tx);
+        
+        let pending_tx = client.send_transaction(tx, None).await.unwrap();
+        let receipt = pending_tx.await.unwrap().ok_or_else(|| println!("tx dropped from mempool")).unwrap();
+        
+        let tx = client.get_transaction(receipt.transaction_hash).await.unwrap();
+        Ok("tx_id".to_string())
         // let wallet: LocalWallet = LocalWallet::from(secret_key).with_chain_id(5);
         // println!("the wallet {:?}", wallet);
         // let wallet_nonlocal = MnemonicBuilder::<English>::default()
@@ -431,7 +459,6 @@ impl CryptoWallet for EthereumWallet {
             // .accounts()
             // .sign_transaction(tx_object, &secret_key)
             // .await?;
-        todo!();
 
         // // sign the tx
 
