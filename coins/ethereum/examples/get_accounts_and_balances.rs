@@ -64,18 +64,16 @@ async fn main() -> () {
     println!("tx: {:?}", &tx);
    
     let nonce2 = blockchain_client.ethers().get_transaction_count(from, None).await.unwrap();
-    let mut ethereum_wallet = EthereumWallet::builder()
-        .master_hd_key(master_hd_key)
-        .build()?;
+    println!("nonce2: {:?}", &nonce2);
     
     // let sa = ethers::types::U256::from(10000);
     // let send_amount = EthereumAmount::from_wei(sa);
     //assert!(nonce < *nonce2);
 
-    let balance_after = blockchain_client.balance(from).await.unwrap();
+    // let balance_after = blockchain_client.balance(from).await.unwrap();
     //assert!(balance_after < balance_before);
 
-    println!("Balance before {balance_before}");
+    // println!("Balance before {balance_before}");
     // let tx_hash = wallet
     //     .transfer(&send_amount, GOERLI_TEST_ADDRESS)
     //     .await

@@ -12,20 +12,20 @@ use walletd_coin_core::{CryptoWallet, CryptoWalletBuilder};
 use walletd_hd_key::{slip44, HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPurpose};
 //use web3::types::{Address, TransactionParameters};
 use zeroize::{Zeroize, ZeroizeOnDrop};
-use walletd_hd_key::prelude::*;
-use walletd_hd_key::slip44::{Coin, Symbol};
+
+
 use crate::{EthereumAmount, EthereumFormat};
 
-use web3::types::{ H160 as oldH160, H256 as oldH256, U64 as oldU64};
-use ethers::prelude::*;
-use ethers::providers::{Middleware, Provider};
-use ethers::providers::Http as ethersHttp;
-use ethers::types::{Address, TransactionRequest, U256};
-use ethers::types::{BlockId, Block, BlockNumber, H160, H256, U64};
-use ethers::signers::Wallet as EthersWallet;
 
-use ethers::core::rand::thread_rng;
-use ethers::signers::{LocalWallet, Signer};
+use ethers::prelude::*;
+use ethers::providers::{Middleware};
+
+use ethers::types::{TransactionRequest};
+
+
+
+
+use ethers::signers::{Signer};
 
 /// Represents a private key for an Ethereum wallet, wraps a [SecretKey] from the secp256k1 crate
 #[derive(Debug, Clone)]
@@ -317,8 +317,8 @@ impl CryptoWallet for EthereumWallet {
     // TODO: Take index as a parameter and use that for deriving the wallet we want (refactor keystore)
     async fn transfer(
         &self,
-        send_amount: &Self::CryptoAmount,
-        to_address: &str,
+        _send_amount: &Self::CryptoAmount,
+        _to_address: &str,
     ) -> Result<String, Error> {
         println!("self: {:?}", &self);
         let secret_key: &Result<EthereumPrivateKey, Error> = &self.private_key();
@@ -327,7 +327,7 @@ impl CryptoWallet for EthereumWallet {
         let derived_hd_key = &self.derived_hd_key()?;
         let private_key =
                 EthereumPrivateKey::from_slice(&derived_hd_key.extended_private_key()?.to_bytes())?;
-        let address_derivation_path = &derived_hd_key.derivation_path.clone();
+        let _address_derivation_path = &derived_hd_key.derivation_path.clone();
         
         // EthereumWallet stores the private key as a 32 byte array
         let secret_bytes = private_key.to_bytes();
@@ -356,7 +356,7 @@ impl CryptoWallet for EthereumWallet {
         let pending_tx = client.send_transaction(tx, None).await.unwrap();
         let receipt = pending_tx.await.unwrap().ok_or_else(|| println!("tx dropped from mempool")).unwrap();
         
-        let tx = client.get_transaction(receipt.transaction_hash).await.unwrap();
+        let _tx = client.get_transaction(receipt.transaction_hash).await.unwrap();
         Ok("tx_id".to_string())
         // let wallet: LocalWallet = LocalWallet::from(secret_key).with_chain_id(5);
         // println!("the wallet {:?}", wallet);
@@ -505,12 +505,12 @@ impl EthereumWallet {
 
     /// A convenience method for retrieving the string of a public_address
     pub fn address(&self) -> String {
-        return self.public_address().to_string();
+        self.public_address()
     }
 
     /// Return the pub/priv keys at a specified index
     /// For now, we're assuming that the path we're using for derivation is the default (m/44'/60'/0'/0/{index})
-    pub fn index(&self, index: u64) -> (String, String) {
+    pub fn index(&self, _index: u64) -> (String, String) {
         
         // // A wallet 
 

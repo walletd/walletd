@@ -20,14 +20,10 @@ async fn main() -> web3::Result<()> {
 
     println!("seed as bytes: {:?}", seed.as_bytes());
 
-    let wallet = match EthereumWallet::builder()
+    let wallet = EthereumWallet::builder()
         .mnemonic_seed(seed)
         .network_type(HDNetworkType::TestNet)
-        .build()
-    {
-        Ok(wallet) => Ok(wallet),
-        Err(e) => Err(e),
-    };
+        .build();
 
     println!("wallet: {:?}", &wallet);
     Ok(())

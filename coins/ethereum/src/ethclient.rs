@@ -1,18 +1,18 @@
 use crate::Error;
 use crate::EthereumAmount;
 use async_trait::async_trait;
-use log::info;
+
 use std::str::FromStr;
 use walletd_coin_core::BlockchainConnector;
-use web3::contract::{Contract, Options};
-use web3::ethabi::Uint;
-use web3::helpers as w3h;
+
+
+
 use ethers::types::Address;
 // use web3::types::{ H160 as oldH160, H256 as oldH256, U64 as oldU64};
 use ethers::prelude::*;
 use ethers::providers::{Middleware, Provider};
 use ethers::providers::Http;
-use ethers::types::{BlockId, Block, BlockNumber, H160, H256, U64};
+use ethers::types::{BlockId, Block, BlockNumber, H256, U64};
 use std::convert::TryFrom;
 
 
@@ -42,8 +42,8 @@ impl EthClient {
 
     /// Returns the chain id of the current network the ethers instance is connected to.
     pub async fn chain_id(&self) -> U256 {
-        let chain_id = self.ethers.get_chainid().await.unwrap();
-        chain_id
+        
+        self.ethers.get_chainid().await.unwrap()
     }
 
     /// Returns the balance of an address as an [EthereumAmount].
