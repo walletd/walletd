@@ -1,6 +1,6 @@
 use walletd_bip39::{Bip39Language, Bip39Mnemonic, Mnemonic, MnemonicBuilder};
 
-fn main() -> () {
+fn main() {
     // Restore a mnemonic struct from a phrase using the builder pattern
     println!("Example of restoring a mnemonic struct from a phrase using the builder pattern");
     let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";

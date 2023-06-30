@@ -66,9 +66,9 @@ fn test_bitcoin_wallet() -> Result<(), Error> {
     assert_eq!(btc_wallet.network()?, Network::Testnet);
     assert_eq!(btc_wallet.coin_type_id()?, 1);
     assert_eq!(btc_wallet.gap_limit(), 20);
-    assert_eq!(btc_wallet.account_discovery(), true);
+    assert!(btc_wallet.account_discovery());
     btc_wallet.set_account_discovery(false);
-    assert_eq!(btc_wallet.account_discovery(), false);
+    assert!(!btc_wallet.account_discovery());
     btc_wallet.set_gap_limit(10);
     assert_eq!(btc_wallet.gap_limit(), 10);
     assert_eq!(btc_wallet.addresses().len(), 0);

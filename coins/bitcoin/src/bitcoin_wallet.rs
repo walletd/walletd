@@ -1,14 +1,12 @@
 use crate::bitcoin::blockdata::script;
 use crate::connectors::{BTransaction, FeeEstimates, Input, InputType, Output, Utxo};
-use crate::Error;
+use crate::BitcoinAmount;
 use crate::{AddressInfo, BitcoinAddress, BitcoinPrivateKey, BitcoinPublicKey};
-use crate::{BitcoinAmount, Blockstream};
-use async_trait::async_trait;
+use crate::{BitcoinConnector, Error};
 use std::cmp::Reverse;
 use walletd_bip39::Seed;
 use walletd_coin_core::CryptoAddress;
-use walletd_coin_core::CryptoWalletBuilder;
-use walletd_coin_core::{CryptoAmount, CryptoWallet};
+use walletd_coin_core::CryptoAmount;
 use walletd_hd_key::slip44;
 use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 use zeroize::{Zeroize, ZeroizeOnDrop};
@@ -22,13 +20,13 @@ pub use bitcoin::{sighash::EcdsaSighashType, AddressType, Network, Script};
 const DEFAULT_GAP_LIMIT: usize = 20;
 
 /// Represents a Hierarchical Deterministic (HD) Bitcoin wallet which can have multiple [BitcoinAddress] structs associated with it which are derived from a single master [HD key][HDKey].
-#[derive(Debug, Clone, Zeroize, ZeroizeOnDrop)]
+#[derive(Zeroize, ZeroizeOnDrop)]
 pub struct BitcoinWallet {
     #[zeroize(skip)]
     address_format: AddressType,
     associated: Vec<AssociatedAddress>,
     #[zeroize(skip)]
-    blockchain_client: Option<Blockstream>,
+    blockchain_client: Option<Box<dyn BitcoinConnector + Send + Sync>>,
     master_hd_key: Option<HDKey>,
     gap_limit: usize,
     account_discovery: bool,
@@ -77,16 +75,9 @@ impl AssociatedAddress {
     }
 }
 
-#[async_trait]
-impl CryptoWallet for BitcoinWallet {
-    type ErrorType = Error;
-    type BlockchainClient = Blockstream;
-    type CryptoAmount = BitcoinAmount;
-    type NetworkType = Network;
-    type WalletBuilder = BitcoinWalletBuilder;
-    type AddressFormat = AddressType;
-
-    async fn balance(&self) -> Result<BitcoinAmount, Error> {
+impl BitcoinWallet {
+    /// Returns the bitcoin balance of the wallet.
+    pub async fn balance(&self) -> Result<BitcoinAmount, Error> {
         let client = self.blockchain_client()?;
         let mut total_balance = BitcoinAmount::new();
         for addr in self.addresses() {
@@ -95,12 +86,8 @@ impl CryptoWallet for BitcoinWallet {
         }
         Ok(total_balance)
     }
-
-    fn builder() -> Self::WalletBuilder {
-        BitcoinWalletBuilder::new()
-    }
-
-    async fn transfer(
+    /// Builds and sends a transaction to the blockchain.
+    pub async fn transfer(
         &self,
         send_amount: &BitcoinAmount,
         to_public_address: &str,
@@ -193,30 +180,28 @@ impl CryptoWallet for BitcoinWallet {
         let tx_id = client.broadcast_tx(raw_transaction_hex).await?;
         Ok(tx_id)
     }
-
-    fn set_blockchain_client(&mut self, client: Self::BlockchainClient) {
+    /// Set the Blockchain Client on the Wallet
+    pub fn set_blockchain_client(&mut self, client: Box<dyn BitcoinConnector + Send + Sync>) {
         self.blockchain_client = Some(client);
     }
-
-    async fn sync(&mut self) -> Result<(), Error> {
+    /// Syncs the wallet with the blockchain by adding previously used addresses to the wallet.
+    pub async fn sync(&mut self) -> Result<(), Error> {
         self.add_previously_used_addresses().await?;
         Ok(())
     }
-
-    fn receive_address(&self) -> Result<String, Error> {
+    /// Retrieves the next recevie address of the wallet.
+    pub fn receive_address(&self) -> Result<String, Error> {
         let next_receive_address = self.next_address()?;
         Ok(next_receive_address.public_address())
     }
-
-    fn blockchain_client(&self) -> Result<&Blockstream, Error> {
+    /// Returns the Blockchain client.
+    pub fn blockchain_client(&self) -> Result<&(dyn BitcoinConnector + Send + Sync), Error> {
         match &self.blockchain_client {
-            Some(client) => Ok(client),
+            Some(client) => Ok(client.as_ref()),
             None => Err(Error::MissingBlockchainClient),
         }
     }
-}
 
-impl BitcoinWallet {
     /// Adds an [associated Bitcoin address][BitcoinAddress] to the [wallet][BitcoinWallet] if it is not already associated to it while also keeping track of the [associated Bitcoin address][BitcoinAddress]'s [derived HD key][HDKey].
     pub fn add(&mut self, associated: &AssociatedAddress) {
         if self.addresses().contains(&associated.address) {
@@ -276,7 +261,6 @@ impl BitcoinWallet {
     pub async fn add_previously_used_addresses(&mut self) -> Result<(), Error> {
         let master_hd_key = self.master_hd_key()?;
         let address_format = self.address_format();
-        let blockchain_client = self.blockchain_client()?.clone();
         let gap_limit = self.gap_limit;
         let mut path_builder = match self.hd_path_builder.clone() {
             Some(deriv_type) => deriv_type,
@@ -307,7 +291,10 @@ impl BitcoinWallet {
                         .to_string();
                     let derived = master_hd_key.derive(specify_deriv_path)?;
                     let address = BitcoinAddress::from_hd_key(&derived, address_format)?;
-                    let exists = blockchain_client
+                    let exists = self
+                        .blockchain_client
+                        .as_ref()
+                        .unwrap()
                         .check_if_past_transactions_exist(&address.public_address())
                         .await?;
 
@@ -893,6 +880,11 @@ impl BitcoinWallet {
 
         Ok((transaction, chosen_indices))
     }
+
+    /// Returns the Builder for [BitcoinWallet]
+    pub fn builder() -> BitcoinWalletBuilder {
+        BitcoinWalletBuilder::new()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
@@ -953,47 +945,44 @@ impl Default for BitcoinWalletBuilder {
     }
 }
 
-impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
-    /// Generates a new BitcoinWalletBuilder with the default options
-    fn new() -> Self {
-        Self::default()
-    }
-
+impl BitcoinWalletBuilder {
     /// Allows specification of the master HD key for the wallet
-    fn master_hd_key(&mut self, master_hd_key: HDKey) -> &mut Self {
+    pub fn master_hd_key(&mut self, master_hd_key: HDKey) -> &mut Self {
         self.master_hd_key = Some(master_hd_key);
         self
     }
 
+    /// Generates a new BitcoinWalletBuilder with the default options
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     /// Allows specification of the mnemonic seed for the wallet
-    fn mnemonic_seed(&mut self, mnemonic_seed: Seed) -> &mut Self {
+    pub fn mnemonic_seed(&mut self, mnemonic_seed: Seed) -> &mut Self {
         self.mnemonic_seed = Some(mnemonic_seed);
         self
     }
 
     /// Allows specification of the address format to use for the wallet
-    fn address_format(
-        &mut self,
-        address_format: <BitcoinWallet as CryptoWallet>::AddressFormat,
-    ) -> &mut Self {
+    pub fn address_format(&mut self, address_format: AddressType) -> &mut Self {
         self.address_format = address_format;
         self
     }
 
     /// Allows specification of the network type for the wallet, the default is Network::Bitcoin
-    fn network_type(&mut self, network_type: Network) -> &mut Self {
+    pub fn network_type(&mut self, network_type: Network) -> &mut Self {
         self.network_type = network_type;
         self
     }
 
     /// Allows specifiction of the hd path builder, will override the default
-    fn hd_path_builder(&mut self, hd_path_builder: HDPathBuilder) -> &mut Self {
+    pub fn hd_path_builder(&mut self, hd_path_builder: HDPathBuilder) -> &mut Self {
         self.hd_path_builder = hd_path_builder;
         self
     }
 
     /// Used to import an existing wallet from a master HD key or a mnemonic seed and specified network type
-    fn build(&self) -> Result<BitcoinWallet, Error> {
+    pub fn build(&self) -> Result<BitcoinWallet, Error> {
         let master_hd_key = match (&self.master_hd_key, &self.mnemonic_seed) {
             (None, None) => {
                 return Err(Error::UnableToImportWallet(
@@ -1037,9 +1026,6 @@ impl CryptoWalletBuilder<BitcoinWallet> for BitcoinWalletBuilder {
 
         Ok(wallet)
     }
-}
-
-impl BitcoinWalletBuilder {
     /// Allows specification of the gap limit to use for the wallet
     pub fn gap_limit(&mut self, gap_limit: usize) -> &mut Self {
         self.gap_limit_specified = Some(gap_limit);

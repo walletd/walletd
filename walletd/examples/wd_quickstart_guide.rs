@@ -17,16 +17,23 @@ async fn main() -> Result<(), walletd::Error> {
         .network_type(HDNetworkType::TestNet)
         .build()?;
     assert_eq!(keypair.to_master_key(), master_hd_key);
-    let mut btc_wallet = keypair.derive_wallet::<BitcoinWallet>()?;
-    let btc_client = Blockstream::new("https://blockstream.info/testnet/api")?;
+    let mut btc_wallet = BitcoinWalletBuilder::new()
+        .master_hd_key(keypair.to_master_key())
+        .build()
+        .unwrap();
+    // let mut btc_wallet = keypair.derive_wallet::<BitcoinWallet>()?;
+    let btc_client = Box::new(Blockstream::new("https://blockstream.info/testnet/api")?);
     btc_wallet.set_blockchain_client(btc_client);
     btc_wallet.sync().await?;
     println!(
         "btc_wallet balance: {} BTC",
         btc_wallet.balance().await?.btc()
     );
-
-    let mut eth_wallet = keypair.derive_wallet::<EthereumWallet>()?;
+    let mut eth_wallet = EthereumWalletBuilder::new()
+        .master_hd_key(keypair.to_master_key())
+        .build()
+        .unwrap();
+    // let mut eth_wallet = keypair.derive_wallet::<EthereumWallet>()?;
     print!("eth_wallet public address: {}", eth_wallet.public_address());
     let eth_client =
         EthClient::new("https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161")?;
