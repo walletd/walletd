@@ -1,6 +1,6 @@
 use ::walletd_bip39::Seed;
 
-use crate::{Bip39Mnemonic, CryptoWallet, CryptoWalletBuilder, HDKey, HDNetworkType, Mnemonic};
+use crate::{Bip39Mnemonic, HDKey, HDNetworkType, Mnemonic};
 
 use crate::Error;
 
@@ -189,22 +189,21 @@ impl KeyPair {
         self.style
     }
 
-    /// Derives a wallet of the specified generic type T from the [KeyPair] struct
-    /// T must implement the CryptoWallet trait
-    /// # Errors
-    /// Returns an [Error] vairant if the wallet of type T could not be derived
-    pub fn derive_wallet<T>(&self) -> Result<T, Error>
-    where
-        T: CryptoWallet,
-        T::WalletBuilder: CryptoWalletBuilder<T>,
-        T::ErrorType: std::fmt::Display,
-    {
-        let wallet: T = T::builder()
-            .master_hd_key(self.to_master_key())
-            .build()
-            .map_err(|e| Error::DeriveWallet(e.to_string()))?;
-        Ok(wallet)
-    }
+    // Derives a wallet of the specified generic type T from the [KeyPair] struct
+    // T must implement the CryptoWallet trait
+    // # Errors
+    // Returns an [Error] vairant if the wallet of type T could not be derived
+    // pub fn derive_wallet<T>(&self) -> Result<T, Error>
+    // where
+    //     T: WalletBuilder,
+    // {
+    //     let wallet: T = T::builder()
+    //         .master_hd_key(self.to_master_key())
+    //         .build()
+    //         .map_err(|e| Error::DeriveWallet(e.to_string()))
+    //         .unwrap();
+    //     Ok(wallet)
+    // }
 }
 
 #[cfg(test)]

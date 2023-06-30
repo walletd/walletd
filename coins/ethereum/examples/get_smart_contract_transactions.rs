@@ -17,7 +17,7 @@ pub const INFURA_GOERLI_ENDPOINT: &str =
     "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 #[tokio::main]
 async fn main() {
-    let _eth_client = EthClient::new(&INFURA_GOERLI_ENDPOINT.to_string()).unwrap();
+    let _eth_client = EthClient::new(INFURA_GOERLI_ENDPOINT).unwrap();
     let _bn = "8455626";
     //     //let block_data = EthClient::block_data_from_numeric_string(&eth_client, &bn)
     //         .await

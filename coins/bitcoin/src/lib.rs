@@ -58,7 +58,7 @@
 //! # let network_type = HDNetworkType::TestNet;
 //! # let master_hd_key = HDKey::new_master(master_seed, network_type)?;
 //! # let mut btc_wallet = BitcoinWallet::builder().master_hd_key(master_hd_key).build()?;
-//! let btc_client = Blockstream::new("https://blockstream.info/testnet/api")?;
+//! let btc_client = Box::new(Blockstream::new("https://blockstream.info/testnet/api")?);
 //! let fee_estimates = btc_client.fee_estimates().await?;
 //! println!("fee estimates: {:?}", fee_estimates);
 //! btc_wallet.set_blockchain_client(btc_client);
@@ -78,7 +78,7 @@
 //! # let network_type = HDNetworkType::TestNet;
 //! # let master_hd_key = HDKey::new_master(master_seed, network_type)?;
 //! # let mut btc_wallet = BitcoinWallet::builder().master_hd_key(master_hd_key).build()?;
-//! let btc_client = Blockstream::new("https://blockstream.info/testnet/api")?;
+//! let btc_client = Box::new(Blockstream::new("https://blockstream.info/testnet/api")?);
 //! let fee_estimates = btc_client.fee_estimates().await?;
 //! println!("fee estimates: {:?}", fee_estimates);
 //! btc_wallet.set_blockchain_client(btc_client);
@@ -104,6 +104,7 @@
 #![warn(missing_docs)]
 
 pub mod connectors;
+use async_trait::async_trait;
 pub use bitcoin;
 pub use bitcoin::{
     Address as AddressInfo, AddressType, Network, PublicKey as BitcoinPublicKey, Script,
@@ -120,6 +121,7 @@ pub use bitcoin_amount::BitcoinAmount;
 pub mod blockstream;
 pub mod mempool_space;
 pub use blockstream::Blockstream;
+pub use mempool_space::MempoolSpace;
 
 mod error;
 pub use error::Error;
@@ -131,3 +133,29 @@ pub use walletd_coin_core::{
 };
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 pub mod prelude;
+
+use crate::connectors::{BTransaction, FeeEstimates, Utxos};
+
+/// Bitcoin Blockchain Connector which allows the creation of multiple connectors to be created and used by BitcoinWallets
+#[async_trait]
+pub trait BitcoinConnector {
+    /// Checks if the given address has had an past transactions, returns true if it has and false if it has not
+    /// Errors if the address is invalid or if the API returns an error
+    async fn check_if_past_transactions_exist(&self, public_address: &str) -> Result<bool, Error>;
+    /// Fetch the block height
+    async fn block_height(&self) -> Result<u64, Error>;
+    /// Fetch fee estimates
+    async fn fee_estimates(&self) -> Result<FeeEstimates, Error>;
+    /// Fetch transactions for the given address
+    async fn transactions(&self, address: &str) -> Result<Vec<BTransaction>, Error>;
+    /// Fetch mempool transactions
+    async fn mempool_transactions(&self, address: &str) -> Result<Vec<BTransaction>, Error>;
+    /// Fetch UTXOs
+    async fn utxo(&self, address: &str) -> Result<Utxos, Error>;
+    /// Fetch raw transaction hex for a given txid
+    async fn raw_transaction_hex(&self, txid: &str) -> Result<String, Error>;
+    /// Fetch transaction info
+    async fn transaction(&self, txid: &str) -> Result<BTransaction, Error>;
+    /// Broadcast a raw transaction to the network
+    async fn broadcast_tx(&self, raw_transaction_hex: &'static str) -> Result<String, Error>;
+}

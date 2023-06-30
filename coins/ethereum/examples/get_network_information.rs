@@ -10,7 +10,7 @@ use walletd_ethereum::EthClient;
 async fn main() -> web3::Result<()> {
     // Transport can be one of Http, WebSocket, Ipc
     // let transport = web3::transports::Http::new(INFURA_GOERLI_ENDPOINT)?;
-    let eth_client = EthClient::new(&INFURA_GOERLI_ENDPOINT.to_string()).unwrap();
+    let eth_client = EthClient::new(INFURA_GOERLI_ENDPOINT).unwrap();
 
     let block_number = eth_client.current_block_number().await;
     let gas_price = eth_client.gas_price().await;

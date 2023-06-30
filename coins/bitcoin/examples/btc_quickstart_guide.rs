@@ -8,7 +8,7 @@ async fn main() -> Result<(), walletd_bitcoin::Error> {
     let mut btc_wallet = BitcoinWallet::builder()
         .master_hd_key(master_hd_key)
         .build()?;
-    let btc_client = Blockstream::new("https://blockstream.info/testnet/api")?;
+    let btc_client = Box::new(Blockstream::new("https://blockstream.info/testnet/api")?);
     let fee_estimates = btc_client.fee_estimates().await?;
     println!("fee estimates: {:?}", fee_estimates);
     btc_wallet.set_blockchain_client(btc_client);
@@ -17,7 +17,7 @@ async fn main() -> Result<(), walletd_bitcoin::Error> {
         println!(
             "address: {}, derivation path {}",
             addr.address.public_address(),
-            addr.hd_key().derivation_path().to_string()
+            addr.hd_key().derivation_path()
         );
     }
     println!("next receive address: {}", btc_wallet.receive_address()?);

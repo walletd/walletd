@@ -4,7 +4,7 @@
 use walletd_bip39::{Bip39Mnemonic, Mnemonic, MnemonicBuilder};
 use web3::types::U256;
 
-use walletd_coin_core::{BlockchainConnector, CryptoWallet, CryptoWalletBuilder};
+use walletd_coin_core::BlockchainConnector;
 use walletd_ethereum::{EthClient, EthereumAmount, EthereumWallet};
 use walletd_hd_key::HDNetworkType;
 
@@ -46,7 +46,7 @@ async fn main() {
     println!("send_amount: {:?}", &send_amount);
 
     let tx_hash = wallet
-        .transfer(&send_amount, GOERLI_TEST_ADDRESS)
+        .transfer(send_amount, GOERLI_TEST_ADDRESS)
         .await
         .unwrap();
 

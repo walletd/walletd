@@ -12,7 +12,7 @@ async fn main() -> Result<(), walletd_bitcoin::Error> {
     // first address = tb1q344p7ttvrpyhxj9xglkwxx6dxytxxjzexth0du
     let address = btc_wallet.next_address()?;
     println!("address: {:?}", address);
-    let btc_client = MempoolSpace::new("https://mempool.space/signet/api")?;
+    let btc_client = Box::new(MempoolSpace::new("https://mempool.space/signet/api")?);
     // let height = btc_client.block_height().await?;
     // println!("block height: {:?}", height);
     let fee_estimates = btc_client.fee_estimates().await?;
