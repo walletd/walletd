@@ -305,14 +305,14 @@ impl EthereumWallet {
 
     // TODO: take chain_id as a parameter
     // TODO: Take index as a parameter and use that for deriving the wallet we want (refactor keystore)
-    /// Creates and sends a transfer transaction to the Ethereum blockchain.
+    /// This function creates and broadcasts a basic Ethereum transfer transaction to the Ethereum mempool.
     async fn transfer(
         &self,
-        _send_amount: &Self::CryptoAmount,
+        _send_amount: EthereumAmount,
         _to_address: &str,
     ) -> Result<String, Error> {
 
-        let secret_key: &Result<EthereumPrivateKey, Error> = &self.private_key();
+        //let secret_key: &Result<EthereumPrivateKey, Error> = &self.private_key();
 
         let derived_hd_key = &self.derived_hd_key()?;
         let private_key =
@@ -349,118 +349,6 @@ impl EthereumWallet {
         
         let _tx = client.get_transaction(receipt.transaction_hash).await.unwrap();
         Ok("tx_id".to_string())
-        // let wallet: LocalWallet = LocalWallet::from(secret_key).with_chain_id(5);
-        // println!("the wallet {:?}", wallet);
-        // let wallet_nonlocal = MnemonicBuilder::<English>::default()
-        //     .phrase(phrase)
-        //     .index(index)
-        //     .unwrap()
-        //     .build()
-        //     .unwrap();
-        // LocalWallet = Wallet<ethers_core::k256::ecdsa::SigningKey>;
-        // let secp = Secp256k1::new();
-        // let (secret_key, public_key) = secp.generate_keypair(&mut OsRng);
-
-        //let local_wallet = LocalWallet::from() 
-        // let key = "4c0883a69102937d6231471b5dbb6204fe5129617082792ae468d01a3f362318"
-        //     .parse::<LocalWallet>()
-        //     .unwrap();
-        // println!("{:?}", &wallet_nonlocal);
-        
-
-        // 
-        // let ourhdkey = &self.derived_hd_key()?;
-
-        // let key_we_want: &SecretKey = &private_key.0;
-        // let public_key: &EthereumPublicKey = &self.public_key()?;
-        // let private_key = self.private_key()?.0;
-
-        // let derived = &self.master_hd_key()?;
-        // println!("derived: {:?}", derived);
-        // //let wallet_nonlocal = LocalWallet::from(key_we_want.clone());
-        // // a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee
-        // // 6ccb54994cfdc2f95895b51989f0fcaa37266421c6ec39dbdc3f2026209efd83988a9b19d7ea245fde0de423d5af973d733c4dc317dc551ca5fdecad4bd47447
-        // // println!("wallet_nonlocal: {:?}", wallet_nonlocal);
-
-        // //let Wallet = Wallet::from(private_key).unwrap();
-
-        // //println!("Wallet: {:?}", Wallet);
-
-        // // println!("kww: {:?}", key_we_want);
-        // // println!("{:?}", private_key);
-        // // println!("{:?}", &self);
-        // // println!("private key: {:?}", &self.private_key());
-        // let test = private_key.clone();
-        // // println!("test: {:?}", test);
-        // // let secret_key = test.unwrap();
-
-        // // let wallet_nonlocal: Wallet = Wallet::from(&test); 
-        // let wallet = LocalWallet::new(&mut thread_rng());
-        // let test2 = &mut thread_rng();
-        // // println!("thread_rng: {:?}", test2);
-
-        
-        // // let blockchain_client = self.blockchain_client()?;
-        // let to = Address::from_str(to_address).map_err(|e| Error::FromStr(e.to_string()))?;
-        // let amount: ethers::types::U256 = send_amount.wei();
-
-        // // // TODO for Ethers
-        // // let tx_object = TransactionParameters {
-        // //     to: Some(to),
-        // //     value: amount,
-        // //     ..Default::default()
-        // // };
-        
-        // let tx = ethers::types::TransactionRequest::new()
-        //     .to("0x681dA56258fF429026449F1435aE87e1B6e9F85b")
-        //     .gas(21000)
-        //     .value(10000);
-
-        
-
-        // // let wallet: LocalWallet = EthersWallet::from_bytes(&private_key.to_bytes()).unwrap();
-        // // println!("wallet: {:?}", wallet);
-
-        // let i = &self.index(0);
-        // println!("i: {:?}", i);
-
-        // let derived_hd_key = &self.derived_hd_key()?;
-        // //println!("account_deriv_path: {:?}", &account_deriv_path);
-        // println!("self: {:?}", &self);
-
-        // println!("master hd key {:?}", &self.master_hd_key());
-        // println!("derived hd key {:?}", derived_hd_key);
-        
-        // println!("derived: {:?}", derived);
-        // //println!("address derivation path: {}", address_derivation_path);
-
-        // let eth_first_account_key = &self.master_hd_key().unwrap().derive("m/44'/60'/0'/0")?;
-        // // the master seed should be the same for a child HD Key and it's parent HD Key
-
-        // println!("{:?}", eth_first_account_key);
-        // println!(
-        //     "eth_first_account_key depth {} {:?}",
-        //     eth_first_account_key.depth(),
-        //     eth_first_account_key.extended_private_key()
-        // );
-        // let secret_key = self.private_key()?.0;
-        // println!("{:?}", secret_key);
-        // let signed = &self.blockchain_client()?.ethers().sign_transaction(&tx, &secret_key).await.unwrap();
-            // .ethers()
-            // .accounts()
-            // .sign_transaction(tx_object, &secret_key)
-            // .await?;
-
-        // // sign the tx
-
-        // let result = blockchain_client
-        //     .eth()
-        //     .send_raw_transaction(signed.raw_transaction)
-        //     .await?;
-
-        // let hash = hex::encode(result.as_bytes());
-
-        // Ok(hash)
     }
     /// Set the Blockchain Client on the Wallet
     pub fn set_blockchain_client(&mut self, client: EthClient) {
