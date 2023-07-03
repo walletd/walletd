@@ -11,7 +11,7 @@ const GOERLI_TEST_ADDRESS: &str = "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
 #[tokio::main]
 async fn main() {
     let mnemonic_phrase: &str =
-    "mandate rude write gather vivid inform leg swift usual early bamboo element";
+        "mandate rude write gather vivid inform leg swift usual early bamboo element";
     let restored_mnemonic = Bip39Mnemonic::builder()
         .mnemonic_phrase(mnemonic_phrase)
         .detect_language()
@@ -24,8 +24,7 @@ async fn main() {
 
     let _eth_client = EthClient::new(PROVIDER_URL);
 
-    let blockchain_client =
-        EthClient::new(PROVIDER_URL).unwrap();
+    let blockchain_client = EthClient::new(PROVIDER_URL).unwrap();
 
     println!("blockchain_client: {:?}", &blockchain_client);
 
@@ -35,10 +34,13 @@ async fn main() {
         .build()
         .unwrap();
 
-    
     let from: Address = wallet.public_address().as_str().parse().unwrap();
     print!("from: {:?}", &from);
-    let balance = &blockchain_client.ethers().get_balance(from, None).await.unwrap();
+    let balance = &blockchain_client
+        .ethers()
+        .get_balance(from, None)
+        .await
+        .unwrap();
     print!("balance: {:?}", &balance);
 
     let eth_amount: EthereumAmount = EthereumAmount::from_wei(*balance);
@@ -49,8 +51,10 @@ async fn main() {
     );
 
     // Not that we need to, but we can determine the nonce manually if we want
-    let nonce= &blockchain_client.ethers().get_transaction_count(from, None).await.unwrap();
+    let nonce = &blockchain_client
+        .ethers()
+        .get_transaction_count(from, None)
+        .await
+        .unwrap();
     print!("nonce: {:?}", &nonce);
-
-    
 }

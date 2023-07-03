@@ -6,7 +6,6 @@ use walletd_hd_key::HDNetworkType;
 
 #[tokio::main]
 async fn main() {
-
     let mnemonic_phrase: &str =
         "outer ride neither foil glue number place usage ball shed dry point";
     let passphrase: Option<&str> = Some("mypassphrase");
@@ -22,5 +21,4 @@ async fn main() {
         .build();
 
     println!("wallet: {:?}", &wallet);
-    
 }

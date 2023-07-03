@@ -11,19 +11,19 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
     let ethereum_wallet = EthereumWallet::builder()
         .master_hd_key(master_hd_key)
         .build()?;
-    
+
     let public_address = ethereum_wallet.public_address();
-    
+
     println!("ethereum wallet public address: {}", public_address);
-    
+
     assert!(ethereum_wallet.private_key().is_ok());
     assert!(ethereum_wallet.public_key().is_ok());
-    
+
     let derived_hd_key = ethereum_wallet.derived_hd_key()?;
     let private_key =
-            EthereumPrivateKey::from_slice(&derived_hd_key.extended_private_key()?.to_bytes())?;
+        EthereumPrivateKey::from_slice(&derived_hd_key.extended_private_key()?.to_bytes())?;
     let address_derivation_path = &derived_hd_key.derivation_path.clone();
-    
+
     // EthereumWallet stores the private key as a 32 byte array
     let secret_bytes = private_key.to_bytes();
 
@@ -34,10 +34,10 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
     let wfbres = Wallet::from_bytes(&secret_bytes);
 
     let wfb = wfbres.unwrap();
-    // 5 = goerli chain id 
+    // 5 = goerli chain id
 
     // Link our wallet instance to our provider for signing our transactions
-    let client = SignerMiddleware::new(provider, wfb.with_chain_id(5u64));    
+    let client = SignerMiddleware::new(provider, wfb.with_chain_id(5u64));
 
     // Create a transaction request to send 10000 wei to the Goerli address
     let tx = TransactionRequest::new()
@@ -50,10 +50,16 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
 
     let pending_tx = client.send_transaction(tx, None).await.unwrap();
 
-    let receipt = pending_tx.await.unwrap().ok_or_else(|| println!("tx dropped from mempool")).unwrap();
-    let tx = client.get_transaction(receipt.transaction_hash).await.unwrap();
+    let receipt = pending_tx
+        .await
+        .unwrap()
+        .ok_or_else(|| println!("tx dropped from mempool"))
+        .unwrap();
+    let tx = client
+        .get_transaction(receipt.transaction_hash)
+        .await
+        .unwrap();
 
-    
     println!("tx: {:?}", &tx);
 
     let send_amount = EthereumAmount::from_wei(10_000.into());

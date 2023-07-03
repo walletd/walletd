@@ -2,9 +2,9 @@ use ::core::fmt;
 use std::fmt::LowerHex;
 use std::str::FromStr;
 
-use crate::{EthereumAmount, EthereumFormat};
 use crate::Error;
 use crate::EthClient;
+use crate::{EthereumAmount, EthereumFormat};
 
 use ethers::prelude::*;
 // use ethers::providers::{Middleware};
@@ -15,10 +15,6 @@ use tiny_keccak::{Hasher, Keccak};
 use walletd_bip39::Seed;
 use walletd_hd_key::{slip44, HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPurpose};
 use zeroize::{Zeroize, ZeroizeOnDrop};
-
-
-
-
 
 /// Represents a private key for an Ethereum wallet, wraps a [SecretKey] from the secp256k1 crate
 #[derive(Debug, Clone)]
@@ -197,14 +193,14 @@ impl EthereumWalletBuilder {
         hd_path_builder
             .purpose_index(hd_purpose_num)
             .hardened_purpose()
-            .coin_type_index(coin_type_id)            
+            .coin_type_index(coin_type_id)
             .hardened_coin_type();
-        
+
         let derived_key = master_hd_key.derive(&hd_path_builder.build().to_string())?;
-        
+
         let private_key: EthereumPrivateKey =
             EthereumPrivateKey::from_slice(&derived_key.extended_private_key()?.to_bytes())?;
-        
+
         let public_key =
             EthereumPublicKey::from_slice(&derived_key.extended_public_key()?.to_bytes())?;
         let public_address = public_key.to_public_address(self.address_format)?;
@@ -217,7 +213,7 @@ impl EthereumWalletBuilder {
             network: master_hd_key.network(),
             blockchain_client: None,
             derived_hd_key: Some(derived_key),
-        };        
+        };
         Ok(wallet)
     }
 
@@ -295,14 +291,13 @@ impl EthereumWallet {
         _send_amount: EthereumAmount,
         _to_address: &str,
     ) -> Result<String, Error> {
-
         //let secret_key: &Result<EthereumPrivateKey, Error> = &self.private_key();
 
         let derived_hd_key = &self.derived_hd_key()?;
         let private_key =
-                EthereumPrivateKey::from_slice(&derived_hd_key.extended_private_key()?.to_bytes())?;
+            EthereumPrivateKey::from_slice(&derived_hd_key.extended_private_key()?.to_bytes())?;
         let _address_derivation_path = &derived_hd_key.derivation_path.clone();
-        
+
         // EthereumWallet stores the private key as a 32 byte array
         let secret_bytes = private_key.to_bytes();
 
@@ -313,10 +308,10 @@ impl EthereumWallet {
 
         // Instantiate a ethers local wallet from the wallet's secret bytes
 
-        // 5 = goerli chain id 
+        // 5 = goerli chain id
 
         // Link our wallet instance to our provider for signing our transactions
-        let client = SignerMiddleware::new(provider, wallet_from_bytes.with_chain_id(5u64));    
+        let client = SignerMiddleware::new(provider, wallet_from_bytes.with_chain_id(5u64));
 
         // Create a transaction request to send 10000 wei to the Goerli address
         let tx = TransactionRequest::new()
@@ -324,11 +319,18 @@ impl EthereumWallet {
             .gas(21000)
             .value(10000)
             .chain_id(5u64);
-        
+
         let pending_tx = client.send_transaction(tx, None).await.unwrap();
-        let receipt = pending_tx.await.unwrap().ok_or_else(|| println!("tx dropped from mempool")).unwrap();
-        
-        let _tx = client.get_transaction(receipt.transaction_hash).await.unwrap();
+        let receipt = pending_tx
+            .await
+            .unwrap()
+            .ok_or_else(|| println!("tx dropped from mempool"))
+            .unwrap();
+
+        let _tx = client
+            .get_transaction(receipt.transaction_hash)
+            .await
+            .unwrap();
         Ok("tx_id".to_string())
     }
     /// Set the Blockchain Client on the Wallet
@@ -369,14 +371,13 @@ impl EthereumWallet {
     /// Return the pub/priv keys at a specified index
     /// For now, we're assuming that the path we're using for derivation is the default (m/44'/60'/0'/0/{index})
     pub fn index(&self, _index: u64) -> (String, String) {
-        
-        // // A wallet 
+        // // A wallet
 
         // let account_deriv_path = HDPath::builder()
         //     .purpose_index(HDPurpose::BIP44.to_shortform_num()) // 44' for Eth
         //     .coin_type_index(Coin::from(Symbol::ETH).id()) // 60' for Eth
         //     .account_index(0) // we'll work from acc 0
-        //     .change_index(0) 
+        //     .change_index(0)
         //     .no_address_index()
         //     .build().to_string();
 
