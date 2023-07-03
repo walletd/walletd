@@ -88,8 +88,7 @@ impl EthClient {
 
     // TODO(#70): Remove this after write-only functionality is finished
     /// Debug transaction for adding smart contract functionality
-    async fn print_txdata_for_block(&self, block: &web3::types::Block<H256>) {
-        todo!()
+    // async fn print_txdata_for_block(&self, block: &web3::types::Block<H256>) {
         // for transaction_hash in &block.transactions {
         //     let tx = match self
         //         .ethers()
@@ -114,11 +113,11 @@ impl EthClient {
         //         tx.gas_price,
         //     );
         // }
-    }
+    // }
 
     ///  Prints out info on a smart contract transaction from a block hash
-    async fn get_smart_contract_tx_vec_from_block_hash(&self, block: &web3::types::Block<H256>) {
-        todo!()
+    // async fn get_smart_contract_tx_vec_from_block_hash(&self, block: &web3::types::Block<H256>) {
+        // todo!()
         // for transaction_hash in &block.transactions {
         //     let tx = match self
         //         .web3
@@ -167,11 +166,11 @@ impl EthClient {
         //         }
         //     }
         // }
-    }
+    // }
 
     /// Filters a block for all ERC-20 compliant transactions
     /// This leverages the standardised ERC20 Application Binary Interface
-    async fn smart_contract_transactions(&self, block: &web3::types::Block<H256>) {
+    // async fn smart_contract_transactions(&self, block: &web3::types::Block<H256>) {
         // for transaction_hash in &block.transactions {
         //     let tx = match self
         //         .ethers()
@@ -225,7 +224,7 @@ impl EthClient {
         //     // };
         // }
         // // info!("{:#?}", smart_contract_addr);
-    }
+    // }
 
     /// Given a specified address, retrieves the [Ethereum balance][EthereumAmount] of that
     /// [address][Address].
@@ -299,7 +298,7 @@ impl EthClient {
     }
 
     /// Get the latest block number for the current network chain.
-    pub async fn current_block_number(&self) -> web3::Result<u64> {
+    pub async fn current_block_number(&self) -> Result<u64, Error> {
         let block_number: ethers::types::U64 = self.ethers.get_block_number().await.unwrap();
         Ok(block_number.as_u64())
     }
@@ -333,7 +332,7 @@ impl EthClient {
     // no transaction data returned by Web3's block struct. This appears to be a bug
     // in Web3. This may be fixed by ethers.rs in which case we don't need block_data_from_numeric_string
     #[allow(non_snake_case)]
-    async fn block_data_from_U64(&self, block_id: U64) -> web3::Result<Block<H256>> {
+    async fn block_data_from_U64(&self, block_id: U64) -> Result<Block<H256>, Error> {
         let blockid = BlockNumber::Number(block_id);
         let block_data = &self
             .ethers()
@@ -350,7 +349,7 @@ impl EthClient {
     async fn block_data_from_numeric_string(
         &self,
         block_id: &str,
-    ) -> web3::Result<ethers::types::Block<H256>> {
+    ) -> Result<ethers::types::Block<H256>, Error> {
         // we're using a string because U64 is a web3 type
         let block_number = block_id.parse::<U64>().unwrap();
         let blockid = BlockNumber::Number(block_number);
@@ -372,7 +371,7 @@ impl BlockchainConnector for EthClient {
     /// Returns an [error][Error] if the endpoint is invalid or the transport fails to connect.
     fn new(endpoint: &str) -> Result<Self, Error> {
         println!("endpoint: {:?}", endpoint);
-        // TODO(#71): Change transport to support web sockets
+        // TODO(#71): Update transport to support web sockets
         let ethers = Provider::try_from(endpoint).unwrap();
         Ok(Self {
             ethers,
@@ -384,19 +383,3 @@ impl BlockchainConnector for EthClient {
         &self.endpoint
     }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-    
-
-//     fn test_zeroize() -> Result<(), Error> {
-//         let phrase: &str = "outer ride neither foil glue number place usage ball shed dry point";
-//         let mut mnemonic = Bip39Mnemonic::builder().mnemonic_phrase(phrase).build()?;
-//         mnemonic.zeroize();
-//         assert_eq!(mnemonic.seed.as_bytes(), &[]);
-//         assert_eq!(mnemonic.phrase, "");
-//         Ok(())
-//     }
-
-// }
