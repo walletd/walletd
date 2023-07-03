@@ -1,6 +1,5 @@
 use std::str::FromStr;
 use walletd_bip39::Seed;
-use walletd_coin_core::{CryptoWallet, CryptoWalletBuilder};
 use walletd_ethereum::EthereumWallet;
 use walletd_hd_key::HDNetworkType;
 use zeroize::Zeroize;

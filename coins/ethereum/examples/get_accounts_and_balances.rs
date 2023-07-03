@@ -38,7 +38,7 @@ async fn main() {
     // }
     // Remote transport example
     // let transport = web3::transports::Http::new(INFURA_GOERLI_ENDPOINT)?;
-    let eth_client = EthClient::new(&INFURA_GOERLI_ENDPOINT.to_string()).unwrap();
+    let eth_client = EthClient::new(INFURA_GOERLI_ENDPOINT).unwrap();
     // let mut accounts = web3.eth().accounts().await?;
     // let mut addresses: Vec<H160> = Vec::new();
     // addresses.push("00a329c0648769a73afac7f9381e08fb43dbea72".parse().unwrap());
@@ -51,7 +51,7 @@ async fn main() {
     // Stubbed, should use instance of EthereumWallet to determine accounts and
     // balances let transport =
     // web3::transports::Http::new(INFURA_GOERLI_ENDPOINT)?;
-    let _eth_client = EthClient::new(&INFURA_GOERLI_ENDPOINT.to_string());
+    let _eth_client = EthClient::new(INFURA_GOERLI_ENDPOINT);
 
     // Should now instantiate wallet with transport
     todo!()

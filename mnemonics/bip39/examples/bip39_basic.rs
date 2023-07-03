@@ -1,6 +1,6 @@
 use walletd_bip39::{Bip39Language, Bip39Mnemonic, Bip39MnemonicType, Mnemonic, MnemonicBuilder};
 
-fn main() -> () {
+fn main() {
     // example of how to generate a mnemonic phrase using the builder pattern
     println!("Example of generating a mnemonic phrase using the builder pattern");
     println!("{:?}", Bip39Language::English);

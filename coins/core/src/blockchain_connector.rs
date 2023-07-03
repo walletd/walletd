@@ -1,6 +1,9 @@
 use crate::Error;
 use async_trait::async_trait;
 
+pub trait BitcoinConnector {
+    type ErrorType: std::error::Error;
+}
 /// Used to connect to a blockchain and send and receive information to and from the blockchain.
 #[async_trait]
 pub trait BlockchainConnector: Send {

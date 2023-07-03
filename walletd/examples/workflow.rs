@@ -1,9 +1,9 @@
 extern crate walletd;
 
 use walletd::{
-    blockstream::Blockstream, walletd_coin_core::BlockchainConnectorBuilder,
-    walletd_ethereum::EthClient, Bip39Mnemonic, BitcoinWallet, BlockchainConnector, CryptoWallet,
-    Error, EthereumWallet, HDNetworkType, KeyPair, Mnemonic, MnemonicBuilder, MnemonicKeyPairType,
+    blockstream::Blockstream, walletd_ethereum::EthClient, Bip39Mnemonic, BitcoinWallet,
+    BlockchainConnector, Error, EthereumWallet, HDNetworkType, KeyPair, Mnemonic, MnemonicBuilder,
+    MnemonicKeyPairType,
 };
 
 const BTC_TESTNET_URL: &str = "https://blockstream.info/testnet/api";
@@ -40,12 +40,16 @@ async fn main() -> Result<(), Error> {
     println!("HD Wallet Information:\n{:#?}", hd_wallet);
 
     // more options can be added here later such as for username/password api key etc.
-    let btc_blockchain_client = BlockchainConnectorBuilder::<Blockstream>::new()
-        .url(BTC_TESTNET_URL.into())
-        .build()?;
+    let btc_blockchain_client = Box::new(Blockstream::new(BTC_TESTNET_URL)?);
+    // let btc_blockchain_client = BlockchainConnectorBuilder::<Blockstream>::new()
+    //     .url(BTC_TESTNET_URL.into())
+    //     .build()?;
 
     // derive the Bitcoin wallet from the HD wallet
-    let mut btc_wallet = hd_wallet.derive_wallet::<BitcoinWallet>()?;
+    let mut btc_wallet = BitcoinWallet::builder()
+        .master_hd_key(hd_wallet.to_master_key())
+        .build()?;
+    // let mut btc_wallet = hd_wallet.derive_wallet::<BitcoinWallet>()?;
 
     // associate it with the btc blockchain client
     btc_wallet.set_blockchain_client(btc_blockchain_client);
@@ -58,7 +62,10 @@ async fn main() -> Result<(), Error> {
     // This is another way to use the builder pattern to create the blockchain client instead of using the pattern written out for the btc_blockchain_client
     let eth_blockchain_client = EthClient::builder().url(ETH_TESTNET_URL.into()).build()?;
 
-    let mut eth_wallet = hd_wallet.derive_wallet::<EthereumWallet>()?;
+    let mut eth_wallet = EthereumWallet::builder()
+        .master_hd_key(hd_wallet.to_master_key())
+        .build()?;
+    // let mut eth_wallet = hd_wallet.derive_wallet::<EthereumWallet>()?;
 
     eth_wallet.set_blockchain_client(eth_blockchain_client);
 

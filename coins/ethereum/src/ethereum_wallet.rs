@@ -4,11 +4,9 @@ use std::str::FromStr;
 
 use crate::Error;
 use crate::EthClient;
-use async_trait::async_trait;
 use secp256k1::{PublicKey, SecretKey};
 use tiny_keccak::{Hasher, Keccak};
 use walletd_bip39::Seed;
-use walletd_coin_core::{CryptoWallet, CryptoWalletBuilder};
 use walletd_hd_key::{slip44, HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPurpose};
 use web3::types::{Address, TransactionParameters};
 use zeroize::{Zeroize, ZeroizeOnDrop};
@@ -166,12 +164,13 @@ impl Default for EthereumWalletBuilder {
     }
 }
 
-impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
-    fn new() -> Self {
+impl EthereumWalletBuilder {
+    /// Creates a new EthereumWalletBuilder with defaults.
+    pub fn new() -> Self {
         Self::default()
     }
-
-    fn build(&self) -> Result<EthereumWallet, <EthereumWallet as CryptoWallet>::ErrorType> {
+    /// Builds the EthereumWallet with the specified options
+    pub fn build(&self) -> Result<EthereumWallet, Error> {
         let master_hd_key = match (&self.master_hd_key, &self.mnemonic_seed) {
             (None, None) => {
                 return Err(Error::UnableToImportWallet(
@@ -214,37 +213,35 @@ impl CryptoWalletBuilder<EthereumWallet> for EthereumWalletBuilder {
     }
 
     /// Allows specification of the master HD key for the wallet
-    fn master_hd_key(&mut self, master_hd_key: HDKey) -> &mut Self {
+    pub fn master_hd_key(&mut self, master_hd_key: HDKey) -> &mut Self {
         self.master_hd_key = Some(master_hd_key);
         self
     }
 
     /// Allows specification of the address format for the wallet
-    fn address_format(&mut self, address_format: EthereumFormat) -> &mut Self {
+    pub fn address_format(&mut self, address_format: EthereumFormat) -> &mut Self {
         self.address_format = address_format;
         self
     }
 
     /// Allows specification of the mnemonic seed for the wallet
-    fn mnemonic_seed(&mut self, mnemonic_seed: Seed) -> &mut Self {
+    pub fn mnemonic_seed(&mut self, mnemonic_seed: Seed) -> &mut Self {
         self.mnemonic_seed = Some(mnemonic_seed);
         self
     }
 
     /// Allows specification of the network type for the wallet, the default is HDNetworkType::MainNet
-    fn network_type(&mut self, network_type: HDNetworkType) -> &mut Self {
+    pub fn network_type(&mut self, network_type: HDNetworkType) -> &mut Self {
         self.network_type = network_type;
         self
     }
-
-    fn hd_path_builder(&mut self, hd_path_builder: HDPathBuilder) -> &mut Self {
+    /// Allows specification of the HDPathBuilder for the wallet.
+    pub fn hd_path_builder(&mut self, hd_path_builder: HDPathBuilder) -> &mut Self {
         self.hd_path_builder = hd_path_builder;
         self
     }
-}
-
-impl EthereumWalletBuilder {
-    fn default_hd_purpose() -> HDPurpose {
+    /// Sets the default HD Purpose
+    pub fn default_hd_purpose() -> HDPurpose {
         HDPurpose::BIP44
     }
 }
@@ -266,30 +263,23 @@ pub struct EthereumWallet {
     derived_hd_key: Option<HDKey>,
 }
 
-#[async_trait]
-impl CryptoWallet for EthereumWallet {
-    type ErrorType = Error;
-    type BlockchainClient = EthClient;
-    type CryptoAmount = EthereumAmount;
-    type NetworkType = HDNetworkType;
-    type WalletBuilder = EthereumWalletBuilder;
-    type AddressFormat = EthereumFormat;
-
-    fn builder() -> Self::WalletBuilder {
+impl EthereumWallet {
+    /// Returns the builder for the [EthereumWallet].
+    pub fn builder() -> EthereumWalletBuilder {
         EthereumWalletBuilder::new()
     }
-
-    async fn balance(&self) -> Result<Self::CryptoAmount, Error> {
+    ///  Returns the blance for this Ethereum Wallet.
+    pub async fn balance(&self) -> Result<EthereumAmount, Error> {
         let blockchain_client = self.blockchain_client()?;
         let address = web3::types::H160::from_str(&self.public_address())
             .map_err(|e| (Error::FromStr(e.to_string())))?;
         let balance = blockchain_client.balance(address).await?;
         Ok(balance)
     }
-
-    async fn transfer(
+    /// Creates and sends a transfer transaction to the Ethereum blockchain.
+    pub async fn transfer(
         &self,
-        send_amount: &Self::CryptoAmount,
+        send_amount: EthereumAmount,
         to_address: &str,
     ) -> Result<String, Error> {
         let blockchain_client = self.blockchain_client()?;
@@ -320,28 +310,26 @@ impl CryptoWallet for EthereumWallet {
 
         Ok(hash)
     }
-
-    fn set_blockchain_client(&mut self, client: Self::BlockchainClient) {
+    /// Set the Blockchain Client on the Wallet
+    pub fn set_blockchain_client(&mut self, client: EthClient) {
         self.blockchain_client = Some(client);
     }
-
-    async fn sync(&mut self) -> Result<(), Error> {
+    /// Syncs the wallet with the blockchain by adding previously used addresses to the wallet.
+    pub async fn sync(&mut self) -> Result<(), Error> {
         Ok(())
     }
-
-    fn receive_address(&self) -> Result<String, Error> {
+    /// Retrieves the next recevie address of the wallet.
+    pub fn receive_address(&self) -> Result<String, Error> {
         Ok(self.public_address())
     }
-
-    fn blockchain_client(&self) -> Result<&EthClient, Error> {
+    /// Returns the Blockchain client.
+    pub fn blockchain_client(&self) -> Result<&EthClient, Error> {
         match &self.blockchain_client {
             Some(client) => Ok(client),
             None => Err(Error::MissingBlockchainClient),
         }
     }
-}
 
-impl EthereumWallet {
     /// Returns the address format used by the wallet
     pub fn address_format(&self) -> EthereumFormat {
         self.address_format

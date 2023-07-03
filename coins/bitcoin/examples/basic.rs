@@ -1,6 +1,5 @@
 extern crate walletd_bitcoin;
 
-use hex;
 use walletd_bitcoin::connectors::{BTransaction, Input, Output, Status};
 use walletd_bitcoin::{BitcoinPrivateKey, BitcoinWallet, Network};
 fn main() {
@@ -121,7 +120,7 @@ fn main() {
         .unwrap();
 
     let first_signature =
-        BitcoinWallet::signature_sighashall_for_transaction_hash(&sighash_for_input1, &secret_key1)
+        BitcoinWallet::signature_sighashall_for_transaction_hash(sighash_for_input1, &secret_key1)
             .unwrap();
     println!("first_signature: {}", first_signature);
 
@@ -142,7 +141,7 @@ fn main() {
         .unwrap();
 
     let second_signature =
-        BitcoinWallet::signature_sighashall_for_transaction_hash(&sighash_for_input2, &secret_key2)
+        BitcoinWallet::signature_sighashall_for_transaction_hash(sighash_for_input2, &secret_key2)
             .unwrap();
     println!("second_signature: {}", second_signature);
 
@@ -162,7 +161,7 @@ fn main() {
         )
         .unwrap();
     let third_signature =
-        BitcoinWallet::signature_sighashall_for_transaction_hash(&sighash_for_input3, &secret_key3)
+        BitcoinWallet::signature_sighashall_for_transaction_hash(sighash_for_input3, &secret_key3)
             .unwrap();
     println!("third_signature: {}", second_signature);
 

@@ -41,7 +41,7 @@
 //!
 //! ### Derive Wallets
 //!
-//! The [`KeyPair::derive_wallet`] method can be used to derive a [cryptowallet][CryptoWallet] for a specific cryptocurrency from a [KeyPair].
+//! The method can be used to derive a [cryptowallet][CryptoWallet] for a specific cryptocurrency from a [KeyPair].
 //! You can specify a concrete struct that implements the [CryptoWallet] trait such as [BitcoinWallet]  or [EthereumWallet] to derive a cryptowallet from the `keypair` of the specified concrete type.
 //! ```
 //! # use walletd::prelude::*;
@@ -55,8 +55,8 @@
 //! # println!("seed_hex: {:x}", seed);
 //! # let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
 //! # let keypair = KeyPair::builder().mnemonic_phrase(mnemonic_phrase.into()).network_type(HDNetworkType::TestNet).build()?;
-//! let mut btc_wallet = keypair.derive_wallet::<BitcoinWallet>()?;
-//! let mut eth_wallet = keypair.derive_wallet::<EthereumWallet>()?;
+//! let mut btc_wallet = BitcoinWalletBuilder::new().master_hd_key(keypair.to_master_key()).build().unwrap();
+//! let mut eth_wallet = EthereumWalletBuilder::new().master_hd_key(keypair.to_master_key()).build().unwrap();
 //! # Ok(())
 //! # }
 //! ```
@@ -79,9 +79,9 @@
 //! # println!("seed_hex: {:x}", seed);
 //! # let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
 //! # let keypair = KeyPair::builder().mnemonic_phrase(mnemonic_phrase.into()).network_type(HDNetworkType::TestNet).build()?;
-//! # let mut btc_wallet = keypair.derive_wallet::<BitcoinWallet>()?;
-//! # let mut eth_wallet = keypair.derive_wallet::<EthereumWallet>()?;
-//! btc_wallet.set_blockchain_client(Blockstream::new("https://blockstream.info/testnet/api")?);
+//! let mut btc_wallet = BitcoinWalletBuilder::new().master_hd_key(keypair.to_master_key()).build().unwrap();
+//! let mut eth_wallet = EthereumWalletBuilder::new().master_hd_key(keypair.to_master_key()).build().unwrap();
+//! btc_wallet.set_blockchain_client(Box::new(Blockstream::new("https://blockstream.info/testnet/api")?));
 //! eth_wallet.set_blockchain_client(EthClient::new("https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161")?);
 //!
 //! # Ok(())
@@ -104,13 +104,15 @@
 //! # println!("seed_hex: {:x}", seed);
 //! # let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
 //! # let keypair = KeyPair::builder().mnemonic_phrase(mnemonic_phrase.into()).network_type(HDNetworkType::TestNet).build()?;
-//! # let mut btc_wallet = keypair.derive_wallet::<BitcoinWallet>()?;
-//! # let mut eth_wallet = keypair.derive_wallet::<EthereumWallet>()?;
-//! # btc_wallet.set_blockchain_client(Blockstream::new("https://blockstream.info/testnet/api")?);
+//! let mut btc_wallet = BitcoinWalletBuilder::new()
+//! .master_hd_key(keypair.to_master_key())
+//! .build()
+//! .unwrap();
+//! let mut eth_wallet = EthereumWalletBuilder::new().master_hd_key(keypair.to_master_key()).build().unwrap();
+//! # btc_wallet.set_blockchain_client(Box::new(Blockstream::new("https://blockstream.info/testnet/api")?));
 //! # eth_wallet.set_blockchain_client(EthClient::new("https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161")?);
 //! btc_wallet.sync().await?;
 //! println!("btc_wallet balance: {} BTC", btc_wallet.balance().await?.btc());
-//! let mut eth_wallet = keypair.derive_wallet::<EthereumWallet>()?;
 //! print!("eth_wallet public address: {}", eth_wallet.public_address());
 //! let eth_client = EthClient::new("https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161")?;
 //! eth_wallet.set_blockchain_client(eth_client);

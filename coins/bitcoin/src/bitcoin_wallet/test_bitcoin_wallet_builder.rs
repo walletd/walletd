@@ -1,14 +1,13 @@
 use super::*;
 use crate::{AddressType, BitcoinWalletBuilder, Error, HDKey, Network, Seed};
 use std::str::FromStr;
-use walletd_coin_core::CryptoWalletBuilder;
 use walletd_hd_key::HDNetworkType;
 
 #[test]
 fn test_default() -> Result<(), Error> {
     let builder = BitcoinWalletBuilder::default();
     assert_eq!(builder.address_format, AddressType::P2wpkh);
-    assert_eq!(builder.account_discovery, true);
+    assert!(builder.account_discovery);
     assert!(builder.gap_limit_specified.is_some());
     assert_eq!(
         builder

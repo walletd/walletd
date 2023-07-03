@@ -5,13 +5,12 @@ pub use crate::bitcoin::{
     sighash::EcdsaSighashType, Address as AddressInfo, AddressType, Network,
     PublicKey as BitcoinPublicKey, Script,
 };
+use crate::BitcoinConnector;
 
-use walletd_coin_core::CryptoAddress;
-use walletd_hd_key::{HDKey, HDNetworkType};
-
-use crate::blockstream::Blockstream;
 use crate::BitcoinAmount;
 use crate::Error;
+use walletd_coin_core::CryptoAddress;
+use walletd_hd_key::{HDKey, HDNetworkType};
 
 /// Wrapper around bitcoin::PrivateKey which implements Zeroize and zeroizes on drop
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -103,7 +102,10 @@ impl BitcoinAddress {
     }
 
     /// Returns the balance of this particular [BitcoinAddress] as a [BitcoinAmount] struct.
-    pub async fn balance(&self, blockchain_client: &Blockstream) -> Result<BitcoinAmount, Error> {
+    pub async fn balance(
+        &self,
+        blockchain_client: &(dyn BitcoinConnector + Send + Sync),
+    ) -> Result<BitcoinAmount, Error> {
         let utxo_info = blockchain_client.utxo(&self.public_address()).await?;
         let amount = utxo_info.sum()?;
         Ok(amount)
