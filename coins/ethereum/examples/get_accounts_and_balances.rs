@@ -1,6 +1,6 @@
 use walletd_bip39::{Bip39Mnemonic, Mnemonic, MnemonicBuilder};
 
-use walletd_coin_core::{BlockchainConnector, CryptoWalletBuilder};
+use walletd_coin_core::prelude::*;
 use walletd_ethereum::{EthClient, EthereumAmount, EthereumWallet};
 use walletd_hd_key::HDNetworkType;
 

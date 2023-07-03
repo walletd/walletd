@@ -22,5 +22,5 @@ async fn main() {
         .build();
 
     println!("wallet: {:?}", &wallet);
-    ()
+    
 }

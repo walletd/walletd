@@ -17,5 +17,5 @@ async fn main() {
 
     assert!(!_latest_block_data);
     print!("If you see this, it means that block 8455626 was retrieved without error.");
-    ()
+    
 }
