@@ -4,15 +4,7 @@ use walletd_coin_core::{BlockchainConnector, CryptoWallet, CryptoWalletBuilder};
 use walletd_ethereum::{EthClient, EthereumAmount, EthereumWallet};
 use walletd_hd_key::HDNetworkType;
 
-
-use ethers::{
-    core::{types::TransactionRequest, utils::Anvil},
-    middleware::SignerMiddleware,
-    providers::{Http, Middleware, Provider},
-    signers::{LocalWallet, Signer},
-    types::Address
-};
-use std::convert::TryFrom;
+use ethers::prelude::*;
 
 const PROVIDER_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 const GOERLI_TEST_ADDRESS: &str = "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
@@ -26,7 +18,7 @@ async fn main() -> () {
         .build()
         .unwrap();
     let eth_client = EthClient::new(PROVIDER_URL).unwrap();
-    let address: H160 = "00a329c0648769a73afac7f9381e08fb43dbea72".parse().unwrap();
+    let address: H160 = GOERLI_TEST_ADDRESS.parse().unwrap();
 
     let seed = restored_mnemonic.to_seed();
 
@@ -47,17 +39,18 @@ async fn main() -> () {
     let from: Address = wallet.public_address().as_str().parse().unwrap();
     print!("from: {:?}", &from);
     let balance = &blockchain_client.ethers().get_balance(from, None).await.unwrap();
-    print!("balance_before: {:?}", &balance_before);
+    print!("balance: {:?}", &balance);
+
+    let eth_amount: EthereumAmount = EthereumAmount::from_wei(*balance);
+    println!(
+        "ethereum wallet balance: {} ETH, ({} wei)",
+        eth_amount.eth(),
+        eth_amount.wei()
+    );
 
     // Not that we need to, but we can determine the nonce manually if we want
     let nonce= &blockchain_client.ethers().get_transaction_count(from, None).await.unwrap();
     print!("nonce: {:?}", &nonce);
-
-    println!(
-        "ethereum wallet balance: {} ETH, ({} wei)",
-        balance.eth(),
-        balance.wei()
-    );
 
     ()
 }

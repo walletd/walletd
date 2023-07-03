@@ -13,7 +13,7 @@
 use walletd_coin_core::BlockchainConnector;
 use walletd_ethereum::EthClient;
 
-pub const PROVIDER_URL &str =
+pub const PROVIDER_URL: &str =
     "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 #[tokio::main]
 async fn main() {
