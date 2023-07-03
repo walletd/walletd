@@ -187,7 +187,7 @@ impl EthereumWalletBuilder {
             (Some(key), _) => key.clone(),
             (None, Some(seed)) => HDKey::new_master(seed.clone(), self.network_type)?,
         };
-        println!("{:?}", &self.mnemonic_seed);
+
         let hd_purpose_num = self
             .hd_path_builder
             .purpose
@@ -204,21 +204,10 @@ impl EthereumWalletBuilder {
         
         let private_key: EthereumPrivateKey =
             EthereumPrivateKey::from_slice(&derived_key.extended_private_key()?.to_bytes())?;
-        println!("pk: {:?}", private_key);
-
-        let private_key2 = &derived_key.extended_private_key_serialized().unwrap();
-        println!("pk2: {:?}", private_key2);
-
+        
         let public_key =
             EthereumPublicKey::from_slice(&derived_key.extended_public_key()?.to_bytes())?;
         let public_address = public_key.to_public_address(self.address_format)?;
-        println!("public k 3: {:?}", public_key);
-
-        println!("We want this for signing:");
-        println!("{:?}", public_key);
-        println!("{:?}", private_key);
-        println!("{:?}", derived_key);
-        //EthereumWallet::set_blockchain_client(client);
 
         let wallet = EthereumWallet {
             address_format: self.address_format,
@@ -228,8 +217,7 @@ impl EthereumWalletBuilder {
             network: master_hd_key.network(),
             blockchain_client: None,
             derived_hd_key: Some(derived_key),
-        };
-        //println!("wallet: {:?}", wallet);
+        };        
         Ok(wallet)
     }
 
@@ -336,9 +324,6 @@ impl EthereumWallet {
             .gas(21000)
             .value(10000)
             .chain_id(5u64);
-
-
-        println!("Initialising send: {:?}", &tx);
         
         let pending_tx = client.send_transaction(tx, None).await.unwrap();
         let receipt = pending_tx.await.unwrap().ok_or_else(|| println!("tx dropped from mempool")).unwrap();
@@ -422,7 +407,6 @@ impl EthereumWallet {
 
     /// Returns the private key of the wallet if it exists, otherwise returns an error
     pub fn private_key(&self) -> Result<EthereumPrivateKey, Error> {
-        println!("{:?}", &self.private_key);
         if let Some(key) = self.private_key.clone() {
             Ok(key)
         } else {

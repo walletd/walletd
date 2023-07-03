@@ -11,15 +11,8 @@ use std::str::FromStr;
 use std::convert::TryFrom;
 use walletd_coin_core::BlockchainConnector;
 
-#[allow(dead_code)]
-pub enum TransportType {
-    Http,
-    WebSockets,
-}
-
 /// A blockchain connector for Ethereum which contains a [`instance of ethers `](https://github.com/gakonst/ethers-rs) using a HTTP transport.
 #[derive(Clone, Debug)]
-#[allow(dead_code)]
 pub struct EthClient {
     ethers: Provider<Http>,
     endpoint: String,
