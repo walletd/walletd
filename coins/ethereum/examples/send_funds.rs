@@ -8,7 +8,7 @@ const GOERLI_TEST_ADDRESS: &str = "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
 async fn main() -> Result<(), walletd_ethereum::Error> {
     let master_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
     let master_hd_key = HDKey::new_master(master_seed, HDNetworkType::TestNet)?;
-    let mut ethereum_wallet = EthereumWallet::builder()
+    let ethereum_wallet = EthereumWallet::builder()
         .master_hd_key(master_hd_key)
         .build()?;
     
@@ -57,7 +57,7 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
     println!("tx: {:?}", &tx);
 
     let send_amount = EthereumAmount::from_wei(10_000.into());
-    let tx_hash = ethereum_wallet
+    let _tx_hash = ethereum_wallet
         .transfer(send_amount, GOERLI_TEST_ADDRESS)
         .await
         .unwrap();

@@ -5,8 +5,7 @@ use walletd_ethereum::EthereumWallet;
 use walletd_hd_key::HDNetworkType;
 
 #[tokio::main]
-async fn main() -> web3::Result<()> {
-    // main_wip()?;
+async fn main() {
 
     let mnemonic_phrase: &str =
         "outer ride neither foil glue number place usage ball shed dry point";
@@ -23,5 +22,5 @@ async fn main() -> web3::Result<()> {
         .build();
 
     println!("wallet: {:?}", &wallet);
-    Ok(())
+    ()
 }

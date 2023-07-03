@@ -1,6 +1,6 @@
 use walletd_bip39::{Bip39Mnemonic, Mnemonic, MnemonicBuilder};
 
-use walletd_coin_core::{BlockchainConnector, CryptoWallet, CryptoWalletBuilder};
+use walletd_coin_core::{BlockchainConnector, CryptoWalletBuilder};
 use walletd_ethereum::{EthClient, EthereumAmount, EthereumWallet};
 use walletd_hd_key::HDNetworkType;
 
@@ -9,7 +9,7 @@ use ethers::prelude::*;
 const PROVIDER_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 const GOERLI_TEST_ADDRESS: &str = "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
 #[tokio::main]
-async fn main() -> () {
+async fn main() {
     let mnemonic_phrase: &str =
     "mandate rude write gather vivid inform leg swift usual early bamboo element";
     let restored_mnemonic = Bip39Mnemonic::builder()
@@ -17,8 +17,8 @@ async fn main() -> () {
         .detect_language()
         .build()
         .unwrap();
-    let eth_client = EthClient::new(PROVIDER_URL).unwrap();
-    let address: H160 = GOERLI_TEST_ADDRESS.parse().unwrap();
+    let _eth_client = EthClient::new(PROVIDER_URL).unwrap();
+    let _address: H160 = GOERLI_TEST_ADDRESS.parse().unwrap();
 
     let seed = restored_mnemonic.to_seed();
 
@@ -29,7 +29,7 @@ async fn main() -> () {
 
     println!("blockchain_client: {:?}", &blockchain_client);
 
-    let mut wallet = EthereumWallet::builder()
+    let wallet = EthereumWallet::builder()
         .mnemonic_seed(seed)
         .network_type(HDNetworkType::TestNet)
         .build()
@@ -52,5 +52,5 @@ async fn main() -> () {
     let nonce= &blockchain_client.ethers().get_transaction_count(from, None).await.unwrap();
     print!("nonce: {:?}", &nonce);
 
-    ()
+    
 }
