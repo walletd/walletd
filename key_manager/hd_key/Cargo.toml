@@ -18,7 +18,7 @@ path = "src/lib.rs"
 tokio = { version = "1", features = ["full"] }
 
 [dependencies]
-walletd_mnemonics_core = { path = "../core", version="0.2" }
+walletd_mnemonics_core = { path = "../../mnemonics/core", version="0.2" }
 base58 = { version = "0.2.0" }
 hex = { version = "0.4.2" }
 hmac = { version = "0.12.1" }

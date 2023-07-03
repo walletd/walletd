@@ -27,7 +27,7 @@ mockito = "1.0.2"
 
 walletd_coin_core = {path = "../core/", version="0.2"}
 walletd_bip39 = {path = "../../mnemonics/bip39", version="0.2"}
-walletd_hd_key = {path = "../../mnemonics/hd_key", version="0.2"}
+walletd_hd_key = {path = "../../key_manager/hd_key", version="0.2"}
 
 anyhow = "1.0.68"
 async-trait = "0.1.60"

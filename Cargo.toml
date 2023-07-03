@@ -2,7 +2,7 @@
 members = [
     "walletd",
     "mnemonics/bip39",
-    "mnemonics/hd_key",
+    "key_manager/hd_key",
     "mnemonics/core",
     "coins/bitcoin",
     "coins/ethereum",
