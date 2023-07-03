@@ -1,21 +1,15 @@
 use crate::Error;
 use crate::EthereumAmount;
+
 use async_trait::async_trait;
-
-use std::str::FromStr;
-use walletd_coin_core::BlockchainConnector;
-
-
-
 use ethers::types::Address;
-// use web3::types::{ H160 as oldH160, H256 as oldH256, U64 as oldU64};
 use ethers::prelude::*;
-use ethers::providers::{Middleware, Provider};
-use ethers::providers::Http;
-use ethers::types::{BlockId, Block, BlockNumber, H256, U64};
+// use ethers::providers::{Middleware, Provider};
+// use ethers::providers::Http;
+// use ethers::types::{BlockId, Block, BlockNumber, H256, U64};
+use std::str::FromStr;
 use std::convert::TryFrom;
-
-
+use walletd_coin_core::BlockchainConnector;
 
 #[allow(dead_code)]
 pub enum TransportType {
@@ -23,11 +17,10 @@ pub enum TransportType {
     WebSockets,
 }
 
-/// A blockchain connector for Ethereum which contains a [`web3 instance`](https://github.com/tomusdrw/rust-web3) using a HTTP transport.
+/// A blockchain connector for Ethereum which contains a [`instance of ethers `](https://github.com/gakonst/ethers-rs) using a HTTP transport.
 #[derive(Clone, Debug)]
 #[allow(dead_code)]
 pub struct EthClient {
-    //web3: web3::Web3<web3::transports::Http>,
     ethers: Provider<Http>,
     endpoint: String,
 }
@@ -310,16 +303,10 @@ impl EthClient {
         // getting gas price
         let gas_price = self.ethers.get_gas_price().await.unwrap();
         Ok(EthereumAmount { wei: gas_price })
-
-
-        // let gas_price = self.web3.eth().gas_price().await?;
-        // Ok(EthereumAmount { wei: gas_price })
     }
 
     /// Get the latest block number for the current network chain.
     pub async fn current_block_number(&self) -> web3::Result<u64> {
-        //let block_number = &self.ethers.block_number().await?;
-        // Ok(block_number.as_u64())
         let block_number: ethers::types::U64 = self.ethers.get_block_number().await.unwrap();
         Ok(block_number.as_u64())
     }
@@ -351,7 +338,7 @@ impl EthClient {
     ///
     // TODO:(#73) - when using U64,
     // no transaction data returned by Web3's block struct. This appears to be a bug
-    // in Web3
+    // in Web3. This may be fixed by ethers.rs in which case we don't need block_data_from_numeric_string
     #[allow(non_snake_case)]
     async fn block_data_from_U64(&self, block_id: U64) -> web3::Result<Block<H256>> {
         let blockid = BlockNumber::Number(block_id);
@@ -394,12 +381,9 @@ impl BlockchainConnector for EthClient {
         println!("endpoint: {:?}", endpoint);
         // TODO(#71): Change transport to support web sockets
         let ethers = Provider::try_from(endpoint).unwrap();
-        // With these latest changes, we can only possibly be using ethers when we leverage EthClient correctly
-        println!("ethers: {:?}", &ethers);
         Ok(Self {
-            // web3,
             ethers,
-            endpoint: endpoint.to_string(), // web3 uses an &str for endpoint
+            endpoint: endpoint.to_string(),
         })
     }
     /// Returns the url of the endpoint associated with the [EthClient].

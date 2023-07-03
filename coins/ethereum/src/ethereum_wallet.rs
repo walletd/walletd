@@ -2,28 +2,23 @@ use ::core::fmt;
 use std::fmt::LowerHex;
 use std::str::FromStr;
 
+use crate::{EthereumAmount, EthereumFormat};
 use crate::Error;
 use crate::EthClient;
+
+use ethers::prelude::*;
+// use ethers::providers::{Middleware};
+// use ethers::types::{TransactionRequest};
+// use ethers::signers::{Signer};
 use secp256k1::{PublicKey, SecretKey};
 use tiny_keccak::{Hasher, Keccak};
 use walletd_bip39::Seed;
 use walletd_hd_key::{slip44, HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPurpose};
-//use web3::types::{Address, TransactionParameters};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 
-use crate::{EthereumAmount, EthereumFormat};
 
 
-use ethers::prelude::*;
-use ethers::providers::{Middleware};
-
-use ethers::types::{TransactionRequest};
-
-
-
-
-use ethers::signers::{Signer};
 
 /// Represents a private key for an Ethereum wallet, wraps a [SecretKey] from the secp256k1 crate
 #[derive(Debug, Clone)]
@@ -202,9 +197,9 @@ impl EthereumWalletBuilder {
         hd_path_builder
             .purpose_index(hd_purpose_num)
             .hardened_purpose()
-            .coin_type_index(coin_type_id)
+            .coin_type_index(coin_type_id)            
             .hardened_coin_type();
-
+        
         let derived_key = master_hd_key.derive(&hd_path_builder.build().to_string())?;
         
         let private_key: EthereumPrivateKey =
@@ -223,6 +218,7 @@ impl EthereumWalletBuilder {
         println!("{:?}", public_key);
         println!("{:?}", private_key);
         println!("{:?}", derived_key);
+        //EthereumWallet::set_blockchain_client(client);
 
         let wallet = EthereumWallet {
             address_format: self.address_format,
@@ -233,7 +229,7 @@ impl EthereumWalletBuilder {
             blockchain_client: None,
             derived_hd_key: Some(derived_key),
         };
-        println!("wallet: {:?}", wallet);
+        //println!("wallet: {:?}", wallet);
         Ok(wallet)
     }
 
@@ -306,7 +302,7 @@ impl EthereumWallet {
     // TODO: take chain_id as a parameter
     // TODO: Take index as a parameter and use that for deriving the wallet we want (refactor keystore)
     /// This function creates and broadcasts a basic Ethereum transfer transaction to the Ethereum mempool.
-    async fn transfer(
+    pub async fn transfer(
         &self,
         _send_amount: EthereumAmount,
         _to_address: &str,

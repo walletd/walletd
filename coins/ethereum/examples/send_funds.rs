@@ -1,14 +1,8 @@
+use ethers::prelude::*;
 use walletd_ethereum::prelude::*;
 use walletd_hd_key::prelude::*;
-use ethers::prelude::*;
 
-
-//const PROVIDER_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 const PROVIDER_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-use walletd_coin_core::BlockchainConnector;
-use walletd_ethereum::{EthClient, EthereumAmount, EthereumWallet};
-use walletd_hd_key::HDNetworkType;
-
 const GOERLI_TEST_ADDRESS: &str = "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
 #[tokio::main]
 async fn main() -> Result<(), walletd_ethereum::Error> {
@@ -59,8 +53,11 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
     let receipt = pending_tx.await.unwrap().ok_or_else(|| println!("tx dropped from mempool")).unwrap();
     let tx = client.get_transaction(receipt.transaction_hash).await.unwrap();
 
+    
     println!("tx: {:?}", &tx);
-    let tx_hash = wallet
+
+    let send_amount = EthereumAmount::from_wei(10_000.into());
+    let tx_hash = ethereum_wallet
         .transfer(send_amount, GOERLI_TEST_ADDRESS)
         .await
         .unwrap();
@@ -69,8 +66,6 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
         address_derivation_path.to_string(),
         "m/44'/60'/0'/0/0".to_string()
     );
-
-    // let lw: LocalWallet = secret_key.parse::<LocalWallet>()?;
 
     Ok(())
 }

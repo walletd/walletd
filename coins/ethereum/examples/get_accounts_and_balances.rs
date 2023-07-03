@@ -1,6 +1,3 @@
-// EthereumAmount.new_from_eth(u64)
-// use std::str::FromStr;
-
 use walletd_bip39::{Bip39Mnemonic, Mnemonic, MnemonicBuilder};
 
 use walletd_coin_core::{BlockchainConnector, CryptoWallet, CryptoWalletBuilder};
@@ -15,8 +12,9 @@ use ethers::{
     signers::{LocalWallet, Signer},
     types::Address
 };
-//use eyre::Result;
 use std::convert::TryFrom;
+
+const PROVIDER_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 const GOERLI_TEST_ADDRESS: &str = "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
 #[tokio::main]
 async fn main() -> () {
@@ -27,15 +25,15 @@ async fn main() -> () {
         .detect_language()
         .build()
         .unwrap();
-    let eth_client = EthClient::new(INFURA_GOERLI_ENDPOINT).unwrap();
+    let eth_client = EthClient::new(PROVIDER_URL).unwrap();
     let address: H160 = "00a329c0648769a73afac7f9381e08fb43dbea72".parse().unwrap();
 
     let seed = restored_mnemonic.to_seed();
 
-    let _eth_client = EthClient::new(INFURA_GOERLI_ENDPOINT);
+    let _eth_client = EthClient::new(PROVIDER_URL);
 
     let blockchain_client =
-        EthClient::new("https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161").unwrap();
+        EthClient::new(PROVIDER_URL).unwrap();
 
     println!("blockchain_client: {:?}", &blockchain_client);
 

@@ -2,8 +2,6 @@ use walletd_ethereum::prelude::*;
 use walletd_hd_key::prelude::*;
 use ethers::prelude::*;
 
-
-//const PROVIDER_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 const PROVIDER_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 #[tokio::main]
 async fn main() -> Result<(), walletd_ethereum::Error> {
@@ -56,17 +54,12 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
 
     println!("tx: {:?}", &tx);
 
-
-
-
     assert_eq!(
         address_derivation_path.to_string(),
         "m/44'/60'/0'/0/0".to_string()
     );
 
-    // let lw: LocalWallet = secret_key.parse::<LocalWallet>()?;
-
-    let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
+    let ethclient_url = PROVIDER_URL;
     let eth_client = EthClient::new(ethclient_url)?;
     let tx_hash = "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
     let tx = eth_client.transaction_data_from_hash(tx_hash).await?;
