@@ -288,8 +288,8 @@ impl EthereumWallet {
     /// This function creates and broadcasts a basic Ethereum transfer transaction to the Ethereum mempool.
     pub async fn transfer(
         &self,
-        _send_amount: EthereumAmount,
-        _to_address: &str,
+        send_amount: EthereumAmount,
+        to_address: &str,
     ) -> Result<String, Error> {
         //let secret_key: &Result<EthereumPrivateKey, Error> = &self.private_key();
 
@@ -312,14 +312,13 @@ impl EthereumWallet {
 
         // Link our wallet instance to our provider for signing our transactions
         let client = SignerMiddleware::new(provider, wallet_from_bytes.with_chain_id(5u64));
-
         // Create a transaction request to send 10000 wei to the Goerli address
         let tx = TransactionRequest::new()
-            .to("0x681dA56258fF429026449F1435aE87e1B6e9F85b")
+            .to(to_address)
             .gas(21000)
-            .value(10000)
+            .value(send_amount.wei())
             .chain_id(5u64);
-
+        
         let pending_tx = client.send_transaction(tx, None).await.unwrap();
         let receipt = pending_tx
             .await
