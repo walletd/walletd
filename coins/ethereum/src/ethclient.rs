@@ -59,24 +59,24 @@ impl EthClient {
         &self,
         tx_hash: &str,
     ) -> Result<ethers::types::Transaction, Error> {
-        let transaction_hash: H256 =
-            H256::from_str(tx_hash).map_err(|e| Error::FromStr(e.to_string()))?;
-
-        let transaction_hash: H256 =
-            H256::from_str(tx_hash).map_err(|e| Error::FromStr(e.to_string()))?;
-
-        match self.ethers.get_transaction(transaction_hash).await {
+        // Only runs against mainnet for now - TODO: extend chain id (replace network type)
+        let transaction_hash = H256::from_str(tx_hash).unwrap();
+        match self.ethers().get_transaction(transaction_hash).await {
             Ok(tx) => {
-                if tx.is_none() {
+                let transaction_data = tx.unwrap(); 
+                if transaction_data.block_hash.is_none() {
                     Err(Error::TxResponse(format!(
                         "Transaction with tx_hash {} not found",
                         tx_hash
                     )))
                 } else {
-                    Ok(tx.unwrap())
+                    Ok(transaction_data)
                 }
             }
-            Err(error) => Err(Error::TxResponse(error.to_string())),
+            Err(error) => {
+                println!("Did not get");
+                Err(Error::TxResponse(error.to_string())
+            )},
         }
     }
 
@@ -361,7 +361,6 @@ impl BlockchainConnector for EthClient {
     /// Create a new instance of [EthClient] based on a given endpoint url.
     /// Returns an [error][Error] if the endpoint is invalid or the transport fails to connect.
     fn new(endpoint: &str) -> Result<Self, Error> {
-        println!("endpoint: {:?}", endpoint);
         // TODO(#71): Update transport to support web sockets
         let ethers = Provider::try_from(endpoint).unwrap();
         Ok(Self {
