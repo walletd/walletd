@@ -144,6 +144,7 @@ pub struct EthereumWalletBuilder {
     network_type: HDNetworkType,
     #[zeroize(skip)]
     hd_path_builder: HDPathBuilder,
+    chain_id: u64,
 }
 
 impl Default for EthereumWalletBuilder {
@@ -163,6 +164,7 @@ impl Default for EthereumWalletBuilder {
             mnemonic_seed: None,
             network_type: HDNetworkType::MainNet,
             hd_path_builder,
+            chain_id: 5, // Goerli
         }
     }
 }
@@ -304,6 +306,7 @@ impl EthereumWallet {
         // Instantiate wallet using the private key's secret bytes
         let wallet_from_bytes = Wallet::from_bytes(&secret_bytes).unwrap();
 
+
         let provider = &self.blockchain_client().unwrap().ethers();
 
         // Instantiate a ethers local wallet from the wallet's secret bytes
@@ -318,7 +321,7 @@ impl EthereumWallet {
             .gas(21000)
             .value(send_amount.wei())
             .chain_id(5u64);
-        
+
         let pending_tx = client.send_transaction(tx, None).await.unwrap();
         let receipt = pending_tx
             .await
