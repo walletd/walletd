@@ -11,6 +11,10 @@ pub trait KeyManager {
     
     /// Export to keystore
     fn to_keystore();
+
+    /// Export to xpub, ypub, zpub
+    // TODO(AS): add argument to pass enum for xpub, ypub, or zpub 
+    fn export_to_pub<E>(export_format: E);
 }
 
 impl KeyManager for HDKey {
@@ -21,6 +25,11 @@ impl KeyManager for HDKey {
     fn to_keystore() {
         todo!()
     }
+
+    fn export_to_pub<E>(export_format: E) {
+        todo!()
+    }
 }
+
 
 
