@@ -132,6 +132,8 @@ mod keypair;
 pub use keypair::{KeyPair, KeyPairBuilder, MnemonicKeyPairType};
 mod keystore;
 pub use keystore::KeyStore;
+mod key_manager;
+pub use key_manager::KeyManager;
 
 #[doc(hidden)]
 pub use walletd_bitcoin::blockstream;

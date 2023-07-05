@@ -2,7 +2,12 @@
 pub struct KeyStore<S: LockState> {
     /// Whether the keystore is locked or unlocked
     pub lock_state: S,
+    priv_access: PrivAccess,
+    pub_access: PubAccess,
 }
+
+struct PrivAccess;
+struct PubAccess;
 
 // State type options
 struct Locked;
