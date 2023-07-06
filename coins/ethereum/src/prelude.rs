@@ -9,4 +9,6 @@ pub use crate::{
     EthClient, EthereumAmount, EthereumFormat, EthereumPrivateKey, EthereumPublicKey,
     EthereumWallet, EthereumWalletBuilder,
 };
+
+pub use ethers::types::Transaction;
 pub use walletd_coin_core::prelude::*;

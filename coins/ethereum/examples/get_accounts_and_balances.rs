@@ -1,58 +1,60 @@
-// TODO:
+use walletd_bip39::{Bip39Mnemonic, Mnemonic, MnemonicBuilder};
 
-extern crate walletd_ethereum;
+use walletd_coin_core::prelude::*;
+use walletd_ethereum::{EthClient, EthereumAmount, EthereumWallet};
+use walletd_hd_key::HDNetworkType;
 
-// use walletd_bip39::MnemonicExt;
-// use walletd_coin_core::crypto_wallet::CryptoWallet;
-// use hex_literal::hex;
-// use walletd_hd_key::HDKey;
-// use walletd_coin_core::CryptoWallet;
-// use walletd_hd_key::NetworkType;
-use walletd_coin_core::BlockchainConnector;
-use web3::types::H160;
+use ethers::prelude::*;
 
-// const GOERLI_TEST_ADDRESS: &str =
-// "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
-
-// use web3::transports::Http;
-pub const INFURA_GOERLI_ENDPOINT: &str =
-    "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-
-use walletd_ethereum::EthClient;
-
+const PROVIDER_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
+const GOERLI_TEST_ADDRESS: &str = "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
 #[tokio::main]
 async fn main() {
-    // Stubbed, should ultimately use instance of EthereumWallet to determine
-    // accounts and balances // Should now instantiate wallet with transport
-    // let transport = web3::transports::Http::new("http://localhost:8545")?;
-    // let web3 = web3::Web3::new(transport);
-    // println!("Busy retrieving a list of accounts from localhost:8545");
-    // let mut accounts = web3.eth().accounts().await?;
-    // println!("Accounts: {:?}", accounts);
-    // accounts.push("00a329c0648769a73afac7f9381e08fb43dbea72".parse().unwrap());
+    let mnemonic_phrase: &str =
+        "mandate rude write gather vivid inform leg swift usual early bamboo element";
+    let restored_mnemonic = Bip39Mnemonic::builder()
+        .mnemonic_phrase(mnemonic_phrase)
+        .detect_language()
+        .build()
+        .unwrap();
+    let _eth_client = EthClient::new(PROVIDER_URL).unwrap();
+    let _address: H160 = GOERLI_TEST_ADDRESS.parse().unwrap();
 
-    // println!("Calling balance.");
-    // for account in accounts {
-    //     let balance = web3.eth().balance(account, None).await?;
-    //     println!("Balance of {:?}: {}", account, balance);
-    // }
-    // Remote transport example
-    // let transport = web3::transports::Http::new(INFURA_GOERLI_ENDPOINT)?;
-    let eth_client = EthClient::new(INFURA_GOERLI_ENDPOINT).unwrap();
-    // let mut accounts = web3.eth().accounts().await?;
-    // let mut addresses: Vec<H160> = Vec::new();
-    // addresses.push("00a329c0648769a73afac7f9381e08fb43dbea72".parse().unwrap());
-    let address: H160 = "00a329c0648769a73afac7f9381e08fb43dbea72".parse().unwrap();
+    let seed = restored_mnemonic.to_seed();
 
-    let _balance = eth_client.balance(address).await.unwrap();
-    // &INFURA_GOERLI_ENDPOINT.to_string());
-    // let mut addresses: Vec<H160>::new();
+    let _eth_client = EthClient::new(PROVIDER_URL);
 
-    // Stubbed, should use instance of EthereumWallet to determine accounts and
-    // balances let transport =
-    // web3::transports::Http::new(INFURA_GOERLI_ENDPOINT)?;
-    let _eth_client = EthClient::new(INFURA_GOERLI_ENDPOINT);
+    let blockchain_client = EthClient::new(PROVIDER_URL).unwrap();
 
-    // Should now instantiate wallet with transport
-    todo!()
+    println!("blockchain_client: {:?}", &blockchain_client);
+
+    let wallet = EthereumWallet::builder()
+        .mnemonic_seed(seed)
+        .network_type(HDNetworkType::TestNet)
+        .build()
+        .unwrap();
+
+    let from: Address = wallet.public_address().as_str().parse().unwrap();
+    print!("from: {:?}", &from);
+    let balance = &blockchain_client
+        .ethers()
+        .get_balance(from, None)
+        .await
+        .unwrap();
+    print!("balance: {:?}", &balance);
+
+    let eth_amount: EthereumAmount = EthereumAmount::from_wei(*balance);
+    println!(
+        "ethereum wallet balance: {} ETH, ({} wei)",
+        eth_amount.eth(),
+        eth_amount.wei()
+    );
+
+    // Not that we need to, but we can determine the nonce manually if we want
+    let nonce = &blockchain_client
+        .ethers()
+        .get_transaction_count(from, None)
+        .await
+        .unwrap();
+    print!("nonce: {:?}", &nonce);
 }

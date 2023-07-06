@@ -1,17 +1,20 @@
-use core::fmt;
+use ::core::fmt;
 use std::fmt::LowerHex;
 use std::str::FromStr;
 
 use crate::Error;
 use crate::EthClient;
+use crate::{EthereumAmount, EthereumFormat};
+
+use ethers::prelude::*;
+// use ethers::providers::{Middleware};
+// use ethers::types::{TransactionRequest};
+// use ethers::signers::{Signer};
 use secp256k1::{PublicKey, SecretKey};
 use tiny_keccak::{Hasher, Keccak};
 use walletd_bip39::Seed;
 use walletd_hd_key::{slip44, HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPurpose};
-use web3::types::{Address, TransactionParameters};
 use zeroize::{Zeroize, ZeroizeOnDrop};
-
-use crate::{EthereumAmount, EthereumFormat};
 
 /// Represents a private key for an Ethereum wallet, wraps a [SecretKey] from the secp256k1 crate
 #[derive(Debug, Clone)]
@@ -141,6 +144,7 @@ pub struct EthereumWalletBuilder {
     network_type: HDNetworkType,
     #[zeroize(skip)]
     hd_path_builder: HDPathBuilder,
+    chain_id: u64,
 }
 
 impl Default for EthereumWalletBuilder {
@@ -160,6 +164,7 @@ impl Default for EthereumWalletBuilder {
             mnemonic_seed: None,
             network_type: HDNetworkType::MainNet,
             hd_path_builder,
+            chain_id: 5, // Goerli
         }
     }
 }
@@ -194,8 +199,10 @@ impl EthereumWalletBuilder {
             .hardened_coin_type();
 
         let derived_key = master_hd_key.derive(&hd_path_builder.build().to_string())?;
-        let private_key =
+
+        let private_key: EthereumPrivateKey =
             EthereumPrivateKey::from_slice(&derived_key.extended_private_key()?.to_bytes())?;
+
         let public_key =
             EthereumPublicKey::from_slice(&derived_key.extended_public_key()?.to_bytes())?;
         let public_address = public_key.to_public_address(self.address_format)?;
@@ -230,6 +237,7 @@ impl EthereumWalletBuilder {
         self
     }
 
+    // TODO: This network type is an oversimplification that we should consider refactoring. Eth has chain_ids and network_ids
     /// Allows specification of the network type for the wallet, the default is HDNetworkType::MainNet
     pub fn network_type(&mut self, network_type: HDNetworkType) -> &mut Self {
         self.network_type = network_type;
@@ -271,44 +279,63 @@ impl EthereumWallet {
     ///  Returns the blance for this Ethereum Wallet.
     pub async fn balance(&self) -> Result<EthereumAmount, Error> {
         let blockchain_client = self.blockchain_client()?;
-        let address = web3::types::H160::from_str(&self.public_address())
+        let address = ethers::types::Address::from_str(&self.public_address())
             .map_err(|e| (Error::FromStr(e.to_string())))?;
         let balance = blockchain_client.balance(address).await?;
         Ok(balance)
     }
-    /// Creates and sends a transfer transaction to the Ethereum blockchain.
+
+    // TODO: take chain_id as a parameter
+    // TODO: Take index as a parameter and use that for deriving the wallet we want (refactor keystore)
+    /// This function creates and broadcasts a basic Ethereum transfer transaction to the Ethereum mempool.
     pub async fn transfer(
         &self,
         send_amount: EthereumAmount,
         to_address: &str,
     ) -> Result<String, Error> {
-        let blockchain_client = self.blockchain_client()?;
-        let to = Address::from_str(to_address).map_err(|e| Error::FromStr(e.to_string()))?;
-        let amount = send_amount.wei();
+        //let secret_key: &Result<EthereumPrivateKey, Error> = &self.private_key();
 
-        let tx_object = TransactionParameters {
-            to: Some(to),
-            value: amount,
-            ..Default::default()
-        };
+        let derived_hd_key = &self.derived_hd_key()?;
+        let private_key =
+            EthereumPrivateKey::from_slice(&derived_hd_key.extended_private_key()?.to_bytes())?;
+        let _address_derivation_path = &derived_hd_key.derivation_path.clone();
 
-        let secret_key = self.private_key()?.0;
+        // EthereumWallet stores the private key as a 32 byte array
+        let secret_bytes = private_key.to_bytes();
 
-        // sign the tx
-        let signed = blockchain_client
-            .web3()
-            .accounts()
-            .sign_transaction(tx_object, &secret_key)
-            .await?;
+        // Retrieve instance of blockchain connector (provider) using the private key's secret bytes
+        let provider = &self.blockchain_client().unwrap().ethers();
 
-        let result = blockchain_client
-            .eth()
-            .send_raw_transaction(signed.raw_transaction)
-            .await?;
+        // Instantiate a ethers local wallet from the wallet's secret bytes
+        let wallet_from_bytes = Wallet::from_bytes(&secret_bytes).unwrap();
 
-        let hash = hex::encode(result.as_bytes());
+        // 5 = goerli chain id
 
-        Ok(hash)
+        // Link our wallet instance to our provider for signing our transactions
+        let client = SignerMiddleware::new(provider, wallet_from_bytes.with_chain_id(5u64));
+        // Create a transaction request to send 10000 wei to the Goerli address
+        // TODO: Use gas oracle for more complex transactions where required gas is not known
+        // 21000 = basic transfer
+        let tx = TransactionRequest::new()
+            .to(to_address)
+            .gas(21000)
+            .value(send_amount.wei())
+            .chain_id(5u64);
+
+        let pending_tx = client.send_transaction(tx, None).await.unwrap();
+        let receipt = pending_tx
+            .await
+            .unwrap()
+            .ok_or_else(|| println!("tx dropped from mempool"))
+            .unwrap();
+
+        let tx = client
+            .get_transaction(receipt.transaction_hash)
+            .await
+            .unwrap();
+
+        let tx_hash_string = tx.unwrap().hash.to_string();
+        Ok(tx_hash_string)
     }
     /// Set the Blockchain Client on the Wallet
     pub fn set_blockchain_client(&mut self, client: EthClient) {
@@ -338,6 +365,35 @@ impl EthereumWallet {
     /// Returns the public address of the wallet
     pub fn public_address(&self) -> String {
         self.public_address.clone()
+    }
+
+    /// A convenience method for retrieving the string of a public_address
+    pub fn address(&self) -> String {
+        self.public_address()
+    }
+
+    /// Return the pub/priv keys at a specified index
+    /// For now, we're assuming that the path we're using for derivation is the default (m/44'/60'/0'/0/{index})
+    pub fn index(&self, _index: u64) -> (String, String) {
+        // // A wallet
+
+        // let account_deriv_path = HDPath::builder()
+        //     .purpose_index(HDPurpose::BIP44.to_shortform_num()) // 44' for Eth
+        //     .coin_type_index(Coin::from(Symbol::ETH).id()) // 60' for Eth
+        //     .account_index(0) // we'll work from acc 0
+        //     .change_index(0)
+        //     .no_address_index()
+        //     .build().to_string();
+
+        // println!("account_deriv_path: {:?}", &account_deriv_path);
+        //println!("self: {:?}", &self);
+        //let derived_hd_key = master_hd_key.derive("m/84'/1'/0'/0/0")?;
+        // let first_address_hd_key = HDKey::new(
+        //     Seed::from_str(BTC_WALLET_TEST_SEED)?,
+        //     HDNetworkType::TestNet,
+        //     "m/84'/1'/0'/0/0",
+        // )?;
+        ("Yes".to_string(), "No".to_string())
     }
 
     /// Returns the network type used by the wallet

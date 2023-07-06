@@ -122,7 +122,7 @@ pub use ethereum_wallet::{
 };
 mod error;
 pub use error::Error;
-pub use web3;
+pub use ethers;
 pub mod prelude;
 pub use walletd_bip39::{
     Bip39Language, Bip39Mnemonic, Bip39MnemonicType, Mnemonic, MnemonicBuilder, Seed,
