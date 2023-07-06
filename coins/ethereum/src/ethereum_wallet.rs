@@ -303,19 +303,19 @@ impl EthereumWallet {
         // EthereumWallet stores the private key as a 32 byte array
         let secret_bytes = private_key.to_bytes();
 
-        // Instantiate wallet using the private key's secret bytes
-        let wallet_from_bytes = Wallet::from_bytes(&secret_bytes).unwrap();
-
-
+        // Retrieve instance of blockchain connector (provider) using the private key's secret bytes
         let provider = &self.blockchain_client().unwrap().ethers();
-
+        
         // Instantiate a ethers local wallet from the wallet's secret bytes
+        let wallet_from_bytes = Wallet::from_bytes(&secret_bytes).unwrap();
 
         // 5 = goerli chain id
 
         // Link our wallet instance to our provider for signing our transactions
         let client = SignerMiddleware::new(provider, wallet_from_bytes.with_chain_id(5u64));
         // Create a transaction request to send 10000 wei to the Goerli address
+        // TODO: Use gas oracle for more complex transactions where required gas is not known
+        // 21000 = basic transfer
         let tx = TransactionRequest::new()
             .to(to_address)
             .gas(21000)
@@ -329,11 +329,13 @@ impl EthereumWallet {
             .ok_or_else(|| println!("tx dropped from mempool"))
             .unwrap();
 
-        let _tx = client
+        let tx = client
             .get_transaction(receipt.transaction_hash)
             .await
             .unwrap();
-        Ok("tx_id".to_string())
+
+        let tx_hash_string = tx.unwrap().hash.to_string();
+        Ok(tx_hash_string)
     }
     /// Set the Blockchain Client on the Wallet
     pub fn set_blockchain_client(&mut self, client: EthClient) {
