@@ -2,18 +2,15 @@ use crate::HDKey;
 
 /// Manages a wallet's keys, [KeyStore] stores them and can be locked/unlocked.
 pub trait KeyManager {
-
     /// Import from keystore
-    fn new_from_keystore(
-        // arguments to add: &dir, &mut rng, password, Some(provider.clone())))?;
+    fn new_from_keystore(// arguments to add: &dir, &mut rng, password, Some(provider.clone())))?;
     ); // TODO(AS): return a wallet from keystore or encrypted keystore json file
 
-    
     /// Export to keystore
     fn to_keystore();
 
     /// Export to xpub, ypub, zpub
-    // TODO(AS): add argument to pass enum for xpub, ypub, or zpub 
+    // TODO(AS): add argument to pass enum for xpub, ypub, or zpub
     fn export_to_pub<E>(export_format: E);
 }
 
@@ -30,6 +27,3 @@ impl KeyManager for HDKey {
         todo!()
     }
 }
-
-
-

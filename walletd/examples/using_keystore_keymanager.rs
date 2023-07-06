@@ -7,7 +7,6 @@ fn main() -> Result<(), walletd::Error> {
     let master_hd_key = HDKey::new_master(master_seed, HDNetworkType::TestNet)?;
     // HDKey::export_to_pub()
     // HDKey::export_to_pub()
-    
-    todo!()
 
+    todo!()
 }
