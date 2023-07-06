@@ -63,7 +63,7 @@ impl EthClient {
         let transaction_hash = H256::from_str(tx_hash).unwrap();
         match self.ethers().get_transaction(transaction_hash).await {
             Ok(tx) => {
-                let transaction_data = tx.unwrap(); 
+                let transaction_data = tx.unwrap();
                 if transaction_data.block_hash.is_none() {
                     Err(Error::TxResponse(format!(
                         "Transaction with tx_hash {} not found",
@@ -75,8 +75,8 @@ impl EthClient {
             }
             Err(error) => {
                 println!("Did not get");
-                Err(Error::TxResponse(error.to_string())
-            )},
+                Err(Error::TxResponse(error.to_string()))
+            }
         }
     }
 

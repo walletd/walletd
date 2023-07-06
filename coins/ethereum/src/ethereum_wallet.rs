@@ -305,7 +305,7 @@ impl EthereumWallet {
 
         // Retrieve instance of blockchain connector (provider) using the private key's secret bytes
         let provider = &self.blockchain_client().unwrap().ethers();
-        
+
         // Instantiate a ethers local wallet from the wallet's secret bytes
         let wallet_from_bytes = Wallet::from_bytes(&secret_bytes).unwrap();
 
