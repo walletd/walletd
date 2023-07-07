@@ -319,18 +319,21 @@ impl EthereumWallet {
         // Instantiate a ethers local wallet from the wallet's secret bytes
         let wallet_from_bytes = Wallet::from_bytes(&secret_bytes).unwrap();
 
-        // 5 = goerli chain id
+        // Instantiate or default to 1 for mainnet. 5 = goerli chain id
+        let chain_id = self.chain_id();
 
         // Link our wallet instance to our provider for signing our transactions
-        let client = SignerMiddleware::new(provider, wallet_from_bytes.with_chain_id(5u64));
+        let client = SignerMiddleware::new(provider, wallet_from_bytes.with_chain_id(chain_id));
         // Create a transaction request to send 10000 wei to the Goerli address
-        // TODO: Use gas oracle for more complex transactions where required gas is not known
+        // TODO: (KB) Use gas oracle for more complex transactions where required gas is not known
+        // TODO: (KB) Use nonce middleware for transactions - Not sure this is neccesary by default or if Ethers handles it
+        // TODO: (KB) Use other middleware ethers library supports for signing transactions
         // 21000 = basic transfer
         let tx = TransactionRequest::new()
             .to(to_address)
             .gas(21000)
             .value(send_amount.wei())
-            .chain_id(5u64);
+            .chain_id(chain_id); // We may see a use case where we need to support multiple chain_ids simultaneously, like for ERC20 swaps
 
         let pending_tx = client.send_transaction(tx, None).await.unwrap();
         let receipt = pending_tx
