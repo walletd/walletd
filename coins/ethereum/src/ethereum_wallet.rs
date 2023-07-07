@@ -164,7 +164,7 @@ impl Default for EthereumWalletBuilder {
             mnemonic_seed: None,
             network_type: HDNetworkType::MainNet,
             hd_path_builder,
-            chain_id: 5, // Goerli
+            chain_id: 1, // 1 for Mainnet, 5 for Goerli
         }
     }
 }
@@ -185,6 +185,8 @@ impl EthereumWalletBuilder {
             (Some(key), _) => key.clone(),
             (None, Some(seed)) => HDKey::new_master(seed.clone(), self.network_type)?,
         };
+
+        let chain_id = self.chain_id;
 
         let hd_purpose_num = self
             .hd_path_builder
@@ -215,8 +217,15 @@ impl EthereumWalletBuilder {
             network: master_hd_key.network(),
             blockchain_client: None,
             derived_hd_key: Some(derived_key),
+            chain_id: self.chain_id
         };
         Ok(wallet)
+    }
+
+    /// Allow specification of the chain id for the wallet
+    pub fn chain_id(&mut self, chain_id: u64) -> &mut Self {
+        self.chain_id = chain_id;
+        self
     }
 
     /// Allows specification of the master HD key for the wallet
@@ -269,6 +278,7 @@ pub struct EthereumWallet {
     #[zeroize(skip)]
     blockchain_client: Option<EthClient>,
     derived_hd_key: Option<HDKey>,
+    chain_id: u64
 }
 
 impl EthereumWallet {
@@ -355,6 +365,10 @@ impl EthereumWallet {
             Some(client) => Ok(client),
             None => Err(Error::MissingBlockchainClient),
         }
+    }
+
+    pub fn chain_id(&self) -> u64 {
+        self.chain_id
     }
 
     /// Returns the address format used by the wallet
