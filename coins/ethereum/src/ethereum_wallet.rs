@@ -217,7 +217,7 @@ impl EthereumWalletBuilder {
             network: master_hd_key.network(),
             blockchain_client: None,
             derived_hd_key: Some(derived_key),
-            chain_id: self.chain_id
+            chain_id: chain_id
         };
         Ok(wallet)
     }
@@ -325,9 +325,8 @@ impl EthereumWallet {
         // Link our wallet instance to our provider for signing our transactions
         let client = SignerMiddleware::new(provider, wallet_from_bytes.with_chain_id(chain_id));
         // Create a transaction request to send 10000 wei to the Goerli address
-        // TODO: (KB) Use gas oracle for more complex transactions where required gas is not known
-        // TODO: (KB) Use nonce middleware for transactions - Not sure this is neccesary by default or if Ethers handles it
-        // TODO: (KB) Use other middleware ethers library supports for signing transactions
+        // TODO #95 - Use gas oracle for more complex transactions where required gas is not known
+        // TODO: Validate that nonces are implicitly derived. Don't trust that they are - Ethers may handle it by default, but it's critical we ensure it does
         // 21000 = basic transfer
         let tx = TransactionRequest::new()
             .to(to_address)
@@ -370,6 +369,7 @@ impl EthereumWallet {
         }
     }
 
+    /// Returns the chain_id a wallet is currently configured with
     pub fn chain_id(&self) -> u64 {
         self.chain_id
     }
@@ -388,31 +388,7 @@ impl EthereumWallet {
     pub fn address(&self) -> String {
         self.public_address()
     }
-
-    /// Return the pub/priv keys at a specified index
-    /// For now, we're assuming that the path we're using for derivation is the default (m/44'/60'/0'/0/{index})
-    pub fn index(&self, _index: u64) -> (String, String) {
-        // // A wallet
-
-        // let account_deriv_path = HDPath::builder()
-        //     .purpose_index(HDPurpose::BIP44.to_shortform_num()) // 44' for Eth
-        //     .coin_type_index(Coin::from(Symbol::ETH).id()) // 60' for Eth
-        //     .account_index(0) // we'll work from acc 0
-        //     .change_index(0)
-        //     .no_address_index()
-        //     .build().to_string();
-
-        // println!("account_deriv_path: {:?}", &account_deriv_path);
-        //println!("self: {:?}", &self);
-        //let derived_hd_key = master_hd_key.derive("m/84'/1'/0'/0/0")?;
-        // let first_address_hd_key = HDKey::new(
-        //     Seed::from_str(BTC_WALLET_TEST_SEED)?,
-        //     HDNetworkType::TestNet,
-        //     "m/84'/1'/0'/0/0",
-        // )?;
-        ("Yes".to_string(), "No".to_string())
-    }
-
+    
     /// Returns the network type used by the wallet
     pub fn network(&self) -> HDNetworkType {
         self.network
