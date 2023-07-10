@@ -217,7 +217,7 @@ impl EthereumWalletBuilder {
             network: master_hd_key.network(),
             blockchain_client: None,
             derived_hd_key: Some(derived_key),
-            chain_id: chain_id
+            chain_id: chain_id,
         };
         Ok(wallet)
     }
@@ -278,7 +278,7 @@ pub struct EthereumWallet {
     #[zeroize(skip)]
     blockchain_client: Option<EthClient>,
     derived_hd_key: Option<HDKey>,
-    chain_id: u64
+    chain_id: u64,
 }
 
 impl EthereumWallet {
@@ -388,7 +388,7 @@ impl EthereumWallet {
     pub fn address(&self) -> String {
         self.public_address()
     }
-    
+
     /// Returns the network type used by the wallet
     pub fn network(&self) -> HDNetworkType {
         self.network
