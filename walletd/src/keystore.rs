@@ -1,5 +1,6 @@
 pub struct StorageData;
 pub trait LockState {}
+use crate::Error;
 
 /// Stores the relevant keys and controls access to them
 pub struct KeyStore<S: LockState> {
@@ -8,6 +9,19 @@ pub struct KeyStore<S: LockState> {
     /// The contents of cryptowallet stored here
     storage_data: StorageData
 }
+
+// State type options
+pub struct Unlocked;
+pub struct Locked;
+impl LockState for Unlocked {}
+impl LockState for Locked {}
+
+
+
+
+
+
+
 
 
 

@@ -9,4 +9,5 @@ pub use crate::{
     BitcoinAddress, BitcoinAmount, BitcoinConnector, BitcoinPrivateKey, BitcoinPublicKey,
     BitcoinWallet, BitcoinWalletBuilder, Blockstream,
 };
+
 pub use walletd_coin_core::prelude::*;

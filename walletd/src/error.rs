@@ -27,4 +27,10 @@ pub enum Error {
     /// Missing info to generate a KeyPair struct
     #[error("Missing info to generate a KeyPair struct: {0}")]
     MissingKeyPairInfo(String),
+    /// Error stemming from KeyManager
+    #[error("KeyManager error: {0}")]
+    KeyManagerErr(String),
+    /// Error stemming from KeyStore
+    #[error("KeyStore error: {0}")]
+    KeyStoreErr(String),
 }

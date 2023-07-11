@@ -131,9 +131,8 @@ pub use walletd_mnemonics_core::{Language, Mnemonic, MnemonicBuilder};
 mod keypair;
 pub use keypair::{KeyPair, KeyPairBuilder, MnemonicKeyPairType};
 mod keystore;
-pub use keystore::KeyStore;
+pub use keystore::{KeyStore, LockState};
 mod key_manager;
-pub use key_manager::KeyManager;
 
 #[doc(hidden)]
 pub use walletd_bitcoin::blockstream;
