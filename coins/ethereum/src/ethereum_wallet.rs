@@ -217,7 +217,7 @@ impl EthereumWalletBuilder {
             network: master_hd_key.network(),
             blockchain_client: None,
             derived_hd_key: Some(derived_key),
-            chain_id: chain_id,
+            chain_id,
         };
         Ok(wallet)
     }
