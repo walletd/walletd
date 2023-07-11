@@ -31,7 +31,8 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
     let provider = Provider::try_from(PROVIDER_URL).unwrap();
 
     // Instantiate a ethers local wallet from the wallet's secret bytes
-    let wfbres = Wallet::from_bytes(&secret_bytes);
+    let wfbres = Wallet::from_bytes(&secret_bytes); 
+    // It's important to note that because we initialised a wallet from bytes, 
 
     let wfb = wfbres.unwrap();
     // 5 = goerli chain id
@@ -55,6 +56,7 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
         .unwrap()
         .ok_or_else(|| println!("tx dropped from mempool"))
         .unwrap();
+    
     let tx = client
         .get_transaction(receipt.transaction_hash)
         .await
@@ -62,11 +64,12 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
 
     println!("tx: {:?}", &tx);
 
-    let send_amount = EthereumAmount::from_wei(10_000.into());
-    let _tx_hash = ethereum_wallet
-        .transfer(send_amount, GOERLI_TEST_ADDRESS)
-        .await
-        .unwrap();
+    // This example would work if we've properly instantiated our ethereum wallet with an appropriate provider
+    // let send_amount = EthereumAmount::from_wei(10_000.into());
+    // let _tx_hash = ethereum_wallet
+    //     .transfer(send_amount, GOERLI_TEST_ADDRESS)
+    //     .await
+    //     .unwrap();
 
     assert_eq!(
         address_derivation_path.to_string(),

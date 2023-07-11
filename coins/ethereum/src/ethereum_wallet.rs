@@ -144,7 +144,7 @@ pub struct EthereumWalletBuilder {
     network_type: HDNetworkType,
     #[zeroize(skip)]
     hd_path_builder: HDPathBuilder,
-    chain_id: u64,
+    chain_id: Option<u64>,
 }
 
 impl Default for EthereumWalletBuilder {
@@ -164,7 +164,7 @@ impl Default for EthereumWalletBuilder {
             mnemonic_seed: None,
             network_type: HDNetworkType::MainNet,
             hd_path_builder,
-            chain_id: 1, // 1 for Mainnet, 5 for Goerli
+            chain_id: None, // 1 for Mainnet, 5 for Goerli
         }
     }
 }
@@ -176,6 +176,7 @@ impl EthereumWalletBuilder {
     }
     /// Builds the EthereumWallet with the specified options
     pub fn build(&self) -> Result<EthereumWallet, Error> {
+        
         let master_hd_key = match (&self.master_hd_key, &self.mnemonic_seed) {
             (None, None) => {
                 return Err(Error::UnableToImportWallet(
@@ -185,8 +186,15 @@ impl EthereumWalletBuilder {
             (Some(key), _) => key.clone(),
             (None, Some(seed)) => HDKey::new_master(seed.clone(), self.network_type)?,
         };
-
-        let chain_id = self.chain_id;
+        
+        let &mut chain_id;
+        // Check if the user have overridden the chain id, and if they have, use that id
+        if self.chain_id.is_some() {
+            chain_id = self.chain_id.unwrap();
+        } else {
+            // chain_id hasn't been overridden, use the mainnet default
+            chain_id = 1u64;
+        }
 
         let hd_purpose_num = self
             .hd_path_builder
@@ -224,7 +232,7 @@ impl EthereumWalletBuilder {
 
     /// Allow specification of the chain id for the wallet
     pub fn chain_id(&mut self, chain_id: u64) -> &mut Self {
-        self.chain_id = chain_id;
+        self.chain_id = Some(chain_id);
         self
     }
 
