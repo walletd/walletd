@@ -3,4 +3,3 @@
 Cargo.lock
 **/cargo-test*.profraw
 **/*.rs.bk
-walletd/walletd/tests/generated_or_modified_files/*
