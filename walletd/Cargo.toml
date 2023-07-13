@@ -27,6 +27,9 @@ walletd_bitcoin = {path = "../coins/bitcoin", version="0.2"}
 walletd_ethereum = {path = "../coins/ethereum", version="0.2"}
 walletd_hd_key = {path = "../key_manager/hd_key", version="0.2"}
 
+aes-stream = "0.2.1"
 anyhow = "1.0.68"
 hex = { version = "0.4.2" }
+rand = "0.8.5"
+rust-crypto = "0.2.36"
 thiserror = "1.0.40"
