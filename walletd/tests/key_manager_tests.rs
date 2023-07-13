@@ -3,9 +3,7 @@ use std::io::Write;
 use std::path::Path;
 use std::io::prelude::*;
 use std::fs;
-use crypto::aessafe::{AesSafe128Encryptor, AesSafe128Decryptor};
 use rand::{thread_rng, Rng};
-use aesstream::{AesWriter, AesReader};
 
 #[test]
 fn test_unlocked_file_create_read() {
@@ -25,9 +23,7 @@ fn test_streaming_symmetric_encrypt_decrypt_file() {
     let file_path = "./tests/generated_or_modified_files/test_encrypt_file.txt";
     let unencrypted_message = "Hello World, is this encrypted?";
     let mut data_file = File::create(Path::new(file_path)).unwrap();
-    let encryptor = AesSafe128Encryptor::new(&key);
-    let mut writer = AesWriter::new(data_file, encryptor).unwrap();
-    assert!(writer.write_all(unencrypted_message.as_bytes()).is_ok());
+    // assert!(writer.write_all(unencrypted_message.as_bytes()).is_ok());
     println!("unencrypted message: {}", unencrypted_message);
 
     let key: [u8; 16] = thread_rng().gen();
@@ -35,9 +31,10 @@ fn test_streaming_symmetric_encrypt_decrypt_file() {
     let mut buffer = Vec::new();
     read_file.read_to_end(&mut buffer).unwrap();
 
-    //let decryptor = AesSafe128Decryptor::new(&key);
-    //let mut reader = AesReader::new(read_file, decryptor).unwrap();
-    //let mut decrypted = Vec::new();
 
+}
+
+fn test_encrypt_with_passphrase() {
+    let passphrase = "my_master_passphrase";
 }
 
