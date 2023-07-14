@@ -8,7 +8,7 @@ use std::str;
 use rand::{thread_rng, Rng};
 use chacha20poly1305::{ChaCha20Poly1305, KeyInit, Key};
 use chacha20poly1305::aead::Aead;
-use generic_array::GenericArray;
+use generic_array::{ArrayLength, GenericArray};
 
 #[test]
 fn key_manager_test_unlocked_file_create_read() {
@@ -21,21 +21,13 @@ fn key_manager_test_unlocked_file_create_read() {
 }
 
 #[test]
-fn key_manager_check_generic_array() {
-    println!("Running test key_manager check generic array");
-    let bytes: [u8; 4] = [1, 2, 3, 4];
-    println!("bytes: {:?}", bytes);
-    let generic_array = GenericArray::from(bytes);
-    println!("generic_array: {:?}", generic_array);
-}
-
-#[test]
 fn key_manager_test_encrypt_decrypt_string_with_passphrase() {
     println!("Running test encrypt/decrypt string with passphrase");
-    let passphrase = "my_master_passphrase";
-    let passphrase_bytes = passphrase.as_bytes();
-    println!("passphrase: {} as bytes {:?}", passphrase, passphrase_bytes);
-    let key = GenericArray::from_slice(passphrase.as_bytes());
+    // setting the passphrase as a string literal
+    const USER_PASSPHRASE: &str = "my_master_passphrase";
+    let passphrase_bytes = USER_PASSPHRASE.as_bytes();
+    println!("passphrase: {} as bytes {:?}", USER_PASSPHRASE, passphrase_bytes);
+    let key: Key = GenericArray::from_slice(passphrase_bytes);
     println!("passphrase as key: {:?}", key);
     let cipher = ChaCha20Poly1305::new(&key);
     let mut rand_for_nonce: [u8; 12] = thread_rng().gen();
