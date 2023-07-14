@@ -3,8 +3,12 @@ use std::io::Write;
 use std::path::Path;
 use std::io::prelude::*;
 use std::fs;
+use std::str;
+
 use rand::{thread_rng, Rng};
-use chacha20poly1305::{ChaCha20Poly1305, KeyInit};
+use chacha20poly1305::{ChaCha20Poly1305, KeyInit, Key};
+use chacha20poly1305::aead::Aead;
+use generic_array::GenericArray;
 
 #[test]
 fn test_unlocked_file_create_read() {
@@ -33,17 +37,19 @@ fn test_streaming_symmetric_encrypt_decrypt_file() {
     read_file.read_to_end(&mut buffer).unwrap();
 }
 
-fn test_encrypt_with_passphrase() {
+fn test_encrypt_decrypt_with_passphrase() {
+    println!("Test encrypt/decrypt with passphrase");
     let passphrase = "my_master_passphrase";
-    let key = passphrase.as_bytes();
+    let key = GenericArray::from_slice(passphrase.as_bytes());
     let cipher = ChaCha20Poly1305::new(&key);
     let rand_for_nonce: [u8; 12] = thread_rng().gen();
-    let nonce = rand_for_nonce.to_vec().sort();
-    let aad = [1, 2, 3, 4];
-    let plaintext = b"{master_seed: 'hexadecimal'}";
-    let mut ciphertext = Vec::with_capacity(plaintext.len());
-    let tag = chacha20poly1305::encrypt(&key, &nonce, &plaintext, &mut ciphertext).unwrap();
-
+    // sorting the nonce so it's easier to compare if same or different (need to use the same nonce to decrypt the message, should avoid reuse of same nonce for different messages)
+    let nonce = GenericArray::from_slice(&rand_for_nonce);
+    let plaintext = b"hexadecimal";
+    let ciphertext_bytes = cipher.encrypt(&nonce, plaintext.as_ref()).unwrap();
+    let ciphertext = String::from_utf8(ciphertext_bytes).unwrap();
+    println!("Encrypt is done");
+    println!("Output of the encryption: {}", ciphertext);
 }
 
 
