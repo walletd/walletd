@@ -37,6 +37,7 @@ fn test_streaming_symmetric_encrypt_decrypt_file() {
     read_file.read_to_end(&mut buffer).unwrap();
 }
 
+#[test]
 fn test_encrypt_decrypt_with_passphrase() {
     println!("Test encrypt/decrypt with passphrase");
     let passphrase = "my_master_passphrase";
