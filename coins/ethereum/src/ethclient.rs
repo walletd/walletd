@@ -55,30 +55,32 @@ impl EthClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn transaction_data_from_hash(
-        &self,
-        tx_hash: &str,
-    ) -> Result<ethers::types::Transaction, Error> {
+    // pub async fn transaction_data_from_hash(
+    //     &self,
+    //     tx_hash: &str,
+    // ) -> Result<ethers::types::Transaction, Error> {
         // Only runs against mainnet for now - TODO: extend chain id (replace network type)
-        let transaction_hash = H256::from_str(tx_hash).unwrap();
-        match self.ethers().get_transaction(transaction_hash).await {
-            Ok(tx) => {
-                let transaction_data = tx.unwrap();
-                if transaction_data.block_hash.is_none() {
-                    Err(Error::TxResponse(format!(
-                        "Transaction with tx_hash {} not found",
-                        tx_hash
-                    )))
-                } else {
-                    Ok(transaction_data)
-                }
-            }
-            Err(error) => {
-                println!("Did not get");
-                Err(Error::TxResponse(error.to_string()))
-            }
-        }
-    }
+        // let transaction_hash = H256::from_str(tx_hash).unwrap();
+        // let tx_hash ="0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
+        // match self.ethers().get_transaction(tx_hash).await {
+            
+        //     Ok(tx) => {
+        //         let transaction_data = tx.unwrap();
+        //         if transaction_data.block_hash.is_none() {
+        //             Err(Error::TxResponse(format!(
+        //                 "Transaction with tx_hash {} not found",
+        //                 tx_hash
+        //             )))
+        //         } else {
+        //             Ok(transaction_data)
+        //         }
+        //     }
+        //     Err(error) => {
+        //         println!("Did not get");
+        //         Err(Error::TxResponse(error.to_string()))
+        //     }
+        // }
+    //  }
 
     // TODO(#70): Remove this after write-only functionality is finished
     /// Debug transaction for adding smart contract functionality
@@ -233,17 +235,16 @@ impl EthClient {
     /// Given a specified smart contract (ERC20) instance, determine the
     /// token balance for a given address.
 
-    async fn balance_of_smart_contract(
-        &self,
-        smart_contract: &ethers::contract::Contract<Http>,
-        address: ethers::types::Address,
-    ) -> Result<String, Error> {
-        todo!();
-        // let balance = smart_contract
-        //     .query("balanceOf", address, None, Options::default(), None)
-        //     .await?;
-        // Ok(balance)
-    }
+    // async fn balance_of_smart_contract(
+    //     &self,
+    //     smart_contract: &ethers::contract::Contract<Http>,
+    //     address: ethers::types::Address,
+    // ) -> Result<String, Error> {
+    //     let balance = smart_contract
+    //         .query("balanceOf", address, None, Options::default(), None)
+    //         .await?;
+    //     Ok(balance)
+    // }
 
     /// Given a specified contract instance, determine the total supply of
     /// tokens
