@@ -63,6 +63,7 @@ impl EthClient {
     ///
     /// # Example
     ///
+<<<<<<< HEAD
     // ```no_run
     // # use walletd_ethereum::EthClient;
     // # use walletd_coin_core::BlockchainConnector;
@@ -98,6 +99,47 @@ impl EthClient {
             Err(error) => Err(Error::TxResponse(error.to_string())),
         }
     }
+=======
+    /// ```no_run
+    /// # use walletd_ethereum::EthClient;
+    /// # use walletd_coin_core::BlockchainConnector;
+    /// # async fn example() -> Result<(), walletd_ethereum::Error> {
+    /// let tx_hash =
+    ///     "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
+    /// let infura_goerli_endpoint_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
+    /// let eth_client = EthClient::new(infura_goerli_endpoint_url)?;
+    /// let tx = eth_client.transaction_data_from_hash(tx_hash).await?;
+    /// println!("tx data: {:?}", tx);
+    /// # Ok(())
+    /// # }
+    /// ```
+    // pub async fn transaction_data_from_hash(
+    //     &self,
+    //     tx_hash: &str,
+    // ) -> Result<ethers::types::Transaction, Error> {
+        // Only runs against mainnet for now - TODO: extend chain id (replace network type)
+        // let transaction_hash = H256::from_str(tx_hash).unwrap();
+        // let tx_hash ="0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
+        // match self.ethers().get_transaction(tx_hash).await {
+            
+        //     Ok(tx) => {
+        //         let transaction_data = tx.unwrap();
+        //         if transaction_data.block_hash.is_none() {
+        //             Err(Error::TxResponse(format!(
+        //                 "Transaction with tx_hash {} not found",
+        //                 tx_hash
+        //             )))
+        //         } else {
+        //             Ok(transaction_data)
+        //         }
+        //     }
+        //     Err(error) => {
+        //         println!("Did not get");
+        //         Err(Error::TxResponse(error.to_string()))
+        //     }
+        // }
+    //  }
+>>>>>>> ffb04e9 (refactor: comment out unworking code)
 
     /// Given a specified address, retrieves the [Ethereum balance][EthereumAmount] of that
     /// [address][Address].
