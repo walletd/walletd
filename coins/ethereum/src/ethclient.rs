@@ -30,6 +30,23 @@ impl EthClient {
         self.ethers.get_chainid().await.unwrap()
     }
 
+    /// Returns a block with its specified block number and transactions
+    // TODO: Take BlockNumber as an argument
+    pub async fn get_specified_block_with_transactions(&self) -> Result<Block<Transaction>, Error> {
+    
+        let block_data = self
+            .ethers()
+            .get_block_with_txs(ethers::types::BlockId::Number(
+                ethers::types::BlockNumber::Latest,
+            ))
+            .await
+            .unwrap()
+            .unwrap();
+    
+            let output_block_data = block_data.clone();
+            Ok(output_block_data)
+    }
+
     /// Returns the balance of an address as an [EthereumAmount].
     pub async fn balance(&self, address: Address) -> Result<EthereumAmount, Error> {
         let balance = self.ethers().get_balance(address, None).await.unwrap();
