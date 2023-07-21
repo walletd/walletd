@@ -4,9 +4,6 @@ use crate::EthereumAmount;
 use async_trait::async_trait;
 use ethers::prelude::*;
 use ethers::types::Address;
-// use ethers::providers::{Middleware, Provider};
-// use ethers::providers::Http;
-// use ethers::types::{BlockId, Block, BlockNumber, H256, U64};
 use std::convert::TryFrom;
 use std::str::FromStr;
 use walletd_coin_core::BlockchainConnector;
@@ -21,13 +18,6 @@ pub struct EthClient {
 
 // Creates Rust bindings for the ERC20 ABI
 abigen!(ERC20, "./abi/erc20_abi.json");
-
-abigen!(
-    IUniswapV2Pair,
-    r#"[
-        function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)
-    ]"#,
-);
 
 #[allow(unused)]
 impl EthClient {
