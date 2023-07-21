@@ -1,5 +1,3 @@
-
-
 abigen!(
     IUniswapV2Pair,
     r#"[
