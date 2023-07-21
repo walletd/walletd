@@ -282,31 +282,6 @@ impl EthClient {
         Ok(token_name.to_string())
     }
 
-    /// Given a specified contract instance, retrieve the name of the token
-    // TODO: Migrate
-    // async fn get_token_name(
-    //     &self,
-    //     contract: &web3::contract::Contract<Http>,
-    // ) -> Result<String, ()> {
-    //     let token_name = contract
-    //         .query("name", (), None, Options::default(), None)
-    //         .await;
-    //     Ok(token_name.unwrap())
-    // }
-
-    /// Initialises an instance of an ERC20-compliant smart contract we can
-    /// subsequently interact with
-    // erc20_abi.json describes standard ERC20 functions
-    // TODO: migrate still
-    // fn initialise_contract(&self, addr: H160) -> Result<web3::contract::Contract<Http>, Error> {
-    //     todo!()
-    //     // Ok(Contract::from_json(
-    //     //     self.web3.eth(),
-    //     //     addr,
-    //     //     include_bytes!("./abi/erc20_abi.json"),
-    //     // )?)
-    // }
-
     /// Get the current price of gas as an [EthereumAmount].
     pub async fn gas_price(&self) -> Result<EthereumAmount, Error> {
         // getting gas price
@@ -333,15 +308,6 @@ impl EthClient {
 
         let output_block_data = block_data.clone();
         Ok(output_block_data)
-        // let block_data = &self
-        //     .web3
-        //     .eth()
-        //     .block(BlockId::Number(BlockNumber::Latest))
-        //     .await
-        //     .unwrap()
-        //     .unwrap();
-        // let output_block_data = block_data.clone();
-        // Ok(output_block_data)
     }
 
     /// Gets current chain's block using a specified block number. This requires an
@@ -351,10 +317,10 @@ impl EthClient {
     // in Web3. This may be fixed by ethers.rs in which case we don't need block_data_from_numeric_string
     #[allow(non_snake_case)]
     async fn block_data_from_U64(&self, block_id: U64) -> Result<Block<H256>, Error> {
-        let blockid = BlockNumber::Number(block_id);
+        let block_id = BlockNumber::Number(block_id);
         let block_data = &self
             .ethers()
-            .get_block(BlockId::Number(blockid))
+            .get_block(BlockId::Number(block_id))
             .await
             .unwrap()
             .unwrap();
