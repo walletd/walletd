@@ -265,28 +265,23 @@ impl EthClient {
 
     /// Given a specified contract instance, determine the total supply of
     /// tokens
-<<<<<<< HEAD
-    async fn total_supply(&self, address: ethers::types::Address) -> Result<U256, Error> {
-=======
     async fn total_supply(
         &self,
         address: ethers::types::Address,
     ) -> Result<U256, ()> {
->>>>>>> 62d37b6 (refactor: migrate total_supply)
         let client = Arc::new(self.ethers());
         let contract_instance = ERC20::new(address, Arc::clone(&client));
         let total_supply = &contract_instance.total_supply().call().await.unwrap();
         Ok(*total_supply)
     }
 
-<<<<<<< HEAD
     async fn get_token_name(&self, address: ethers::types::Address) -> Result<String, Error> {
         let client = Arc::new(self.ethers());
         let contract_instance = ERC20::new(address, Arc::clone(&client));
         let token_name = &contract_instance.name().call().await.unwrap();
         Ok(token_name.to_string())
     }
-=======
+
     async fn get_token_name(
         &self,
         address: ethers::types::Address,
@@ -297,6 +292,7 @@ impl EthClient {
         Ok(token_name.to_string())
     }
 
+<<<<<<< HEAD
     /// Given a specified contract instance, retrieve the name of the token
     // TODO: Migrate
     // async fn get_token_name(
@@ -323,6 +319,8 @@ impl EthClient {
     // }
 >>>>>>> 62d37b6 (refactor: migrate total_supply)
 
+=======
+>>>>>>> 6ca07c6 (refactor: cleans up code)
     /// Get the current price of gas as an [EthereumAmount].
     pub async fn gas_price(&self) -> Result<EthereumAmount, Error> {
         // getting gas price
