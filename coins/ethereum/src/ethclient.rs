@@ -365,3 +365,26 @@ impl BlockchainConnector for EthClient {
         &self.endpoint
     }
 }
+
+#[cfg(test)]
+mod tests {
+    // use hex_literal::hex;
+    use ethers::utils::Anvil;
+    use super::*;
+
+    #[test]
+    fn test_create_instance_of_ethclient() {
+
+        let port = 8545u16;
+        let url = format!("http://localhost:{}", port).to_string();
+
+        let anvil = Anvil::new()
+            .port(port)
+            .mnemonic("abstract vacuum mammal awkward pudding scene penalty purchase dinner depart evoke puzzle")
+            .spawn();
+
+        let _eth_client = EthClient::new(&url).unwrap();
+        println!("eth_client: {:?}", _eth_client);
+        drop(anvil); // this will kill the instance
+    }
+}
