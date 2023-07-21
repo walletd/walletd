@@ -95,7 +95,9 @@ impl EthClient {
                     Ok(transaction_data)
                 }
             }
-            Err(error) => Err(Error::TxResponse(error.to_string())),
+            Err(error) => {
+                Err(Error::TxResponse(error.to_string()))
+            }
         }
     }
 
