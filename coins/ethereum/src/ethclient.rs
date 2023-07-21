@@ -279,7 +279,7 @@ impl EthClient {
         let client = Arc::new(self.ethers());
         let contract_instance = ERC20::new(address, Arc::clone(&client));
         let token_name = &contract_instance.name().call().await.unwrap();
-        Ok(*token_name)
+        Ok(token_name.to_string())
     }
 
     /// Given a specified contract instance, retrieve the name of the token
