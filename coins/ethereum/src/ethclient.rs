@@ -11,12 +11,23 @@ use std::convert::TryFrom;
 use std::str::FromStr;
 use walletd_coin_core::BlockchainConnector;
 
+use std::sync::Arc;
 /// A blockchain connector for Ethereum which contains a [`instance of ethers `](https://github.com/gakonst/ethers-rs) using a HTTP transport.
 #[derive(Clone, Debug)]
 pub struct EthClient {
     ethers: Provider<Http>,
     endpoint: String,
 }
+
+// Creates Rust bindings for the ERC20 ABI
+abigen!(ERC20, "./abi/erc20_abi.json");
+
+abigen!(
+    IUniswapV2Pair,
+    r#"[
+        function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)
+    ]"#,
+);
 
 #[allow(unused)]
 impl EthClient {
@@ -76,11 +87,10 @@ impl EthClient {
         &self,
         tx_hash: H256,
     ) -> Result<ethers::types::Transaction, Error> {
-        // Only runs against the remote node's default chain_id for now
         // TODO: extend to allow for other chain ids (replace network type)
+        // Only runs against the remote node's default chain_id for now
         // let tx_hash ="0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
         match self.ethers().get_transaction(tx_hash).await {
-            
             Ok(tx) => {
                 let transaction_data = tx.unwrap();
                 if transaction_data.block_hash.is_none() {
@@ -93,7 +103,6 @@ impl EthClient {
                 }
             }
             Err(error) => {
-                println!("Did not get");
                 Err(Error::TxResponse(error.to_string()))
             }
         }
@@ -251,17 +260,15 @@ impl EthClient {
 
     /// Given a specified smart contract (ERC20) instance, determine the
     /// token balance for a given address.
-
-    // async fn balance_of_smart_contract(
-    //     &self,
-    //     smart_contract: &ethers::contract::Contract<Http>,
-    //     address: ethers::types::Address,
-    // ) -> Result<String, Error> {
-    //     let balance = smart_contract
-    //         .query("balanceOf", address, None, Options::default(), None)
-    //         .await?;
-    //     Ok(balance)
-    // }
+    async fn balance_of_smart_contract(
+        &self,
+        address: ethers::types::Address,
+    ) -> Result<String, Error> {
+        let client = Arc::new(self.ethers());
+        let contract_instance = ERC20::new(address, Arc::clone(&client));
+        let balance = &contract_instance.balance_of(address).call().await.unwrap();
+        Ok(balance.to_string())
+    }
 
     /// Given a specified contract instance, determine the total supply of
     /// tokens
@@ -341,7 +348,6 @@ impl EthClient {
 
     /// Gets current chain's block using a specified block number. This requires an
     /// instance of web3's U64, not Rust's u64.
-    ///
     // TODO:(#73) - when using U64,
     // no transaction data returned by Web3's block struct. This appears to be a bug
     // in Web3. This may be fixed by ethers.rs in which case we don't need block_data_from_numeric_string
