@@ -4,6 +4,7 @@ use crate::EthereumAmount;
 use async_trait::async_trait;
 use ethers::prelude::*;
 use ethers::types::Address;
+use log::info;
 use std::convert::TryFrom;
 use std::str::FromStr;
 use walletd_coin_core::BlockchainConnector;
@@ -182,21 +183,24 @@ impl EthClient {
 
     /// Filters a block for all ERC-20 compliant transactions
     /// This leverages the standardised ERC20 Application Binary Interface
-    async fn smart_contract_transactions(&self, block: &web3::types::Block<H256>) {
+    async fn smart_contract_transactions(&self, block: ethers::types::Block<H256>) {
         for transaction_hash in &block.transactions {
             let tx = match self
                 .ethers()
                 .get_transaction(ethers::types::Transaction)
                 .await
             {
-                Ok(tx) => Ok(tx),
+                Ok(tx) => {
+                    println!("tx data: {:?}", tx);
+                    Ok(tx)
+                }
                 Err(error) => Err(Error::TxResponse(error.to_string())),
                 Ok(None) => Err(Error::TxResponse(format!(
                     "Transaction hash {} not found",
                     transaction_hash
                 ))),
             };
-            info!("transaction data {:#?}", tx);
+            println!("transaction data {:#?}", tx);
             // TODO(AS): refactor this to uncomment this section or handle the way needeed for first public release version
             // let smart_contract_addr = match tx.unwrap().to {
             //     Some(addr) => match &self.web3.eth().code(addr,
