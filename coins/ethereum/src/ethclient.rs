@@ -34,8 +34,10 @@ impl EthClient {
 
     /// Returns a block with its specified block number and transactions
     // TODO: Take BlockNumber as an argument
-    pub async fn get_specified_block_with_transactions(&self, block_number: ethers::types::BlockId) -> Result<Block<Transaction>, Error> {
-        
+    pub async fn get_specified_block_with_transactions(
+        &self,
+        block_number: ethers::types::BlockId,
+    ) -> Result<Block<Transaction>, Error> {
         let block_data = self
             .ethers()
             .get_block_with_txs(ethers::types::BlockId::Number(
@@ -44,9 +46,9 @@ impl EthClient {
             .await
             .unwrap()
             .unwrap();
-    
-            let output_block_data = block_data.clone();
-            Ok(output_block_data)
+
+        let output_block_data = block_data.clone();
+        Ok(output_block_data)
     }
 
     /// Returns the balance of an address as an [EthereumAmount].
@@ -93,11 +95,9 @@ impl EthClient {
                     Ok(transaction_data)
                 }
             }
-            Err(error) => {
-                Err(Error::TxResponse(error.to_string()))
-            }
+            Err(error) => Err(Error::TxResponse(error.to_string())),
         }
-     }
+    }
 
     // TODO(#70): Remove this after write-only functionality is finished
     /// Debug transaction for adding smart contract functionality
@@ -183,64 +183,64 @@ impl EthClient {
 
     /// Filters a block for all ERC-20 compliant transactions
     /// This leverages the standardised ERC20 Application Binary Interface
-    async fn smart_contract_transactions(&self, block: ethers::types::Block<H256>) {
-        for transaction_hash in &block.transactions {
-            let tx = match self
-                .ethers()
-                .get_transaction(ethers::types::Transaction)
-                .await
-            {
-                Ok(tx) => {
-                    println!("tx data: {:?}", tx);
-                    Ok(tx)
-                }
-                Err(error) => Err(Error::TxResponse(error.to_string())),
-                Ok(None) => Err(Error::TxResponse(format!(
-                    "Transaction hash {} not found",
-                    transaction_hash
-                ))),
-            };
-            println!("transaction data {:#?}", tx);
-            // TODO(AS): refactor this to uncomment this section or handle the way needeed for first public release version
-            // let smart_contract_addr = match tx.unwrap().to {
-            //     Some(addr) => match &self.web3.eth().code(addr,
-            // None).await {         Ok(code) => {
-            //             if code == &web3::types::Bytes::from([]) {
-            //                 // "Empty code, skipping
-            //                 continue;
-            //             } else {
-            //                 // "Non empty code, this address has bytecode
-            // we have retrieved                 // Attempt
-            // to initialise an instance of an ERC20 contract at this
-            //                 // address
-            //                 let smart_contract =
-            // self.initialise_contract(addr).unwrap();
-            //                 let token_name: String =
-            //
-            // self.get_token_name(&smart_contract).await.unwrap();
+    // async fn smart_contract_transactions(&self, block: ethers::types::Block<H256>) {
+    //     for transaction_hash in &block.transactions {
+    //         let tx = match self
+    //             .ethers()
+    //             .get_transaction(tx.hash)
+    //             .await
+    //         {
+    //             Ok(tx) => {
+    //                 println!("tx data: {:?}", tx);
+    //                 Ok(tx)
+    //             }
+    //             Err(error) => Err(Error::TxResponse(error.to_string())),
+    //             Ok(None) => Err(Error::TxResponse(format!(
+    //                 "Transaction hash {} not found",
+    //                 transaction_hash
+    //             ))),
+    //         };
+    //         println!("transaction data {:#?}", tx);
+    //         // TODO(AS): refactor this to uncomment this section or handle the way needeed for first public release version
+    //         // let smart_contract_addr = match tx.unwrap().to {
+    //         //     Some(addr) => match &self.web3.eth().code(addr,
+    //         // None).await {         Ok(code) => {
+    //         //             if code == &web3::types::Bytes::from([]) {
+    //         //                 // "Empty code, skipping
+    //         //                 continue;
+    //         //             } else {
+    //         //                 // "Non empty code, this address has bytecode
+    //         // we have retrieved                 // Attempt
+    //         // to initialise an instance of an ERC20 contract at this
+    //         //                 // address
+    //         //                 let smart_contract =
+    //         // self.initialise_contract(addr).unwrap();
+    //         //                 let token_name: String =
+    //         //
+    //         // self.get_token_name(&smart_contract).await.unwrap();
 
-            //                 // Attempt to get and print the total supply
-            // of an ERC20-compliant                 //
-            // contract                 let total_supply:
-            // Uint =
-            // self.total_supply(&smart_contract).await.unwrap();
+    //         //                 // Attempt to get and print the total supply
+    //         // of an ERC20-compliant                 //
+    //         // contract                 let total_supply:
+    //         // Uint =
+    //         // self.total_supply(&smart_contract).await.unwrap();
 
-            //                 info!("token name {:#?}", token_name);
-            //                 info!("token supply {:#?}", total_supply);
-            //             }
-            //         }
-            //         _ => {
-            //             continue;
-            //         }
-            //     },
-            //     _ => {
-            //         // info!("To address is not a valid address,
-            // skipping.");         continue;
-            //     }
-            // };
-        }
-    // info!("{:#?}", smart_contract_addr);
-    }
+    //         //                 info!("token name {:#?}", token_name);
+    //         //                 info!("token supply {:#?}", total_supply);
+    //         //             }
+    //         //         }
+    //         //         _ => {
+    //         //             continue;
+    //         //         }
+    //         //     },
+    //         //     _ => {
+    //         //         // info!("To address is not a valid address,
+    //         // skipping.");         continue;
+    //         //     }
+    //         // };
+    //     }
+    // // info!("{:#?}", smart_contract_addr);
+    // }
 
     /// Given a specified address, retrieves the [Ethereum balance][EthereumAmount] of that
     /// [address][Address].
@@ -266,20 +266,14 @@ impl EthClient {
 
     /// Given a specified contract instance, determine the total supply of
     /// tokens
-    async fn total_supply(
-        &self,
-        address: ethers::types::Address,
-    ) -> Result<U256, ()> {
+    async fn total_supply(&self, address: ethers::types::Address) -> Result<U256, ()> {
         let client = Arc::new(self.ethers());
         let contract_instance = ERC20::new(address, Arc::clone(&client));
         let total_supply = &contract_instance.total_supply().call().await.unwrap();
         Ok(*total_supply)
     }
 
-    async fn get_token_name(
-        &self,
-        address: ethers::types::Address,
-    ) -> Result<String, ()> {
+    async fn get_token_name(&self, address: ethers::types::Address) -> Result<String, ()> {
         let client = Arc::new(self.ethers());
         let contract_instance = ERC20::new(address, Arc::clone(&client));
         let token_name = &contract_instance.name().call().await.unwrap();
@@ -369,12 +363,11 @@ impl BlockchainConnector for EthClient {
 #[cfg(test)]
 mod tests {
     // use hex_literal::hex;
-    use ethers::utils::Anvil;
     use super::*;
+    use ethers::utils::Anvil;
 
     #[test]
     fn test_create_instance_of_ethclient() {
-
         let port = 8545u16;
         let url = format!("http://localhost:{}", port).to_string();
 
