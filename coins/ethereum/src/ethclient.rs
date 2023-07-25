@@ -99,10 +99,6 @@ impl EthClient {
         }
     }
 
-    /// TODO: write properly efficient implementation of filtering for erc-20 events
-    /// Filters a block for all ERC-20 compliant transactions
-    /// This leverages the standardised ERC20 Application Binary Interface
-
     /// Given a specified address, retrieves the [Ethereum balance][EthereumAmount] of that
     /// [address][Address].
     pub async fn balance_of_account(&self, address: Address) -> Result<EthereumAmount, Error> {
