@@ -38,7 +38,7 @@ abigen!(
 );
 
 #[tokio::main]
-async fn main() -> () {
+async fn main() {
     let client = Provider::<Http>::try_from(PROVIDER_URL).unwrap();
     let client = Arc::new(client);
 
@@ -76,7 +76,12 @@ async fn main() -> () {
 
     println!("balance: {:?}", balance);
 
+<<<<<<< HEAD
 
 
     ()
 }
+=======
+    
+}
+>>>>>>> 282aff2 (chore: ran clippy and fixed an example)

@@ -4,7 +4,7 @@ use crate::EthereumAmount;
 use async_trait::async_trait;
 use ethers::prelude::*;
 use ethers::types::Address;
-use log::info;
+
 use std::convert::TryFrom;
 
 use walletd_coin_core::BlockchainConnector;
