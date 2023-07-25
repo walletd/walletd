@@ -3,14 +3,9 @@ extern crate walletd_ethereum;
 use std::sync::Arc;
 
 use ethers::prelude::*;
-use ethers::{
-    types::{Address},
-};
-
-
+use ethers::types::Address;
 
 use walletd_coin_core::BlockchainConnector;
-
 
 pub const PROVIDER_URL: &str = "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 
@@ -61,6 +56,4 @@ async fn main() {
     let balance = instance.balance_of(address).call().await.unwrap();
 
     println!("balance: {:?}", balance);
-
-    
 }
