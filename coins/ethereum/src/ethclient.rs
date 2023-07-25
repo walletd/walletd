@@ -99,35 +99,6 @@ impl EthClient {
         }
     }
 
-    // TODO(#70): Remove this after write-only functionality is finished
-    /// Debug transaction for adding smart contract functionality
-    // async fn print_txdata_for_block(&self, block: &web3::types::Block<H256>) {
-    // for transaction_hash in &block.transactions {
-    //     let tx = match self
-    //         .ethers()
-    //         .get_transaction(transaction_hash)
-    //         .await
-    //         .unwrap()
-    //     {
-    //         Ok(Some(tx)) => tx,
-    //         _ => {
-    //             continue;
-    //         }
-    //     };
-    //     let from_addr = tx.from.unwrap_or(H160::zero());
-    //     let to_addr = tx.to.unwrap_or(H160::zero());
-    //     info!(
-    //         "[{}] from {}, to {}, value {}, gas {}, gas price {:?}",
-    //         tx.transaction_index.unwrap_or(U64::from(0)),
-    //         w3h::to_string(&from_addr),
-    //         w3h::to_string(&to_addr),
-    //         tx.value,
-    //         tx.gas,
-    //         tx.gas_price,
-    //     );
-    // }
-    // }
-
     ///  Prints out info on a smart contract transaction from a block hash
     async fn get_smart_contract_tx_vec_from_block_hash(&self, block: &ethers::types::Block<H256>) {
         println!("block data: {:?}", block);
