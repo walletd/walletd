@@ -390,10 +390,10 @@ mod tests {
             .spawn();
 
         let eth_client = EthClient::new(&url).unwrap();
-        // 0x3cDB3d9e1B74692Bb1E3bb5fc81938151cA64b02
+        // 0x3cDB3d9e1B74692Bb1E3bb5fc81938151cA64b02 - the address of the first account using the above mnemonic
         let address = Address::from_str("3cDB3d9e1B74692Bb1E3bb5fc81938151cA64b02").unwrap();
         let balance: EthereumAmount = eth_client.balance_of_account(address).await.unwrap();
-
+        // Anvil's default accounts have 1000 eth
         assert_eq!(balance.wei, 10000000000000000000000u128.into());
         
         drop(anvil);
