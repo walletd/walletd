@@ -3,6 +3,7 @@ extern crate walletd_ethereum;
 use std::sync::Arc;
 
 use ethers::prelude::*;
+use ethers::types::Address;
 
 use walletd_coin_core::BlockchainConnector;
 
@@ -76,12 +77,5 @@ async fn main() {
 
     println!("balance: {:?}", balance);
 
-<<<<<<< HEAD
-
-
     ()
 }
-=======
-    
-}
->>>>>>> 282aff2 (chore: ran clippy and fixed an example)
