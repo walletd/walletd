@@ -253,7 +253,7 @@ mod tests {
         let balance: EthereumAmount = eth_client.balance_of_account(address).await.unwrap();
         // Anvil's default accounts have 1000 eth
         assert_eq!(balance.wei, 10000000000000000000000u128.into());
-        
+
         drop(anvil);
     }
 }
