@@ -4,14 +4,13 @@ use std::sync::Arc;
 
 use ethers::prelude::*;
 use ethers::{
-    abi::Abi,
-    types::{Address, H256},
+    types::{Address},
 };
-use serde;
-use serde::{Deserialize, Serialize};
-use serde_json::json;
+
+
+
 use walletd_coin_core::BlockchainConnector;
-use walletd_ethereum::EthClient;
+
 
 pub const PROVIDER_URL: &str = "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 
@@ -37,7 +36,7 @@ abigen!(
 );
 
 #[tokio::main]
-async fn main() -> () {
+async fn main() {
     let client = Provider::<Http>::try_from(PROVIDER_URL).unwrap();
     let client = Arc::new(client);
 
@@ -63,5 +62,5 @@ async fn main() -> () {
 
     println!("balance: {:?}", balance);
 
-    ()
+    
 }

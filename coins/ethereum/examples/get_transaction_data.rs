@@ -1,15 +1,12 @@
 extern crate walletd_ethereum;
 // https://goerli.etherscan.io/block/8455626
-use std::sync::Arc;
+
 
 use ethers::prelude::*;
-use ethers::{
-    abi::Abi,
-    types::{Address, H256},
-};
-use serde;
-use serde::{Deserialize, Serialize};
-use serde_json::json;
+
+
+
+
 use walletd_coin_core::BlockchainConnector;
 use walletd_ethereum::EthClient;
 

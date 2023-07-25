@@ -4,9 +4,9 @@ use crate::EthereumAmount;
 use async_trait::async_trait;
 use ethers::prelude::*;
 use ethers::types::Address;
-use log::info;
+
 use std::convert::TryFrom;
-use std::str::FromStr;
+
 use walletd_coin_core::BlockchainConnector;
 
 use std::sync::Arc;
@@ -47,7 +47,7 @@ impl EthClient {
             .unwrap()
             .unwrap();
 
-        let output_block_data = block_data.clone();
+        let output_block_data = block_data;
         Ok(output_block_data)
     }
 
@@ -222,6 +222,7 @@ mod tests {
     // use hex_literal::hex;
     use super::*;
     use ethers::utils::Anvil;
+    use std::str::FromStr;
 
     #[test]
     fn create_instance_of_ethclient() {
