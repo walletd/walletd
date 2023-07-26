@@ -14,11 +14,6 @@ jobs:
     name: Rust project
     runs-on: ubuntu-latest
     steps:
-      - name: Install Anvil for Eth tests
-        run: git clone https://github.com/foundry-rs/foundry.git
-        run: cargo install --path ./anvil --profile local --force
-        run: cargo test
-
       - name: Checkout repository
         uses: actions/checkout@v2
 
