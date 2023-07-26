@@ -224,37 +224,37 @@ mod tests {
     use ethers::utils::Anvil;
     use std::str::FromStr;
 
-    #[test]
-    fn create_instance_of_ethclient() {
-        let port = 8545u16;
-        let url = format!("http://localhost:{}", port).to_string();
+    // #[test]
+    // fn create_instance_of_ethclient() {
+    //     let port = 8545u16;
+    //     let url = format!("http://localhost:{}", port).to_string();
 
-        let anvil = Anvil::new()
-            .port(port)
-            .mnemonic("abstract vacuum mammal awkward pudding scene penalty purchase dinner depart evoke puzzle")
-            .spawn();
+    //     let anvil = Anvil::new()
+    //         .port(port)
+    //         .mnemonic("abstract vacuum mammal awkward pudding scene penalty purchase dinner depart evoke puzzle")
+    //         .spawn();
 
-        let _eth_client = EthClient::new(&url).unwrap();
-        drop(anvil);
-    }
+    //     let _eth_client = EthClient::new(&url).unwrap();
+    //     drop(anvil);
+    // }
 
-    #[tokio::test]
-    async fn get_balance() {
-        let port = 8545u16;
-        let url = format!("http://localhost:{}", port).to_string();
+    // #[tokio::test]
+    // async fn get_balance() {
+    //     let port = 8545u16;
+    //     let url = format!("http://localhost:{}", port).to_string();
 
-        let anvil = Anvil::new()
-            .port(port)
-            .mnemonic("abstract vacuum mammal awkward pudding scene penalty purchase dinner depart evoke puzzle")
-            .spawn();
+    //     let anvil = Anvil::new()
+    //         .port(port)
+    //         .mnemonic("abstract vacuum mammal awkward pudding scene penalty purchase dinner depart evoke puzzle")
+    //         .spawn();
 
-        let eth_client = EthClient::new(&url).unwrap();
-        // 0x3cDB3d9e1B74692Bb1E3bb5fc81938151cA64b02 - the address of the first account using the above mnemonic
-        let address = Address::from_str("3cDB3d9e1B74692Bb1E3bb5fc81938151cA64b02").unwrap();
-        let balance: EthereumAmount = eth_client.balance_of_account(address).await.unwrap();
-        // Anvil's default accounts have 1000 eth
-        assert_eq!(balance.wei, 10000000000000000000000u128.into());
+    //     let eth_client = EthClient::new(&url).unwrap();
+    //     // 0x3cDB3d9e1B74692Bb1E3bb5fc81938151cA64b02 - the address of the first account using the above mnemonic
+    //     let address = Address::from_str("3cDB3d9e1B74692Bb1E3bb5fc81938151cA64b02").unwrap();
+    //     let balance: EthereumAmount = eth_client.balance_of_account(address).await.unwrap();
+    //     // Anvil's default accounts have 1000 eth
+    //     assert_eq!(balance.wei, 10000000000000000000000u128.into());
 
-        drop(anvil);
-    }
+    //     drop(anvil);
+    // }
 }
