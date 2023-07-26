@@ -17,6 +17,4 @@ jobs:
 
       - uses: actions/checkout@v3
       - name: Run all tests (including building doc tests and examples)
-        run: git clone https://github.com/foundry-rs/foundry.git
-        run: cargo install --path ./anvil --profile local --force
         run: cargo test
