@@ -1,14 +1,15 @@
+#![allow(unused_imports)]
+use walletd_rates::Error;
 use walletd_rates::{ExchangeRateApi, ExchangeRateHost};
 
 #[tokio::main]
-async fn main() {
-    let result = ExchangeRateApi::new("78b121ef7b842f85c127c1ab")
-        .get_rate()
-        .await
-        .unwrap();
-    dbg!(result);
-
-    // let result = ExchangeRateHost::new().get_rate().await.unwrap();
+async fn main() -> Result<(), Error> {
+    // replace "your_api_key" with your api key from exchangerate-api.com
+    // let result = ExchangeRateApi::new("your_api_key").get_rate().await?;
     // dbg!(result);
-    //walletd_rates::get_rate2().await;
+
+    // fetches the current fiat rates from exchangerate.host
+    let result = ExchangeRateHost::new().get_rate().await?;
+    dbg!(result);
+    Ok(())
 }

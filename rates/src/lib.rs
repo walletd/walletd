@@ -1,31 +1,28 @@
-use std::collections::HashMap;
-
 use serde::Deserialize;
+use std::collections::HashMap;
+use thiserror::Error;
+// pub async fn get_rate() {
+//     let body = reqwest::get("https://www.bitstamp.net/api/v2/ticker/btcusd/")
+//         .await
+//         .unwrap()
+//         .text()
+//         .await
+//         .unwrap();
+//     // let block_count = body
+//     //     .parse::<u64>()
+//     //     .map_err(|e| Error::FromStr(e.to_string()))?;
+//     println!("{:?}", body);
+// }
 
-pub async fn get_rate() {
-    let body = reqwest::get("https://www.bitstamp.net/api/v2/ticker/btcusd/")
-        .await
-        .unwrap()
-        .text()
-        .await
-        .unwrap();
-    // let block_count = body
-    //     .parse::<u64>()
-    //     .map_err(|e| Error::FromStr(e.to_string()))?;
-    println!("{:?}", body);
-}
-
-pub trait FiatRateProvider {
-    fn get_rate(&self) -> Result<FiatRates, reqwest::Error>;
-}
-
-#[derive(Debug)]
+/// List of available Fiat providers
+#[derive(Debug, PartialEq, Eq)]
 pub enum Providers {
     ExchangeRateApi,
     ExchangeRateHost,
 }
 
-#[derive(Debug)]
+/// The common format fiat rates are returned in
+#[derive(Debug, PartialEq)]
 pub struct FiatRates {
     provider: Providers,
     base: String,
@@ -34,8 +31,8 @@ pub struct FiatRates {
 }
 
 #[derive(Deserialize, Debug)]
-pub struct BaseResponse2 {
-    result: String,
+struct ExchangeRateApiResponse {
+    //result: String,
     // documentation: String
     // terms_of_use: String,
     time_last_update_unix: u64,
@@ -45,27 +42,27 @@ pub struct BaseResponse2 {
     rates: HashMap<String, f32>,
 }
 
+/// The ExchangeRateApi provider
 pub struct ExchangeRateApi {
     api_key: String,
 }
 
 impl ExchangeRateApi {
+    /// Creates a new ExchangeRateApi provider - requires an API key
     pub fn new(api_key: &str) -> Self {
         Self {
             api_key: api_key.to_string(),
         }
     }
-
-    pub async fn get_rate(&self) -> Result<FiatRates, reqwest::Error> {
+    /// Returns the current fiat rates for USD base currency
+    pub async fn get_rate(&self) -> Result<FiatRates, Error> {
         let body = reqwest::get(format!(
             "https://v6.exchangerate-api.com/v6/{}/latest/USD",
             self.api_key,
         ))
-        .await
-        .unwrap()
-        .json::<BaseResponse2>()
-        .await
-        .unwrap();
+        .await?
+        .json::<ExchangeRateApiResponse>()
+        .await?;
 
         let fiat_rates = FiatRates {
             provider: Providers::ExchangeRateApi,
@@ -78,39 +75,28 @@ impl ExchangeRateApi {
 }
 
 #[derive(Deserialize, Debug)]
-pub struct BaseResponse {
+struct ExchangeRateHostResponse {
     //motd: Motd,
-    success: bool,
+    //success: bool,
     base: String,
     date: String,
     rates: HashMap<String, f32>,
 }
-#[derive(Deserialize, Debug)]
-struct Rate {
-    currency: String,
-    rate: f64,
-}
 
-#[derive(Deserialize, Debug)]
-struct Motd {
-    msg: String,
-    url: String,
-}
-
+/// ExchangeRateHost provider
 pub struct ExchangeRateHost {}
 
 impl ExchangeRateHost {
+    /// Creates a new ExchangeRateHost provider
     pub fn new() -> Self {
         Self {}
     }
-
-    pub async fn get_rate(&self) -> Result<FiatRates, reqwest::Error> {
+    /// Returns the current fiat rates for USD base currency
+    pub async fn get_rate(&self) -> Result<FiatRates, Error> {
         let body = reqwest::get("https://api.exchangerate.host/latest?base=usd")
-            .await
-            .unwrap()
-            .json::<BaseResponse>()
-            .await
-            .unwrap();
+            .await?
+            .json::<ExchangeRateHostResponse>()
+            .await?;
 
         let fiat_rates = FiatRates {
             provider: Providers::ExchangeRateHost,
@@ -120,4 +106,11 @@ impl ExchangeRateHost {
         };
         Ok(fiat_rates)
     }
+}
+
+/// Custom error type for this crate.
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("request error: {0}")]
+    Connection(#[from] reqwest::Error),
 }
