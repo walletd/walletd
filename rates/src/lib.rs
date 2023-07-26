@@ -108,6 +108,12 @@ impl ExchangeRateHost {
     }
 }
 
+impl Default for ExchangeRateHost {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Custom error type for this crate.
 #[derive(Error, Debug)]
 pub enum Error {
