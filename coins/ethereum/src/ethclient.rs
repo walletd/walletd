@@ -123,14 +123,14 @@ impl EthClient {
 
     /// Given a specified contract instance, determine the total supply of
     /// tokens
-    async fn total_supply(&self, address: ethers::types::Address) -> Result<U256, ()> {
+    async fn total_supply(&self, address: ethers::types::Address) -> Result<U256, Error> {
         let client = Arc::new(self.ethers());
         let contract_instance = ERC20::new(address, Arc::clone(&client));
         let total_supply = &contract_instance.total_supply().call().await.unwrap();
         Ok(*total_supply)
     }
 
-    async fn get_token_name(&self, address: ethers::types::Address) -> Result<String, ()> {
+    async fn get_token_name(&self, address: ethers::types::Address) -> Result<String, Error> {
         let client = Arc::new(self.ethers());
         let contract_instance = ERC20::new(address, Arc::clone(&client));
         let token_name = &contract_instance.name().call().await.unwrap();
