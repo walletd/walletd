@@ -15,6 +15,7 @@ struct BitstampResponse {
     ask: String,
 }
 
+#[derive(Default)]
 pub struct Bitstamp {}
 
 impl Bitstamp {
@@ -43,6 +44,7 @@ impl Bitstamp {
     }
 }
 
+#[derive(Default)]
 pub struct ExchangeRateHostCrypto {}
 
 impl ExchangeRateHostCrypto {
