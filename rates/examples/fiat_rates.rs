@@ -1,5 +1,5 @@
 #![allow(unused_imports)]
-use walletd_rates::Error;
+use walletd_rates::{Bitstamp, Error, ExchangeRateHostCrypto};
 use walletd_rates::{ExchangeRateApi, ExchangeRateHost};
 
 #[tokio::main]
@@ -11,5 +11,6 @@ async fn main() -> Result<(), Error> {
     // fetches the current fiat rates from exchangerate.host
     let result = ExchangeRateHost::new().get_rate().await?;
     dbg!(result);
+
     Ok(())
 }
