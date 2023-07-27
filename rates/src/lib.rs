@@ -4,9 +4,9 @@ use thiserror::Error;
 
 #[derive(Deserialize, Debug)]
 pub struct CryptoRate {
-    base: String,
-    date: String,
-    rates: HashMap<String, String>,
+    pub base: String,
+    pub date: String,
+    pub rates: HashMap<String, String>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -15,6 +15,7 @@ struct BitstampResponse {
     ask: String,
 }
 
+/// Bitstamp provider
 #[derive(Default)]
 pub struct Bitstamp {}
 
@@ -44,6 +45,7 @@ impl Bitstamp {
     }
 }
 
+/// ExchangeRateHost for crypto provider
 #[derive(Default)]
 pub struct ExchangeRateHostCrypto {}
 
@@ -144,6 +146,7 @@ struct ExchangeRateHostResponse {
 }
 
 /// ExchangeRateHost provider
+#[derive(Default)]
 pub struct ExchangeRateHost {}
 
 impl ExchangeRateHost {
@@ -165,12 +168,6 @@ impl ExchangeRateHost {
             rates: body.rates,
         };
         Ok(fiat_rates)
-    }
-}
-
-impl Default for ExchangeRateHost {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
