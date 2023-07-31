@@ -63,19 +63,19 @@ impl EthClient {
     ///
     /// # Example
     ///
-    /// ```no_run
-    /// # use walletd_ethereum::EthClient;
-    /// # use walletd_coin_core::BlockchainConnector;
-    /// # async fn example() -> Result<(), walletd_ethereum::Error> {
-    /// let tx_hash =
-    ///     "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
-    /// let infura_goerli_endpoint_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-    /// let eth_client = EthClient::new(infura_goerli_endpoint_url)?;
-    /// let tx = eth_client.get_transaction_data_from_tx_hash(tx_hash).await?;
-    /// println!("tx data: {:?}", tx);
-    /// # Ok(())
-    /// # }
-    /// ```
+    // ```no_run
+    // # use walletd_ethereum::EthClient;
+    // # use walletd_coin_core::BlockchainConnector;
+    // # async fn example() -> Result<(), walletd_ethereum::Error> {
+    // let tx_hash =
+    //     "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
+    // let infura_goerli_endpoint_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
+    // let eth_client = EthClient::new(infura_goerli_endpoint_url)?;
+    // let tx = eth_client.get_transaction_data_from_tx_hash(tx_hash).await?;
+    // println!("tx data: {:?}", tx);
+    // # Ok(())
+    // # }
+    // ```
     pub async fn get_transaction_data_from_tx_hash(
         &self,
         tx_hash: H256,
