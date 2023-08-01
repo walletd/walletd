@@ -1,18 +1,80 @@
 use serde::Deserialize;
 use std::collections::HashMap;
 use thiserror::Error;
-// pub async fn get_rate() {
-//     let body = reqwest::get("https://www.bitstamp.net/api/v2/ticker/btcusd/")
-//         .await
-//         .unwrap()
-//         .text()
-//         .await
-//         .unwrap();
-//     // let block_count = body
-//     //     .parse::<u64>()
-//     //     .map_err(|e| Error::FromStr(e.to_string()))?;
-//     println!("{:?}", body);
-// }
+
+#[derive(Deserialize, Debug)]
+pub struct CryptoRate {
+    pub base: String,
+    pub date: String,
+    pub rates: HashMap<String, String>,
+}
+
+#[derive(Deserialize, Debug)]
+struct BitstampResponse {
+    timestamp: String,
+    ask: String,
+}
+
+/// Bitstamp provider
+#[derive(Default)]
+pub struct Bitstamp {}
+
+impl Bitstamp {
+    /// Creates a new Bitstamp provider
+    pub fn new() -> Self {
+        Self {}
+    }
+
+    /// Returns the current BTC/USD rate from Bitstamp
+    pub async fn get_rate(base: &str, quote: &str) -> Result<CryptoRate, Error> {
+        let pair = format!("{}{}", base, quote).to_lowercase();
+        let response = reqwest::get(format!("https://www.bitstamp.net/api/v2/ticker/{}/", pair))
+            .await?
+            .json::<BitstampResponse>()
+            .await?;
+
+        let mut map = HashMap::new();
+        // (1.0 / response.ask.parse::<f32>()?).to_string() // for inverting rates
+        map.insert(quote.to_string(), response.ask.to_string());
+        let rate = CryptoRate {
+            base: base.to_string().to_uppercase(),
+            date: response.timestamp,
+            rates: map,
+        };
+        Ok(rate)
+    }
+}
+
+/// ExchangeRateHost for crypto provider
+#[derive(Default)]
+pub struct ExchangeRateHostCrypto {}
+
+impl ExchangeRateHostCrypto {
+    /// Creates a new ExchangeRateHostCrypto provider
+    pub fn new() -> Self {
+        Self {}
+    }
+
+    pub async fn get_rate(base: &str, quote: &str) -> Result<CryptoRate, Error> {
+        let response = reqwest::get(format!(
+            "https://api.exchangerate.host/latest?base={}&symbols={}&source=crypto",
+            base, quote
+        ))
+        .await?
+        .json::<ExchangeRateHostResponse>()
+        .await?;
+        let mut map = HashMap::new();
+        for (key, value) in response.rates.into_iter() {
+            map.insert(key, value.to_string());
+        }
+        let rate = CryptoRate {
+            base: response.base,
+            date: response.date,
+            rates: map,
+        };
+        Ok(rate)
+    }
+}
 
 /// List of available Fiat providers
 #[derive(Debug, PartialEq, Eq)]
@@ -84,6 +146,7 @@ struct ExchangeRateHostResponse {
 }
 
 /// ExchangeRateHost provider
+#[derive(Default)]
 pub struct ExchangeRateHost {}
 
 impl ExchangeRateHost {
@@ -108,15 +171,11 @@ impl ExchangeRateHost {
     }
 }
 
-impl Default for ExchangeRateHost {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 /// Custom error type for this crate.
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("request error: {0}")]
     Connection(#[from] reqwest::Error),
+    #[error("invalid response: {0}")]
+    InvalidResult(#[from] std::num::ParseFloatError),
 }

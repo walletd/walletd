@@ -11,5 +11,6 @@ async fn main() -> Result<(), Error> {
     // fetches the current fiat rates from exchangerate.host
     let result = ExchangeRateHost::new().get_rate().await?;
     dbg!(result);
+
     Ok(())
 }
