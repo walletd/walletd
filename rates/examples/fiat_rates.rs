@@ -1,5 +1,5 @@
 #![allow(unused_imports)]
-use walletd_rates::{Bitstamp, Error, ExchangeRateHostCrypto};
+use walletd_rates::Error;
 use walletd_rates::{ExchangeRateApi, ExchangeRateHost};
 
 #[tokio::main]
