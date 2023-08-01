@@ -1,0 +1,21 @@
+[package]
+name = "walletd_rates"
+version = "0.2.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+authors = ["The WalletD Team"]
+description = "rates walletd library"
+homepage = "https://walletd.org/"
+repository = "https://github.com/walletd/walletd"
+readme = "README.md"
+categories = ["cryptography::cryptocurrencies"]
+
+[lib]
+name = "walletd_rates"
+path = "src/lib.rs"
+
+[dependencies]
+thiserror = "1.0.40"
+"serde" = { version = "1.0.160", features = ["derive"] }
+tokio = { version = "1.0", features = ["full"] }
+reqwest = { version = "0.11.18", features = ["json"] }
