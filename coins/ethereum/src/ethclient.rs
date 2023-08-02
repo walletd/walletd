@@ -4,19 +4,21 @@ use crate::EthereumAmount;
 use async_trait::async_trait;
 use ethers::prelude::*;
 use ethers::types::Address;
-// use ethers::providers::{Middleware, Provider};
-// use ethers::providers::Http;
-// use ethers::types::{BlockId, Block, BlockNumber, H256, U64};
+
 use std::convert::TryFrom;
-use std::str::FromStr;
+
 use walletd_coin_core::BlockchainConnector;
 
+use std::sync::Arc;
 /// A blockchain connector for Ethereum which contains a [`instance of ethers `](https://github.com/gakonst/ethers-rs) using a HTTP transport.
 #[derive(Clone, Debug)]
 pub struct EthClient {
     ethers: Provider<Http>,
     endpoint: String,
 }
+
+// Creates Rust bindings for the ERC20 ABI
+abigen!(ERC20, "./abi/erc20_abi.json");
 
 #[allow(unused)]
 impl EthClient {
@@ -27,7 +29,26 @@ impl EthClient {
 
     /// Returns the chain id of the current network the ethers instance is connected to.
     pub async fn chain_id(&self) -> U256 {
-        self.ethers.get_chainid().await.unwrap()
+        self.ethers().get_chainid().await.unwrap()
+    }
+
+    /// Returns a block with its specified block number and transactions
+    // TODO: Take BlockNumber as an argument
+    pub async fn get_specified_block_with_transactions(
+        &self,
+        block_number: ethers::types::BlockId,
+    ) -> Result<Block<Transaction>, Error> {
+        let block_data = self
+            .ethers()
+            .get_block_with_txs(ethers::types::BlockId::Number(
+                ethers::types::BlockNumber::Latest,
+            ))
+            .await
+            .unwrap()
+            .unwrap();
+
+        let output_block_data = block_data;
+        Ok(output_block_data)
     }
 
     /// Returns the balance of an address as an [EthereumAmount].
@@ -42,26 +63,27 @@ impl EthClient {
     ///
     /// # Example
     ///
-    /// ```no_run
-    /// # use walletd_ethereum::EthClient;
-    /// # use walletd_coin_core::BlockchainConnector;
-    /// # async fn example() -> Result<(), walletd_ethereum::Error> {
-    /// let tx_hash =
-    ///     "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
-    /// let infura_goerli_endpoint_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-    /// let eth_client = EthClient::new(infura_goerli_endpoint_url)?;
-    /// let tx = eth_client.transaction_data_from_hash(tx_hash).await?;
-    /// println!("tx data: {:?}", tx);
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub async fn transaction_data_from_hash(
+    // ```no_run
+    // # use walletd_ethereum::EthClient;
+    // # use walletd_coin_core::BlockchainConnector;
+    // # async fn example() -> Result<(), walletd_ethereum::Error> {
+    // let tx_hash =
+    //     "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
+    // let infura_goerli_endpoint_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
+    // let eth_client = EthClient::new(infura_goerli_endpoint_url)?;
+    // let tx = eth_client.get_transaction_data_from_tx_hash(tx_hash).await?;
+    // println!("tx data: {:?}", tx);
+    // # Ok(())
+    // # }
+    // ```
+    pub async fn get_transaction_data_from_tx_hash(
         &self,
-        tx_hash: &str,
+        tx_hash: H256,
     ) -> Result<ethers::types::Transaction, Error> {
-        // Only runs against mainnet for now - TODO: extend chain id (replace network type)
-        let transaction_hash = H256::from_str(tx_hash).unwrap();
-        match self.ethers().get_transaction(transaction_hash).await {
+        // TODO: extend to allow for other chain ids (replace network type)
+        // Only runs against the remote node's default chain_id for now
+        // let tx_hash ="0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
+        match self.ethers().get_transaction(tx_hash).await {
             Ok(tx) => {
                 let transaction_data = tx.unwrap();
                 if transaction_data.block_hash.is_none() {
@@ -73,152 +95,9 @@ impl EthClient {
                     Ok(transaction_data)
                 }
             }
-            Err(error) => {
-                println!("Did not get");
-                Err(Error::TxResponse(error.to_string()))
-            }
+            Err(error) => Err(Error::TxResponse(error.to_string())),
         }
     }
-
-    // TODO(#70): Remove this after write-only functionality is finished
-    /// Debug transaction for adding smart contract functionality
-    // async fn print_txdata_for_block(&self, block: &web3::types::Block<H256>) {
-    // for transaction_hash in &block.transactions {
-    //     let tx = match self
-    //         .ethers()
-    //         .get_transaction(transaction_hash)
-    //         .await
-    //         .unwrap()
-    //     {
-    //         Ok(Some(tx)) => tx,
-    //         _ => {
-    //             continue;
-    //         }
-    //     };
-    //     let from_addr = tx.from.unwrap_or(H160::zero());
-    //     let to_addr = tx.to.unwrap_or(H160::zero());
-    //     info!(
-    //         "[{}] from {}, to {}, value {}, gas {}, gas price {:?}",
-    //         tx.transaction_index.unwrap_or(U64::from(0)),
-    //         w3h::to_string(&from_addr),
-    //         w3h::to_string(&to_addr),
-    //         tx.value,
-    //         tx.gas,
-    //         tx.gas_price,
-    //     );
-    // }
-    // }
-
-    ///  Prints out info on a smart contract transaction from a block hash
-    // async fn get_smart_contract_tx_vec_from_block_hash(&self, block: &web3::types::Block<H256>) {
-    // todo!()
-    // for transaction_hash in &block.transactions {
-    //     let tx = match self
-    //         .web3
-    //         .eth()
-    //         .transaction(TransactionId::Hash(*transaction_hash))
-    //         .await
-    //     {
-    //         Ok(Some(tx)) => Ok(tx),
-    //         Ok(None) => Err(Error::TxResponse(format!(
-    //             "Transaction hash {} not found",
-    //             transaction_hash
-    //         ))),
-    //         Err(error) => Err(Error::TxResponse(error.to_string())),
-    //     };
-
-    //     match tx.unwrap().to {
-    //         Some(addr) => match &self.web3.eth().code(addr, None).await {
-    //             Ok(code) => {
-    //                 if code == &web3::types::Bytes::from([]) {
-    //                     // "Empty code, skipping
-    //                     continue;
-    //                 } else {
-    //                     // "Non empty code, this address has bytecode we have retrieved
-    //                     // Attempt to initialise an instance of an ERC20 contract at this
-    //                     // address
-    //                     let smart_contract = self.initialise_contract(addr).unwrap();
-    //                     let token_name: String =
-    //                         self.get_token_name(&smart_contract).await.unwrap();
-
-    //                     // Attempt to get and print the total supply of an ERC20-compliant
-    //                     // contract
-    //                     let total_supply: Uint =
-    //                         self.total_supply(&smart_contract).await.unwrap();
-
-    //                     info!("token name {:#?}", token_name);
-    //                     info!("token supply {:#?}", total_supply);
-    //                 }
-    //             }
-    //             _ => {
-    //                 continue;
-    //             }
-    //         },
-    //         _ => {
-    //             info!("To address is not a valid address, skipping.");
-    //             continue;
-    //         }
-    //     }
-    // }
-    // }
-
-    /// Filters a block for all ERC-20 compliant transactions
-    /// This leverages the standardised ERC20 Application Binary Interface
-    // async fn smart_contract_transactions(&self, block: &web3::types::Block<H256>) {
-    // for transaction_hash in &block.transactions {
-    //     let tx = match self
-    //         .ethers()
-    //         .get_transaction(ethers::types::Transaction)
-    //         .await
-    //     {
-    //         Ok(tx) => Ok(tx),
-    //         Err(error) => Err(Error::TxResponse(error.to_string())),
-    //         Ok(None) => Err(Error::TxResponse(format!(
-    //             "Transaction hash {} not found",
-    //             transaction_hash
-    //         ))),
-    //     };
-    //     info!("transaction data {:#?}", tx);
-    //     // TODO(AS): refactor this to uncomment this section or handle the way needeed for first public release version
-    //     // let smart_contract_addr = match tx.unwrap().to {
-    //     //     Some(addr) => match &self.web3.eth().code(addr,
-    //     // None).await {         Ok(code) => {
-    //     //             if code == &web3::types::Bytes::from([]) {
-    //     //                 // "Empty code, skipping
-    //     //                 continue;
-    //     //             } else {
-    //     //                 // "Non empty code, this address has bytecode
-    //     // we have retrieved                 // Attempt
-    //     // to initialise an instance of an ERC20 contract at this
-    //     //                 // address
-    //     //                 let smart_contract =
-    //     // self.initialise_contract(addr).unwrap();
-    //     //                 let token_name: String =
-    //     //
-    //     // self.get_token_name(&smart_contract).await.unwrap();
-
-    //     //                 // Attempt to get and print the total supply
-    //     // of an ERC20-compliant                 //
-    //     // contract                 let total_supply:
-    //     // Uint =
-    //     // self.total_supply(&smart_contract).await.unwrap();
-
-    //     //                 info!("token name {:#?}", token_name);
-    //     //                 info!("token supply {:#?}", total_supply);
-    //     //             }
-    //     //         }
-    //     //         _ => {
-    //     //             continue;
-    //     //         }
-    //     //     },
-    //     //     _ => {
-    //     //         // info!("To address is not a valid address,
-    //     // skipping.");         continue;
-    //     //     }
-    //     // };
-    // }
-    // // info!("{:#?}", smart_contract_addr);
-    // }
 
     /// Given a specified address, retrieves the [Ethereum balance][EthereumAmount] of that
     /// [address][Address].
@@ -232,57 +111,31 @@ impl EthClient {
 
     /// Given a specified smart contract (ERC20) instance, determine the
     /// token balance for a given address.
-
     async fn balance_of_smart_contract(
         &self,
-        smart_contract: &ethers::contract::Contract<Http>,
         address: ethers::types::Address,
     ) -> Result<String, Error> {
-        todo!();
-        // let balance = smart_contract
-        //     .query("balanceOf", address, None, Options::default(), None)
-        //     .await?;
-        // Ok(balance)
+        let client = Arc::new(self.ethers());
+        let contract_instance = ERC20::new(address, Arc::clone(&client));
+        let balance = &contract_instance.balance_of(address).call().await.unwrap();
+        Ok(balance.to_string())
     }
 
     /// Given a specified contract instance, determine the total supply of
     /// tokens
-    // TODO: Migrate
-    // async fn total_supply(
-    //     &self,
-    //     smart_contract: &web3::contract::Contract<Http>,
-    // ) -> Result<Uint, ()> {
-    //     let total_supply = smart_contract
-    //         .query("totalSupply", (), None, Options::default(), None)
-    //         .await;
+    async fn total_supply(&self, address: ethers::types::Address) -> Result<U256, Error> {
+        let client = Arc::new(self.ethers());
+        let contract_instance = ERC20::new(address, Arc::clone(&client));
+        let total_supply = &contract_instance.total_supply().call().await.unwrap();
+        Ok(*total_supply)
+    }
 
-    //     Ok(total_supply.unwrap())
-    // }
-
-    /// Given a specified contract instance, retrieve the name of the token
-    // TODO: Migrate
-    // async fn get_token_name(
-    //     &self,
-    //     contract: &web3::contract::Contract<Http>,
-    // ) -> Result<String, ()> {
-    //     let token_name = contract
-    //         .query("name", (), None, Options::default(), None)
-    //         .await;
-    //     Ok(token_name.unwrap())
-    // }
-
-    /// Initialises an instance of an ERC20-compliant smart contract we can
-    /// subsequently interact with
-    // erc20_abi.json describes standard ERC20 functions
-    // TODO: migrate still
-    // fn initialise_contract(&self, addr: H160) -> Result<web3::contract::Contract<Http>, Error> {
-    //     todo!()
-    //     // Ok(Contract::from_json(
-    //     //     self.web3.eth(),
-    //     //     addr,
-    //     //     include_bytes!("./abi/erc20_abi.json"),
-    //     // )?)
-    // }
+    async fn get_token_name(&self, address: ethers::types::Address) -> Result<String, Error> {
+        let client = Arc::new(self.ethers());
+        let contract_instance = ERC20::new(address, Arc::clone(&client));
+        let token_name = &contract_instance.name().call().await.unwrap();
+        Ok(token_name.to_string())
+    }
 
     /// Get the current price of gas as an [EthereumAmount].
     pub async fn gas_price(&self) -> Result<EthereumAmount, Error> {
@@ -310,29 +163,19 @@ impl EthClient {
 
         let output_block_data = block_data.clone();
         Ok(output_block_data)
-        // let block_data = &self
-        //     .web3
-        //     .eth()
-        //     .block(BlockId::Number(BlockNumber::Latest))
-        //     .await
-        //     .unwrap()
-        //     .unwrap();
-        // let output_block_data = block_data.clone();
-        // Ok(output_block_data)
     }
 
     /// Gets current chain's block using a specified block number. This requires an
     /// instance of web3's U64, not Rust's u64.
-    ///
     // TODO:(#73) - when using U64,
     // no transaction data returned by Web3's block struct. This appears to be a bug
     // in Web3. This may be fixed by ethers.rs in which case we don't need block_data_from_numeric_string
     #[allow(non_snake_case)]
     async fn block_data_from_U64(&self, block_id: U64) -> Result<Block<H256>, Error> {
-        let blockid = BlockNumber::Number(block_id);
+        let block_id = BlockNumber::Number(block_id);
         let block_data = &self
             .ethers()
-            .get_block(BlockId::Number(blockid))
+            .get_block(BlockId::Number(block_id))
             .await
             .unwrap()
             .unwrap();
@@ -372,4 +215,46 @@ impl BlockchainConnector for EthClient {
     fn url(&self) -> &str {
         &self.endpoint
     }
+}
+
+#[cfg(test)]
+mod tests {
+    // use hex_literal::hex;
+    use super::*;
+    use ethers::utils::Anvil;
+    use std::str::FromStr;
+
+    // #[test]
+    // fn create_instance_of_ethclient() {
+    //     let port = 8545u16;
+    //     let url = format!("http://localhost:{}", port).to_string();
+
+    //     let anvil = Anvil::new()
+    //         .port(port)
+    //         .mnemonic("abstract vacuum mammal awkward pudding scene penalty purchase dinner depart evoke puzzle")
+    //         .spawn();
+
+    //     let _eth_client = EthClient::new(&url).unwrap();
+    //     drop(anvil);
+    // }
+
+    // #[tokio::test]
+    // async fn get_balance() {
+    //     let port = 8545u16;
+    //     let url = format!("http://localhost:{}", port).to_string();
+
+    //     let anvil = Anvil::new()
+    //         .port(port)
+    //         .mnemonic("abstract vacuum mammal awkward pudding scene penalty purchase dinner depart evoke puzzle")
+    //         .spawn();
+
+    //     let eth_client = EthClient::new(&url).unwrap();
+    //     // 0x3cDB3d9e1B74692Bb1E3bb5fc81938151cA64b02 - the address of the first account using the above mnemonic
+    //     let address = Address::from_str("3cDB3d9e1B74692Bb1E3bb5fc81938151cA64b02").unwrap();
+    //     let balance: EthereumAmount = eth_client.balance_of_account(address).await.unwrap();
+    //     // Anvil's default accounts have 1000 eth
+    //     assert_eq!(balance.wei, 10000000000000000000000u128.into());
+
+    //     drop(anvil);
+    // }
 }

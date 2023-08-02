@@ -75,19 +75,19 @@
 //!
 //! ### Using EthClient to Access Blockchain Data
 //! The blockchain client `ethclient` can be used separately from the `ethereum_wallet` to access blockchain data such as details of a transaction given a tx hash, the current block number, or the current gas price.
-//! ```no_run
-//! # use walletd_ethereum::prelude::*;
-//! # async fn ethereum() -> Result<(), walletd_ethereum::Error> {
-//! # let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-//! # let eth_client = EthClient::new(ethclient_url)?;
-//! let tx_hash = "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
-//! let tx = eth_client.transaction_data_from_hash(tx_hash).await?;
-//! let block_number = eth_client.current_block_number().await;
-//! let gas_price = eth_client.gas_price().await;
-//! println!("transaction data: {:?}", tx);
-//! # Ok(())
-//! # }
-//! ```
+//```no_run
+//# use walletd_ethereum::prelude::*;
+//# async fn ethereum() -> Result<(), walletd_ethereum::Error> {
+//# let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
+//# let eth_client = EthClient::new(ethclient_url)?;
+//let tx_hash: &str = "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
+//let tx = eth_client.get_transaction_data_from_tx_hash(tx_hash).await?;
+//let block_number = eth_client.current_block_number().await;
+//let gas_price = eth_client.gas_price().await;
+//println!("transaction data: {:?}", tx);
+//# Ok(())
+//# }
+//```
 //!
 //! ### Balance of Ethereum Wallet on Blockchain
 //! When the `ethereum_wallet` is connected to the blockchain, we can find the balance of the wallet.

@@ -17,6 +17,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: foundry-toolchain
+        uses: foundry-rs/foundry-toolchain@v1.0.10
+
+
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
         with:

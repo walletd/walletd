@@ -69,7 +69,10 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
     let ethclient_url = PROVIDER_URL;
     let eth_client = EthClient::new(ethclient_url)?;
     let tx_hash = "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
-    let tx = eth_client.transaction_data_from_hash(tx_hash).await?;
+    let tx_hash = tx_hash.parse().unwrap();
+    let tx = eth_client
+        .get_transaction_data_from_tx_hash(tx_hash)
+        .await?;
     let block_number = eth_client.current_block_number().await;
     let gas_price = eth_client.gas_price().await;
 
