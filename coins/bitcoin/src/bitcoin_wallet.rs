@@ -4,11 +4,11 @@ use crate::BitcoinAmount;
 use crate::{AddressInfo, BitcoinAddress, BitcoinPrivateKey, BitcoinPublicKey};
 use crate::{BitcoinConnector, Error};
 use std::cmp::Reverse;
-use walletd_bip39::Seed;
 use walletd_coin_core::CryptoAddress;
 use walletd_coin_core::CryptoAmount;
 use walletd_hd_key::slip44;
 use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
+use walletd_mnemonics_core::Seed;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 use crate::bitcoin::script::PushBytes;

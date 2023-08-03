@@ -1,4 +1,5 @@
 use super::*;
+
 use crate::{AddressType, BitcoinWalletBuilder, Error, HDKey, Network, Seed};
 use std::str::FromStr;
 use walletd_hd_key::HDNetworkType;

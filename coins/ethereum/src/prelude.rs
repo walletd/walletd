@@ -12,3 +12,4 @@ pub use crate::{
 
 pub use ethers::types::Transaction;
 pub use walletd_coin_core::prelude::*;
+pub use walletd_mnemonics_core::Seed;

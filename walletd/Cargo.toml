@@ -20,7 +20,6 @@ tokio = "1.23.0"
 
 [dependencies]
 bdk = { version = "0.15.0", default-feature = false, features = ["all-keys"] }
-
 walletd_mnemonics_core = { path = "../mnemonics/core", version = "0.2" }
 walletd_coin_core = { path = "../coins/core", version = "0.2" }
 walletd_bitcoin = { path = "../coins/bitcoin", version = "0.2" }
