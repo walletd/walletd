@@ -15,7 +15,5 @@ name = "walletd_mnemonics_core"
 path = "src/lib.rs"
 
 [dependencies]
-anyhow = "1.0.68"
 hex = { version = "0.4.2" }
-thiserror = "1.0.40"
 zeroize = { version = "1.6.0", features = ["zeroize_derive"] }

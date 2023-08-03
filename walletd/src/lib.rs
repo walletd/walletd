@@ -23,7 +23,7 @@
 //!
 //! ### Create HD KeyPair from Bip39 Mnemonic
 //!
-//! Here's how you can create a [KeyPair] from a [Bip39Mnemonic] using the [KeyPairBuilder].
+//! Here's how you can create a [KeyPair].
 //! ```
 //! use walletd::prelude::*;  
 
