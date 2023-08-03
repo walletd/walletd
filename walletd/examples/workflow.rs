@@ -1,10 +1,11 @@
 extern crate walletd;
 
 use walletd::{
-    blockstream::Blockstream, walletd_ethereum::EthClient, Bip39Mnemonic, BitcoinWallet,
-    BlockchainConnector, Error, EthereumWallet, HDNetworkType, KeyPair, Mnemonic, MnemonicBuilder,
-    MnemonicKeyPairType,
+    blockstream::Blockstream, walletd_ethereum::EthClient, BitcoinWallet, BlockchainConnector,
+    Error, EthereumWallet, HDNetworkType, KeyPair, MnemonicKeyPairType, Seed,
 };
+
+use bdk::keys::bip39::Mnemonic;
 
 const BTC_TESTNET_URL: &str = "https://blockstream.info/testnet/api";
 const ETH_TESTNET_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
@@ -12,25 +13,18 @@ const ETH_TESTNET_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea1
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // case of importing from a Bip39Mnemonic, let's assume we have previous transactions associated with this mnemonic phrase in BTC and ETH
-    let my_mnemonic_phrase =
-        "joy tail arena mix other envelope diary achieve short nest true vocal";
+    let mnemonic_phrase = "joy tail arena mix other envelope diary achieve short nest true vocal";
 
     // Using the testnet network
     let network = HDNetworkType::TestNet;
-
-    // no passphrase, it's in English
-    let my_mnemonic = match Bip39Mnemonic::builder()
-        .mnemonic_phrase(my_mnemonic_phrase)
-        .build()
-    {
-        Ok(mnemonic) => mnemonic,
-        Err(e) => panic!("Error: {}", e),
-    };
+    let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
+    let seed = mnemonic.to_seed("");
+    let seed = Seed::new(seed.to_vec());
 
     // Generates a KeyPair from the mnemonic, specifying the network and the type of mnemonic, this becomes the HD wallet which can be used to access multiple cryptocurrencies
     let hd_wallet = KeyPair::new(
-        my_mnemonic.to_seed(),
-        my_mnemonic.phrase(),
+        seed,
+        mnemonic_phrase.to_string(),
         MnemonicKeyPairType::HDBip39,
         None,
         network,

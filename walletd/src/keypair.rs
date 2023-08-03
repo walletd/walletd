@@ -1,6 +1,6 @@
-use ::walletd_bip39::Seed;
-
-use crate::{Bip39Mnemonic, HDKey, HDNetworkType, Mnemonic};
+use crate::{HDKey, HDNetworkType};
+use ::walletd_mnemonics_core::Seed;
+use bdk::keys::bip39::Mnemonic;
 
 use crate::Error;
 
@@ -117,8 +117,11 @@ impl KeyPairBuilder {
             Some(seed) => seed.clone(),
             None => match &self.style {
                 MnemonicKeyPairType::HDBip39 => {
-                    Bip39Mnemonic::detect_language(&mnemonic_phrase, self.passphrase.as_deref())?
-                        .to_seed()
+                    let passphrase = self.passphrase.as_deref().unwrap_or("");
+                    let mnemonic = Mnemonic::parse(&mnemonic_phrase)
+                        .unwrap()
+                        .to_seed(passphrase);
+                    Seed::new(mnemonic.to_vec())
                 }
             },
         };

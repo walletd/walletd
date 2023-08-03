@@ -1,15 +1,15 @@
 use walletd::prelude::*;
-use walletd_bip39::prelude::*;
 use walletd_bitcoin::prelude::*;
 use walletd_ethereum::prelude::*;
+
+use bdk::keys::bip39::Mnemonic;
 
 #[tokio::main]
 async fn main() -> Result<(), walletd::Error> {
     let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
-    let bip39_mnemonic = Bip39Mnemonic::builder()
-        .mnemonic_phrase(mnemonic_phrase)
-        .build()?;
-    let seed = bip39_mnemonic.to_seed();
+    let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
+    let seed = mnemonic.to_seed("");
+    let seed = Seed::new(seed.to_vec());
     println!("seed_hex: {:x}", seed);
     let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
     let keypair = KeyPair::builder()
