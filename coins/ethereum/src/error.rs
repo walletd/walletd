@@ -1,5 +1,5 @@
 use thiserror::Error;
-
+use ethers::prelude::*;
 /// Custom error type for this crate.
 #[derive(Error, Debug)]
 pub enum Error {
@@ -29,7 +29,16 @@ pub enum Error {
     FromStr(String),
     /// Error from secp256k1
     #[error("Error from secp256k1: {0}")]
-    SerdeJson(#[from] secp256k1::Error),
+    Secp256k1(#[from] secp256k1::Error),
+    /// Error from Serde deserialization (performed during contract generation using abigen! macro)
+    #[error("Serde error: {0}")]
+    Serde(#[from] serde_json::Error),
+    /// Url parsing error
+    // #[error("Url parsing error: {0}")]
+    // UrlParse(#[from] url::parser::ParseError),
+    /// ethers error
+    // #[error("Ethers contract error: {0}")]
+    // EthersContractError(#[from] ethers::ethers_contract::ContractError),
     /// Converted ParseInt error
     #[error("ParseInt error: {0}")]
     ParseInt(#[from] std::num::ParseIntError),
