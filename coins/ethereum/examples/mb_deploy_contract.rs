@@ -26,9 +26,13 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
     // set the path to the contract, `CARGO_MANIFEST_DIR` points to the directory containing the
     // manifest of `ethers`. which will be `../` relative to this file
     let source = Path::new(&env!("CARGO_MANIFEST_DIR")).join("examples/contracts/contract.sol");
-    let compiled = Solc::default().compile_source(source).expect("Could not compile contracts");
-    let (abi, bytecode, _runtime_bytecode) =
-        compiled.find("SimpleStorage").expect("could not find contract").into_parts_or_default();
+    let compiled = Solc::default()
+        .compile_source(source)
+        .expect("Could not compile contracts");
+    let (abi, bytecode, _runtime_bytecode) = compiled
+        .find("SimpleStorage")
+        .expect("could not find contract")
+        .into_parts_or_default();
 
     // 1. get a moonbeam dev key
     let key = ethers::core::utils::moonbeam::dev_keys()[0].clone();
@@ -37,7 +41,9 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
     let wallet: LocalWallet = LocalWallet::from(key).with_chain_id(Chain::MoonbeamDev);
 
     // 3. connect to the network
-    let provider = Provider::<Http>::try_from(MOONBEAM_DEV_ENDPOINT).unwrap().interval(Duration::from_millis(10u64));
+    let provider = Provider::<Http>::try_from(MOONBEAM_DEV_ENDPOINT)
+        .unwrap()
+        .interval(Duration::from_millis(10u64));
 
     // 4. instantiate the client with the wallet
     let client = SignerMiddleware::new(provider, wallet);
@@ -47,7 +53,13 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
     let factory = ContractFactory::new(abi, bytecode, client.clone());
 
     // 6. deploy it with the constructor arguments, note the `legacy` call
-    let contract = factory.deploy("initial value".to_string()).unwrap().legacy().send().await.unwrap();
+    let contract = factory
+        .deploy("initial value".to_string())
+        .unwrap()
+        .legacy()
+        .send()
+        .await
+        .unwrap();
 
     // 7. get the contract's address
     let addr = contract.address();
@@ -57,12 +69,22 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
 
     // 9. call the `setValue` method
     // (first `await` returns a PendingTransaction, second one waits for it to be mined)
-    let _receipt = contract.set_value("hi".to_owned()).legacy().send()
-        .await.unwrap()
-        .await.unwrap();
+    let _receipt = contract
+        .set_value("hi".to_owned())
+        .legacy()
+        .send()
+        .await
+        .unwrap()
+        .await
+        .unwrap();
 
     // 10. get all events
-    let logs = contract.value_changed_filter().from_block(0u64).query().await.unwrap();
+    let logs = contract
+        .value_changed_filter()
+        .from_block(0u64)
+        .query()
+        .await
+        .unwrap();
 
     // 11. get the new value
     let value = contract.get_value().call().await.unwrap();

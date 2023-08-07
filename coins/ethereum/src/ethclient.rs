@@ -121,10 +121,7 @@ impl EthClient {
         Ok(balance.to_string())
     }
 
-    async fn allowance(
-        &self,
-        address: ethers::types::Address,
-    ) -> Result<String, Error> {
+    async fn allowance(&self, address: ethers::types::Address) -> Result<String, Error> {
         let client = Arc::new(self.ethers());
         let contract_instance = ERC20::new(address, Arc::clone(&client));
         let balance = &contract_instance.balance_of(address).call().await.unwrap();
