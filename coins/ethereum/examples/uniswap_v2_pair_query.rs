@@ -10,12 +10,12 @@ use walletd_coin_core::BlockchainConnector;
 pub const PROVIDER_URL: &str = "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 
 use ethers::{
-    contract::abigen,
-    providers::{Http, Provider},
-};
-use ethers::{
     abi::Abi,
     types::{Address, H256},
+};
+use ethers::{
+    contract::abigen,
+    providers::{Http, Provider},
 };
 use serde;
 use serde::{Deserialize, Serialize};
@@ -44,9 +44,10 @@ async fn main() {
     let client = Arc::new(client);
 
     // ETH/USDT pair on Uniswap V2
-    let address = "0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852".parse::<Address>().unwrap();
+    let address = "0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852"
+        .parse::<Address>()
+        .unwrap();
     let pair = IUniswapV2Pair::new(address, Arc::clone(&client.ethers()));
-
 
     let address = "0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852"
         .parse::<Address>()
@@ -64,9 +65,9 @@ async fn main() {
         .parse::<Address>()
         .unwrap();
 
-
-    
-    let address = "0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852".parse::<Address>().unwrap();
+    let address = "0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852"
+        .parse::<Address>()
+        .unwrap();
 
     let address = "0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852"
         .parse::<Address>()

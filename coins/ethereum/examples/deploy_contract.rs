@@ -10,13 +10,17 @@ use std::{convert::TryFrom, path::Path, sync::Arc, time::Duration};
 async fn main() -> Result<(), Error> {
     // 1. compile the contract (note this requires that you are inside the `examples` directory) and
     // launch anvil
-    
+
     // set the path to the contract, `CARGO_MANIFEST_DIR` points to the directory containing the
     // manifest of `example/contracts`. which will be `../` relative to this file
     let source = Path::new(&env!("CARGO_MANIFEST_DIR")).join("examples/contracts/contract.sol");
-    let compiled = Solc::default().compile_source(source).expect("Could not compile contracts");
-    let (abi, bytecode, _runtime_bytecode) =
-        compiled.find("SimpleStorage").expect("could not find contract").into_parts_or_default();
+    let compiled = Solc::default()
+        .compile_source(source)
+        .expect("Could not compile contracts");
+    let (abi, bytecode, _runtime_bytecode) = compiled
+        .find("SimpleStorage")
+        .expect("could not find contract")
+        .into_parts_or_default();
 
     // 2. instantiate our wallet
     let wallet: LocalWallet = anvil.keys()[0].clone().into();
@@ -46,7 +50,11 @@ async fn main() -> Result<(), Error> {
     let _receipt = contract.set_value("hi".to_owned()).send().await?.await?;
 
     // 10. get all events
-    let logs = contract.value_changed_filter().from_block(0u64).query().await?;
+    let logs = contract
+        .value_changed_filter()
+        .from_block(0u64)
+        .query()
+        .await?;
 
     // 11. get the new value
     let value = contract.get_value().call().await?;
