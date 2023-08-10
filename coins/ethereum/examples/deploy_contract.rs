@@ -4,12 +4,11 @@ use ethers::{
     middleware::SignerMiddleware,
     providers::{Http, Provider},
     signers::{LocalWallet, Signer},
-    solc::{Artifact, Project, ProjectPathsConfig},
 };
 
-use ethers::middleware::gas_oracle::{GasCategory, GasNow, GasOracle, GasOracleMiddleware};
+
 // use eyre::Result;
-use std::{path::PathBuf, sync::Arc, time::Duration};
+use std::{sync::Arc, time::Duration};
 
 use ethers::prelude::*;
 use walletd_ethereum::prelude::*;
@@ -65,18 +64,18 @@ async fn main() -> Result<(), Error> {
     let derived_hd_key = ethereum_wallet.derived_hd_key()?;
     let private_key =
         EthereumPrivateKey::from_slice(&derived_hd_key.extended_private_key()?.to_bytes())?;
-    let address_derivation_path = &derived_hd_key.derivation_path.clone();
+    let _address_derivation_path = &derived_hd_key.derivation_path.clone();
 
     // EthereumWallet stores the private key as a 32 byte array (still clunky)
     let secret_bytes = private_key.to_bytes();
 
     // Instantiate a provider (connecttion) pointing to the endpoint we want to use
-    let provider = Provider::try_from(anvil.endpoint()).unwrap();
+    let _provider = Provider::try_from(anvil.endpoint()).unwrap();
 
     // Instantiate a ethers local wallet from the wallet's secret bytes
     let wfbres = Wallet::from_bytes(&secret_bytes);
 
-    let ethereum_wallet = wfbres.unwrap();
+    let _ethereum_wallet = wfbres.unwrap();
 
     // 3. connect to the network
     let provider = Provider::<Http>::try_from(anvil.endpoint())

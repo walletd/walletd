@@ -54,5 +54,5 @@ async fn main() {
 
     println!("balance: {:?}", balance);
 
-    ()
+    
 }
