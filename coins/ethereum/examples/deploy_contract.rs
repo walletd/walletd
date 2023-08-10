@@ -33,8 +33,8 @@ async fn main() -> Result<(), Error> {
     // 1. compile the contract
     // launch anvil
     let anvil = Anvil::new()
-    .mnemonic("candy maple cake sugar pudding cream honey rich smooth crumble sweet treat")
-    .spawn();
+        .mnemonic("candy maple cake sugar pudding cream honey rich smooth crumble sweet treat")
+        .spawn();
 
     // set the path to the contract, `CARGO_MANIFEST_DIR` points to the directory containing the
     // manifest of `example/contracts`. which will be `../` relative to this file
@@ -131,7 +131,10 @@ async fn main() -> Result<(), Error> {
     // 11. get the new value
     let value = contract.get_value().call().await.unwrap();
 
-    println!("Value: {value}. Logs: {}", serde_json::to_string(&logs).unwrap());
+    println!(
+        "Value: {value}. Logs: {}",
+        serde_json::to_string(&logs).unwrap()
+    );
 
     Ok(())
 }

@@ -7,7 +7,7 @@ pub const PROVIDER_URL: &str = "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88e
 use ethers::{
     contract::abigen,
     providers::{Http, Provider},
-    types::Address
+    types::Address,
 };
 
 // Generate the type-safe contract bindings by providing the ABI
@@ -47,7 +47,7 @@ async fn main() {
     let address = "0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852"
         .parse::<Address>()
         .unwrap();
-    
+
     let instance = ERC20::new(address, Arc::clone(&client));
 
     let balance = instance.balance_of(address).call().await.unwrap();

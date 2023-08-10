@@ -7,8 +7,8 @@ use crate::EthClient;
 use crate::{EthereumAmount, EthereumFormat};
 
 use ethers::middleware::gas_oracle::{GasCategory, GasNow, GasOracle};
-use ethers::prelude::*;
 use ethers::prelude::gas_oracle::GasOracleMiddleware;
+use ethers::prelude::*;
 // use ethers::providers::{Middleware};
 // use ethers::types::{TransactionRequest};
 // use ethers::signers::{Signer};
