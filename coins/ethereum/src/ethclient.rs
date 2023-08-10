@@ -252,9 +252,6 @@ impl BlockchainConnector for EthClient {
 #[cfg(test)]
 mod tests {
     // use hex_literal::hex;
-    
-    
-    
 
     // #[test]
     // fn create_instance_of_ethclient() {

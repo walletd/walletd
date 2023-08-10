@@ -6,7 +6,7 @@ use crate::Error;
 use crate::EthClient;
 use crate::{EthereumAmount, EthereumFormat};
 
-use ethers::middleware::gas_oracle::{GasNow};
+use ethers::middleware::gas_oracle::GasNow;
 use ethers::prelude::gas_oracle::GasOracleMiddleware;
 use ethers::prelude::*;
 // use ethers::providers::{Middleware};

@@ -6,7 +6,6 @@ use ethers::{
     signers::{LocalWallet, Signer},
 };
 
-
 // use eyre::Result;
 use std::{sync::Arc, time::Duration};
 
