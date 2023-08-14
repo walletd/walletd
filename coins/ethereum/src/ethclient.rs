@@ -144,31 +144,6 @@ impl EthClient {
         Ok(token_name.to_string())
     }
 
-    /// Given a specified contract instance, retrieve the name of the token
-    // TODO: Migrate
-    // async fn get_token_name(
-    //     &self,
-    //     contract: &web3::contract::Contract<Http>,
-    // ) -> Result<String, ()> {
-    //     let token_name = contract
-    //         .query("name", (), None, Options::default(), None)
-    //         .await;
-    //     Ok(token_name.unwrap())
-    // }
-
-    /// Initialises an instance of an ERC20-compliant smart contract we can
-    /// subsequently interact with
-    // erc20_abi.json describes standard ERC20 functions
-    // TODO: migrate still
-    // fn initialise_contract(&self, addr: H160) -> Result<web3::contract::Contract<Http>, Error> {
-    //     todo!()
-    //     // Ok(Contract::from_json(
-    //     //     self.web3.eth(),
-    //     //     addr,
-    //     //     include_bytes!("./abi/erc20_abi.json"),
-    //     // )?)
-    // }
-
     /// Get the current price of gas as an [EthereumAmount].
     pub async fn gas_price(&self) -> Result<EthereumAmount, Error> {
         // getting gas price
