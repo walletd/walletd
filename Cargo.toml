@@ -1,11 +1,10 @@
 [workspace]
 members = [
-  "walletd",
-  "mnemonics/bip39",
-  "key_manager/hd_key",
-  "mnemonics/core",
-  "coins/bitcoin",
-  "coins/ethereum",
-  "coins/core",
-  "rates",
+    "walletd",
+    "key_manager/hd_key",
+    "mnemonics/core",
+    "coins/bitcoin",
+    "coins/ethereum",
+    "coins/core",
+    "rates",
 ]

@@ -12,8 +12,8 @@ use ethers::prelude::*;
 // use ethers::signers::{Signer};
 use secp256k1::{PublicKey, SecretKey};
 use tiny_keccak::{Hasher, Keccak};
-use walletd_bip39::Seed;
 use walletd_hd_key::{slip44, HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPurpose};
+use walletd_mnemonics_core::Seed;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Represents a private key for an Ethereum wallet, wraps a [SecretKey] from the secp256k1 crate

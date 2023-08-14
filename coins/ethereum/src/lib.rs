@@ -124,9 +124,6 @@ mod error;
 pub use error::Error;
 pub use ethers;
 pub mod prelude;
-pub use walletd_bip39::{
-    Bip39Language, Bip39Mnemonic, Bip39MnemonicType, Mnemonic, MnemonicBuilder, Seed,
-};
 pub use walletd_coin_core::{
     BlockchainConnector, CryptoAddress, CryptoAmount, CryptoWallet, CryptoWalletBuilder,
 };

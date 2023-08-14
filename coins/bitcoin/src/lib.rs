@@ -11,7 +11,6 @@
 //! ### Import from Seed
 //!
 //! Here's how you can access a bitcoin wallet based on a master [Seed].
-//! The [Seed] can be derived from a [Mnemonic] using the [Mnemonic::to_seed] method.
 //! ```
 //! use walletd_bitcoin::prelude::*;
 //! use walletd_hd_key::prelude::*;
@@ -125,13 +124,11 @@ pub use mempool_space::MempoolSpace;
 
 mod error;
 pub use error::Error;
-pub use walletd_bip39::{
-    Bip39Language, Bip39Mnemonic, Bip39MnemonicType, Mnemonic, MnemonicBuilder, Seed,
-};
 pub use walletd_coin_core::{
     BlockchainConnector, CryptoAddress, CryptoAmount, CryptoWallet, CryptoWalletBuilder,
 };
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
+pub use walletd_mnemonics_core::Seed;
 pub mod prelude;
 
 use crate::connectors::{BTransaction, FeeEstimates, Utxos};

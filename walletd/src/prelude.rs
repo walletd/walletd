@@ -12,13 +12,14 @@
 //!
 //! ```
 //! use walletd::prelude::*;
-//! use walletd_bip39::prelude::*;
 //! use walletd_bitcoin::prelude::*;
 //! use walletd_ethereum::prelude::*;
 //! ```
 
 pub use crate::CryptoCoin;
 pub use crate::{KeyPair, KeyPairBuilder, MnemonicKeyPairType};
+pub use bdk::keys::bip39::Mnemonic;
 pub use walletd_coin_core::prelude::*;
 pub use walletd_hd_key::prelude::*;
 pub use walletd_mnemonics_core::prelude::*;
+pub use walletd_mnemonics_core::Seed;

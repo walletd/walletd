@@ -19,15 +19,13 @@ path = "src/lib.rs"
 tokio = "1.23.0"
 
 [dependencies]
-
-walletd_bip39 = {path = "../mnemonics/bip39", version="0.2"}
-walletd_mnemonics_core = {path = "../mnemonics/core", version="0.2"}
-walletd_coin_core = {path = "../coins/core", version="0.2"}
-walletd_bitcoin = {path = "../coins/bitcoin", version="0.2"}
-walletd_ethereum = {path = "../coins/ethereum", version="0.2"}
-walletd_hd_key = {path = "../key_manager/hd_key", version="0.2"}
+bdk = { version = "0.15.0", default-feature = false, features = ["all-keys"] }
+walletd_mnemonics_core = { path = "../mnemonics/core", version = "0.2" }
+walletd_coin_core = { path = "../coins/core", version = "0.2" }
+walletd_bitcoin = { path = "../coins/bitcoin", version = "0.2" }
+walletd_ethereum = { path = "../coins/ethereum", version = "0.2" }
+walletd_hd_key = { path = "../key_manager/hd_key", version = "0.2" }
 
 anyhow = "1.0.68"
 hex = { version = "0.4.2" }
 thiserror = "1.0.40"
-

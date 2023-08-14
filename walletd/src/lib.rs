@@ -23,20 +23,21 @@
 //!
 //! ### Create HD KeyPair from Bip39 Mnemonic
 //!
-//! Here's how you can create a [KeyPair] from a [Bip39Mnemonic] using the [KeyPairBuilder].
+//! Here's how you can create a [KeyPair].
 //! ```
 //! use walletd::prelude::*;  
-//! use walletd_bip39::prelude::*;
-//! # fn main() -> Result<(), walletd::Error> {
+
+//! fn main() -> Result<(), walletd::Error> {
 //! let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
-//! let bip39_mnemonic = Bip39Mnemonic::builder().mnemonic_phrase(mnemonic_phrase).build()?;
-//! let seed = bip39_mnemonic.to_seed();
+//! let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
+//! let seed = mnemonic.to_seed("");
+//! let seed = Seed::new(seed.to_vec());
 //! println!("seed_hex: {:x}", seed);
 //! let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
 //! let keypair = KeyPair::builder().mnemonic_phrase(mnemonic_phrase.into()).network_type(HDNetworkType::TestNet).build()?;
 //! assert_eq!(keypair.to_master_key(), master_hd_key);
-//! # Ok(())
-//! # }
+//! Ok(())
+//! }
 //! ```
 //!
 //! ### Derive Wallets
@@ -44,21 +45,21 @@
 //! The method can be used to derive a [cryptowallet][CryptoWallet] for a specific cryptocurrency from a [KeyPair].
 //! You can specify a concrete struct that implements the [CryptoWallet] trait such as [BitcoinWallet]  or [EthereumWallet] to derive a cryptowallet from the `keypair` of the specified concrete type.
 //! ```
-//! # use walletd::prelude::*;
-//! # use walletd_bip39::prelude::*;
+//! use walletd::prelude::*;
 //! use walletd_bitcoin::prelude::*;
 //! use walletd_ethereum::prelude::*;
-//! # fn main() -> Result<(), walletd::Error> {
-//! # let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
-//! # let bip39_mnemonic = Bip39Mnemonic::builder().mnemonic_phrase(mnemonic_phrase).build()?;
-//! # let seed = bip39_mnemonic.to_seed();
-//! # println!("seed_hex: {:x}", seed);
-//! # let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
-//! # let keypair = KeyPair::builder().mnemonic_phrase(mnemonic_phrase.into()).network_type(HDNetworkType::TestNet).build()?;
+//! fn main() -> Result<(), walletd::Error> {
+//! let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
+//! let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
+//! let seed = mnemonic.to_seed("");
+//! let seed = Seed::new(seed.to_vec());
+//! println!("seed_hex: {:x}", seed);
+//! let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
+//! let keypair = KeyPair::builder().mnemonic_phrase(mnemonic_phrase.into()).network_type(HDNetworkType::TestNet).build()?;
 //! let mut btc_wallet = BitcoinWalletBuilder::new().master_hd_key(keypair.to_master_key()).build().unwrap();
 //! let mut eth_wallet = EthereumWalletBuilder::new().master_hd_key(keypair.to_master_key()).build().unwrap();
-//! # Ok(())
-//! # }
+//! Ok(())
+//! }
 //! ```
 //! ### Specify Blockchain Connectors
 //!
@@ -69,13 +70,13 @@
 //!
 //! ```no_run
 //! # use walletd::prelude::*;
-//! # use walletd_bip39::prelude::*;
 //! # use walletd_bitcoin::prelude::*;
 //! # use walletd_ethereum::prelude::*;
 //! # fn main() -> Result<(), walletd::Error> {
 //! # let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
-//! # let bip39_mnemonic = Bip39Mnemonic::builder().mnemonic_phrase(mnemonic_phrase).build()?;
-//! # let seed = bip39_mnemonic.to_seed();
+//! # let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
+//! # let seed = mnemonic.to_seed("");
+//! # let seed = Seed::new(seed.to_vec());
 //! # println!("seed_hex: {:x}", seed);
 //! # let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
 //! # let keypair = KeyPair::builder().mnemonic_phrase(mnemonic_phrase.into()).network_type(HDNetworkType::TestNet).build()?;
@@ -94,13 +95,13 @@
 //!
 //! ```no_run
 //! # use walletd::prelude::*;
-//! # use walletd_bip39::prelude::*;
 //! # use walletd_bitcoin::prelude::*;
 //! # use walletd_ethereum::prelude::*;
 //! # async fn cryptowallets() -> Result<(), walletd::Error> {
 //! # let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
-//! # let bip39_mnemonic = Bip39Mnemonic::builder().mnemonic_phrase(mnemonic_phrase).build()?;
-//! # let seed = bip39_mnemonic.to_seed();
+//! # let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
+//! # let seed = mnemonic.to_seed("");
+//! # let seed = Seed::new(seed.to_vec());
 //! # println!("seed_hex: {:x}", seed);
 //! # let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
 //! # let keypair = KeyPair::builder().mnemonic_phrase(mnemonic_phrase.into()).network_type(HDNetworkType::TestNet).build()?;
@@ -123,10 +124,8 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
-pub use walletd_bip39::{
-    Bip39Language, Bip39Mnemonic, Bip39MnemonicBuilder, Bip39MnemonicType, Seed,
-};
-pub use walletd_mnemonics_core::{Language, Mnemonic, MnemonicBuilder};
+pub use bdk::keys::bip39::Mnemonic;
+pub use walletd_mnemonics_core::Seed;
 
 mod keypair;
 pub use keypair::{KeyPair, KeyPairBuilder, MnemonicKeyPairType};
@@ -148,8 +147,7 @@ pub use walletd_coin_core::{
 pub use walletd_ethereum::{EthClient, EthereumAmount, EthereumWallet};
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 pub use {
-    walletd_bip39, walletd_bitcoin, walletd_coin_core, walletd_ethereum, walletd_hd_key,
-    walletd_mnemonics_core,
+    walletd_bitcoin, walletd_coin_core, walletd_ethereum, walletd_hd_key, walletd_mnemonics_core,
 };
 
 mod crypto_coin;
