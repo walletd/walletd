@@ -12,7 +12,6 @@ pub use bitcoin::{sighash::EcdsaSighashType, AddressType, Script};
 use std::str::FromStr;
 use walletd_hd_key::slip44;
 use walletd_hd_key::HDPurpose;
-use walletd_mnemonics_core::Seed;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Represents a Hierarchical Deterministic (HD) Bitcoin wallet which can have multiple [BitcoinAddress] structs associated with it which are derived from a single master [HD key][HDKey].
@@ -155,7 +154,7 @@ pub struct BitcoinWalletBuilder {
     hd_purpose: Option<HDPurpose>,
     /// The mnemonic seed used to import the wallet, if the mnemonic seed is not provided, the master_hd_key must be provided
     /// If the master_hd_key is provided, the mnemonic seed will be ignored
-    mnemonic_seed: Option<Seed>,
+    mnemonic_seed: Option<String>,
     /// The specified network type to use, if the master_hd_key is provided, the network type will be inferred from the master_hd_key and this network_type will be ignored
     /// The default network type is Network::Bitcoin
     #[zeroize(skip)]
@@ -180,8 +179,8 @@ impl BitcoinWalletBuilder {
     }
 
     /// Allows specification of the mnemonic seed for the wallet
-    pub fn mnemonic_seed(&mut self, mnemonic_seed: Seed) -> &mut Self {
-        self.mnemonic_seed = Some(mnemonic_seed);
+    pub fn mnemonic_seed(&mut self, mnemonic_seed: &str) -> &mut Self {
+        self.mnemonic_seed = Some(mnemonic_seed.to_string());
         self
     }
 
@@ -239,6 +238,85 @@ impl BitcoinWalletBuilder {
 }
 
 #[cfg(test)]
-mod test_bitcoin_wallet;
-#[cfg(test)]
-mod test_bitcoin_wallet_builder;
+mod tests {
+    use super::*;
+    #[test]
+    fn test_default() -> Result<(), Error> {
+        let expected_default = BitcoinWallet {
+            wallet: None,
+            address_format: AddressType::P2wpkh,
+        };
+        let wallet = BitcoinWallet::default();
+        assert_eq!(wallet.address_format, expected_default.address_format);
+        Ok(())
+    }
+
+    #[test]
+    fn test_bitcoin_wallet() -> Result<(), Error> {
+        let btc_wallet = BitcoinWallet::default();
+        assert_eq!(btc_wallet.address_format(), AddressType::P2wpkh);
+        assert_eq!(btc_wallet.default_hd_purpose()?, HDPurpose::BIP84);
+        assert_eq!(btc_wallet.network()?, Network::Testnet);
+        assert_eq!(btc_wallet.coin_type_id()?, 1);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_default_builder() {
+        let btc_builder = BitcoinWallet::builder();
+        let default_btc_builder = BitcoinWalletBuilder::default();
+        assert_eq!(btc_builder, default_btc_builder);
+    }
+
+    #[test]
+    fn test_builder_default() -> Result<(), Error> {
+        let builder = BitcoinWalletBuilder::default();
+        assert_eq!(builder.address_format, AddressType::P2wpkh);
+        assert!(builder.mnemonic_seed.is_none());
+        assert_eq!(builder.network_type, bdk::bitcoin::Network::Testnet);
+        Ok(())
+    }
+
+    #[test]
+    fn test_new() -> Result<(), Error> {
+        let builder = BitcoinWalletBuilder::new();
+        let default = BitcoinWalletBuilder::default();
+        assert_eq!(builder.address_format, default.address_format);
+        assert!(builder.mnemonic_seed.is_none());
+        assert_eq!(builder.network_type, default.network_type);
+        Ok(())
+    }
+
+    #[test]
+    fn test_with_mnemonic_seed() -> Result<(), Error> {
+        let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
+        let mut builder = BitcoinWalletBuilder::default();
+        builder.mnemonic_seed(mnemonic_phrase);
+        assert!(builder.mnemonic_seed.is_some());
+        assert_eq!(
+            builder
+                .mnemonic_seed
+                .clone()
+                .expect("should be some due to previous check"),
+            mnemonic_phrase
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_with_address_format() -> Result<(), Error> {
+        let mut builder = BitcoinWalletBuilder::default();
+        builder.address_format(AddressType::P2pkh);
+        assert_eq!(builder.address_format, AddressType::P2pkh);
+        Ok(())
+    }
+
+    #[test]
+    fn test_with_network_type() -> Result<(), Error> {
+        let mut builder = BitcoinWalletBuilder::default();
+        builder.network_type(bdk::bitcoin::Network::Testnet);
+        assert_eq!(builder.network_type, bdk::bitcoin::Network::Testnet);
+        Ok(())
+    }
+}

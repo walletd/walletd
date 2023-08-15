@@ -3,12 +3,11 @@ extern crate walletd;
 use bdk::bitcoin::Network;
 use bdk::blockchain::ElectrumBlockchain;
 use bdk::electrum_client::Client;
-use bdk::keys::{bip39::Mnemonic, DerivableKey, ExtendedKey, GeneratableKey, GeneratedKey};
+use bdk::keys::bip39::Mnemonic;
 use walletd::{
     walletd_ethereum::EthClient, BitcoinWallet, BlockchainConnector, Error, EthereumWallet,
     HDNetworkType, KeyPair, MnemonicKeyPairType, Seed,
 };
-const BTC_TESTNET_URL: &str = "https://blockstream.info/testnet/api";
 const ETH_TESTNET_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 
 #[tokio::main]
@@ -34,7 +33,7 @@ async fn main() -> Result<(), Error> {
 
     // derive the Bitcoin wallet from the HD wallet
     let mut btc_wallet = BitcoinWallet::builder()
-        .mnemonic_seed(seed)
+        .mnemonic_seed(mnemonic_phrase)
         .network_type(Network::Testnet)
         .build()?;
     // let mut btc_wallet = hd_wallet.derive_wallet::<BitcoinWallet>()?;

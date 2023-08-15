@@ -115,5 +115,4 @@ pub use bitcoin_wallet::{BitcoinWallet, BitcoinWalletBuilder};
 mod error;
 pub use error::Error;
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
-pub use walletd_mnemonics_core::Seed;
 pub mod prelude;

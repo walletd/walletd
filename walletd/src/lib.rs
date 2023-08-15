@@ -129,17 +129,12 @@ pub use walletd_mnemonics_core::Seed;
 
 mod keypair;
 pub use keypair::{KeyPair, KeyPairBuilder, MnemonicKeyPairType};
-mod keystore;
-pub use keystore::KeyStore;
 
 pub use walletd_bitcoin::BitcoinWallet;
 
 pub use walletd_coin_core::ConnectorType;
 
-pub use walletd_coin_core::{
-    BlockchainConnector, BlockchainConnectorBuilder, CryptoAddress, CryptoAmount, CryptoWallet,
-    CryptoWalletBuilder,
-};
+pub use walletd_coin_core::{BlockchainConnector, BlockchainConnectorBuilder};
 pub use walletd_ethereum::{EthClient, EthereumAmount, EthereumWallet};
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 pub use {

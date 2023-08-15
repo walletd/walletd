@@ -9,6 +9,20 @@ use walletd_ethereum::prelude::*;
 async fn main() -> Result<(), walletd::Error> {
     let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
     let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
+
+    let mut btc_wallet = BitcoinWalletBuilder::new()
+        .mnemonic_seed(mnemonic_phrase)
+        .build()
+        .unwrap();
+
+    let client = Client::new("ssl://electrum.blockstream.info:60002").unwrap();
+    let blockchain = ElectrumBlockchain::from(client);
+    btc_wallet.sync(&blockchain).await?;
+    println!(
+        "btc_wallet balance: {} satoshi",
+        btc_wallet.balance().await?.confirmed
+    );
+
     let seed = mnemonic.to_seed("");
     let seed = Seed::new(seed.to_vec());
     println!("seed_hex: {:x}", seed);
@@ -18,20 +32,7 @@ async fn main() -> Result<(), walletd::Error> {
         .network_type(HDNetworkType::TestNet)
         .build()?;
     assert_eq!(keypair.to_master_key(), master_hd_key);
-    let mut btc_wallet = BitcoinWalletBuilder::new()
-        .mnemonic_seed(seed)
-        .build()
-        .unwrap();
-    // let mut btc_wallet = keypair.derive_wallet::<BitcoinWallet>()?;
-    // let btc_client = Box::new(Blockstream::new("https://blockstream.info/testnet/api")?);
-    // btc_wallet.set_blockchain_client(btc_client);
-    let client = Client::new("ssl://electrum.blockstream.info:60002").unwrap();
-    let blockchain = ElectrumBlockchain::from(client);
-    btc_wallet.sync(&blockchain).await?;
-    println!(
-        "btc_wallet balance: {} satoshi",
-        btc_wallet.balance().await?.confirmed
-    );
+
     let mut eth_wallet = EthereumWalletBuilder::new()
         .master_hd_key(keypair.to_master_key())
         .build()
