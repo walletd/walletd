@@ -20,7 +20,7 @@ walletd_coin_core = { path = "../core/", version = "0.2" }
 walletd_mnemonics_core = { path = "../../mnemonics/core", version = "0.2" }
 walletd_hd_key = { path = "../../key_manager/hd_key", version = "0.2" }
 
-bdk = { version = "0.15.0", default-feature = false, features = ["all-keys"] }
+bdk = { version = "0.28.2", default-feature = false, features = ["all-keys"] }
 async-trait = "0.1.60"
 hex = "0.4.3"
 hex-literal = "0.3"

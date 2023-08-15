@@ -102,57 +102,18 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
-pub mod connectors;
 use async_trait::async_trait;
 pub use bitcoin;
 pub use bitcoin::{
     Address as AddressInfo, AddressType, Network, PublicKey as BitcoinPublicKey, Script,
 };
 
-mod bitcoin_address;
-pub use bitcoin_address::{BitcoinAddress, BitcoinPrivateKey};
 mod bitcoin_wallet;
 pub use bitcoin_wallet::{BitcoinWallet, BitcoinWalletBuilder};
-mod bitcoin_amount;
-pub use bitcoin_amount::BitcoinAmount;
 
 #[doc(hidden)]
-pub mod blockstream;
-pub mod mempool_space;
-pub use blockstream::Blockstream;
-pub use mempool_space::MempoolSpace;
-
 mod error;
 pub use error::Error;
-pub use walletd_coin_core::{
-    BlockchainConnector, CryptoAddress, CryptoAmount, CryptoWallet, CryptoWalletBuilder,
-};
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 pub use walletd_mnemonics_core::Seed;
 pub mod prelude;
-
-use crate::connectors::{BTransaction, FeeEstimates, Utxos};
-
-/// Bitcoin Blockchain Connector which allows the creation of multiple connectors to be created and used by BitcoinWallets
-#[async_trait]
-pub trait BitcoinConnector {
-    /// Checks if the given address has had an past transactions, returns true if it has and false if it has not
-    /// Errors if the address is invalid or if the API returns an error
-    async fn check_if_past_transactions_exist(&self, public_address: &str) -> Result<bool, Error>;
-    /// Fetch the block height
-    async fn block_height(&self) -> Result<u64, Error>;
-    /// Fetch fee estimates
-    async fn fee_estimates(&self) -> Result<FeeEstimates, Error>;
-    /// Fetch transactions for the given address
-    async fn transactions(&self, address: &str) -> Result<Vec<BTransaction>, Error>;
-    /// Fetch mempool transactions
-    async fn mempool_transactions(&self, address: &str) -> Result<Vec<BTransaction>, Error>;
-    /// Fetch UTXOs
-    async fn utxo(&self, address: &str) -> Result<Utxos, Error>;
-    /// Fetch raw transaction hex for a given txid
-    async fn raw_transaction_hex(&self, txid: &str) -> Result<String, Error>;
-    /// Fetch transaction info
-    async fn transaction(&self, txid: &str) -> Result<BTransaction, Error>;
-    /// Broadcast a raw transaction to the network
-    async fn broadcast_tx(&self, raw_transaction_hex: &'static str) -> Result<String, Error>;
-}

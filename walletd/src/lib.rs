@@ -132,11 +132,7 @@ pub use keypair::{KeyPair, KeyPairBuilder, MnemonicKeyPairType};
 mod keystore;
 pub use keystore::KeyStore;
 
-#[doc(hidden)]
-pub use walletd_bitcoin::blockstream;
-
-pub use walletd_bitcoin::blockstream::Blockstream;
-pub use walletd_bitcoin::{BitcoinAmount, BitcoinWallet};
+pub use walletd_bitcoin::BitcoinWallet;
 
 pub use walletd_coin_core::ConnectorType;
 
