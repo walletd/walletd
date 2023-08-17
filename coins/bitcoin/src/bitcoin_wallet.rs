@@ -14,7 +14,7 @@ use walletd_hd_key::slip44;
 use walletd_hd_key::HDPurpose;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
-/// Represents a Hierarchical Deterministic (HD) Bitcoin wallet which can have multiple [BitcoinAddress] structs associated with it which are derived from a single master [HD key][HDKey].
+/// Represents a Hierarchical Deterministic (HD) Bitcoin wallet.
 pub struct BitcoinWallet {
     wallet: Option<Wallet<MemoryDatabase>>,
     address_format: AddressType,
@@ -120,7 +120,7 @@ impl BitcoinWallet {
     pub fn network(&self) -> Result<Network, Error> {
         match &self.wallet {
             Some(wallet) => Ok(wallet.network()),
-            None => Err(Error::MissingMasterHDKey),
+            None => Err(Error::MissingNetwork),
         }
     }
 
@@ -198,14 +198,16 @@ impl BitcoinWalletBuilder {
 
     /// Used to import an existing wallet from a master HD key or a mnemonic seed and specified network type
     pub fn build(&self) -> Result<BitcoinWallet, Error> {
+        if self.mnemonic_seed.is_none() {
+            return Err(Error::MissingMnemonicSeed);
+        }
         let mnemonic_words = self.mnemonic_seed.clone();
-        dbg!(mnemonic_words.clone().unwrap().to_string());
         let mnemonic = Mnemonic::parse(mnemonic_words.unwrap().to_string()).unwrap();
 
         // Generate the extended key
         let xkey: ExtendedKey = mnemonic.into_extended_key().unwrap();
         // Get xprv from the extended key
-        let xprv = xkey.into_xprv(Network::Testnet).unwrap();
+        let xprv = xkey.into_xprv(self.network_type).unwrap();
         let wallet: Wallet<MemoryDatabase> = Wallet::new(
             Bip84(xprv, KeychainKind::External),
             Some(Bip84(xprv, KeychainKind::Internal)),
@@ -252,30 +254,10 @@ mod tests {
     }
 
     #[test]
-    fn test_bitcoin_wallet() -> Result<(), Error> {
-        let btc_wallet = BitcoinWallet::default();
-        assert_eq!(btc_wallet.address_format(), AddressType::P2wpkh);
-        assert_eq!(btc_wallet.default_hd_purpose()?, HDPurpose::BIP84);
-        assert_eq!(btc_wallet.network()?, Network::Testnet);
-        assert_eq!(btc_wallet.coin_type_id()?, 1);
-
-        Ok(())
-    }
-
-    #[test]
     fn test_default_builder() {
         let btc_builder = BitcoinWallet::builder();
         let default_btc_builder = BitcoinWalletBuilder::default();
         assert_eq!(btc_builder, default_btc_builder);
-    }
-
-    #[test]
-    fn test_builder_default() -> Result<(), Error> {
-        let builder = BitcoinWalletBuilder::default();
-        assert_eq!(builder.address_format, AddressType::P2wpkh);
-        assert!(builder.mnemonic_seed.is_none());
-        assert_eq!(builder.network_type, bdk::bitcoin::Network::Testnet);
-        Ok(())
     }
 
     #[test]

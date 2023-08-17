@@ -25,6 +25,9 @@ pub enum Error {
     /// Missing master HD key
     #[error("No master HD key set")]
     MissingMasterHDKey,
+    /// Missing mnemonic seed
+    #[error("Missing mnemonic")]
+    MissingMnemonicSeed,
     /// Missing some info, error message provides more info on what is missing
     #[error("Missing info: {0}")]
     MissingInfo(String),

@@ -79,19 +79,19 @@ impl EthereumAmount {
     pub fn from_wei(wei_amount: U256) -> Self {
         Self { wei: wei_amount }
     }
-
+    /// Creates a new EthereumAmount from the eth amount
     pub fn from_main_unit_decimal_value(value: f64) -> Self {
         Self::from_eth(value)
     }
-
+    /// Creates a new EthereumAmount from the wei amount
     pub fn from_smallest_unit_integer_value(value: u64) -> Self {
         Self::from_wei(value.into())
     }
-
+    /// Returns the number of eth in the amount
     pub fn to_main_unit_decimal_value(&self) -> f64 {
         self.eth()
     }
-
+    /// Returns the number of wei in the amount
     pub fn to_smallest_unit_integer_value(&self) -> u64 {
         self.wei.as_u64()
     }

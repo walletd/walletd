@@ -12,7 +12,6 @@ const ETH_TESTNET_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea1
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let bdk_network = Network::Testnet;
     // case of importing from a Bip39Mnemonic, let's assume we have previous transactions associated with this mnemonic phrase in BTC and ETH
     let mnemonic_phrase = "joy tail arena mix other envelope diary achieve short nest true vocal";
 
