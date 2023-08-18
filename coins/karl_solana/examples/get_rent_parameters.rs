@@ -1,4 +1,4 @@
-use karl_solana::solanaclient;
+use karl_solana::solanaclient::SolanaClient;
 
 // // https://goerli.etherscan.io/block/8455626
 // // const PROVIDER_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
@@ -18,6 +18,12 @@ use karl_solana::solanaclient;
 //     // assert!(!_latest_block_data);
 //     // print!("If you see this, it means that block 8455626 was retrieved without error.");
 // }
-fn main() {
-    
+
+const URL: &str = "http://127.0.0.1:8899";
+#[tokio::main]
+async fn main() {
+    let solana_client = SolanaClient::new(URL).unwrap();
+    println!("Ok, invoked");
+    let latest_blockhash = solana_client.rpc_client().get_latest_blockhash().await.unwrap();
+    println!("{:?}", latest_blockhash);
 }
