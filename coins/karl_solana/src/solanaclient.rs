@@ -1,6 +1,6 @@
-use thiserror::Error;
+//use crate::Error;
 // use crate::EthereumAmount;
-
+use core::fmt::Error;
 use async_trait::async_trait;
 // use ethers::prelude::*;
 // use ethers::types::Address;
@@ -22,18 +22,28 @@ use solana_sdk::{
 use solana_client::nonblocking::rpc_client::RpcClient;
 
 pub struct SolanaClient {
-    rpc_client: RpcClient
+    rpc_client: RpcClient,
+    endpoint: String
 }
 
 impl SolanaClient {
-    pub fn connect() -> RpcClient {
-        let client = RpcClient::new("https://127.0.0.1:8899".to_string());
-        // println!("{:?}", client);
-        println!("Ok, invoked");
-        client
+    //type ErrorType = Error;
+
+    /// Create a new instance of [SolanaClient] based on a given endpoint url.
+    /// Returns an [error][Error] if the endpoint is invalid or the transport fails to connect.
+    pub fn new(endpoint: &str) -> Result<Self, Error> {
+        let rpc_client = RpcClient::new(endpoint.to_string());
+        
+        Ok(Self {
+            rpc_client,
+            endpoint: endpoint.to_string(),
+        })
+    }
+
+    fn url(&self) -> &str {
+        &self.endpoint
     }
 }
-
 
 // // Creates Rust bindings for the ERC20 ABI
 // abigen!(ERC20, "./abi/erc20_abi.json");
