@@ -26,5 +26,6 @@ walletd_coin_core = { path = "../core/", version = "0.2" }
 walletd_mnemonics_core = { path = "../../mnemonics/core", version = "0.2" }
 walletd_hd_key = { path = "../../key_manager/hd_key", version = "0.2" }
 thiserror = "1.0.47"
+tokio = "1.14.1"
 
 [workspace]
