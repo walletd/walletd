@@ -1,6 +1,5 @@
 extern crate walletd_ethereum;
 // https://goerli.etherscan.io/block/8455626
-use ethers::types::Address;
 use std::sync::Arc;
 
 pub const PROVIDER_URL: &str = "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
