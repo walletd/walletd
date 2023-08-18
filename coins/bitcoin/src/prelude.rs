@@ -5,5 +5,5 @@
 //! use walletd_bitcoin::prelude::*;
 //! ```
 
-pub use crate::{BitcoinPublicKey, BitcoinWallet, BitcoinWalletBuilder};
+pub use crate::{BitcoinWallet, BitcoinWalletBuilder};
 pub use walletd_coin_core::prelude::*;

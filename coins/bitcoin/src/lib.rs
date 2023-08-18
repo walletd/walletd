@@ -59,9 +59,7 @@
 #![warn(missing_docs)]
 
 pub use bitcoin;
-pub use bitcoin::{
-    Address as AddressInfo, AddressType, Network, PublicKey as BitcoinPublicKey, Script,
-};
+pub use bitcoin::{AddressType, Network, Script};
 
 mod bitcoin_wallet;
 pub use bitcoin_wallet::{BitcoinWallet, BitcoinWalletBuilder};
