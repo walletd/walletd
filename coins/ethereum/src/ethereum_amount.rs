@@ -1,7 +1,6 @@
 use crate::Error;
 use ethers::types::U256;
 use std::ops;
-use walletd_coin_core::CryptoAmount;
 
 /// Contains a field representing the amount of wei in the amount. Also has functions to convert to and from the main unit (ETH) and the smallest unit (wei).
 #[derive(Default, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Debug)]
@@ -80,22 +79,20 @@ impl EthereumAmount {
     pub fn from_wei(wei_amount: U256) -> Self {
         Self { wei: wei_amount }
     }
-}
-
-impl CryptoAmount for EthereumAmount {
-    fn from_main_unit_decimal_value(value: f64) -> Self {
+    /// Creates a new EthereumAmount from the eth amount
+    pub fn from_main_unit_decimal_value(value: f64) -> Self {
         Self::from_eth(value)
     }
-
-    fn from_smallest_unit_integer_value(value: u64) -> Self {
+    /// Creates a new EthereumAmount from the wei amount
+    pub fn from_smallest_unit_integer_value(value: u64) -> Self {
         Self::from_wei(value.into())
     }
-
-    fn to_main_unit_decimal_value(&self) -> f64 {
+    /// Returns the number of eth in the amount
+    pub fn to_main_unit_decimal_value(&self) -> f64 {
         self.eth()
     }
-
-    fn to_smallest_unit_integer_value(&self) -> u64 {
+    /// Returns the number of wei in the amount
+    pub fn to_smallest_unit_integer_value(&self) -> u64 {
         self.wei.as_u64()
     }
 }

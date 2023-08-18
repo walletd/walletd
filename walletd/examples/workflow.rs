@@ -1,13 +1,13 @@
 extern crate walletd;
 
-use walletd::{
-    blockstream::Blockstream, walletd_ethereum::EthClient, BitcoinWallet, BlockchainConnector,
-    Error, EthereumWallet, HDNetworkType, KeyPair, MnemonicKeyPairType, Seed,
-};
-
+use bdk::bitcoin::Network;
+use bdk::blockchain::ElectrumBlockchain;
+use bdk::electrum_client::Client;
 use bdk::keys::bip39::Mnemonic;
-
-const BTC_TESTNET_URL: &str = "https://blockstream.info/testnet/api";
+use walletd::{
+    walletd_ethereum::EthClient, BitcoinWallet, BlockchainConnector, Error, EthereumWallet,
+    HDNetworkType, KeyPair, MnemonicKeyPairType, Seed,
+};
 const ETH_TESTNET_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 
 #[tokio::main]
@@ -23,34 +23,25 @@ async fn main() -> Result<(), Error> {
 
     // Generates a KeyPair from the mnemonic, specifying the network and the type of mnemonic, this becomes the HD wallet which can be used to access multiple cryptocurrencies
     let hd_wallet = KeyPair::new(
-        seed,
+        seed.clone(),
         mnemonic_phrase.to_string(),
         MnemonicKeyPairType::HDBip39,
         None,
         network,
     );
 
-    // Prints hd wallet struct info, makes use of Debug trait and pretty print
-    println!("HD Wallet Information:\n{:#?}", hd_wallet);
-
-    // more options can be added here later such as for username/password api key etc.
-    let btc_blockchain_client = Box::new(Blockstream::new(BTC_TESTNET_URL)?);
-    // let btc_blockchain_client = BlockchainConnectorBuilder::<Blockstream>::new()
-    //     .url(BTC_TESTNET_URL.into())
-    //     .build()?;
-
     // derive the Bitcoin wallet from the HD wallet
     let mut btc_wallet = BitcoinWallet::builder()
-        .master_hd_key(hd_wallet.to_master_key())
+        .mnemonic_seed(mnemonic_phrase)
+        .network_type(Network::Testnet)
         .build()?;
     // let mut btc_wallet = hd_wallet.derive_wallet::<BitcoinWallet>()?;
 
-    // associate it with the btc blockchain client
-    btc_wallet.set_blockchain_client(btc_blockchain_client);
-
     // Searches for past transactions on first account using default of HDPurpose::BIP84 (default for BTC), can have other options to specify a different deriv path to search with or to search past the first account or change the gap limit ex: .discover_accounts() or .set_derive_type(HDPurpose::BIP44)
     // TODO(#79): Expose more user options on the sync of the BTC wallet
-    btc_wallet.sync().await?;
+    let client = Client::new("ssl://electrum.blockstream.info:60002").unwrap();
+    let blockchain = ElectrumBlockchain::from(client);
+    btc_wallet.sync(&blockchain).await?;
 
     // Going to switch to ETH
     // This is another way to use the builder pattern to create the blockchain client instead of using the pattern written out for the btc_blockchain_client
@@ -66,9 +57,8 @@ async fn main() -> Result<(), Error> {
     // Gets the current balances for the BTC wallet and ETH wallet
     let current_btc_balance = btc_wallet.balance().await?;
     println!(
-        "Current BTC balance: {} BTC, {} satoshi",
-        current_btc_balance.btc(),
-        current_btc_balance.satoshi()
+        "Current BTC balance: {} satoshi",
+        current_btc_balance.confirmed
     );
     let current_eth_balance = eth_wallet.balance().await?;
     println!(

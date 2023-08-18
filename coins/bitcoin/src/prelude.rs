@@ -5,8 +5,5 @@
 //! use walletd_bitcoin::prelude::*;
 //! ```
 
-pub use crate::{
-    BitcoinAddress, BitcoinAmount, BitcoinConnector, BitcoinPrivateKey, BitcoinPublicKey,
-    BitcoinWallet, BitcoinWalletBuilder, Blockstream,
-};
+pub use crate::{BitcoinWallet, BitcoinWalletBuilder};
 pub use walletd_coin_core::prelude::*;

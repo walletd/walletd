@@ -13,27 +13,15 @@ pub enum Error {
     /// Error due to insufficent funds
     #[error("Insufficent funds")]
     InsufficientFunds(String),
-    /// Error due to missing public key
-    #[error("Public Key not included")]
-    MissingPublicKey,
-    /// Error due to missing private key
-    #[error("Private Key not included")]
-    MissingPrivateKey,
-    /// Missing blockchain client
-    #[error("No blockchain client set")]
-    MissingBlockchainClient,
     /// Missing master HD key
     #[error("No master HD key set")]
     MissingMasterHDKey,
+    /// Missing mnemonic seed
+    #[error("Missing mnemonic")]
+    MissingMnemonicSeed,
     /// Missing some info, error message provides more info on what is missing
     #[error("Missing info: {0}")]
     MissingInfo(String),
-    /// Error downcasting to BitcoinWallet
-    #[error("Could not downcast to BitcoinWallet")]
-    UnableToDowncastWallet,
-    /// Error downcasting a blockchain connector
-    #[error("Error downcasting: {0}")]
-    UnableToDowncastBlockchainConnector(String),
     /// Error getting transaction info
     #[error("Transaction info not available")]
     TransactionInfoUnavailable,

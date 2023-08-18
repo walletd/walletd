@@ -18,12 +18,6 @@ pub enum Error {
     /// Unable to import wallet, missing info to import a specific wallet
     #[error("Unable to import wallet: {0}")]
     UnableToImportWallet(String),
-    /// Error downcasting to EthereumWallet
-    #[error("Could not downcast to EthereumWallet")]
-    UnableToDowncastWallet,
-    /// Error downcasting a blockchain connector
-    #[error("Error downcasting: {0}")]
-    UnableToDowncastBlockchainConnector(String),
     /// Error converting to a type when parsing from a string
     #[error("Error converting to a type from a string: {0}")]
     FromStr(String),
