@@ -121,6 +121,13 @@ impl EthClient {
         Ok(balance.to_string())
     }
 
+    async fn allowance(&self, address: ethers::types::Address) -> Result<String, Error> {
+        let client = Arc::new(self.ethers());
+        let contract_instance = ERC20::new(address, Arc::clone(&client));
+        let balance = &contract_instance.balance_of(address).call().await.unwrap();
+        Ok(balance.to_string())
+    }
+
     /// Given a specified contract instance, determine the total supply of
     /// tokens
     async fn total_supply(&self, address: ethers::types::Address) -> Result<U256, Error> {
@@ -220,9 +227,6 @@ impl BlockchainConnector for EthClient {
 #[cfg(test)]
 mod tests {
     // use hex_literal::hex;
-    use super::*;
-    use ethers::utils::Anvil;
-    use std::str::FromStr;
 
     // #[test]
     // fn create_instance_of_ethclient() {
