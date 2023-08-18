@@ -20,6 +20,14 @@ impl Display for SolanaFormat {
     }
 }
 
+// Solana uses accounts and transactions. Hard to map the concept to a "Wallet" per say
+// TODO: Eventually provision functionality to use walletd_keystore to restore from a keypair file
+// * a base58-encoded public key
+// * a path to a keypair file
+// * a hyphen; signals a JSON-encoded keypair on stdin
+// * the 'ASK' keyword; to recover a keypair via its seed phrase
+// * a hardware wallet keypair URL (i.e. usb://ledger)
+
 pub struct SolanaWallet {
     address_format: SolanaFormat,
     public_address: String,
