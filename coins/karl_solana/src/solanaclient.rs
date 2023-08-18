@@ -40,6 +40,10 @@ impl SolanaClient {
         })
     }
 
+    pub fn rpc_client(&self) -> &RpcClient {
+        &self.rpc_client
+    }
+
     fn url(&self) -> &str {
         &self.endpoint
     }
