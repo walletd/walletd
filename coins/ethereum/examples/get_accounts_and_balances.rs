@@ -23,7 +23,7 @@ async fn main() {
     println!("blockchain_client: {:?}", &blockchain_client);
 
     let wallet = EthereumWallet::builder()
-        .mnemonic_seed(seed)
+        .mnemonic(mnemonic)
         .network_type(HDNetworkType::TestNet)
         .build()
         .unwrap();

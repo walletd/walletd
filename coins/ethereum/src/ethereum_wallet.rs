@@ -6,6 +6,7 @@ use crate::Error;
 use crate::EthClient;
 use crate::{EthereumAmount, EthereumFormat};
 
+use bdk::keys::bip39::Mnemonic;
 use ethers::middleware::gas_oracle::GasNow;
 use ethers::prelude::gas_oracle::GasOracleMiddleware;
 use ethers::prelude::*;
@@ -136,15 +137,12 @@ impl LowerHex for EthereumPublicKey {
 }
 
 /// Builder for [EthereumWallet], allows for specification of options for the ethereum wallet
-#[derive(Debug, Clone, Zeroize, ZeroizeOnDrop)]
+#[derive(Debug, Clone)]
 pub struct EthereumWalletBuilder {
-    #[zeroize(skip)]
     address_format: EthereumFormat,
     master_hd_key: Option<HDKey>,
-    mnemonic_seed: Option<Seed>,
-    #[zeroize(skip)]
+    mnemonic: Option<Mnemonic>,
     network_type: HDNetworkType,
-    #[zeroize(skip)]
     hd_path_builder: HDPathBuilder,
     chain_id: u64,
 }
@@ -163,7 +161,7 @@ impl Default for EthereumWalletBuilder {
         Self {
             address_format: EthereumFormat::Checksummed,
             master_hd_key: None,
-            mnemonic_seed: None,
+            mnemonic: None,
             network_type: HDNetworkType::MainNet,
             hd_path_builder,
             chain_id: 5, // Goerli
@@ -178,14 +176,18 @@ impl EthereumWalletBuilder {
     }
     /// Builds the EthereumWallet with the specified options
     pub fn build(&self) -> Result<EthereumWallet, Error> {
-        let master_hd_key = match (&self.master_hd_key, &self.mnemonic_seed) {
+        let master_hd_key = match (&self.master_hd_key, &self.mnemonic) {
             (None, None) => {
                 return Err(Error::UnableToImportWallet(
                     "Neither the master HD key nor the mnemonic seed was provided".to_string(),
                 ))
             }
             (Some(key), _) => key.clone(),
-            (None, Some(seed)) => HDKey::new_master(seed.clone(), self.network_type)?,
+            (None, Some(seed)) => {
+                let seed = seed.to_seed("");
+                let seed = Seed::new(seed.to_vec());
+                HDKey::new_master(seed, self.network_type)?
+            }
         };
 
         let hd_purpose_num = self
@@ -234,8 +236,8 @@ impl EthereumWalletBuilder {
     }
 
     /// Allows specification of the mnemonic seed for the wallet
-    pub fn mnemonic_seed(&mut self, mnemonic_seed: Seed) -> &mut Self {
-        self.mnemonic_seed = Some(mnemonic_seed);
+    pub fn mnemonic(&mut self, mnemonic: Mnemonic) -> &mut Self {
+        self.mnemonic = Some(mnemonic);
         self
     }
 
