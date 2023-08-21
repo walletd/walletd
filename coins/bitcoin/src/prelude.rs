@@ -6,4 +6,3 @@
 //! ```
 
 pub use crate::{BitcoinWallet, BitcoinWalletBuilder};
-pub use walletd_coin_core::prelude::*;

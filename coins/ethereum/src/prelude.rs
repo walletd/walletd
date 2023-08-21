@@ -10,6 +10,6 @@ pub use crate::{
     EthereumWallet, EthereumWalletBuilder,
 };
 
+pub use bdk::keys::bip39::Mnemonic;
 pub use ethers::types::Transaction;
-pub use walletd_coin_core::prelude::*;
 pub use walletd_mnemonics_core::Seed;

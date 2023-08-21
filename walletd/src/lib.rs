@@ -60,7 +60,6 @@
 //! ```
 //! ### Specify Blockchain Connectors
 //!
-//! A valid [blockchain client][BlockchainConnector] is a concrete instance of a struct that implements the [BlockchainConnector] trait.
 //! You can setup a blockchain client to access the Bitcoin blockchain and an [EthClient] blockchain client to access the Ethereum blockchain.
 //! Specifying a valid endpoint url is required for the [EthClient] blockchain clients.
 //!
@@ -91,14 +90,9 @@ pub use keypair::{KeyPair, KeyPairBuilder, MnemonicKeyPairType};
 
 pub use walletd_bitcoin::BitcoinWallet;
 
-pub use walletd_coin_core::ConnectorType;
-
-pub use walletd_coin_core::{BlockchainConnector, BlockchainConnectorBuilder};
 pub use walletd_ethereum::{EthClient, EthereumAmount, EthereumWallet};
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
-pub use {
-    walletd_bitcoin, walletd_coin_core, walletd_ethereum, walletd_hd_key, walletd_mnemonics_core,
-};
+pub use {walletd_bitcoin, walletd_ethereum, walletd_hd_key, walletd_mnemonics_core};
 
 mod crypto_coin;
 pub use crypto_coin::CryptoCoin;

@@ -1,4 +1,3 @@
-pub use walletd_coin_core::{CryptoAmount, CryptoWallet};
 pub use walletd_hd_key::{HDKey, HDNetworkType};
 pub use walletd_monero_mnemonic::{Mnemonic, MnemonicExt, Seed};
 
@@ -37,7 +36,6 @@ pub mod rct_types;
 pub mod transaction;
 pub mod varint;
 pub use varint::{VarInt, VarIntEncoding};
-
 
 pub struct BlockchainClient(pub reqwest::Client);
 

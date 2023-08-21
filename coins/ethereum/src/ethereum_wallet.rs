@@ -216,7 +216,7 @@ impl EthereumWalletBuilder {
             public_address,
             private_key: Some(private_key),
             public_key: Some(public_key),
-            network: master_hd_key.network(),
+            network: self.network_type.clone(),
             blockchain_client: None,
             derived_hd_key: Some(derived_key),
         };
@@ -415,16 +415,6 @@ impl EthereumWallet {
             Ok(key)
         } else {
             Err(Error::MissingPrivateKey)
-        }
-    }
-
-    /// Returns the master HD key of the wallet if it exists, otherwise returns an error
-    pub fn master_hd_key(&self) -> Result<HDKey, Error> {
-        if let Some(key) = self.derived_hd_key.clone() {
-            let master_key = HDKey::new(key.master_seed.clone(), key.network, "m")?;
-            Ok(master_key)
-        } else {
-            Err(Error::MissingHDKey)
         }
     }
 

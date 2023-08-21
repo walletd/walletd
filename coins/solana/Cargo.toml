@@ -16,9 +16,8 @@ path = "src/lib.rs"
 
 [dependencies]
 
-walletd_bip39 = {path = "../../mnemonics/bip39", version="0.1"}
-walletd_coin_core = {path = "../core", version="0.1"}
-walletd_hd_key = {path = "../../key_manager/hd_key", version="0.1"}
+walletd_bip39 = { path = "../../mnemonics/bip39", version = "0.1" }
+walletd_hd_key = { path = "../../key_manager/hd_key", version = "0.1" }
 
 anyhow = "1.0.68"
 base58 = { version = "0.2.0" }

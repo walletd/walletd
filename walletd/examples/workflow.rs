@@ -4,17 +4,13 @@ use bdk::bitcoin::Network;
 use bdk::blockchain::ElectrumBlockchain;
 use bdk::electrum_client::Client;
 use bdk::keys::bip39::Mnemonic;
-use walletd::{
-    walletd_ethereum::EthClient, BitcoinWallet, BlockchainConnector, Error, EthereumWallet,
-    HDNetworkType, KeyPair, MnemonicKeyPairType, Seed,
-};
+use walletd::{walletd_ethereum::EthClient, BitcoinWallet, Error, EthereumWallet, HDNetworkType};
 const ETH_TESTNET_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // case of importing from a Bip39Mnemonic, let's assume we have previous transactions associated with this mnemonic phrase in BTC and ETH
     let mnemonic_phrase = "joy tail arena mix other envelope diary achieve short nest true vocal";
-
     let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
 
     // derive the Bitcoin wallet from the HD wallet
@@ -31,7 +27,7 @@ async fn main() -> Result<(), Error> {
 
     // Going to switch to ETH
     // This is another way to use the builder pattern to create the blockchain client instead of using the pattern written out for the btc_blockchain_client
-    let eth_blockchain_client = EthClient::builder().url(ETH_TESTNET_URL.into()).build()?;
+    let eth_blockchain_client = EthClient::new(ETH_TESTNET_URL.into())?;
 
     let mut eth_wallet = EthereumWallet::builder()
         .mnemonic(mnemonic)

@@ -63,23 +63,6 @@ async fn main() -> Result<(), Error> {
     assert!(ethereum_wallet.private_key().is_ok());
     assert!(ethereum_wallet.public_key().is_ok());
 
-    // This is also super clunky
-    let derived_hd_key = ethereum_wallet.derived_hd_key()?;
-    let private_key =
-        EthereumPrivateKey::from_slice(&derived_hd_key.extended_private_key()?.to_bytes())?;
-    let _address_derivation_path = &derived_hd_key.derivation_path.clone();
-
-    // EthereumWallet stores the private key as a 32 byte array (still clunky)
-    let secret_bytes = private_key.to_bytes();
-
-    // Instantiate a provider (connecttion) pointing to the endpoint we want to use
-    let _provider = Provider::try_from(anvil.endpoint()).unwrap();
-
-    // Instantiate a ethers local wallet from the wallet's secret bytes
-    let wfbres = Wallet::from_bytes(&secret_bytes);
-
-    let _ethereum_wallet = wfbres.unwrap();
-
     // 3. connect to the network
     let provider = Provider::<Http>::try_from(anvil.endpoint())
         .unwrap()
