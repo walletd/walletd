@@ -1,3 +1,4 @@
+use bdk::keys::bip39::Mnemonic;
 use ethers::prelude::*;
 use walletd_ethereum::prelude::*;
 use walletd_hd_key::prelude::*;
@@ -6,10 +7,13 @@ const PROVIDER_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12ea
 const GOERLI_TEST_ADDRESS: &str = "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
 #[tokio::main]
 async fn main() -> Result<(), walletd_ethereum::Error> {
-    let master_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
-    let master_hd_key = HDKey::new_master(master_seed, HDNetworkType::TestNet)?;
+    let mnemonic_phrase: &str =
+        "outer ride neither foil glue number place usage ball shed dry point";
+    let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
+
     let ethereum_wallet = EthereumWallet::builder()
-        .master_hd_key(master_hd_key)
+        .mnemonic(mnemonic)
+        .network_type(HDNetworkType::TestNet)
         .build()?;
 
     let public_address = ethereum_wallet.public_address();

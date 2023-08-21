@@ -15,27 +15,13 @@ async fn main() -> Result<(), Error> {
     // case of importing from a Bip39Mnemonic, let's assume we have previous transactions associated with this mnemonic phrase in BTC and ETH
     let mnemonic_phrase = "joy tail arena mix other envelope diary achieve short nest true vocal";
 
-    // Using the testnet network
-    let network = HDNetworkType::TestNet;
     let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
-    let seed = mnemonic.to_seed("");
-    let seed = Seed::new(seed.to_vec());
-
-    // Generates a KeyPair from the mnemonic, specifying the network and the type of mnemonic, this becomes the HD wallet which can be used to access multiple cryptocurrencies
-    let hd_wallet = KeyPair::new(
-        seed.clone(),
-        mnemonic_phrase.to_string(),
-        MnemonicKeyPairType::HDBip39,
-        None,
-        network,
-    );
 
     // derive the Bitcoin wallet from the HD wallet
     let mut btc_wallet = BitcoinWallet::builder()
-        .mnemonic(mnemonic)
+        .mnemonic(mnemonic.clone())
         .network_type(Network::Testnet)
         .build()?;
-    // let mut btc_wallet = hd_wallet.derive_wallet::<BitcoinWallet>()?;
 
     // Searches for past transactions on first account using default of HDPurpose::BIP84 (default for BTC), can have other options to specify a different deriv path to search with or to search past the first account or change the gap limit ex: .discover_accounts() or .set_derive_type(HDPurpose::BIP44)
     // TODO(#79): Expose more user options on the sync of the BTC wallet
@@ -48,7 +34,8 @@ async fn main() -> Result<(), Error> {
     let eth_blockchain_client = EthClient::builder().url(ETH_TESTNET_URL.into()).build()?;
 
     let mut eth_wallet = EthereumWallet::builder()
-        .master_hd_key(hd_wallet.to_master_key())
+        .mnemonic(mnemonic)
+        .network_type(HDNetworkType::TestNet)
         .build()?;
     // let mut eth_wallet = hd_wallet.derive_wallet::<EthereumWallet>()?;
 

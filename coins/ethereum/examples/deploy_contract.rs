@@ -1,3 +1,4 @@
+use bdk::keys::bip39::Mnemonic;
 use ethers::{
     contract::{abigen, ContractFactory},
     core::utils::Anvil,
@@ -50,10 +51,13 @@ async fn main() -> Result<(), Error> {
     println!("anvil.keys(): {:?}", anvil.keys()[0]);
     // TODO: When we've moved to bdk's mnemonic library, this has to be simplified by EthereumWallet. We don't want to have to use master seeds
     // Get the master seed from anvil
-    let master_seed = Seed::from_str("43a87a99bff8d4bc5b2d9b36e1d8ab04253ed00b8aa7b3fdd2b23d0ad7959b817ab53fd36bbb348c8680766b4ca542fe9ff42c4e42277639d4be3c942a549d5f")?;
-    let master_hd_key = HDKey::new_master(master_seed, HDNetworkType::TestNet)?;
+    let mnemonic_phrase: &str =
+        "outer ride neither foil glue number place usage ball shed dry point";
+    let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
+
     let ethereum_wallet = EthereumWallet::builder()
-        .master_hd_key(master_hd_key)
+        .mnemonic(mnemonic)
+        .network_type(HDNetworkType::TestNet)
         .build()?;
 
     assert!(ethereum_wallet.private_key().is_ok());

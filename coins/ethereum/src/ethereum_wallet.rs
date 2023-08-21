@@ -223,12 +223,6 @@ impl EthereumWalletBuilder {
         Ok(wallet)
     }
 
-    /// Allows specification of the master HD key for the wallet
-    pub fn master_hd_key(&mut self, master_hd_key: HDKey) -> &mut Self {
-        self.master_hd_key = Some(master_hd_key);
-        self
-    }
-
     /// Allows specification of the address format for the wallet
     pub fn address_format(&mut self, address_format: EthereumFormat) -> &mut Self {
         self.address_format = address_format;
