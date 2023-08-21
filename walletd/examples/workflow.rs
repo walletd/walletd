@@ -32,7 +32,7 @@ async fn main() -> Result<(), Error> {
 
     // derive the Bitcoin wallet from the HD wallet
     let mut btc_wallet = BitcoinWallet::builder()
-        .mnemonic_seed(mnemonic_phrase)
+        .mnemonic(mnemonic)
         .network_type(Network::Testnet)
         .build()?;
     // let mut btc_wallet = hd_wallet.derive_wallet::<BitcoinWallet>()?;

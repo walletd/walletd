@@ -57,7 +57,7 @@
 //! println!("seed_hex: {:x}", seed);
 //! let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
 //! let keypair = KeyPair::builder().mnemonic_phrase(mnemonic_phrase.into()).network_type(HDNetworkType::TestNet).build()?;
-//! let mut btc_wallet = BitcoinWalletBuilder::new().mnemonic_seed(mnemonic_phrase).network_type(Network::Testnet).build().unwrap();
+//! let mut btc_wallet = BitcoinWalletBuilder::new().mnemonic(mnemonic).network_type(Network::Testnet).build().unwrap();
 //! let mut eth_wallet = EthereumWalletBuilder::new().master_hd_key(keypair.to_master_key()).build().unwrap();
 //! Ok(())
 //! }
@@ -81,7 +81,7 @@
 //! # println!("seed_hex: {:x}", seed);
 //! # let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
 //! # let keypair = KeyPair::builder().mnemonic_phrase(mnemonic_phrase.into()).network_type(HDNetworkType::TestNet).build()?;
-//! let mut btc_wallet = BitcoinWalletBuilder::new().mnemonic_seed(mnemonic_phrase).network_type(Network::Testnet).build().unwrap();
+//! let mut btc_wallet = BitcoinWalletBuilder::new().mnemonic(mnemonic).network_type(Network::Testnet).build().unwrap();
 //! let mut eth_wallet = EthereumWalletBuilder::new().master_hd_key(keypair.to_master_key()).build().unwrap();
 //! eth_wallet.set_blockchain_client(EthClient::new("https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161")?);
 //!

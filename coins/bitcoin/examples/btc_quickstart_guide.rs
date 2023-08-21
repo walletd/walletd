@@ -1,16 +1,16 @@
 use bdk::bitcoin::Network;
 use bdk::blockchain::ElectrumBlockchain;
 use bdk::electrum_client::Client;
-// use bdk::keys::bip39::Mnemonic;
+use bdk::keys::bip39::Mnemonic;
 use walletd_bitcoin::prelude::*;
 
 #[tokio::main]
 async fn main() -> Result<(), walletd_bitcoin::Error> {
     let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
-    // let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
+    let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
 
     let mut btc_wallet = BitcoinWallet::builder()
-        .mnemonic_seed(mnemonic_phrase)
+        .mnemonic(mnemonic)
         .network_type(Network::Testnet)
         .build()?;
 

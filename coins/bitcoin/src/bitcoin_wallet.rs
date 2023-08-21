@@ -12,7 +12,6 @@ pub use bitcoin::{sighash::EcdsaSighashType, AddressType, Script};
 use std::str::FromStr;
 use walletd_hd_key::slip44;
 use walletd_hd_key::HDPurpose;
-use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Represents a Hierarchical Deterministic (HD) Bitcoin wallet.
 pub struct BitcoinWallet {
@@ -143,21 +142,18 @@ impl BitcoinWallet {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 /// Builder for [BitcoinWallet] that allows for the creation of a [BitcoinWallet] with a custom configuration
 pub struct BitcoinWalletBuilder {
     /// The address format used to generate the wallet, if the address format is not provided, the default address format is P2wpkh
-    #[zeroize(skip)]
     address_format: AddressType,
     /// The HD purpose used to generate the wallet, if the HD purpose is not provided, the default HD purpose will be inferred from the address_format
-    #[zeroize(skip)]
     hd_purpose: Option<HDPurpose>,
     /// The mnemonic seed used to import the wallet, if the mnemonic seed is not provided, the master_hd_key must be provided
     /// If the master_hd_key is provided, the mnemonic seed will be ignored
-    mnemonic_seed: Option<String>,
+    mnemonic: Option<Mnemonic>,
     /// The specified network type to use, if the master_hd_key is provided, the network type will be inferred from the master_hd_key and this network_type will be ignored
     /// The default network type is Network::Bitcoin
-    #[zeroize(skip)]
     network_type: Network,
 }
 
@@ -166,7 +162,7 @@ impl Default for BitcoinWalletBuilder {
         Self {
             address_format: AddressType::P2wpkh,
             hd_purpose: Some(HDPurpose::BIP84),
-            mnemonic_seed: None,
+            mnemonic: None,
             network_type: Network::Bitcoin,
         }
     }
@@ -179,8 +175,8 @@ impl BitcoinWalletBuilder {
     }
 
     /// Allows specification of the mnemonic seed for the wallet
-    pub fn mnemonic_seed(&mut self, mnemonic_seed: &str) -> &mut Self {
-        self.mnemonic_seed = Some(mnemonic_seed.to_string());
+    pub fn mnemonic(&mut self, mnemonic: Mnemonic) -> &mut Self {
+        self.mnemonic = Some(mnemonic);
         self
     }
 
@@ -198,10 +194,10 @@ impl BitcoinWalletBuilder {
 
     /// Used to import an existing wallet from a master HD key or a mnemonic seed and specified network type
     pub fn build(&self) -> Result<BitcoinWallet, Error> {
-        if self.mnemonic_seed.is_none() {
+        if self.mnemonic.is_none() {
             return Err(Error::MissingMnemonicSeed);
         }
-        let mnemonic_words = self.mnemonic_seed.clone();
+        let mnemonic_words = self.mnemonic.clone();
         let mnemonic = Mnemonic::parse(mnemonic_words.unwrap().to_string()).unwrap();
 
         // Generate the extended key
@@ -265,7 +261,7 @@ mod tests {
         let builder = BitcoinWalletBuilder::new();
         let default = BitcoinWalletBuilder::default();
         assert_eq!(builder.address_format, default.address_format);
-        assert!(builder.mnemonic_seed.is_none());
+        assert!(builder.mnemonic.is_none());
         assert_eq!(builder.network_type, default.network_type);
         Ok(())
     }
@@ -273,15 +269,16 @@ mod tests {
     #[test]
     fn test_with_mnemonic_seed() -> Result<(), Error> {
         let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
+        let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
         let mut builder = BitcoinWalletBuilder::default();
-        builder.mnemonic_seed(mnemonic_phrase);
-        assert!(builder.mnemonic_seed.is_some());
+        builder.mnemonic(mnemonic.clone());
+        assert!(builder.mnemonic.is_some());
         assert_eq!(
             builder
-                .mnemonic_seed
+                .mnemonic
                 .clone()
                 .expect("should be some due to previous check"),
-            mnemonic_phrase
+            mnemonic
         );
         Ok(())
     }

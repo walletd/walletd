@@ -11,7 +11,7 @@ async fn main() -> Result<(), walletd::Error> {
     let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
 
     let mut btc_wallet = BitcoinWalletBuilder::new()
-        .mnemonic_seed(mnemonic_phrase)
+        .mnemonic(mnemonic.clone())
         .build()
         .unwrap();
 
