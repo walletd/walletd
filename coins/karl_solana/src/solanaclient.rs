@@ -1,3 +1,4 @@
+#![allow(clippy::integer_arithmetic)]
 //use crate::Error;
 // use crate::EthereumAmount;
 use core::fmt::Error;
@@ -31,6 +32,7 @@ impl SolanaClient {
 
     /// Create a new instance of [SolanaClient] based on a given endpoint url.
     /// Returns an [error][Error] if the endpoint is invalid or the transport fails to connect.
+    /// Returns an instance of SolanaClient on success.
     pub fn new(endpoint: &str) -> Result<Self, Error> {
         let rpc_client = RpcClient::new(endpoint.to_string());
         
@@ -47,22 +49,28 @@ impl SolanaClient {
     fn url(&self) -> &str {
         &self.endpoint
     }
+
+    /// This fn takes a Solana storage contract and calculates the rent cost for it.
+    /// In Solana, rent is calculated based on the size in bytes of the contract.
+    /// TODO: Check this: For each byte, one lamport is used
+    pub fn get_rent(&self) -> Result<u64, Error> {
+        let rent = self.rpc_client.get_minimum_balance_for_rent_exemption(0)?;
+        Ok(rent)
+    }
+
+    /// Needs wallet, target address, amount, and token address
+    pub fn transfer() -> Result(Bool, Error) {
+
+        Ok(true)
+    }
 }
+
 
 // // Creates Rust bindings for the ERC20 ABI
 // abigen!(ERC20, "./abi/erc20_abi.json");
 
 // #[allow(unused)]
 // impl EthClient {
-//     /// Returns the ethers Provider instance.
-//     pub fn ethers(&self) -> Provider<Http> {
-//         self.ethers.clone()
-//     }
-
-//     /// Returns the chain id of the current network the ethers instance is connected to.
-//     pub async fn chain_id(&self) -> U256 {
-//         self.ethers().get_chainid().await.unwrap()
-//     }
 
 //     /// Returns a block with its specified block number and transactions
 //     // TODO: Take BlockNumber as an argument
