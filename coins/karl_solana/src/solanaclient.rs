@@ -59,13 +59,27 @@ impl SolanaClient {
     }
 
     /// Needs wallet, target address, amount, and token address
-    pub fn transfer() -> Result(Bool, Error) {
+    pub fn transfer() -> Result(bool, Error) {
 
         Ok(true)
     }
+
 }
 
+struct SolanaUtils;
 
+impl SolanaUtils {
+    /// Convert the token amount (using the decimals field defined in its mint)
+    /// to the raw amount
+    pub fn ui_amount_to_amount(ui_amount: f64, decimals: u8) -> u64 {
+        (ui_amount * 10_usize.pow(decimals as u32) as f64) as u64
+    }
+
+    /// Convert a raw amount to its human-readable representation (using the decimals field defined in its mint)
+    pub fn amount_to_ui_amount(amount: u64, decimals: u8) -> f64 {
+        amount as f64 / 10_usize.pow(decimals as u32) as f64
+    }
+}
 // // Creates Rust bindings for the ERC20 ABI
 // abigen!(ERC20, "./abi/erc20_abi.json");
 
