@@ -72,6 +72,17 @@ impl SolanaClient {
         Ok(balance)
     }
 
+    // 
+    pub fn get_account(&self, address: &Pubkey) -> Result<Account, Error> {
+        let account = self.rpc_client.get_account(address)?;
+        Ok(account)
+    }
+    /// TODO: complete the transfer account 
+    /// Needs wallet, target address, amount, and token address
+    pub fn transfer() -> Result<bool, Error> {
+
+        Ok(true)
+    }
 
 }
 
