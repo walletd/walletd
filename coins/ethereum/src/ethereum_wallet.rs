@@ -293,10 +293,12 @@ impl EthereumWallet {
     ) -> Result<String, Error> {
         //let secret_key: &Result<EthereumPrivateKey, Error> = &self.private_key();
 
-        let derived_hd_key = &self.derived_hd_key()?;
+        let derived_hd_key = &self
+            .derived_hd_key
+            .as_ref()
+            .expect("Derived HD key should be set");
         let private_key =
             EthereumPrivateKey::from_slice(&derived_hd_key.extended_private_key()?.to_bytes())?;
-        let _address_derivation_path = &derived_hd_key.derivation_path.clone();
 
         // EthereumWallet stores the private key as a 32 byte array
         let secret_bytes = private_key.to_bytes();
@@ -371,30 +373,6 @@ impl EthereumWallet {
         self.public_address()
     }
 
-    /// Return the pub/priv keys at a specified index
-    /// For now, we're assuming that the path we're using for derivation is the default (m/44'/60'/0'/0/{index})
-    pub fn index(&self, _index: u64) -> (String, String) {
-        // // A wallet
-
-        // let account_deriv_path = HDPath::builder()
-        //     .purpose_index(HDPurpose::BIP44.to_shortform_num()) // 44' for Eth
-        //     .coin_type_index(Coin::from(Symbol::ETH).id()) // 60' for Eth
-        //     .account_index(0) // we'll work from acc 0
-        //     .change_index(0)
-        //     .no_address_index()
-        //     .build().to_string();
-
-        // println!("account_deriv_path: {:?}", &account_deriv_path);
-        //println!("self: {:?}", &self);
-        //let derived_hd_key = master_hd_key.derive("m/84'/1'/0'/0/0")?;
-        // let first_address_hd_key = HDKey::new(
-        //     Seed::from_str(BTC_WALLET_TEST_SEED)?,
-        //     HDNetworkType::TestNet,
-        //     "m/84'/1'/0'/0/0",
-        // )?;
-        ("Yes".to_string(), "No".to_string())
-    }
-
     /// Returns the network type used by the wallet
     pub fn network(&self) -> HDNetworkType {
         self.network
@@ -415,15 +393,6 @@ impl EthereumWallet {
             Ok(key)
         } else {
             Err(Error::MissingPrivateKey)
-        }
-    }
-
-    /// Returns the derived HD key of the wallet if it exists, otherwise returns an error
-    pub fn derived_hd_key(&self) -> Result<HDKey, Error> {
-        if let Some(key) = self.derived_hd_key.clone() {
-            Ok(key)
-        } else {
-            Err(Error::MissingHDKey)
         }
     }
 }

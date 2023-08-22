@@ -124,7 +124,6 @@ mod error;
 pub use error::Error;
 pub use ethers;
 pub mod prelude;
-pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 
 /// Represents the format of an Ethereum address (checksummed or non-checksummed)
 #[derive(Default, Debug, Clone, Copy)]

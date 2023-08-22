@@ -11,8 +11,7 @@ async fn main() {
     let mnemonic_phrase: &str =
         "mandate rude write gather vivid inform leg swift usual early bamboo element";
     let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
-    let seed = mnemonic.to_seed("");
-    let seed = Seed::new(seed.to_vec());
+
     let _eth_client = EthClient::new(PROVIDER_URL).unwrap();
     let _address: H160 = GOERLI_TEST_ADDRESS.parse().unwrap();
 
