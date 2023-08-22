@@ -5,7 +5,7 @@ use core::fmt::Error;
 use async_trait::async_trait;
 // use ethers::prelude::*;
 // use ethers::types::Address;
-
+use crate::error as SolanaError;
 use std::convert::TryFrom;
 
 use walletd_coin_core::BlockchainConnector;
@@ -18,7 +18,9 @@ use solana_sdk::{
     entrypoint::ProgramResult,
     message,
     program_error::ProgramError,
-    pubkey::Pubkey
+    pubkey::Pubkey,
+    account::Account,
+    address_lookup_table_account::AddressLookupTableAccount
 };
 use solana_client::nonblocking::rpc_client::RpcClient;
 
@@ -28,7 +30,7 @@ pub struct SolanaClient {
 }
 
 impl SolanaClient {
-    //type ErrorType = Error;
+    type ErrorType = SolanaError;
 
     /// Create a new instance of [SolanaClient] based on a given endpoint url.
     /// Returns an [error][Error] if the endpoint is invalid or the transport fails to connect.
@@ -42,12 +44,19 @@ impl SolanaClient {
         })
     }
 
+    /// Return an instance of our initialised SolanaClient
     pub fn rpc_client(&self) -> &RpcClient {
         &self.rpc_client
     }
 
+    /// Return the current endpoint we are using
     fn url(&self) -> &str {
         &self.endpoint
+    }
+
+    pub async fn get_block(&self, block_number: u64) -> Result<(), Error> {
+        let block = self.rpc_client.get_block(block_number)?;
+        Ok(())
     }
 
     /// This fn takes a Solana storage contract and calculates the rent cost for it.
@@ -58,11 +67,7 @@ impl SolanaClient {
         Ok(rent)
     }
 
-    /// Needs wallet, target address, amount, and token address
-    pub fn transfer() -> Result(bool, Error) {
-
-        Ok(true)
-    }
+    
 
 }
 
