@@ -67,7 +67,11 @@ impl SolanaClient {
         Ok(rent)
     }
 
-    
+    pub fn get_balance(&self, address: &Pubkey) -> Result<u64, Error> {
+        let balance = self.rpc_client.get_balance(address)?;
+        Ok(balance)
+    }
+
 
 }
 
