@@ -8,11 +8,12 @@ use solana_sdk::entrypoint::ProgramResult;
 
 /// An ERC20-like Token program for the Solana blockchain
 
-// pub mod error;
+pub mod error;
 // pub mod instruction;
 // pub mod native_mint;
 // pub mod processor;
 // pub mod state;
+
 
 use solana_sdk::pubkey::Pubkey;
 use solana_sdk::program_error::ProgramError;
