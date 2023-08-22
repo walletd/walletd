@@ -2,7 +2,7 @@ use thiserror::Error;
 
 /// Custom error type for this crate.
 #[derive(Error, Debug)]
-pub enum Error {
+pub enum SolanaError {
     // /// Error due to missing public key
     // #[error("Public Key not included")]
     // MissingPublicKey,
