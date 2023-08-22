@@ -84,6 +84,11 @@ impl SolanaClient {
         Ok(true)
     }
 
+    pub fn get_address_lookup_table(&self, lookup_table_address: &Pubkey) -> Result<AddressLookupTableAccount, Error> {
+        let lookup_table = self.rpc_client.get_account(lookup_table_address)?;
+        Ok(lookup_table)
+    }
+
 }
 
 struct SolanaUtils;
