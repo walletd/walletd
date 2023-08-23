@@ -6,10 +6,16 @@ use crate::Error;
 use crate::EthClient;
 use crate::{EthereumAmount, EthereumFormat};
 
+use bdk::bitcoin::secp256k1::ffi::types::AlignedType;
+use bdk::bitcoin::secp256k1::Secp256k1;
+use bdk::bitcoin::util::bip32::DerivationPath;
+use bdk::bitcoin::util::bip32::ExtendedPubKey;
 use bdk::keys::bip39::Mnemonic;
+use bdk::keys::{DerivableKey, ExtendedKey};
 use ethers::middleware::gas_oracle::GasNow;
 use ethers::prelude::gas_oracle::GasOracleMiddleware;
 use ethers::prelude::*;
+use ethers::signers::coins_bip39::mnemonic;
 // use ethers::providers::{Middleware};
 // use ethers::types::{TransactionRequest};
 // use ethers::signers::{Signer};
@@ -201,16 +207,43 @@ impl EthereumWalletBuilder {
             .hardened_purpose()
             .coin_type_index(coin_type_id)
             .hardened_coin_type();
-
+        println!("hd_path_builder: {:?}", hd_path_builder);
         let derived_key = master_hd_key.derive(&hd_path_builder.build().to_string())?;
 
         let private_key: EthereumPrivateKey =
             EthereumPrivateKey::from_slice(&derived_key.extended_private_key()?.to_bytes())?;
-
+        println!("Private key: {:?}", private_key);
+        println!("Private key: {:?}", private_key.to_bytes());
         let public_key =
             EthereumPublicKey::from_slice(&derived_key.extended_public_key()?.to_bytes())?;
         let public_address = public_key.to_public_address(self.address_format)?;
+        println!("Public key: {:?}", public_key);
+        println!("public_address: {:?}", public_address);
+        // we need secp256k1 context for key derivation
+        let mut buf: Vec<AlignedType> = Vec::new();
+        buf.resize(Secp256k1::preallocate_size(), AlignedType::zeroed());
+        let secp = Secp256k1::preallocated_new(buf.as_mut_slice()).unwrap();
 
+        let mnemonic = &self.mnemonic.clone().unwrap();
+        let xkey: ExtendedKey = mnemonic.clone().into_extended_key().unwrap();
+        // Get xprv from the extended key
+        let xprv = xkey.into_xprv(bdk::bitcoin::Network::Bitcoin).unwrap();
+        let path = DerivationPath::from_str("m/44h/60h/0h/0/0").unwrap();
+
+        let child = xprv.derive_priv(&secp, &path).unwrap();
+        println!("Child at {}: {}", path, child);
+        let xpub = ExtendedPubKey::from_priv(&secp, &child);
+        println!("Public key at {}: {}", path, xpub);
+        println!("private key bytes: {:?}", &child.private_key.secret_bytes());
+        let private_key: EthereumPrivateKey =
+            EthereumPrivateKey::from_slice(&child.private_key.secret_bytes())?;
+        println!("private key: {:?}", private_key.to_bytes());
+        let public_key = EthereumPublicKey {
+            0: PublicKey::from_slice(&xpub.public_key.serialize()).unwrap(),
+        };
+        println!("test: {:?}", private_key);
+        println!("test2: {:?}", public_key);
+        let public_address = public_key.to_public_address(self.address_format)?;
         let wallet = EthereumWallet {
             address_format: self.address_format,
             public_address,

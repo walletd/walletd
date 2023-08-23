@@ -14,22 +14,22 @@ const PROVIDER_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12ea
 async fn main() -> Result<(), walletd_ethereum::Error> {
     let mnemonic_phrase: &str =
         "outer ride neither foil glue number place usage ball shed dry point";
-    let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
+    // let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
 
     // we need secp256k1 context for key derivation
-    let mut buf: Vec<AlignedType> = Vec::new();
-    buf.resize(Secp256k1::preallocate_size(), AlignedType::zeroed());
-    let secp = Secp256k1::preallocated_new(buf.as_mut_slice()).unwrap();
+    // let mut buf: Vec<AlignedType> = Vec::new();
+    // buf.resize(Secp256k1::preallocate_size(), AlignedType::zeroed());
+    // let secp = Secp256k1::preallocated_new(buf.as_mut_slice()).unwrap();
 
-    let xkey: ExtendedKey = mnemonic.into_extended_key().unwrap();
-    // Get xprv from the extended key
-    let xprv = xkey.into_xprv(bdk::bitcoin::Network::Bitcoin).unwrap();
-    let path = DerivationPath::from_str("m/44h/60h/0h").unwrap();
+    // let xkey: ExtendedKey = mnemonic.into_extended_key().unwrap();
+    // // Get xprv from the extended key
+    // let xprv = xkey.into_xprv(bdk::bitcoin::Network::Bitcoin).unwrap();
+    // let path = DerivationPath::from_str("m/44h/60h/0h").unwrap();
 
-    let child = xprv.derive_priv(&secp, &path).unwrap();
-    println!("Child at {}: {}", path, child);
-    let xpub = ExtendedPubKey::from_priv(&secp, &child);
-    println!("Public key at {}: {}", path, xpub);
+    // let child = xprv.derive_priv(&secp, &path).unwrap();
+    // println!("Child at {}: {}", path, child);
+    // let xpub = ExtendedPubKey::from_priv(&secp, &child);
+    // println!("Public key at {}: {}", path, xpub);
     let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
     let mut ethereum_wallet = EthereumWallet::builder()
         .mnemonic(mnemonic.clone())
