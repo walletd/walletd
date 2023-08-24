@@ -18,10 +18,7 @@ fn test_wallet_instantiation_from_mnemonic_seed() {
         &wallet.public_address(),
         "0x6EEb11eA2905fEe101f72BF94F792dbc2dfB42B7"
     );
-    assert_eq!(
-        format!("{:#x}", &wallet.private_key().unwrap()),
-        "0xa5dcdaefa08013092ca37d3f60d46f27510df8777a3a7dd6a1b9f373352caa75"
-    );
+
     assert_eq!(wallet.network(), HDNetworkType::TestNet);
 
     // assert!(&wallet.private_key().is_err());

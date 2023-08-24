@@ -1,13 +1,5 @@
-use bdk::{
-    bitcoin::{
-        secp256k1::{ffi::types::AlignedType, Secp256k1},
-        util::bip32::{DerivationPath, ExtendedPubKey},
-    },
-    keys::{bip39::Mnemonic, DerivableKey, ExtendedKey},
-};
-use ethers::prelude::*;
+use bdk::keys::bip39::Mnemonic;
 use walletd_ethereum::prelude::*;
-use walletd_hd_key::FromStr;
 
 const PROVIDER_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 #[tokio::main]
@@ -38,9 +30,6 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
     let public_address = ethereum_wallet.public_address();
 
     println!("ethereum wallet public address: {}", public_address);
-
-    assert!(ethereum_wallet.private_key().is_ok());
-    assert!(ethereum_wallet.public_key().is_ok());
 
     let ethclient_url = PROVIDER_URL;
     let eth_client = EthClient::new(ethclient_url)?;

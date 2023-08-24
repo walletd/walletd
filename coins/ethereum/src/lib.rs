@@ -24,27 +24,6 @@
 //! let mut ethereum_wallet = EthereumWallet::builder().mnemonic(mnemonic).network_type(HDNetworkType::TestNet).build()?;
 //! let public_address = ethereum_wallet.public_address();
 //! println!("ethereum wallet public address: {}", public_address);
-//! # assert!(ethereum_wallet.private_key().is_ok());
-//! # assert!(ethereum_wallet.public_key().is_ok());
-//! # Ok(())
-//! # }
-//! ```
-//!
-//! ### Default Derivation Path
-//!
-//! Deriving an [EthereumWallet] is simple and uses some default settings under the hood.
-//! We can inspect our `ethereum_wallet` to see that a child `derived_hd_key` was derived from the master `master_hd_key` and see the derivation path [HDPath] that was used by default.
-//! ```
-//! # use walletd_ethereum::prelude::*;
-//! # use walletd_hd_key::prelude::*;
-//! # fn ethereum() -> Result<(), walletd_ethereum::Error> {
-//! let mnemonic_phrase = "joy tail arena mix other envelope diary achieve short nest true vocal";
-//! let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
-//! let mut ethereum_wallet = EthereumWallet::builder().mnemonic(mnemonic).network_type(HDNetworkType::TestNet).build()?;
-//! let derived_hd_key = ethereum_wallet.derived_hd_key()?;
-//! let address_derivation_path = &derived_hd_key.clone().derivation_path;
-//! println!("address derivation path: {}", address_derivation_path);
-//! # assert_eq!(address_derivation_path.to_string(), "m/44'/60'/0'/0/0".to_string());
 //! # Ok(())
 //! # }
 //! ```
@@ -117,9 +96,7 @@ pub use ethclient::EthClient;
 mod ethereum_amount;
 pub use ethereum_amount::EthereumAmount;
 mod ethereum_wallet;
-pub use ethereum_wallet::{
-    EthereumPrivateKey, EthereumPublicKey, EthereumWallet, EthereumWalletBuilder,
-};
+pub use ethereum_wallet::{EthereumWallet, EthereumWalletBuilder};
 mod error;
 pub use error::Error;
 pub use ethers;

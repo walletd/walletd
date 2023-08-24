@@ -55,13 +55,10 @@ async fn main() -> Result<(), Error> {
         "outer ride neither foil glue number place usage ball shed dry point";
     let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
 
-    let ethereum_wallet = EthereumWallet::builder()
+    let _ethereum_wallet = EthereumWallet::builder()
         .mnemonic(mnemonic)
         .network_type(HDNetworkType::TestNet)
         .build()?;
-
-    assert!(ethereum_wallet.private_key().is_ok());
-    assert!(ethereum_wallet.public_key().is_ok());
 
     // 3. connect to the network
     let provider = Provider::<Http>::try_from(anvil.endpoint())

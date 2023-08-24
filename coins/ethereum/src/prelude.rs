@@ -5,10 +5,7 @@
 //! use walletd_ethereum::prelude::*;
 //! ```
 
-pub use crate::{
-    EthClient, EthereumAmount, EthereumFormat, EthereumPrivateKey, EthereumPublicKey,
-    EthereumWallet, EthereumWalletBuilder,
-};
+pub use crate::{EthClient, EthereumAmount, EthereumFormat, EthereumWallet, EthereumWalletBuilder};
 
 pub use bdk::keys::bip39::Mnemonic;
 pub use ethers::types::Transaction;

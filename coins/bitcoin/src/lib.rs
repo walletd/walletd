@@ -73,5 +73,5 @@ pub use bitcoin_wallet::{BitcoinWallet, BitcoinWalletBuilder};
 #[doc(hidden)]
 mod error;
 pub use error::Error;
-pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
+pub use walletd_hd_key::HDNetworkType;
 pub mod prelude;
