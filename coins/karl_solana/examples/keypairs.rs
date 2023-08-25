@@ -1,8 +1,11 @@
 use solana_sdk::signature::{Keypair};
+use solana_sdk::pubkey::{Pubkey};
+use std::str::FromStr;
 
 fn main() {
 
     // Create new keypair
+    // Note that Keypair::new() will always give a public key that is valid for users
     let wallet = Keypair::new();
 
     // Restore a keypair from bytes
@@ -20,4 +23,14 @@ fn main() {
         "5MaiiCavjCmn9Hs1o3eznqDEhRwxo7pXiAYez7keQUviUkauRiTMD8DrESdrNjN8zd9mTmVhRvBJeg5vhyvgrAhG",
     );
 
+    // Checking if a public key has an associated ed25519 private key 
+    // In certain special cases (e.g. a Program Derived Address), public keys may not have a private key associated with them. You can check this by looking to see if the public key lies on the ed25519 curve. Only public keys that lie on the curve can be controlled by users with wallets.
+
+    let pubkey = Pubkey::from_str("5oNDL3swdJJF1g9DzJiZ4ynHXgszjAEpUkxVYejchzrY").unwrap(); // Valid public key
+    println!("{:?}", pubkey.is_on_curve()); // Lies on the ed25519 curve and is suitable for users
+
+    let off_curve_address = Pubkey::from_str("4BJXYkfvg37zEmBbsacZjeQDpTNx91KppxFJxRqrz48e").unwrap(); // Valid public key
+    println!("{:?}", off_curve_address.is_on_curve()); // Not on the ed25519 curve, therefore not suitable for users
+
+    let error_pubkey = Pubkey::from_str("testPubkey").unwrap(); // Is not a valid public key
 }
