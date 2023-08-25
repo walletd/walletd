@@ -21,8 +21,7 @@ use ethers::prelude::*;
 // use ethers::signers::{Signer};
 use secp256k1::PublicKey;
 use tiny_keccak::{Hasher, Keccak};
-use walletd_hd_key::{slip44, HDNetworkType};
-use zeroize::{Zeroize, ZeroizeOnDrop};
+use walletd_hd_key::HDNetworkType;
 
 /// Represents an EthereumPublicKey, wraps a [PublicKey] from the secp256k1 crate
 #[derive(Debug, Clone)]
@@ -32,11 +31,6 @@ impl EthereumPublicKey {
     /// Converts the public key to a byte array
     pub fn to_bytes(&self) -> [u8; 33] {
         self.0.serialize()
-    }
-    /// Constructs the public key from a slice of bytes, returns an [error][Error] if given invalid bytes
-    pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
-        let public_key = PublicKey::from_slice(bytes)?;
-        Ok(EthereumPublicKey(public_key))
     }
 
     /// Returns the public address of the public key in the specified format
@@ -98,6 +92,7 @@ impl LowerHex for EthereumPublicKey {
 }
 
 /// Builder for [EthereumWallet], allows for specification of options for the ethereum wallet
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct EthereumWalletBuilder {
     address_format: EthereumFormat,
@@ -134,8 +129,6 @@ impl EthereumWalletBuilder {
                 "The mnemonic seed was provided".to_string(),
             ));
         }
-
-        let coin_type_id = slip44::Coin::Ether.id();
 
         // we need secp256k1 context for key derivation
         let mut buf: Vec<AlignedType> = Vec::new();
@@ -310,6 +303,7 @@ impl EthereumWallet {
         self.network
     }
 
+    /// Returns the extended public key of the eth wallet
     pub fn public_key(&self) -> Result<ExtendedPubKey, Error> {
         match &self.public_key {
             Some(public_key) => Ok(public_key.clone()),
