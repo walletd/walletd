@@ -146,7 +146,8 @@ impl EthereumWalletBuilder {
         let xpub = ExtendedPubKey::from_priv(&secp, &child);
         // println!("Public key at {}: {}", path, xpub);
         // println!("private key bytes: {:?}", &child.private_key.secret_bytes());
-        let public_key = EthereumPublicKey(PublicKey::from_slice(&xpub.public_key.serialize()).unwrap());
+        let public_key =
+            EthereumPublicKey(PublicKey::from_slice(&xpub.public_key.serialize()).unwrap());
         // println!("test2: {:?}", public_key);
         let public_address = public_key.to_public_address(self.address_format)?;
         let wallet = EthereumWallet {
