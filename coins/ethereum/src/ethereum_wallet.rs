@@ -146,9 +146,7 @@ impl EthereumWalletBuilder {
         let xpub = ExtendedPubKey::from_priv(&secp, &child);
         // println!("Public key at {}: {}", path, xpub);
         // println!("private key bytes: {:?}", &child.private_key.secret_bytes());
-        let public_key = EthereumPublicKey {
-            0: PublicKey::from_slice(&xpub.public_key.serialize()).unwrap(),
-        };
+        let public_key = EthereumPublicKey(PublicKey::from_slice(&xpub.public_key.serialize()).unwrap());
         // println!("test2: {:?}", public_key);
         let public_address = public_key.to_public_address(self.address_format)?;
         let wallet = EthereumWallet {
@@ -156,7 +154,7 @@ impl EthereumWalletBuilder {
             public_address,
             private_key: Some(child),
             public_key: Some(xpub),
-            network: self.network_type.clone(),
+            network: self.network_type,
             blockchain_client: None,
         };
         Ok(wallet)
@@ -298,7 +296,7 @@ impl EthereumWallet {
     /// Returns the extended public key of the eth wallet
     pub fn public_key(&self) -> Result<ExtendedPubKey, Error> {
         match &self.public_key {
-            Some(public_key) => Ok(public_key.clone()),
+            Some(public_key) => Ok(*public_key),
             None => Err(Error::MissingPublicKey),
         }
     }
