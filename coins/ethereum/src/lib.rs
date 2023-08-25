@@ -7,13 +7,10 @@
 //! Use the [EthereumWallet] struct as a good starting point to access the functionalities for Ethereum that walletD provides.
 //!
 //! Each [EthereumWallet] is associated with one public address.
-//! An [EthereumWallet] could be instantiated without a [EthereumPrivateKey] affiliated with it, but it would not be able to sign transactions.
-//! If an [EthereumWallet] is created with an [EthereumPublicKey] but no [EthereumPrivateKey], it will be able to verify signatures but not sign or send transactions.
 //!
 //! ### Import from Seed
 //!
-//! Here's how you can import an Ethereum wallet based on a master [HDKey]. We will use the `mut` keyword to make the [ethereum wallet][EthereumWallet] mutable so that we can modify `ethereum_wallet` later.
-//! By importing the `ethereum_wallet` fom a `master_hd_key` will both the [EthereumPrivateKey] and the [EthereumPublicKey] will be provided to the `ethereum_wallet`.
+//! Here's how you can import an Ethereum wallet based on a mnemonic. We will use the `mut` keyword to make the [ethereum wallet][EthereumWallet] mutable so that we can modify `ethereum_wallet` later.
 //! ```
 //! use walletd_ethereum::prelude::*;
 //! use walletd_hd_key::prelude::*;
@@ -27,7 +24,7 @@
 //! # Ok(())
 //! # }
 //! ```
-//! We see that by default the Ethereum wallet uses the derivation path "m/44'/60'/0'/0/" corresponding to  [BIP44 for the purpose value][HDPurpose::BIP44] and 60' corresponding to the coin type for Ethereum.
+//! We see that by default the Ethereum wallet uses the derivation path "m/44'/60'/0'/0/" corresponding to BIP44 for the purpose value and 60' corresponding to the coin type for Ethereum.
 //!
 //! We need to add a blockchain connector to our [ethereum wallet][EthereumWallet] to be able to interact with the Ethereum blockchain.
 //!

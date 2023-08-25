@@ -21,8 +21,7 @@ use ethers::prelude::*;
 // use ethers::signers::{Signer};
 use secp256k1::PublicKey;
 use tiny_keccak::{Hasher, Keccak};
-use walletd_hd_key::{slip44, HDNetworkType};
-use zeroize::{Zeroize, ZeroizeOnDrop};
+use walletd_hd_key::HDNetworkType;
 
 /// Represents an EthereumPublicKey, wraps a [PublicKey] from the secp256k1 crate
 #[derive(Debug, Clone)]
@@ -32,11 +31,6 @@ impl EthereumPublicKey {
     /// Converts the public key to a byte array
     pub fn to_bytes(&self) -> [u8; 33] {
         self.0.serialize()
-    }
-    /// Constructs the public key from a slice of bytes, returns an [error][Error] if given invalid bytes
-    pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
-        let public_key = PublicKey::from_slice(bytes)?;
-        Ok(EthereumPublicKey(public_key))
     }
 
     /// Returns the public address of the public key in the specified format
@@ -98,6 +92,7 @@ impl LowerHex for EthereumPublicKey {
 }
 
 /// Builder for [EthereumWallet], allows for specification of options for the ethereum wallet
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct EthereumWalletBuilder {
     address_format: EthereumFormat,
@@ -135,8 +130,6 @@ impl EthereumWalletBuilder {
             ));
         }
 
-        let coin_type_id = slip44::Coin::Ether.id();
-
         // we need secp256k1 context for key derivation
         let mut buf: Vec<AlignedType> = Vec::new();
         buf.resize(Secp256k1::preallocate_size(), AlignedType::zeroed());
@@ -153,9 +146,8 @@ impl EthereumWalletBuilder {
         let xpub = ExtendedPubKey::from_priv(&secp, &child);
         // println!("Public key at {}: {}", path, xpub);
         // println!("private key bytes: {:?}", &child.private_key.secret_bytes());
-        let public_key = EthereumPublicKey {
-            0: PublicKey::from_slice(&xpub.public_key.serialize()).unwrap(),
-        };
+        let public_key =
+            EthereumPublicKey(PublicKey::from_slice(&xpub.public_key.serialize()).unwrap());
         // println!("test2: {:?}", public_key);
         let public_address = public_key.to_public_address(self.address_format)?;
         let wallet = EthereumWallet {
@@ -163,7 +155,7 @@ impl EthereumWalletBuilder {
             public_address,
             private_key: Some(child),
             public_key: Some(xpub),
-            network: self.network_type.clone(),
+            network: self.network_type,
             blockchain_client: None,
         };
         Ok(wallet)
@@ -223,14 +215,6 @@ impl EthereumWallet {
         send_amount: EthereumAmount,
         to_address: &str,
     ) -> Result<String, Error> {
-        //let secret_key: &Result<EthereumPrivateKey, Error> = &self.private_key();
-
-        //     let private_key: EthereumPrivateKey =
-        //     EthereumPrivateKey::from_slice(&child.private_key.secret_bytes())?;
-        // println!("private key: {:?}", private_key.to_bytes());
-        // let public_key = EthereumPublicKey {
-        //     0: PublicKey::from_slice(&xpub.public_key.serialize()).unwrap(),
-        // };
         let private_key_bytes = self.private_key.unwrap().private_key.secret_bytes();
         // EthereumWallet stores the private key as a 32 byte array
         //let secret_bytes = private_key.to_bytes();
@@ -310,9 +294,10 @@ impl EthereumWallet {
         self.network
     }
 
+    /// Returns the extended public key of the eth wallet
     pub fn public_key(&self) -> Result<ExtendedPubKey, Error> {
         match &self.public_key {
-            Some(public_key) => Ok(public_key.clone()),
+            Some(public_key) => Ok(*public_key),
             None => Err(Error::MissingPublicKey),
         }
     }
