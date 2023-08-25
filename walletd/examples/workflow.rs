@@ -29,13 +29,10 @@ async fn main() -> Result<(), Error> {
     // This is another way to use the builder pattern to create the blockchain client instead of using the pattern written out for the btc_blockchain_client
     let eth_blockchain_client = EthClient::new(ETH_TESTNET_URL.into())?;
 
-    let mut eth_wallet = EthereumWallet::builder()
+    let eth_wallet = EthereumWallet::builder()
         .mnemonic(mnemonic)
         .network_type(HDNetworkType::TestNet)
         .build()?;
-    // let mut eth_wallet = hd_wallet.derive_wallet::<EthereumWallet>()?;
-
-    eth_wallet.set_blockchain_client(eth_blockchain_client);
 
     // Gets the current balances for the BTC wallet and ETH wallet
     let current_btc_balance = btc_wallet.balance().await?;
@@ -43,7 +40,7 @@ async fn main() -> Result<(), Error> {
         "Current BTC balance: {} satoshi",
         current_btc_balance.confirmed
     );
-    let current_eth_balance = eth_wallet.balance().await?;
+    let current_eth_balance = eth_wallet.balance(&eth_blockchain_client).await?;
     println!(
         "Current ETH balance: {} ETH ({} wei)",
         current_eth_balance.eth(),

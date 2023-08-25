@@ -23,7 +23,7 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
     // let xpub = ExtendedPubKey::from_priv(&secp, &child);
     // println!("Public key at {}: {}", path, xpub);
     let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
-    let mut ethereum_wallet = EthereumWallet::builder()
+    let ethereum_wallet = EthereumWallet::builder()
         .mnemonic(mnemonic.clone())
         .build()?;
 
@@ -44,8 +44,7 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
     println!("Block number: {:#?}", block_number);
     println!("Gas price: {:#?}", gas_price);
     println!("transaction data: {:?}", tx);
-    ethereum_wallet.set_blockchain_client(eth_client);
-    let balance = ethereum_wallet.balance().await?;
+    let balance = ethereum_wallet.balance(&eth_client).await?;
     println!(
         "ethereum wallet balance: {} ETH, ({} wei)",
         balance.eth(),

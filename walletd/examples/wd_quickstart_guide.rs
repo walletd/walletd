@@ -12,6 +12,7 @@ async fn main() -> Result<(), walletd::Error> {
 
     let mut btc_wallet = BitcoinWalletBuilder::new()
         .mnemonic(mnemonic.clone())
+        .network_type(bdk::bitcoin::Network::Testnet)
         .build()
         .unwrap();
 
@@ -23,7 +24,7 @@ async fn main() -> Result<(), walletd::Error> {
         btc_wallet.balance().await?.confirmed
     );
 
-    let mut eth_wallet = EthereumWalletBuilder::new()
+    let eth_wallet = EthereumWalletBuilder::new()
         .mnemonic(mnemonic)
         .network_type(HDNetworkType::TestNet)
         .build()
@@ -31,10 +32,9 @@ async fn main() -> Result<(), walletd::Error> {
     print!("eth_wallet public address: {}", eth_wallet.public_address());
     let eth_client =
         EthClient::new("https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161")?;
-    eth_wallet.set_blockchain_client(eth_client);
     println!(
         "eth_wallet balance: {} ETH",
-        eth_wallet.balance().await?.eth()
+        eth_wallet.balance(&eth_client).await?.eth()
     );
     Ok(())
 }

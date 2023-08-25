@@ -15,7 +15,7 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
 
     println!("blockchain_client: {:?}", &blockchain_client);
 
-    let mut wallet = EthereumWallet::builder()
+    let wallet = EthereumWallet::builder()
         .mnemonic(mnemonic)
         .network_type(HDNetworkType::TestNet)
         .build()
@@ -30,9 +30,10 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
         .unwrap();
     print!("balance: {:?}", &balance);
 
-    wallet.set_blockchain_client(blockchain_client.clone());
     let send_amount = EthereumAmount::from_wei(10000.into());
-    let tx = wallet.transfer(send_amount, GOERLI_TEST_ADDRESS).await?;
+    let tx = wallet
+        .transfer(&blockchain_client, send_amount, GOERLI_TEST_ADDRESS)
+        .await?;
 
     println!("tx: {:?}", &tx);
     Ok(())

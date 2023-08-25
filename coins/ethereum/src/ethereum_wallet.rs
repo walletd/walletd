@@ -156,7 +156,6 @@ impl EthereumWalletBuilder {
             private_key: Some(child),
             public_key: Some(xpub),
             network: self.network_type,
-            blockchain_client: None,
         };
         Ok(wallet)
     }
@@ -189,7 +188,6 @@ pub struct EthereumWallet {
     private_key: Option<ExtendedPrivKey>,
     public_key: Option<ExtendedPubKey>,
     network: HDNetworkType,
-    blockchain_client: Option<EthClient>,
 }
 
 impl EthereumWallet {
@@ -199,8 +197,7 @@ impl EthereumWallet {
     }
 
     ///  Returns the blance for this Ethereum Wallet.
-    pub async fn balance(&self) -> Result<EthereumAmount, Error> {
-        let blockchain_client = self.blockchain_client()?;
+    pub async fn balance(&self, blockchain_client: &EthClient) -> Result<EthereumAmount, Error> {
         let address = ethers::types::Address::from_str(&self.public_address())
             .map_err(|e| (Error::FromStr(e.to_string())))?;
         let balance = blockchain_client.balance(address).await?;
@@ -212,6 +209,7 @@ impl EthereumWallet {
     /// This function creates and broadcasts a basic Ethereum transfer transaction to the Ethereum mempool.
     pub async fn transfer(
         &self,
+        blockchain_client: &EthClient,
         send_amount: EthereumAmount,
         to_address: &str,
     ) -> Result<String, Error> {
@@ -220,7 +218,7 @@ impl EthereumWallet {
         //let secret_bytes = private_key.to_bytes();
 
         // Retrieve instance of blockchain connector (provider) using the private key's secret bytes
-        let provider = &self.blockchain_client().unwrap().ethers();
+        let provider = &blockchain_client.ethers();
 
         // Instantiate a ethers local wallet from the wallet's secret bytes
         let wallet_from_bytes = Wallet::from_bytes(&private_key_bytes).unwrap();
@@ -254,10 +252,7 @@ impl EthereumWallet {
         let tx_hash_string = tx.unwrap().hash.to_string();
         Ok(tx_hash_string)
     }
-    /// Set the Blockchain Client on the Wallet
-    pub fn set_blockchain_client(&mut self, client: EthClient) {
-        self.blockchain_client = Some(client);
-    }
+
     /// Syncs the wallet with the blockchain by adding previously used addresses to the wallet.
     pub async fn sync(&mut self) -> Result<(), Error> {
         Ok(())
@@ -265,13 +260,6 @@ impl EthereumWallet {
     /// Retrieves the next recevie address of the wallet.
     pub fn receive_address(&self) -> Result<String, Error> {
         Ok(self.public_address())
-    }
-    /// Returns the Blockchain client.
-    pub fn blockchain_client(&self) -> Result<&EthClient, Error> {
-        match &self.blockchain_client {
-            Some(client) => Ok(client),
-            None => Err(Error::MissingBlockchainClient),
-        }
     }
 
     /// Returns the address format used by the wallet
