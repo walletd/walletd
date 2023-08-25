@@ -19,38 +19,17 @@
 //! use walletd_hd_key::prelude::*;
 //!
 //! # fn ethereum() -> Result<(), walletd_ethereum::Error> {
-//! let master_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
-//! let master_hd_key = HDKey::new_master(master_seed, HDNetworkType::TestNet)?;
-//! let mut ethereum_wallet = EthereumWallet::builder().master_hd_key(master_hd_key).build()?;
+//! let mnemonic_phrase = "joy tail arena mix other envelope diary achieve short nest true vocal";
+//! let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
+//! let mut ethereum_wallet = EthereumWallet::builder().mnemonic(mnemonic).network_type(HDNetworkType::TestNet).build()?;
 //! let public_address = ethereum_wallet.public_address();
 //! println!("ethereum wallet public address: {}", public_address);
-//! # assert!(ethereum_wallet.private_key().is_ok());
-//! # assert!(ethereum_wallet.public_key().is_ok());
-//! # Ok(())
-//! # }
-//! ```
-//!
-//! ### Default Derivation Path
-//!
-//! Deriving an [EthereumWallet] is simple and uses some default settings under the hood.
-//! We can inspect our `ethereum_wallet` to see that a child `derived_hd_key` was derived from the master `master_hd_key` and see the derivation path [HDPath] that was used by default.
-//! ```
-//! # use walletd_ethereum::prelude::*;
-//! # use walletd_hd_key::prelude::*;
-//! # fn ethereum() -> Result<(), walletd_ethereum::Error> {
-//! # let master_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
-//! # let master_hd_key = HDKey::new_master(master_seed, HDNetworkType::TestNet)?;
-//! # let mut ethereum_wallet = EthereumWallet::builder().master_hd_key(master_hd_key).build()?;
-//! let derived_hd_key = ethereum_wallet.derived_hd_key()?;
-//! let address_derivation_path = &derived_hd_key.clone().derivation_path;
-//! println!("address derivation path: {}", address_derivation_path);
-//! # assert_eq!(address_derivation_path.to_string(), "m/44'/60'/0'/0/0".to_string());
 //! # Ok(())
 //! # }
 //! ```
 //! We see that by default the Ethereum wallet uses the derivation path "m/44'/60'/0'/0/" corresponding to  [BIP44 for the purpose value][HDPurpose::BIP44] and 60' corresponding to the coin type for Ethereum.
 //!
-//! We need to add a [blockchain connector][BlockchainConnector] to our [ethereum wallet][EthereumWallet] to be able to interact with the Ethereum blockchain.
+//! We need to add a blockchain connector to our [ethereum wallet][EthereumWallet] to be able to interact with the Ethereum blockchain.
 //!
 //!
 //! ### Adding a Blockchain Connector
@@ -63,12 +42,12 @@
 //! # use walletd_ethereum::prelude::*;
 //! # use walletd_hd_key::prelude::*;
 //! # fn ethereum() -> Result<(), walletd_ethereum::Error> {
-//! # let master_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
-//! # let master_hd_key = HDKey::new_master(master_seed, HDNetworkType::TestNet)?;
-//! # let mut ethereum_wallet = EthereumWallet::builder().master_hd_key(master_hd_key).build()?;
-//!  let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-//!  let eth_client = EthClient::new(ethclient_url)?;
-//!  ethereum_wallet.set_blockchain_client(eth_client);
+//! let mnemonic_phrase = "joy tail arena mix other envelope diary achieve short nest true vocal";
+//! let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
+//! let mut ethereum_wallet = EthereumWallet::builder().mnemonic(mnemonic).network_type(HDNetworkType::TestNet).build()?;
+//! let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
+//! let eth_client = EthClient::new(ethclient_url)?;
+//! ethereum_wallet.set_blockchain_client(eth_client);
 //! # Ok(())
 //! # }
 //! ```
@@ -95,9 +74,9 @@
 //! # use walletd_ethereum::prelude::*;
 //! # use walletd_hd_key::prelude::*;
 //! # async fn ethereum() -> Result<(), walletd_ethereum::Error> {
-//! # let master_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
-//! # let master_hd_key = HDKey::new_master(master_seed, HDNetworkType::TestNet)?;
-//! # let mut ethereum_wallet = EthereumWallet::builder().master_hd_key(master_hd_key).build()?;
+//! let mnemonic_phrase = "joy tail arena mix other envelope diary achieve short nest true vocal";
+//! let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
+//! let mut ethereum_wallet = EthereumWallet::builder().mnemonic(mnemonic).network_type(HDNetworkType::TestNet).build()?;
 //! # let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 //! # let eth_client = EthClient::new(ethclient_url)?;
 //! # ethereum_wallet.set_blockchain_client(eth_client);
@@ -117,15 +96,11 @@ pub use ethclient::EthClient;
 mod ethereum_amount;
 pub use ethereum_amount::EthereumAmount;
 mod ethereum_wallet;
-pub use ethereum_wallet::{
-    EthereumPrivateKey, EthereumPublicKey, EthereumWallet, EthereumWalletBuilder,
-};
+pub use ethereum_wallet::{EthereumWallet, EthereumWalletBuilder};
 mod error;
 pub use error::Error;
 pub use ethers;
 pub mod prelude;
-pub use walletd_coin_core::BlockchainConnector;
-pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 
 /// Represents the format of an Ethereum address (checksummed or non-checksummed)
 #[derive(Default, Debug, Clone, Copy)]

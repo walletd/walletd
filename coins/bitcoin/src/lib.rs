@@ -13,10 +13,12 @@
 //! Here's how you can access a bitcoin wallet based on a mnemonic phrase.
 //! ```
 //! use bdk::bitcoin::Network;
+//! use bdk::keys::bip39::Mnemonic;
 //! use walletd_bitcoin::prelude::*;
 //! fn import_btc_hd_wallet() -> Result<(), walletd_bitcoin::Error> {
 //! let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
-//! let mut btc_wallet = BitcoinWallet::builder().mnemonic_seed(mnemonic_phrase).network_type(Network::Testnet).build()?;
+//! let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
+//! let mut btc_wallet = BitcoinWallet::builder().mnemonic(mnemonic).network_type(Network::Testnet).build()?;
 //! Ok(())
 //! }
 //! ```
@@ -28,11 +30,13 @@
 //! ```no_run
 //! use walletd_bitcoin::prelude::*;
 //! use bdk::bitcoin::Network;
+//! use bdk::keys::bip39::Mnemonic;
 //! use bdk::blockchain::ElectrumBlockchain;
 //! use bdk::electrum_client::Client;
 //! async fn import_btc_hd_wallet() -> Result<(), walletd_bitcoin::Error> {
 //! let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
-//! let mut btc_wallet = BitcoinWallet::builder().mnemonic_seed(mnemonic_phrase).network_type(Network::Testnet).build()?;
+//! let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
+//! let mut btc_wallet = BitcoinWallet::builder().mnemonic(mnemonic).network_type(Network::Testnet).build()?;
 //! let client = Client::new("ssl://electrum.blockstream.info:60002").unwrap();
 //! let blockchain = ElectrumBlockchain::from(client);
 //! btc_wallet.sync(&blockchain).await?;
@@ -47,10 +51,12 @@
 //! The [BitcoinWallet] struct can be used to sync the wallet with the blockchain and load address.
 //! ```no_run
 //! use bdk::bitcoin::Network;
+//! use bdk::keys::bip39::Mnemonic;
 //! use walletd_bitcoin::prelude::*;
 //! fn import_btc_hd_wallet() -> Result<(), walletd_bitcoin::Error> {
 //! let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
-//! let mut btc_wallet = BitcoinWallet::builder().mnemonic_seed(mnemonic_phrase).network_type(Network::Testnet).build()?;
+//! let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
+//! let mut btc_wallet = BitcoinWallet::builder().mnemonic(mnemonic).network_type(Network::Testnet).build()?;
 //! println!("next receive address: {}", btc_wallet.receive_address()?);
 //! Ok(())
 //! }
@@ -67,5 +73,5 @@ pub use bitcoin_wallet::{BitcoinWallet, BitcoinWalletBuilder};
 #[doc(hidden)]
 mod error;
 pub use error::Error;
-pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
+pub use walletd_hd_key::HDNetworkType;
 pub mod prelude;

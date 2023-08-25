@@ -1,70 +1,35 @@
-use ethers::prelude::*;
+use bdk::keys::bip39::Mnemonic;
 use walletd_ethereum::prelude::*;
-use walletd_hd_key::prelude::*;
 
 const PROVIDER_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 #[tokio::main]
 async fn main() -> Result<(), walletd_ethereum::Error> {
-    let master_seed = Seed::from_str("a2fd9c0522d84d52ee4c8533dc02d4b69b4df9b6255e1af20c9f1d4d691689f2a38637eb1ec778972bf845c32d5ae83c7536999b5666397ac32021b21e0accee")?;
-    let master_hd_key = HDKey::new_master(master_seed, HDNetworkType::TestNet)?;
+    let mnemonic_phrase: &str =
+        "outer ride neither foil glue number place usage ball shed dry point";
+    // let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
+
+    // we need secp256k1 context for key derivation
+    // let mut buf: Vec<AlignedType> = Vec::new();
+    // buf.resize(Secp256k1::preallocate_size(), AlignedType::zeroed());
+    // let secp = Secp256k1::preallocated_new(buf.as_mut_slice()).unwrap();
+
+    // let xkey: ExtendedKey = mnemonic.into_extended_key().unwrap();
+    // // Get xprv from the extended key
+    // let xprv = xkey.into_xprv(bdk::bitcoin::Network::Bitcoin).unwrap();
+    // let path = DerivationPath::from_str("m/44h/60h/0h").unwrap();
+
+    // let child = xprv.derive_priv(&secp, &path).unwrap();
+    // println!("Child at {}: {}", path, child);
+    // let xpub = ExtendedPubKey::from_priv(&secp, &child);
+    // println!("Public key at {}: {}", path, xpub);
+    let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
     let mut ethereum_wallet = EthereumWallet::builder()
-        .master_hd_key(master_hd_key)
+        .mnemonic(mnemonic.clone())
         .build()?;
 
     let public_address = ethereum_wallet.public_address();
 
     println!("ethereum wallet public address: {}", public_address);
-
-    assert!(ethereum_wallet.private_key().is_ok());
-    assert!(ethereum_wallet.public_key().is_ok());
-
-    let derived_hd_key = ethereum_wallet.derived_hd_key()?;
-    let private_key =
-        EthereumPrivateKey::from_slice(&derived_hd_key.extended_private_key()?.to_bytes())?;
-    let address_derivation_path = &derived_hd_key.derivation_path.clone();
-
-    // EthereumWallet stores the private key as a 32 byte array
-    let secret_bytes = private_key.to_bytes();
-
-    // Instantiate a provider (connecttion) pointing to the endpoint we want to use
-    let provider = Provider::try_from(PROVIDER_URL).unwrap();
-
-    // Instantiate a ethers local wallet from the wallet's secret bytes
-    let wfbres = Wallet::from_bytes(&secret_bytes);
-
-    let wfb = wfbres.unwrap();
-    // 5 = goerli chain id
-
-    // Link our wallet instance to our provider for signing our transactions
-    let client = SignerMiddleware::new(provider, wfb.with_chain_id(5u64));
-
-    // Create a transaction request to send 10000 wei to the Goerli address
-    let tx = TransactionRequest::new()
-        .to("0x681dA56258fF429026449F1435aE87e1B6e9F85b")
-        .gas(21000)
-        .value(10000)
-        .chain_id(5u64);
-
-    println!("tx: {:?}", &tx);
-
-    let pending_tx = client.send_transaction(tx, None).await.unwrap();
-
-    let receipt = pending_tx
-        .await
-        .unwrap()
-        .ok_or_else(|| println!("tx dropped from mempool"))
-        .unwrap();
-    let tx = client
-        .get_transaction(receipt.transaction_hash)
-        .await
-        .unwrap();
-
-    println!("tx: {:?}", &tx);
-
-    assert_eq!(
-        address_derivation_path.to_string(),
-        "m/44'/60'/0'/0/0".to_string()
-    );
 
     let ethclient_url = PROVIDER_URL;
     let eth_client = EthClient::new(ethclient_url)?;

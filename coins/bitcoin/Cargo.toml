@@ -24,8 +24,6 @@ tokio-test = "0.4.2"
 mockito = "1.0.2"
 
 [dependencies]
-
-walletd_coin_core = { path = "../core/", version = "0.2" }
 walletd_mnemonics_core = { path = "../../mnemonics/core/", version = "0.2" }
 walletd_hd_key = { path = "../../key_manager/hd_key", version = "0.2" }
 bdk = { version = "0.28.2" }

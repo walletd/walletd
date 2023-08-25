@@ -52,19 +52,14 @@
 //! fn main() -> Result<(), walletd::Error> {
 //! let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
 //! let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
-//! let seed = mnemonic.to_seed("");
-//! let seed = Seed::new(seed.to_vec());
-//! println!("seed_hex: {:x}", seed);
-//! let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
-//! let keypair = KeyPair::builder().mnemonic_phrase(mnemonic_phrase.into()).network_type(HDNetworkType::TestNet).build()?;
-//! let mut btc_wallet = BitcoinWalletBuilder::new().mnemonic_seed(mnemonic_phrase).network_type(Network::Testnet).build().unwrap();
-//! let mut eth_wallet = EthereumWalletBuilder::new().master_hd_key(keypair.to_master_key()).build().unwrap();
+//!
+//! let mut btc_wallet = BitcoinWalletBuilder::new().mnemonic(mnemonic.clone()).network_type(Network::Testnet).build().unwrap();
+//! let mut eth_wallet = EthereumWalletBuilder::new().mnemonic(mnemonic).network_type(HDNetworkType::TestNet).build().unwrap();
 //! Ok(())
 //! }
 //! ```
 //! ### Specify Blockchain Connectors
 //!
-//! A valid [blockchain client][BlockchainConnector] is a concrete instance of a struct that implements the [BlockchainConnector] trait.
 //! You can setup a blockchain client to access the Bitcoin blockchain and an [EthClient] blockchain client to access the Ethereum blockchain.
 //! Specifying a valid endpoint url is required for the [EthClient] blockchain clients.
 //!
@@ -76,13 +71,9 @@
 //! # fn main() -> Result<(), walletd::Error> {
 //! # let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
 //! # let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
-//! # let seed = mnemonic.to_seed("");
-//! # let seed = Seed::new(seed.to_vec());
-//! # println!("seed_hex: {:x}", seed);
-//! # let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
-//! # let keypair = KeyPair::builder().mnemonic_phrase(mnemonic_phrase.into()).network_type(HDNetworkType::TestNet).build()?;
-//! let mut btc_wallet = BitcoinWalletBuilder::new().mnemonic_seed(mnemonic_phrase).network_type(Network::Testnet).build().unwrap();
-//! let mut eth_wallet = EthereumWalletBuilder::new().master_hd_key(keypair.to_master_key()).build().unwrap();
+//!
+//! let mut btc_wallet = BitcoinWalletBuilder::new().mnemonic(mnemonic.clone()).network_type(Network::Testnet).build().unwrap();
+//! let mut eth_wallet = EthereumWalletBuilder::new().mnemonic(mnemonic).network_type(HDNetworkType::TestNet).build().unwrap();
 //! eth_wallet.set_blockchain_client(EthClient::new("https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161")?);
 //!
 //! # Ok(())
@@ -99,14 +90,9 @@ pub use keypair::{KeyPair, KeyPairBuilder, MnemonicKeyPairType};
 
 pub use walletd_bitcoin::BitcoinWallet;
 
-pub use walletd_coin_core::ConnectorType;
-
-pub use walletd_coin_core::{BlockchainConnector, BlockchainConnectorBuilder};
 pub use walletd_ethereum::{EthClient, EthereumAmount, EthereumWallet};
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
-pub use {
-    walletd_bitcoin, walletd_coin_core, walletd_ethereum, walletd_hd_key, walletd_mnemonics_core,
-};
+pub use {walletd_bitcoin, walletd_ethereum, walletd_hd_key, walletd_mnemonics_core};
 
 mod crypto_coin;
 pub use crypto_coin::CryptoCoin;

@@ -11,7 +11,7 @@ async fn main() -> Result<(), walletd::Error> {
     let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
 
     let mut btc_wallet = BitcoinWalletBuilder::new()
-        .mnemonic_seed(mnemonic_phrase)
+        .mnemonic(mnemonic.clone())
         .build()
         .unwrap();
 
@@ -23,21 +23,11 @@ async fn main() -> Result<(), walletd::Error> {
         btc_wallet.balance().await?.confirmed
     );
 
-    let seed = mnemonic.to_seed("");
-    let seed = Seed::new(seed.to_vec());
-    println!("seed_hex: {:x}", seed);
-    let master_hd_key = HDKey::new_master(seed.clone(), HDNetworkType::TestNet)?;
-    let keypair = KeyPair::builder()
-        .mnemonic_phrase(mnemonic_phrase.into())
-        .network_type(HDNetworkType::TestNet)
-        .build()?;
-    assert_eq!(keypair.to_master_key(), master_hd_key);
-
     let mut eth_wallet = EthereumWalletBuilder::new()
-        .master_hd_key(keypair.to_master_key())
+        .mnemonic(mnemonic)
+        .network_type(HDNetworkType::TestNet)
         .build()
         .unwrap();
-    // let mut eth_wallet = keypair.derive_wallet::<EthereumWallet>()?;
     print!("eth_wallet public address: {}", eth_wallet.public_address());
     let eth_client =
         EthClient::new("https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161")?;
