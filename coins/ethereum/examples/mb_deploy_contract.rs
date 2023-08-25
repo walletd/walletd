@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 use ethers::{
     contract::{abigen, ContractFactory},
     core::utils::Anvil,
@@ -7,8 +8,9 @@ use ethers::{
     solc::{Artifact, Project, ProjectPathsConfig},
 };
 //use eyre::Result;
+#[allow(unused_imports)]
 use std::{path::PathBuf, sync::Arc, time::Duration};
-
+#[allow(unused_imports)]
 use walletd_ethereum::Error;
 // Generate the type-safe contract bindings by providing the ABI
 // definition in human readable format
