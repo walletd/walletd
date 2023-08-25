@@ -216,14 +216,6 @@ impl EthereumWallet {
         send_amount: EthereumAmount,
         to_address: &str,
     ) -> Result<String, Error> {
-        //let secret_key: &Result<EthereumPrivateKey, Error> = &self.private_key();
-
-        //     let private_key: EthereumPrivateKey =
-        //     EthereumPrivateKey::from_slice(&child.private_key.secret_bytes())?;
-        // println!("private key: {:?}", private_key.to_bytes());
-        // let public_key = EthereumPublicKey {
-        //     0: PublicKey::from_slice(&xpub.public_key.serialize()).unwrap(),
-        // };
         let private_key_bytes = self.private_key.unwrap().private_key.secret_bytes();
         // EthereumWallet stores the private key as a 32 byte array
         //let secret_bytes = private_key.to_bytes();
