@@ -1,7 +1,6 @@
 #![allow(clippy::integer_arithmetic)]
-//use crate::Error;
+use crate::Error;
 // use crate::EthereumAmount;
-use core::fmt::Error;
 use async_trait::async_trait;
 // use ethers::prelude::*;
 // use ethers::types::Address;
@@ -18,20 +17,25 @@ use solana_sdk::{
     entrypoint::ProgramResult,
     message,
     program_error::ProgramError,
-    pubkey::Pubkey,
+    pubkey::{Pubkey, PubkeyError},
     account::Account,
-    address_lookup_table_account::AddressLookupTableAccount
+    address_lookup_table_account::AddressLookupTableAccount,
+    system_instruction,
 };
 use solana_client::nonblocking::rpc_client::RpcClient;
+use solana_sdk::system_instruction::SystemInstruction;
+use solana_sdk::commitment_config::CommitmentConfig;
+use solana_sdk::native_token::LAMPORTS_PER_SOL;
+use solana_sdk::signature::{Keypair, Signer};
+use solana_sdk::transaction::Transaction;
 
 pub struct SolanaClient {
     rpc_client: RpcClient,
     endpoint: String
 }
 
-impl SolanaClient {
-    type ErrorType = SolanaError;
 
+impl SolanaClient {
     /// Create a new instance of [SolanaClient] based on a given endpoint url.
     /// Returns an [error][Error] if the endpoint is invalid or the transport fails to connect.
     /// Returns an instance of SolanaClient on success.
@@ -44,6 +48,8 @@ impl SolanaClient {
         })
     }
 
+    
+
     /// Return an instance of our initialised SolanaClient
     pub fn rpc_client(&self) -> &RpcClient {
         &self.rpc_client
@@ -54,39 +60,102 @@ impl SolanaClient {
         &self.endpoint
     }
 
-    pub async fn get_block(&self, block_number: u64) -> Result<(), Error> {
-        let block = self.rpc_client.get_block(block_number)?;
+    pub async fn get_block(rpc_client: RpcClient, block_number: u64) -> Result<(), Error> {
+        let block = rpc_client.get_block(block_number)?;
         Ok(())
     }
 
-    /// This fn takes a Solana storage contract and calculates the rent cost for it.
-    /// In Solana, rent is calculated based on the size in bytes of the contract.
-    /// TODO: Check this: For each byte, one lamport is used
-    pub fn get_rent(&self) -> Result<u64, Error> {
-        let rent = self.rpc_client.get_minimum_balance_for_rent_exemption(0)?;
-        Ok(rent)
-    }
+    // /// This fn takes a Solana storage contract and calculates the rent cost for it.
+    // /// In Solana, rent is calculated based on the size in bytes of the contract.
+    // /// TODO: Check this: For each byte, one lamport is used
+    // pub fn get_rent(&self) -> Result<u64, Error> {
+    //     let rent = self.rpc_client.get_minimum_balance_for_rent_exemption(0)?;
+    //     Ok(rent)
+    // }
 
-    pub fn get_balance(&self, address: &Pubkey) -> Result<u64, Error> {
-        let balance = self.rpc_client.get_balance(address)?;
-        Ok(balance)
-    }
+    // Get the SOL balance for a specific address in lamports
+    // pub fn get_balance(&self, address: &Pubkey) -> Result<u64, Error> {
+    //     let balance = self.rpc_client.get_balance(address)?;
+    //     Ok(balance)
+    // }
 
-    // 
-    pub fn get_account(&self, address: &Pubkey) -> Result<Account, Error> {
-        let account = self.rpc_client.get_account(address)?;
-        Ok(account)
-    }
+    // // 
+    // pub fn get_account_info(&self, address: &Pubkey) -> Result<AccountInfo, Error> {
+    //     let account = self.rpc_client.get_account(address)?;
+
+    //     Ok(account)
+    // }
     /// TODO: complete the transfer account 
     /// Needs wallet, target address, amount, and token address
-    pub fn transfer() -> Result<bool, Error> {
+    pub fn transfer(self, from_pubkey: Keypair, to_pubkey: Address) -> Result<bool, Error> {
+        
 
+        
         Ok(true)
     }
 
-    pub fn get_address_lookup_table(&self, lookup_table_address: &Pubkey) -> Result<AddressLookupTableAccount, Error> {
-        let lookup_table = self.rpc_client.get_account(lookup_table_address)?;
-        Ok(lookup_table)
+    // fn create_account(
+    //         client: &RpcClient,
+    //         payer: &Keypair,
+    //         new_account: &Keypair,
+    //         owning_program: &Pubkey,
+    //         space: u64,
+    //     ) -> Result<(), Error> {
+    //         let rent = client.get_minimum_balance_for_rent_exemption(space.try_into()?).unwrap();
+        
+    //         let transfer_instr = system_instruction::transfer(
+    //             &payer.pubkey(),
+    //             &new_account.pubkey(),
+    //             rent,
+    //         );
+        
+    //         let allocate_instr = system_instruction::allocate(
+    //             &new_account.pubkey(),
+    //             space,
+    //         );
+        
+    //         let assign_instr = system_instruction::assign(
+    //             &new_account.pubkey(),
+    //             owning_program,
+    //         );
+        
+    //         let blockhash = client.get_latest_blockhash()?;
+    //         let tx = Transaction::new_signed_with_payer(
+    //             &[transfer_instr, allocate_instr, assign_instr],
+    //             Some(&payer.pubkey()),
+    //             &[payer, new_account],
+    //             blockhash,
+    //         );
+        
+    //         let _sig = client.send_and_confirm_transaction(&tx)?;
+        
+    //         Ok(())
+    //     }
+
+    // pub fn get_address_lookup_table(&self, lookup_table_address: &Pubkey) -> Result<AddressLookupTableAccount, Error> {
+    //     let lookup_table = self.rpc_client.get_account(lookup_table_address)?;
+    //     Ok(lookup_table)
+    // }
+
+    // pub fn get_block_height(&self) -> Result<u64, Error> {
+    //     let block_height = self.rpc_client.get_slot()?;
+    //     Ok(block_height)
+    // }
+
+    // pub fn create_with_seed(
+    //     base: &Pubkey,
+    //     seed: &str,
+    //     owner: &Pubkey
+    // ) -> Result<Pubkey, PubkeyError> {
+
+    // }
+
+    pub fn find_program_address(
+        seeds: &[&[u8]],
+        program_id: &Pubkey
+    ) -> Result<(), Error> {
+    //) -> Result<(Pubkey, u8), PubkeyError> {
+        Ok(())
     }
 
 }
