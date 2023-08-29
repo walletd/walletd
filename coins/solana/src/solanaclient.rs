@@ -1,9 +1,6 @@
 #![allow(clippy::integer_arithmetic)]
 use crate::Error;
-// use crate::EthereumAmount;
 use async_trait::async_trait;
-// use ethers::prelude::*;
-// use ethers::types::Address;
 use crate::error as SolanaError;
 use std::convert::TryFrom;
 
@@ -33,7 +30,6 @@ pub struct SolanaClient {
     rpc_client: RpcClient,
     endpoint: String
 }
-
 
 impl SolanaClient {
     /// Create a new instance of [SolanaClient] based on a given endpoint url.
@@ -85,6 +81,8 @@ impl SolanaClient {
 
     //     Ok(account)
     // }
+
+
     /// TODO: complete the transfer account 
     /// Needs wallet, target address, amount, and token address
     pub fn transfer(self, from_pubkey: Keypair, to_pubkey: Address) -> Result<bool, Error> {
@@ -365,44 +363,16 @@ impl SolanaUtils {
 //     }
 // }
 
-// #[cfg(test)]
-// mod tests {
-//     // use hex_literal::hex;
-//     use super::*;
-//     use ethers::utils::Anvil;
-//     use std::str::FromStr;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-//     // #[test]
-//     // fn create_instance_of_ethclient() {
-//     //     let port = 8545u16;
-//     //     let url = format!("http://localhost:{}", port).to_string();
-
-//     //     let anvil = Anvil::new()
-//     //         .port(port)
-//     //         .mnemonic("abstract vacuum mammal awkward pudding scene penalty purchase dinner depart evoke puzzle")
-//     //         .spawn();
-
-//     //     let _eth_client = EthClient::new(&url).unwrap();
-//     //     drop(anvil);
-//     // }
-
-//     // #[tokio::test]
-//     // async fn get_balance() {
-//     //     let port = 8545u16;
-//     //     let url = format!("http://localhost:{}", port).to_string();
-
-//     //     let anvil = Anvil::new()
-//     //         .port(port)
-//     //         .mnemonic("abstract vacuum mammal awkward pudding scene penalty purchase dinner depart evoke puzzle")
-//     //         .spawn();
-
-//     //     let eth_client = EthClient::new(&url).unwrap();
-//     //     // 0x3cDB3d9e1B74692Bb1E3bb5fc81938151cA64b02 - the address of the first account using the above mnemonic
-//     //     let address = Address::from_str("3cDB3d9e1B74692Bb1E3bb5fc81938151cA64b02").unwrap();
-//     //     let balance: EthereumAmount = eth_client.balance_of_account(address).await.unwrap();
-//     //     // Anvil's default accounts have 1000 eth
-//     //     assert_eq!(balance.wei, 10000000000000000000000u128.into());
-
-//     //     drop(anvil);
-//     // }
-// }
+    // #[test]
+    // fn create_instance_of_solanaclient() {
+    //
+    // }
+    // #[test]
+    // fn get_block_height() {
+    // 
+    // }
+}
