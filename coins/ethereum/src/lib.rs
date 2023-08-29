@@ -43,8 +43,7 @@
 //! let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
 //! let mut ethereum_wallet = EthereumWallet::builder().mnemonic(mnemonic).network_type(HDNetworkType::TestNet).build()?;
 //! let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-//! let eth_client = EthClient::new(ethclient_url)?;
-//! ethereum_wallet.set_blockchain_client(eth_client);
+//! let _eth_client = EthClient::new(ethclient_url)?;
 //! # Ok(())
 //! # }
 //! ```
@@ -73,11 +72,10 @@
 //! # async fn ethereum() -> Result<(), walletd_ethereum::Error> {
 //! let mnemonic_phrase = "joy tail arena mix other envelope diary achieve short nest true vocal";
 //! let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
-//! let mut ethereum_wallet = EthereumWallet::builder().mnemonic(mnemonic).network_type(HDNetworkType::TestNet).build()?;
+//! let ethereum_wallet = EthereumWallet::builder().mnemonic(mnemonic).network_type(HDNetworkType::TestNet).build()?;
 //! # let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 //! # let eth_client = EthClient::new(ethclient_url)?;
-//! # ethereum_wallet.set_blockchain_client(eth_client);
-//! let balance = ethereum_wallet.balance().await?;
+//! let balance = ethereum_wallet.balance(&eth_client).await?;
 //! println!("ethereum wallet balance: {} ETH, ({} wei)", balance.eth(), balance.wei());
 //! # Ok(())
 //! # }
