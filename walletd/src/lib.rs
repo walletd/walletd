@@ -95,9 +95,6 @@ pub use walletd_ethereum::{EthClient, EthereumAmount, EthereumWallet};
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 pub use {walletd_bitcoin, walletd_ethereum, walletd_hd_key, walletd_mnemonics_core};
 
-mod crypto_coin;
-pub use crypto_coin::CryptoCoin;
-
 mod error;
 pub use error::Error;
 pub mod prelude;
