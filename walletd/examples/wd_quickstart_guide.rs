@@ -1,7 +1,6 @@
 use bdk::blockchain::ElectrumBlockchain;
 use bdk::electrum_client::Client;
 use bdk::keys::bip39::Mnemonic;
-use walletd::prelude::*;
 use walletd_bitcoin::prelude::*;
 use walletd_ethereum::prelude::*;
 
@@ -26,7 +25,6 @@ async fn main() -> Result<(), walletd::Error> {
 
     let eth_wallet = EthereumWalletBuilder::new()
         .mnemonic(mnemonic)
-        .network_type(HDNetworkType::TestNet)
         .build()
         .unwrap();
     print!("eth_wallet public address: {}", eth_wallet.public_address());

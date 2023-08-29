@@ -33,9 +33,6 @@ pub enum Error {
     /// Error related to converting from or to a hex
     #[error("Hex error: {0}")]
     Hex(#[from] hex::FromHexError),
-    /// Error from the walletd_hd_key crate
-    #[error("Error from walletd_hd_key: {0}")]
-    WalletdHDKey(#[from] walletd_hd_key::Error),
     /// Error when trying to initialize EthClient
     #[error("Failed to initialize EthClient")]
     EthClientInit,

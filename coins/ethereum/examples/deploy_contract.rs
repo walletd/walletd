@@ -13,7 +13,6 @@ use std::{sync::Arc, time::Duration};
 use ethers::prelude::*;
 use walletd_ethereum::prelude::*;
 use walletd_ethereum::Error;
-use walletd_hd_key::prelude::*;
 
 use std::{convert::TryFrom, path::Path};
 
@@ -55,10 +54,7 @@ async fn main() -> Result<(), Error> {
         "outer ride neither foil glue number place usage ball shed dry point";
     let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
 
-    let _ethereum_wallet = EthereumWallet::builder()
-        .mnemonic(mnemonic)
-        .network_type(HDNetworkType::TestNet)
-        .build()?;
+    let _ethereum_wallet = EthereumWallet::builder().mnemonic(mnemonic).build()?;
 
     // 3. connect to the network
     let provider = Provider::<Http>::try_from(anvil.endpoint())
