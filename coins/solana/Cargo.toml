@@ -10,10 +10,6 @@ name = "walletd_solana"
 crate-type = ["cdylib", "lib"]
 path = "src/lib.rs"
 
-#Solana-specific because main shouldn't be called by this module
-[features]
-no-entrypoint = []
-
 [dependencies]
 async-trait = "0.1.60"
 

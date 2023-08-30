@@ -6,5 +6,6 @@ members = [
     "coins/bitcoin",
     "coins/ethereum",
     "coins/core",
+    "coins/solana",
     "rates",
 ]
