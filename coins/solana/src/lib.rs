@@ -20,8 +20,8 @@ use solana_sdk::pubkey::Pubkey;
 use solana_sdk::program_error::ProgramError;
 use solana_sdk::declare_id as solana_declare_id;
 
-#[cfg(not(feature = "no-entrypoint"))]
-mod entrypoint;
+// #[cfg(not(feature = "no-entrypoint"))]
+// mod entrypoint;
 
 // Export current sdk types for downstream users building with a different sdk version
 // pub use solana_program;
