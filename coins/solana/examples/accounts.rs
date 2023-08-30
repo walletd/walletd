@@ -17,6 +17,16 @@ async fn main() {
     let from_pubkey = Signer::pubkey(&from_keypair);
     println!("public key: {:?}", from_pubkey);
 
+    // Restore an account from a 64 byte array
+    let bytes: [u8; 64] = [162, 101, 169, 19, 38, 115, 20, 31, 216, 254, 39, 215, 229, 185, 248, 68, 251, 0, 232, 164, 241, 72, 249, 89, 84, 169, 54, 223, 127, 161, 21, 23, 69, 199, 131, 221, 202, 170, 155, 110, 8, 211, 170, 217, 132, 148, 104, 122, 117, 238, 217, 1, 90, 103, 0, 46, 176, 210, 139, 14, 213, 254, 7, 120]; 
+    let restored_keypair = Keypair::from_bytes(&bytes).unwrap();
+
+    let from_bytes = from_keypair.to_bytes();
+    println!("From bytes: {:?}", from_bytes);
+    println!("Restored: {:?}", restored_keypair);
+
+    let from_pubkey = Signer::pubkey(from_keypair);
+
     // match connection.request_airdrop(&from_pubkey, LAMPORTS_PER_SOL) {
     //     Ok(sig) => loop {
     //         if let Ok(confirmed) = connection.confirm_transaction(&sig) {
