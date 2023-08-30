@@ -44,8 +44,6 @@ impl SolanaClient {
         })
     }
 
-    
-
     /// Return an instance of our initialised SolanaClient
     pub fn rpc_client(&self) -> &RpcClient {
         &self.rpc_client
@@ -172,8 +170,6 @@ impl SolanaUtils {
         amount as f64 / 10_usize.pow(decimals as u32) as f64
     }
 }
-// // Creates Rust bindings for the ERC20 ABI
-// abigen!(ERC20, "./abi/erc20_abi.json");
 
 // #[allow(unused)]
 // impl EthClient {
