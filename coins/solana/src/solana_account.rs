@@ -28,8 +28,7 @@ use solana_sdk::transaction::Transaction;
 
 // The basis for all Solana wallets is the Keypair struct from the Solana SDK
 pub struct SolanaAccount {
-    keypair: Keypair,
-    pubkey: Pubkey,
+    keypair: Keypair
 }
 
 // At its core, everything in Solana is an account. For naming consistency, we'll call this a SolanaAccount
@@ -62,8 +61,9 @@ pub struct SolanaAccount {
 // you must create two accounts, one account to store the program's code, 
 // and one to store the counter.
 impl SolanaAccount {
-    pub fn new(keypair: Keypair) -> Self {
-        Self { keypair, pubkey }
+    pub fn new_from_bytes(&bytes: [u8; 64]) -> Self {
+        let keypair = Keypair::from_bytes(&bytes).unwrap();
+        Self { keypair }
     }
 
     pub fn pubkey(&self) -> Pubkey {
@@ -76,6 +76,7 @@ impl SolanaAccount {
         balance
     }
 }
+
 
 // pub struct SolanaAccountBuilder {
 //     keypair: Keypair
