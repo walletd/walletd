@@ -55,7 +55,7 @@ impl SolanaClient {
     }
 
     pub async fn get_block(rpc_client: RpcClient, block_number: u64) -> Result<(), Error> {
-        let block = rpc_client.get_block(block_number)?;
+        let block = rpc_client.get_block(block_number).await.unwrap();
         Ok(())
     }
 
@@ -66,11 +66,24 @@ impl SolanaClient {
     //     let rent = self.rpc_client.get_minimum_balance_for_rent_exemption(0)?;
     //     Ok(rent)
     // }
-
     // Get the SOL balance for a specific address in lamports
-    // pub fn get_balance(&self, address: &Pubkey) -> Result<u64, Error> {
-    //     let balance = self.rpc_client.get_balance(address)?;
-    //     Ok(balance)
+    pub async fn get_balance(&self, address: &Pubkey) -> Result<u64, Error> {
+        let balance = self.rpc_client.get_balance(address).await.unwrap();
+        Ok(balance)
+    }
+
+    // pub async fn request_airdrop(&self, &public_address: Pubkey) -> Result<String, Error> {
+    //     match &self.rpc_client.request_airdrop(&public_address, LAMPORTS_PER_SOL) {
+    //         Ok(sig) => loop {
+    //             if let Ok(confirmed) = connection.confirm_transaction(&sig) {
+    //                 if confirmed {
+    //                     println!("Transaction: {} Status: {}", sig, confirmed);
+    //                     break;
+    //                 }
+    //             }
+    //         },
+    //         Err(_) => println!("Error requesting airdrop"),
+    //     };
     // }
 
     // // 
@@ -83,12 +96,12 @@ impl SolanaClient {
 
     /// TODO: complete the transfer account 
     /// Needs wallet, target address, amount, and token address
-    pub fn transfer(self, from_pubkey: Keypair, to_pubkey: Address) -> Result<bool, Error> {
+    // pub fn transfer(self, from_pubkey: Keypair, to_pubkey: Address) -> Result<bool, Error> {
         
 
         
-        Ok(true)
-    }
+    //     Ok(true)
+    // }
 
     // fn create_account(
     //         client: &RpcClient,
