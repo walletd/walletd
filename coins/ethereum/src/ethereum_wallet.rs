@@ -7,6 +7,7 @@ use crate::EthClient;
 use crate::{EthereumAmount, EthereumFormat};
 
 use bdk::bitcoin::secp256k1::ffi::types::AlignedType;
+use bdk::bitcoin::secp256k1::PublicKey;
 use bdk::bitcoin::secp256k1::Secp256k1;
 use bdk::bitcoin::util::bip32::DerivationPath;
 use bdk::bitcoin::util::bip32::ExtendedPrivKey;
@@ -19,7 +20,6 @@ use ethers::prelude::*;
 // use ethers::providers::{Middleware};
 // use ethers::types::{TransactionRequest};
 // use ethers::signers::{Signer};
-use secp256k1::PublicKey;
 use tiny_keccak::{Hasher, Keccak};
 
 /// Represents an EthereumPublicKey, wraps a [PublicKey] from the secp256k1 crate
