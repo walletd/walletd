@@ -10,7 +10,7 @@ async fn main() {
     let rpc_url = String::from("https://api.devnet.solana.com");
     //let connection = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
 
-    let solana_client = SolanaClient::new(&rpc_url).unwrap();
+    let solana_client = SolanaClient::new(&rpc_url).await.unwrap();
     
     // let new_keypair = Keypair::new();
     // println!("new keypair: {:?}", &new_keypair);

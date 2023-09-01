@@ -10,25 +10,27 @@ async fn main() {
     let rpc_url = String::from("https://api.devnet.solana.com");
     let connection = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
 
-    // let solana_client = SolanaClient::new(&rpc_url).unwrap();
+    let rpc_url = String::from("https://api.devnet.solana.com");
+    let solana_client = SolanaClient::new(&rpc_url).await.unwrap();
 
     let bytes: [u8; 64] = [162, 101, 169, 19, 38, 115, 20, 31, 216, 254, 39, 215, 229, 185, 248, 68, 251, 0, 232, 164, 241, 72, 249, 89, 84, 169, 54, 223, 127, 161, 21, 23, 69, 199, 131, 221, 202, 170, 155, 110, 8, 211, 170, 217, 132, 148, 104, 122, 117, 238, 217, 1, 90, 103, 0, 46, 176, 210, 139, 14, 213, 254, 7, 120]; 
     let restored_keypair = Keypair::from_bytes(&bytes).unwrap();
 
     
     let pubkey = Signer::pubkey(&restored_keypair);
+    solana_client.request_airdrop(pubkey).await.unwrap();
     // 1_000_000_000
-    match connection.request_airdrop(&pubkey, 1_000_000_000) {
-        Ok(sig) => loop {
-            if let Ok(confirmed) = connection.confirm_transaction(&sig) {
-                if confirmed {
-                    println!("Transaction: {} Status: {}", sig, confirmed);
-                    break;
-                }
-            }
-        },
-        Err(_) => println!("Error requesting airdrop"),
-    };
+    // match connection.request_airdrop(&pubkey, 1_000_000_000) {
+    //     Ok(sig) => loop {
+    //         if let Ok(confirmed) = connection.confirm_transaction(&sig) {
+    //             if confirmed {
+    //                 println!("Transaction: {} Status: {}", sig, confirmed);
+    //                 break;
+    //             }
+    //         }
+    //     },
+    //     Err(_) => println!("Error requesting airdrop"),
+    // };
 
     // let space = 0;
     // let rent_exemption_amount = connection

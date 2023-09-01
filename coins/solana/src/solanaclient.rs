@@ -17,7 +17,7 @@ use solana_sdk::{
     pubkey::{Pubkey, PubkeyError},
     account::Account,
     address_lookup_table_account::AddressLookupTableAccount,
-    system_instruction,
+    system_instruction, signature::Signature,
 };
 use solana_client::nonblocking::rpc_client::RpcClient;
 use solana_sdk::system_instruction::SystemInstruction;
@@ -35,7 +35,7 @@ impl SolanaClient {
     /// Create a new instance of [SolanaClient] based on a given endpoint url.
     /// Returns an [error][Error] if the endpoint is invalid or the transport fails to connect.
     /// Returns an instance of SolanaClient on success.
-    pub fn new(endpoint: &str) -> Result<Self, Error> {
+    pub async fn new(endpoint: &str) -> Result<Self, Error> {
         let rpc_client = RpcClient::new(endpoint.to_string());
         
         Ok(Self {
@@ -71,20 +71,31 @@ impl SolanaClient {
         let balance = self.rpc_client.get_balance(address).await.unwrap();
         Ok(balance)
     }
-
-    // pub async fn request_airdrop(&self, &public_address: Pubkey) -> Result<String, Error> {
-    //     match &self.rpc_client.request_airdrop(&public_address, LAMPORTS_PER_SOL) {
-    //         Ok(sig) => loop {
-    //             if let Ok(confirmed) = connection.confirm_transaction(&sig) {
-    //                 if confirmed {
-    //                     println!("Transaction: {} Status: {}", sig, confirmed);
-    //                     break;
-    //                 }
-    //             }
-    //         },
-    //         Err(_) => println!("Error requesting airdrop"),
-    //     };
-    // }
+/**
+ * solana_rpc_client::rpc_client::RpcClient
+ * pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Signature>
+pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Signature>
+ */
+    pub async fn request_airdrop(&self, public_address: Pubkey) -> Result<String, solana_client::client_error::ClientError> {
+        let rpc_client = &self.rpc_client;
+        match rpc_client.request_airdrop(&public_address, LAMPORTS_PER_SOL).await {
+            Ok(sig) => loop {
+                if let Ok(confirmed) = rpc_client.confirm_transaction(&sig).await {
+                    if confirmed {
+                        println!("Transaction: {} Status: {}", sig, confirmed);
+                        let str = format!("Transaction: {} Status: {}", sig, confirmed);
+                        return Ok(str)
+                    } else {
+                        println!("Transaction not approved - sig: {}", sig);
+                    }
+                }
+            },
+            Err(err) => { 
+                println!("Error requesting airdrop");
+                return Result::Err(err)
+            }
+        };
+    }
 
     // // 
     // pub fn get_account_info(&self, address: &Pubkey) -> Result<AccountInfo, Error> {
@@ -97,7 +108,7 @@ impl SolanaClient {
     /// TODO: complete the transfer account 
     /// Needs wallet, target address, amount, and token address
     // pub fn transfer(self, from_pubkey: Keypair, to_pubkey: Address) -> Result<bool, Error> {
-        
+
 
         
     //     Ok(true)
