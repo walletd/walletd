@@ -10,19 +10,65 @@ fn main() {
     let frompubkey = Signer::pubkey(&from);
 
     let to = Keypair::new();
-    let topubkey = Signer::pubkey(&to);
+    let to_pubkey = Signer::pubkey(&to);
 
     let lamports_to_send = 1_000_000;
 
-    let rpc_url = String::from("https://127.0.0.1:8899");
+    let rpc_url = String::from("https://api.devnet.solana.com");
     let connection = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
 
     let restored_keypair_from_base58 = Keypair::from_base58_string(
-        "redacted for now",
+        "specify your from address's base58 string here",
     );
 
-    // public key: 44ub6mH9oZs2Fu784uruTZ94P3C23tgvLG3ZUjJBCWr1
-    // Transaction: 2hzBeSzEzeLBoAWV5MQPNybs3UCQaSRC9eBDVnqLZwtxxQjuGp1EUqt9LSC8gYDk139LB9xDE3Xg3xBrtf3JJkgu Status: true
+    let public_key = Signer::pubkey(&restored_keypair_from_base58);
+    let base_wallet_str: &String = &restored_keypair_from_base58.to_base58_string();
+
+    println!("from wallet: base58: {:?}" , &base_wallet_str);
+    println!("from wallet: pubkey: {:?}" , &public_key);
+
+    let from = restored_keypair_from_base58;
+    let frompubkey = Signer::pubkey(&from);
+
+    let to = Keypair::from_base58_string(
+        "specify your to address's base58 string here",
+    );
+    let to_pubkey = Signer::pubkey(&to);
+
+    // From: base58: redacted
+    // pubkey: 44ub6mH9oZs2Fu784uruTZ94P3C23tgvLG3ZUjJBCWr1
+    
+    // To: base58: "redacted"
+    // pubkey: zRgZGarWLpmZsDQPPCvzaxxsCxk6xcTNc97sKYxbXQy
+
+    /// Creating the transfer sol instruction
+    println!("Creating a transaction");
+    let ix = system_instruction::transfer(&frompubkey, &to_pubkey, lamports_to_send);
+
+    ///Putting the transfer sol instruction into a transaction
+    println!("Attempting to get the latest blockhash");
+    let recent_blockhash = connection.get_latest_blockhash().expect("Failed to get latest blockhash.");
+    
+    println!("Attempting to build txn");
+    let txn = Transaction::new_signed_with_payer(&[ix], Some(&frompubkey), &[&from], recent_blockhash);
+
+    ///Sending the transfer sol transaction
+    println!("Trying to send");
+    match connection.send_and_confirm_transaction(&txn){
+        Ok(sig) => loop {
+            if let Ok(confirmed) = connection.confirm_transaction(&sig) {
+                if confirmed {
+                    println!("Transaction: {} Status: {}", sig, confirmed);
+                    break;
+                }
+            }
+        },
+        Err(e) => println!("Error transferring Sol:, {}", e),
+    }
+
+}
+
+// AIRDROP
 
     // println!("Airdropping Sol to {:?}", &frompubkey);
     // match connection.request_airdrop(&frompubkey, 9_000_000_00) {
@@ -38,25 +84,3 @@ fn main() {
     //         println!("Error requesting airdrop: {}", &e);
     //     }
     // };
-
-    ///Creating the transfer sol instruction
-    let ix = system_instruction::transfer(&frompubkey, &topubkey, lamports_to_send);
-
-    ///Putting the transfer sol instruction into a transaction
-    let recent_blockhash = connection.get_latest_blockhash().expect("Failed to get latest blockhash.");
-    let txn = Transaction::new_signed_with_payer(&[ix], Some(&frompubkey), &[&from], recent_blockhash);
-
-    ///Sending the transfer sol transaction
-    match connection.send_and_confirm_transaction(&txn){
-        Ok(sig) => loop {
-            if let Ok(confirmed) = connection.confirm_transaction(&sig) {
-                if confirmed {
-                    println!("Transaction: {} Status: {}", sig, confirmed);
-                    break;
-                }
-            }
-        },
-        Err(e) => println!("Error transferring Sol:, {}", e),
-    }
-
-}
