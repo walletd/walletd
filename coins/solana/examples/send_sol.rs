@@ -14,21 +14,30 @@ fn main() {
 
     let lamports_to_send = 1_000_000;
 
-    let rpc_url = String::from("https://api.devnet.solana.com");
+    let rpc_url = String::from("https://127.0.0.1:8899");
     let connection = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
 
-    ///Airdropping some Sol to the 'from' account
-    match connection.request_airdrop(&frompubkey, LAMPORTS_PER_SOL) {
-        Ok(sig) => loop {
-            if let Ok(confirmed) = connection.confirm_transaction(&sig) {
-                if confirmed {
-                    println!("Transaction: {} Status: {}", sig, confirmed);
-                    break;
-                }
-            }
-        },
-        Err(_) => println!("Error requesting airdrop"),
-    };
+    let restored_keypair_from_base58 = Keypair::from_base58_string(
+        "redacted for now",
+    );
+
+    // public key: 44ub6mH9oZs2Fu784uruTZ94P3C23tgvLG3ZUjJBCWr1
+    // Transaction: 2hzBeSzEzeLBoAWV5MQPNybs3UCQaSRC9eBDVnqLZwtxxQjuGp1EUqt9LSC8gYDk139LB9xDE3Xg3xBrtf3JJkgu Status: true
+
+    // println!("Airdropping Sol to {:?}", &frompubkey);
+    // match connection.request_airdrop(&frompubkey, 9_000_000_00) {
+    //     Ok(sig) => loop {
+    //         if let Ok(confirmed) = connection.confirm_transaction(&sig) {
+    //             if confirmed {
+    //                 println!("Transaction: {} Status: {}", sig, confirmed);
+    //                 break;
+    //             }
+    //         }
+    //     },
+    //     Err(e) => {
+    //         println!("Error requesting airdrop: {}", &e);
+    //     }
+    // };
 
     ///Creating the transfer sol instruction
     let ix = system_instruction::transfer(&frompubkey, &topubkey, lamports_to_send);
