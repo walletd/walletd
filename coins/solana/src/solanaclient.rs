@@ -44,6 +44,23 @@ impl SolanaClient {
         })
     }
 
+    /// Create a new instance of [SolanaClient] by specifying the desired block state.
+    /// Commitment level is an instance of [CommitmentConfig]
+    /// Valid options for it are as follows: 
+    /// CommitmentLevel::Processed
+    /// CommitmentLevel::Finalized
+    /// CommitmentLevel::Confirmed
+    /// Returns an [error][Error] if the endpoint is invalid, the commitmentconfig is invalid or the transport fails to connect.
+    /// Returns an instance of SolanaClient on success.
+    pub async fn new_with_commitment(endpoint: &str, commitment: CommitmentConfig) -> Result<Self, Error> {
+        let rpc_client = RpcClient::new_with_commitment(endpoint.to_string(), commitment);
+        
+        Ok(Self {
+            rpc_client,
+            endpoint: endpoint.to_string(),
+        })
+    }
+
     /// Return an instance of our initialised SolanaClient
     pub fn rpc_client(&self) -> &RpcClient {
         &self.rpc_client
@@ -107,8 +124,8 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
 
     /// TODO: complete the transfer account 
     /// Needs wallet, target address, amount, and token address
-    // pub fn transfer(self, from_pubkey: Keypair, to_pubkey: Address) -> Result<bool, Error> {
-
+    // pub fn transfer(self, from_pubkey: Keypair, to_pubkey: Pubkey) -> Result<bool, Error> {
+        
 
         
     //     Ok(true)
