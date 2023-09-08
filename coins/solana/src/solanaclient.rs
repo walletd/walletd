@@ -21,16 +21,20 @@ use solana_sdk::{
 };
 use solana_client::nonblocking::rpc_client::RpcClient;
 use solana_sdk::system_instruction::SystemInstruction;
-use solana_sdk::commitment_config::CommitmentConfig;
+use solana_sdk::commitment_config::*;
 use solana_sdk::native_token::LAMPORTS_PER_SOL;
 use solana_sdk::signature::{Keypair, Signer};
 use solana_sdk::transaction::Transaction;
 
 pub struct SolanaClient {
     rpc_client: RpcClient,
-    endpoint: String
+    endpoint: String, 
+    commitment_level: CommitmentConfig
 }
+    // let rpc_url = String::from("https://api.devnet.solana.com");
+    // let connection = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
 
+    // let solana_client = SolanaClient::new(&rpc_url).await.unwrap();
 impl SolanaClient {
     /// Create a new instance of [SolanaClient] based on a given endpoint url.
     /// Returns an [error][Error] if the endpoint is invalid or the transport fails to connect.
@@ -41,6 +45,7 @@ impl SolanaClient {
         Ok(Self {
             rpc_client,
             endpoint: endpoint.to_string(),
+            commitment_level: CommitmentConfig::confirmed()
         })
     }
 
@@ -58,6 +63,7 @@ impl SolanaClient {
         Ok(Self {
             rpc_client,
             endpoint: endpoint.to_string(),
+            commitment_level: commitment
         })
     }
 
