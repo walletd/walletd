@@ -21,9 +21,6 @@ pub enum Error {
     /// Error converting to a type when parsing from a string
     #[error("Error converting to a type from a string: {0}")]
     FromStr(String),
-    /// Error from secp256k1
-    #[error("Error from secp256k1: {0}")]
-    SerdeJson(#[from] secp256k1::Error),
     /// Converted ParseInt error
     #[error("ParseInt error: {0}")]
     ParseInt(#[from] std::num::ParseIntError),
@@ -33,9 +30,6 @@ pub enum Error {
     /// Error related to converting from or to a hex
     #[error("Hex error: {0}")]
     Hex(#[from] hex::FromHexError),
-    /// Error from the walletd_hd_key crate
-    #[error("Error from walletd_hd_key: {0}")]
-    WalletdHDKey(#[from] walletd_hd_key::Error),
     /// Error when trying to initialize EthClient
     #[error("Failed to initialize EthClient")]
     EthClientInit,

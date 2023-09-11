@@ -1,6 +1,5 @@
 use bdk::keys::bip39::Mnemonic;
 use walletd_ethereum::EthereumWallet;
-use walletd_hd_key::HDNetworkType;
 
 #[test]
 fn test_wallet_instantiation_from_mnemonic_seed() {
@@ -10,7 +9,6 @@ fn test_wallet_instantiation_from_mnemonic_seed() {
 
     let wallet = EthereumWallet::builder()
         .mnemonic(mnemonic)
-        .network_type(HDNetworkType::TestNet)
         .build()
         .unwrap();
 
@@ -18,8 +16,4 @@ fn test_wallet_instantiation_from_mnemonic_seed() {
         &wallet.public_address(),
         "0x6EEb11eA2905fEe101f72BF94F792dbc2dfB42B7"
     );
-
-    assert_eq!(wallet.network(), HDNetworkType::TestNet);
-
-    // assert!(&wallet.private_key().is_err());
 }

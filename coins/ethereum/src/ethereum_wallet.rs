@@ -7,6 +7,7 @@ use crate::EthClient;
 use crate::{EthereumAmount, EthereumFormat};
 
 use bdk::bitcoin::secp256k1::ffi::types::AlignedType;
+use bdk::bitcoin::secp256k1::PublicKey;
 use bdk::bitcoin::secp256k1::Secp256k1;
 use bdk::bitcoin::util::bip32::DerivationPath;
 use bdk::bitcoin::util::bip32::ExtendedPrivKey;
@@ -19,9 +20,7 @@ use ethers::prelude::*;
 // use ethers::providers::{Middleware};
 // use ethers::types::{TransactionRequest};
 // use ethers::signers::{Signer};
-use secp256k1::PublicKey;
 use tiny_keccak::{Hasher, Keccak};
-use walletd_hd_key::HDNetworkType;
 
 /// Represents an EthereumPublicKey, wraps a [PublicKey] from the secp256k1 crate
 #[derive(Debug, Clone)]
@@ -97,21 +96,17 @@ impl LowerHex for EthereumPublicKey {
 pub struct EthereumWalletBuilder {
     address_format: EthereumFormat,
     mnemonic: Option<Mnemonic>,
-    network_type: HDNetworkType,
     chain_id: u64,
 }
 
 impl Default for EthereumWalletBuilder {
     /// Specifies the default options for the EthereumWalletBuilder
     /// The default address format is EthereumFormat::Checksummed
-    /// The default network type is HDNetworkType::MainNet
-    /// The default HDPathBuilder is `m/44'/60'/0'/0/0`
-    /// By default neither the master HD key nor the mnemonic seed are specified
+    /// By default the mnemonic seed are specified
     fn default() -> Self {
         Self {
             address_format: EthereumFormat::Checksummed,
             mnemonic: None,
-            network_type: HDNetworkType::MainNet,
             chain_id: 5, // Goerli
         }
     }
@@ -155,7 +150,6 @@ impl EthereumWalletBuilder {
             public_address,
             private_key: Some(child),
             public_key: Some(xpub),
-            network: self.network_type,
         };
         Ok(wallet)
     }
@@ -171,13 +165,6 @@ impl EthereumWalletBuilder {
         self.mnemonic = Some(mnemonic);
         self
     }
-
-    // TODO: This network type is an oversimplification that we should consider refactoring. Eth has chain_ids and network_ids
-    /// Allows specification of the network type for the wallet, the default is HDNetworkType::MainNet
-    pub fn network_type(&mut self, network_type: HDNetworkType) -> &mut Self {
-        self.network_type = network_type;
-        self
-    }
 }
 
 /// Contains the information needed to interact with an Ethereum wallet with a single public address associated with it.
@@ -187,7 +174,6 @@ pub struct EthereumWallet {
     public_address: String,
     private_key: Option<ExtendedPrivKey>,
     public_key: Option<ExtendedPubKey>,
-    network: HDNetworkType,
 }
 
 impl EthereumWallet {
@@ -275,11 +261,6 @@ impl EthereumWallet {
     /// A convenience method for retrieving the string of a public_address
     pub fn address(&self) -> String {
         self.public_address()
-    }
-
-    /// Returns the network type used by the wallet
-    pub fn network(&self) -> HDNetworkType {
-        self.network
     }
 
     /// Returns the extended public key of the eth wallet

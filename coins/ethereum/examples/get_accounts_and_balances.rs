@@ -1,8 +1,6 @@
 use bdk::keys::bip39::Mnemonic;
-use walletd_ethereum::prelude::*;
-use walletd_hd_key::HDNetworkType;
-
 use ethers::prelude::*;
+use walletd_ethereum::prelude::*;
 
 const PROVIDER_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 const GOERLI_TEST_ADDRESS: &str = "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
@@ -23,7 +21,6 @@ async fn main() {
 
     let wallet = EthereumWallet::builder()
         .mnemonic(mnemonic)
-        .network_type(HDNetworkType::TestNet)
         .build()
         .unwrap();
 

@@ -6,9 +6,9 @@ use bdk::keys::{DerivableKey, ExtendedKey};
 use bdk::template::Bip84;
 use bdk::wallet::AddressInfo;
 
+pub use bdk::bitcoin::{AddressType, Script};
 use bdk::{bitcoin::Network, database::MemoryDatabase, wallet::AddressIndex, Wallet};
 use bdk::{Balance, KeychainKind, SignOptions, SyncOptions};
-pub use bitcoin::{sighash::EcdsaSighashType, AddressType, Script};
 use std::str::FromStr;
 use walletd_hd_key::slip44;
 use walletd_hd_key::HDPurpose;
@@ -147,12 +147,10 @@ impl BitcoinWallet {
 pub struct BitcoinWalletBuilder {
     /// The address format used to generate the wallet, if the address format is not provided, the default address format is P2wpkh
     address_format: AddressType,
-    /// The HD purpose used to generate the wallet, if the HD purpose is not provided, the default HD purpose will be inferred from the address_format
+    /// The HD purpose used to generate the wallet
     hd_purpose: Option<HDPurpose>,
-    /// The mnemonic seed used to import the wallet, if the mnemonic seed is not provided, the master_hd_key must be provided
-    /// If the master_hd_key is provided, the mnemonic seed will be ignored
+    /// The mnemonic seed used to import the wallet
     mnemonic: Option<Mnemonic>,
-    /// The specified network type to use, if the master_hd_key is provided, the network type will be inferred from the master_hd_key and this network_type will be ignored
     /// The default network type is Network::Bitcoin
     network_type: Network,
 }
@@ -192,7 +190,7 @@ impl BitcoinWalletBuilder {
         self
     }
 
-    /// Used to import an existing wallet from a master HD key or a mnemonic seed and specified network type
+    /// Used to import an existing wallet from a mnemonic seed and specified network type
     pub fn build(&self) -> Result<BitcoinWallet, Error> {
         if self.mnemonic.is_none() {
             return Err(Error::MissingMnemonicSeed);

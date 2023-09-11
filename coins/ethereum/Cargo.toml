@@ -14,21 +14,12 @@ categories = ["cryptography::cryptocurrencies"]
 name = "walletd_ethereum"
 path = "src/lib.rs"
 
-
 [dependencies]
-walletd_mnemonics_core = { path = "../../mnemonics/core", version = "0.2" }
-walletd_hd_key = { path = "../../key_manager/hd_key", version = "0.2" }
-
 bdk = { version = "0.28.2", features = ["all-keys"] }
-async-trait = "0.1.60"
 hex = "0.4.3"
 hex-literal = "0.3"
-keccak-hash = "0.10.0"
-log = "0.4.17"
-secp256k1 = { version = "0.21.0", features = ["rand-std"] }
 thiserror = "1.0.38"
 tiny-keccak = { version = "2.0.2" }
-zeroize = { version = "1.6.0", features = ["zeroize_derive"] }
 
 # for Ethereum
 ethers = { version = "2.0.7", features = [

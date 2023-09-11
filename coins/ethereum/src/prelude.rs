@@ -9,4 +9,3 @@ pub use crate::{EthClient, EthereumAmount, EthereumFormat, EthereumWallet, Ether
 
 pub use bdk::keys::bip39::Mnemonic;
 pub use ethers::types::Transaction;
-pub use walletd_mnemonics_core::Seed;

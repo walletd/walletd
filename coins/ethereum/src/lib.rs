@@ -13,12 +13,11 @@
 //! Here's how you can import an Ethereum wallet based on a mnemonic. We will use the `mut` keyword to make the [ethereum wallet][EthereumWallet] mutable so that we can modify `ethereum_wallet` later.
 //! ```
 //! use walletd_ethereum::prelude::*;
-//! use walletd_hd_key::prelude::*;
 //!
 //! # fn ethereum() -> Result<(), walletd_ethereum::Error> {
 //! let mnemonic_phrase = "joy tail arena mix other envelope diary achieve short nest true vocal";
 //! let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
-//! let mut ethereum_wallet = EthereumWallet::builder().mnemonic(mnemonic).network_type(HDNetworkType::TestNet).build()?;
+//! let mut ethereum_wallet = EthereumWallet::builder().mnemonic(mnemonic).build()?;
 //! let public_address = ethereum_wallet.public_address();
 //! println!("ethereum wallet public address: {}", public_address);
 //! # Ok(())
@@ -37,11 +36,10 @@
 //!
 //! ```no_run
 //! # use walletd_ethereum::prelude::*;
-//! # use walletd_hd_key::prelude::*;
 //! # fn ethereum() -> Result<(), walletd_ethereum::Error> {
 //! let mnemonic_phrase = "joy tail arena mix other envelope diary achieve short nest true vocal";
 //! let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
-//! let mut ethereum_wallet = EthereumWallet::builder().mnemonic(mnemonic).network_type(HDNetworkType::TestNet).build()?;
+//! let mut ethereum_wallet = EthereumWallet::builder().mnemonic(mnemonic).build()?;
 //! let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 //! let _eth_client = EthClient::new(ethclient_url)?;
 //! # Ok(())
@@ -68,11 +66,10 @@
 //! When the `ethereum_wallet` is connected to the blockchain, we can find the balance of the wallet.
 //! ```no_run
 //! # use walletd_ethereum::prelude::*;
-//! # use walletd_hd_key::prelude::*;
 //! # async fn ethereum() -> Result<(), walletd_ethereum::Error> {
 //! let mnemonic_phrase = "joy tail arena mix other envelope diary achieve short nest true vocal";
 //! let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
-//! let ethereum_wallet = EthereumWallet::builder().mnemonic(mnemonic).network_type(HDNetworkType::TestNet).build()?;
+//! let ethereum_wallet = EthereumWallet::builder().mnemonic(mnemonic).build()?;
 //! # let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 //! # let eth_client = EthClient::new(ethclient_url)?;
 //! let balance = ethereum_wallet.balance(&eth_client).await?;

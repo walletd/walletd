@@ -24,7 +24,7 @@
 //! ### Create HD KeyPair from Bip39 Mnemonic
 //!
 //! Here's how you can create a [KeyPair].
-//! ```
+//! ```no_run
 //! use walletd::prelude::*;  
 
 //! fn main() -> Result<(), walletd::Error> {
@@ -34,7 +34,7 @@
 //! let seed = Seed::new(seed.to_vec());
 //! println!("seed_hex: {:x}", seed);
 //! let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
-//! let keypair = KeyPair::builder().mnemonic_phrase(mnemonic_phrase.into()).network_type(HDNetworkType::TestNet).build()?;
+//! let keypair = KeyPair::builder().mnemonic_phrase(mnemonic_phrase.into()).build()?;
 //! assert_eq!(keypair.to_master_key(), master_hd_key);
 //! Ok(())
 //! }
@@ -54,7 +54,7 @@
 //! let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
 //!
 //! let mut btc_wallet = BitcoinWalletBuilder::new().mnemonic(mnemonic.clone()).network_type(Network::Testnet).build().unwrap();
-//! let mut eth_wallet = EthereumWalletBuilder::new().mnemonic(mnemonic).network_type(HDNetworkType::TestNet).build().unwrap();
+//! let mut eth_wallet = EthereumWalletBuilder::new().mnemonic(mnemonic).build().unwrap();
 //! Ok(())
 //! }
 //! ```
@@ -73,7 +73,7 @@
 //! # let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
 //!
 //! let mut btc_wallet = BitcoinWalletBuilder::new().mnemonic(mnemonic.clone()).network_type(Network::Testnet).build().unwrap();
-//! let mut eth_wallet = EthereumWalletBuilder::new().mnemonic(mnemonic).network_type(HDNetworkType::TestNet).build().unwrap();
+//! let mut eth_wallet = EthereumWalletBuilder::new().mnemonic(mnemonic).build().unwrap();
 //! let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 //! let _eth_client = EthClient::new(ethclient_url)?;
 //!

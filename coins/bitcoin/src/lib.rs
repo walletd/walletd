@@ -64,14 +64,10 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
-pub use bitcoin;
-pub use bitcoin::{AddressType, Network, Script};
-
 mod bitcoin_wallet;
 pub use bitcoin_wallet::{BitcoinWallet, BitcoinWalletBuilder};
 
 #[doc(hidden)]
 mod error;
 pub use error::Error;
-pub use walletd_hd_key::HDNetworkType;
 pub mod prelude;
