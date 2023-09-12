@@ -17,7 +17,7 @@ use solana_sdk::{
     pubkey::{Pubkey, PubkeyError},
     account::Account,
     address_lookup_table_account::AddressLookupTableAccount,
-    system_instruction, signature::Signature,
+    system_instruction, signature::Signature, lamports,
 };
 use solana_client::nonblocking::rpc_client::RpcClient;
 use solana_sdk::system_instruction::SystemInstruction;
@@ -120,22 +120,36 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
         };
     }
 
-    // // 
+    // Eth old function
     // pub fn get_account_info(&self, address: &Pubkey) -> Result<AccountInfo, Error> {
-    //     let account = self.rpc_client.get_account(address)?;
+    //     let account = self.rpc_client.get_account(address).unwrap();
 
     //     Ok(account)
     // }
 
 
-    /// TODO: complete the transfer account 
-    /// Needs wallet, target address, amount, and token address
-    // pub fn transfer(self, from_pubkey: Keypair, to_pubkey: Pubkey) -> Result<bool, Error> {
+    // TODO: complete the transfer account 
+    // Needs wallet, target address, amount, and token address
+    pub async fn transfer(self, from_keypair: Keypair, to_pubkey: Pubkey, lamports: u64) -> Result<bool, Error> {
+        
+        println!("Creating a transaction");
+        let from_pubkey = Signer::pubkey(&from_keypair);
+        
+        let ix = system_instruction::transfer(&from_pubkey, &to_pubkey, lamports);
         
 
+        ///Putting the transfer sol instruction into a transaction
+        println!("Attempting to get the latest blockhash");
+        let recent_blockhash = &self.rpc_client().get_latest_blockhash().await.expect("Failed to get latest blockhash.");
         
-    //     Ok(true)
-    // }
+        println!("Attempting to build txn");
+        let txn = Transaction::new_signed_with_payer(
+            &[ix], 
+            Some(&from_pubkey), 
+            &[&from_keypair], *recent_blockhash);
+
+        Ok(true)
+    }
 
     // fn create_account(
     //         client: &RpcClient,
