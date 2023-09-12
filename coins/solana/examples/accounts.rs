@@ -7,10 +7,49 @@ use solana_sdk::signature::{Keypair, Signer};
 
 #[tokio::main]
 async fn main() {
-    let rpc_url = String::from("https://api.devnet.solana.com");
-    //let connection = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
 
+    let rpc_url = String::from("https://api.devnet.solana.com");
+    // default
+    let connection = RpcClient::new_with_commitment(&rpc_url, CommitmentConfig::confirmed());
+    // propriety
     let solana_client = SolanaClient::new(&rpc_url).await.unwrap();
+    
+    // We need a pubkey
+    // Wallet from base58
+
+    let from_wallet_string = "g6mLsmgPznVcEcSLDWQ9QGuhNFa96CaC6R2XCnivHNfJ2aujuC3Cy9dSVvG39XMsGkuXEn1yYfauErro9LX5FyX".to_string();
+    let from_wallet = Keypair::from_base58_string(&from_wallet_string);
+    let pubkey = from_wallet.pubkey();
+    println!("pubkey: {:?}", &pubkey);
+    
+    let acc_info = connection.get_account(&pubkey).unwrap();
+    println!("Account data {:?}", acc_info);
+
+    println!("key: {:?}", &pubkey);
+    println!("lamports: {:?}", acc_info.lamports);
+    println!("data: {:?}", acc_info.data); 
+    println!("owner: {:?}", acc_info.owner);
+    println!("rent_epoch: {:?}", acc_info.rent_epoch);
+    // println!("is_signer: {:?}", acc_info.is_signer);
+    // println!("is_writable: {:?}", acc_info.is_writable);
+    println!("executable: {:?}", acc_info.executable);
+
+
+    // let acc_info_res = acc_info.unwrap();
+    // match acc_info_res {
+    //     Ok(acc: Account) => acc_info {
+    //         println!("Account data {:?}", acc);
+    //     },
+    //     Err(e) => {
+    //         println!("Error: {:?}", e);
+    //         return;
+    //     }
+    // };
+
+    
+
+
+    // OLD IGNORE BELOW
     
     // let new_keypair = Keypair::new();
     // println!("new keypair: {:?}", &new_keypair);
