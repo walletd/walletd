@@ -4,16 +4,22 @@ use solana_sdk::commitment_config::CommitmentConfig;
 use solana_sdk::native_token::LAMPORTS_PER_SOL;
 use solana_sdk::signature::{Keypair, Signer};
 use solana_sdk::transaction::Transaction;
+use walletd_solana::solanaclient::SolanaClient;
 
 fn main() {
+
     let from = Keypair::new();
     let frompubkey = Signer::pubkey(&from);
 
     let to = Keypair::new();
     let to_pubkey = Signer::pubkey(&to);
-
     let lamports_to_send = 1_000_000;
 
+    // WalletD Solana client
+    // let rpc_url = String::from("https://api.devnet.solana.com");
+    // let connection = SolanaClient::new(rpc_url, CommitmentConfig::confirmed());
+
+    // Working with regular Solana client
     let rpc_url = String::from("https://api.devnet.solana.com");
     let connection = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
 
@@ -31,28 +37,28 @@ fn main() {
     let frompubkey = Signer::pubkey(&from);
 
     let to = Keypair::from_base58_string(
-        "specify your to address's base58 string here",
+        "specify your from address's base58 string here",
     );
     let to_pubkey = Signer::pubkey(&to);
 
-    // From: base58: redacted
+    // From: base58: specify your from address's base58 string here
     // pubkey: 44ub6mH9oZs2Fu784uruTZ94P3C23tgvLG3ZUjJBCWr1
     
-    // To: base58: "redacted"
+    // To: base58: "specify your from address's base58 string here"
     // pubkey: zRgZGarWLpmZsDQPPCvzaxxsCxk6xcTNc97sKYxbXQy
 
-    /// Creating the transfer sol instruction
+    //  Creating the transfer sol instruction
     println!("Creating a transaction");
     let ix = system_instruction::transfer(&frompubkey, &to_pubkey, lamports_to_send);
 
-    ///Putting the transfer sol instruction into a transaction
+    // Putting the transfer sol instruction into a transaction
     println!("Attempting to get the latest blockhash");
     let recent_blockhash = connection.get_latest_blockhash().expect("Failed to get latest blockhash.");
     
     println!("Attempting to build txn");
     let txn = Transaction::new_signed_with_payer(&[ix], Some(&frompubkey), &[&from], recent_blockhash);
 
-    ///Sending the transfer sol transaction
+    // Sending the transfer sol transaction
     println!("Trying to send");
     match connection.send_and_confirm_transaction(&txn){
         Ok(sig) => loop {
