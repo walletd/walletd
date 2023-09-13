@@ -25,6 +25,7 @@ use solana_sdk::commitment_config::*;
 use solana_sdk::native_token::LAMPORTS_PER_SOL;
 use solana_sdk::signature::{Keypair, Signer};
 use solana_sdk::transaction::Transaction;
+use solana_sdk::commitment_config::CommitmentConfig;
 
 pub struct SolanaClient {
     rpc_client: RpcClient,
@@ -120,34 +121,84 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
         };
     }
 
-    // Eth old function
-    // pub fn get_account_info(&self, address: &Pubkey) -> Result<AccountInfo, Error> {
-    //     let account = self.rpc_client.get_account(address).unwrap();
+    pub async fn get_account_info(&self, address: &Pubkey) -> Result<Account, Error> {
+        let account = self.rpc_client.get_account(address).await.unwrap();
 
-    //     Ok(account)
-    // }
+        Ok(account)
+    }
 
 
     // TODO: complete the transfer account 
     // Needs wallet, target address, amount, and token address
     pub async fn transfer(self, from_keypair: Keypair, to_pubkey: Pubkey, lamports: u64) -> Result<bool, Error> {
         
-        println!("Creating a transaction");
-        let from_pubkey = Signer::pubkey(&from_keypair);
+        let from = Keypair::new();
+        let frompubkey = Signer::pubkey(&from);
+
+        let to = Keypair::new();
+        let to_pubkey = Signer::pubkey(&to);
+        let lamports_to_send = 1_000_000;
+
+    // WalletD Solana client
+    // let rpc_url = String::from("https://api.devnet.solana.com");
+    // let connection = SolanaClient::new(rpc_url, CommitmentConfig::confirmed());
+
+    // Working with regular Solana client
+    let rpc_url = String::from("https://api.devnet.solana.com");
+    let connection = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
+    let rpc_url = String::from("https://api.devnet.solana.com");
+    let walletd_conn = SolanaClient::new(&rpc_url).await.unwrap();
+
+    let restored_keypair_from_base58 = Keypair::from_base58_string(
+        "g6mLsmgPznVcEcSLDWQ9QGuhNFa96CaC6R2XCnivHNfJ2aujuC3Cy9dSVvG39XMsGkuXEn1yYfauErro9LX5FyX",
+    );
         
-        let ix = system_instruction::transfer(&from_pubkey, &to_pubkey, lamports);
-        
+    let restored_keypair_from_base58 = Keypair::from_base58_string(
+        "g6mLsmgPznVcEcSLDWQ9QGuhNFa96CaC6R2XCnivHNfJ2aujuC3Cy9dSVvG39XMsGkuXEn1yYfauErro9LX5FyX",
+    );
+
+    let public_key = Signer::pubkey(&restored_keypair_from_base58);
+    let base_wallet_str: &String = &restored_keypair_from_base58.to_base58_string();
+
+    println!("from wallet: base58: {:?}" , &base_wallet_str);
+    println!("from wallet: pubkey: {:?}" , &public_key);
+
+    let from = restored_keypair_from_base58;
+    let frompubkey = Signer::pubkey(&from);
+
+    let to = Keypair::from_base58_string(
+        "4r71U8p1NaVjS7pMnwzkwWDgcYtLJHfzQ1QqwK7dmdb3zJJuEjL2CkWMeAHoHVWJBXRwkRxFwKnmakH2sr6GXgbP",
+    );
+    let to_pubkey = Signer::pubkey(&to);
+
 
         ///Putting the transfer sol instruction into a transaction
+        println!("Creating a transaction");
+        let ix = system_instruction::transfer(&frompubkey, &to_pubkey, lamports_to_send);
+    
+        //Putting the transfer sol instruction into a transaction
         println!("Attempting to get the latest blockhash");
-        let recent_blockhash = &self.rpc_client().get_latest_blockhash().await.expect("Failed to get latest blockhash.");
+        let recent_blockhash = connection.get_latest_blockhash().await.expect("Failed to get latest blockhash.");
         
         println!("Attempting to build txn");
-        let txn = Transaction::new_signed_with_payer(
-            &[ix], 
-            Some(&from_pubkey), 
-            &[&from_keypair], *recent_blockhash);
-
+        let txn = Transaction::new_signed_with_payer(&[ix], Some(&frompubkey), &[&from], recent_blockhash);
+    
+        //Sending the transfer sol transaction
+        println!("Trying to send");
+        match connection.send_and_confirm_transaction(&txn).await {
+            Ok(sig) => loop {
+                if let Ok(confirmed) = connection.confirm_transaction(&sig).await {
+                    if confirmed {
+                        println!("Transaction: {} Status: {}", sig, confirmed);
+                        return Ok(true)
+                    }
+                }
+            },
+            Err(e) => {
+                println!("Error transferring Sol:, {}", e);
+                return Ok(false)
+            }
+        }
         Ok(true)
     }
 
