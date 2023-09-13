@@ -71,7 +71,7 @@ impl SolanaAccount {
     }
 
     pub async fn balance(&self, &rpc_client) -> u64 {
-        let balance = rpc_client.get_balance(&self.pubkey()).await?;
+        let balance = &rpc_client.get_balance(&self.pubkey()).await?;
         println!("Balance: {}", balance);
         balance
     }
