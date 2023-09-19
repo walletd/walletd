@@ -75,6 +75,18 @@ impl SolanaClient {
         &self.endpoint
     }
 
+    /// Return the current commitment level we are using
+    /// Valid options for it are as follows:
+    /// CommitmentLevel::Processed
+    /// CommitmentLevel::Finalized
+    /// CommitmentLevel::Confirmed
+    /// Returns an [error][Error] if the commitmentconfig is invalid.
+    /// Returns an instance of CommitmentConfig on success.
+    pub fn commitment_level(&self) -> &CommitmentConfig {
+        &self.commitment_level
+    }
+
+    
     pub async fn get_block(rpc_client: RpcClient, block_number: u64) -> Result<(), Error> {
         let block = rpc_client.get_block(block_number).await.unwrap();
         Ok(())
