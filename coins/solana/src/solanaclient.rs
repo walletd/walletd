@@ -132,11 +132,11 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
     // Needs wallet, target address, amount, and token address
     pub async fn transfer(self, from_keypair: Keypair, to_pubkey: Pubkey, lamports: u64) -> Result<bool, Error> {
         
-        let from = Keypair::new();
-        let frompubkey = Signer::pubkey(&from);
+        //let from = from_keypair;
+        //let from = Keypair::new();
+        let from_pubkey = Signer::pubkey(&from_keypair);
 
-        let to = Keypair::new();
-        let to_pubkey = Signer::pubkey(&to);
+        //let to_pubkey = Signer::pubkey(&to);
         let lamports_to_send = 1_000_000;
 
     // WalletD Solana client
@@ -144,50 +144,41 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
     // let connection = SolanaClient::new(rpc_url, CommitmentConfig::confirmed());
 
     // Working with regular Solana client
-    let rpc_url = String::from("https://api.devnet.solana.com");
-    let connection = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
-    let rpc_url = String::from("https://api.devnet.solana.com");
-    let walletd_conn = SolanaClient::new(&rpc_url).await.unwrap();
+    // let rpc_url = String::from("https://api.devnet.solana.com");
+    // let connection = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
+        let rpc_url = String::from("https://api.devnet.solana.com");
+        let walletd_conn = SolanaClient::new(&rpc_url).await.unwrap();
 
-    let restored_keypair_from_base58 = Keypair::from_base58_string(
-        "g6mLsmgPznVcEcSLDWQ9QGuhNFa96CaC6R2XCnivHNfJ2aujuC3Cy9dSVvG39XMsGkuXEn1yYfauErro9LX5FyX",
-    );
-        
-    let restored_keypair_from_base58 = Keypair::from_base58_string(
-        "g6mLsmgPznVcEcSLDWQ9QGuhNFa96CaC6R2XCnivHNfJ2aujuC3Cy9dSVvG39XMsGkuXEn1yYfauErro9LX5FyX",
-    );
+        let walletd_client = walletd_conn.rpc_client();
 
-    let public_key = Signer::pubkey(&restored_keypair_from_base58);
-    let base_wallet_str: &String = &restored_keypair_from_base58.to_base58_string();
+        let base_wallet_str: &String = &from_keypair.to_base58_string();
 
-    println!("from wallet: base58: {:?}" , &base_wallet_str);
-    println!("from wallet: pubkey: {:?}" , &public_key);
+        println!("from wallet: base58: {:?}" , &base_wallet_str);
+        println!("from wallet: pubkey: {:?}" , &from_pubkey);
 
-    let from = restored_keypair_from_base58;
-    let frompubkey = Signer::pubkey(&from);
+        let from = from_keypair;
+        let frompubkey = Signer::pubkey(&from);
 
-    let to = Keypair::from_base58_string(
-        "4r71U8p1NaVjS7pMnwzkwWDgcYtLJHfzQ1QqwK7dmdb3zJJuEjL2CkWMeAHoHVWJBXRwkRxFwKnmakH2sr6GXgbP",
-    );
-    let to_pubkey = Signer::pubkey(&to);
-
+        let to = Keypair::from_base58_string(
+            "yourkeypairfrombase58stringhere",
+        );
 
         ///Putting the transfer sol instruction into a transaction
         println!("Creating a transaction");
-        let ix = system_instruction::transfer(&frompubkey, &to_pubkey, lamports_to_send);
+        let ix = system_instruction::transfer(&frompubkey, &to_pubkey, lamports);
     
         //Putting the transfer sol instruction into a transaction
         println!("Attempting to get the latest blockhash");
-        let recent_blockhash = connection.get_latest_blockhash().await.expect("Failed to get latest blockhash.");
+        let recent_blockhash = walletd_client.get_latest_blockhash().await.expect("Failed to get latest blockhash.");
         
         println!("Attempting to build txn");
         let txn = Transaction::new_signed_with_payer(&[ix], Some(&frompubkey), &[&from], recent_blockhash);
     
         //Sending the transfer sol transaction
         println!("Trying to send");
-        match connection.send_and_confirm_transaction(&txn).await {
+        match walletd_client.send_and_confirm_transaction(&txn).await {
             Ok(sig) => loop {
-                if let Ok(confirmed) = connection.confirm_transaction(&sig).await {
+                if let Ok(confirmed) = walletd_client.confirm_transaction(&sig).await {
                     if confirmed {
                         println!("Transaction: {} Status: {}", sig, confirmed);
                         return Ok(true)
