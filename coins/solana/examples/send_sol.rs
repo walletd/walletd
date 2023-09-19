@@ -6,7 +6,8 @@ use solana_sdk::signature::{Keypair, Signer};
 use solana_sdk::transaction::Transaction;
 use walletd_solana::solanaclient::SolanaClient;
 
-fn main() {
+#[tokio::main]
+async fn main() {
 
     let from = Keypair::new();
     let frompubkey = Signer::pubkey(&from);
@@ -21,10 +22,11 @@ fn main() {
 
     // Working with regular Solana client
     let rpc_url = String::from("https://api.devnet.solana.com");
-    let connection = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
+    let connection = RpcClient::new_with_commitment(&rpc_url, CommitmentConfig::confirmed());
+    let walletd_solana = SolanaClient::new(&rpc_url).await.unwrap();
 
     let restored_keypair_from_base58 = Keypair::from_base58_string(
-        "specify your from address's base58 string here",
+        "g6mLsmgPznVcEcSLDWQ9QGuhNFa96CaC6R2XCnivHNfJ2aujuC3Cy9dSVvG39XMsGkuXEn1yYfauErro9LX5FyX",
     );
 
     let public_key = Signer::pubkey(&restored_keypair_from_base58);
@@ -37,40 +39,44 @@ fn main() {
     let frompubkey = Signer::pubkey(&from);
 
     let to = Keypair::from_base58_string(
-        "specify your from address's base58 string here",
+        "4r71U8p1NaVjS7pMnwzkwWDgcYtLJHfzQ1QqwK7dmdb3zJJuEjL2CkWMeAHoHVWJBXRwkRxFwKnmakH2sr6GXgbP",
     );
     let to_pubkey = Signer::pubkey(&to);
 
-    // From: base58: specify your from address's base58 string here
+    let transfer_amount = 1_000_000;
+    let transfer_result = walletd_solana.transfer(from, to_pubkey, transfer_amount).await;
+
+    return ();
+    // From: base58: g6mLsmgPznVcEcSLDWQ9QGuhNFa96CaC6R2XCnivHNfJ2aujuC3Cy9dSVvG39XMsGkuXEn1yYfauErro9LX5FyX
     // pubkey: 44ub6mH9oZs2Fu784uruTZ94P3C23tgvLG3ZUjJBCWr1
     
-    // To: base58: "specify your from address's base58 string here"
+    // To: base58: "4r71U8p1NaVjS7pMnwzkwWDgcYtLJHfzQ1QqwK7dmdb3zJJuEjL2CkWMeAHoHVWJBXRwkRxFwKnmakH2sr6GXgbP"
     // pubkey: zRgZGarWLpmZsDQPPCvzaxxsCxk6xcTNc97sKYxbXQy
 
-    //  Creating the transfer sol instruction
-    println!("Creating a transaction");
-    let ix = system_instruction::transfer(&frompubkey, &to_pubkey, lamports_to_send);
+    // Creating the transfer sol instruction
+    // println!("Creating a transaction");
+    // let ix = system_instruction::transfer(&frompubkey, &to_pubkey, lamports_to_send);
 
-    // Putting the transfer sol instruction into a transaction
-    println!("Attempting to get the latest blockhash");
-    let recent_blockhash = connection.get_latest_blockhash().expect("Failed to get latest blockhash.");
+    // //Putting the transfer sol instruction into a transaction
+    // println!("Attempting to get the latest blockhash");
+    // let recent_blockhash = connection.get_latest_blockhash().expect("Failed to get latest blockhash.");
     
-    println!("Attempting to build txn");
-    let txn = Transaction::new_signed_with_payer(&[ix], Some(&frompubkey), &[&from], recent_blockhash);
+    // println!("Attempting to build txn");
+    // let txn = Transaction::new_signed_with_payer(&[ix], Some(&frompubkey), &[&from], recent_blockhash);
 
-    // Sending the transfer sol transaction
-    println!("Trying to send");
-    match connection.send_and_confirm_transaction(&txn){
-        Ok(sig) => loop {
-            if let Ok(confirmed) = connection.confirm_transaction(&sig) {
-                if confirmed {
-                    println!("Transaction: {} Status: {}", sig, confirmed);
-                    break;
-                }
-            }
-        },
-        Err(e) => println!("Error transferring Sol:, {}", e),
-    }
+    // //Sending the transfer sol transaction
+    // println!("Trying to send");
+    // match connection.send_and_confirm_transaction(&txn){
+    //     Ok(sig) => loop {
+    //         if let Ok(confirmed) = connection.confirm_transaction(&sig) {
+    //             if confirmed {
+    //                 println!("Transaction: {} Status: {}", sig, confirmed);
+    //                 break;
+    //             }
+    //         }
+    //     },
+    //     Err(e) => println!("Error transferring Sol:, {}", e),
+    // }
 
 }
 
