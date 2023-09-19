@@ -32,10 +32,7 @@ pub struct SolanaClient {
     endpoint: String, 
     commitment_level: CommitmentConfig
 }
-    // let rpc_url = String::from("https://api.devnet.solana.com");
-    // let connection = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
 
-    // let solana_client = SolanaClient::new(&rpc_url).await.unwrap();
 impl SolanaClient {
     /// Create a new instance of [SolanaClient] based on a given endpoint url.
     /// Returns an [error][Error] if the endpoint is invalid or the transport fails to connect.
@@ -174,8 +171,8 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
         println!("Attempting to build txn");
         let txn = Transaction::new_signed_with_payer(&[ix], Some(&frompubkey), &[&from], recent_blockhash);
     
-        //Sending the transfer sol transaction
-        println!("Trying to send");
+        // Attempting to send the transfer sol transaction
+
         match walletd_client.send_and_confirm_transaction(&txn).await {
             Ok(sig) => loop {
                 if let Ok(confirmed) = walletd_client.confirm_transaction(&sig).await {
@@ -190,7 +187,6 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
                 return Ok(false)
             }
         }
-        Ok(true)
     }
 
     // fn create_account(
@@ -259,20 +255,6 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
 
 }
 
-struct SolanaUtils;
-
-impl SolanaUtils {
-    /// Convert the token amount (using the decimals field defined in its mint)
-    /// to the raw amount
-    pub fn ui_amount_to_amount(ui_amount: f64, decimals: u8) -> u64 {
-        (ui_amount * 10_usize.pow(decimals as u32) as f64) as u64
-    }
-
-    /// Convert a raw amount to its human-readable representation (using the decimals field defined in its mint)
-    pub fn amount_to_ui_amount(amount: u64, decimals: u8) -> f64 {
-        amount as f64 / 10_usize.pow(decimals as u32) as f64
-    }
-}
 
 // #[allow(unused)]
 // impl EthClient {
