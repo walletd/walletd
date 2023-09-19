@@ -86,7 +86,9 @@ impl SolanaClient {
         &self.commitment_level
     }
 
-    
+    /// Returns the data for a specified block number.
+    /// One would use this method to allow for using multiple RPCs to compare data (for consensus, dev, otherwise)
+    /// Returns an [error][Error] if the block number is invalid.
     pub async fn get_block(rpc_client: RpcClient, block_number: u64) -> Result<(), Error> {
         let block = rpc_client.get_block(block_number).await.unwrap();
         Ok(())
