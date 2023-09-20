@@ -150,13 +150,13 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
         //let to_pubkey = Signer::pubkey(&to);
         let lamports_to_send = 1_000_000;
 
-    // WalletD Solana client
-    // let rpc_url = String::from("https://api.devnet.solana.com");
-    // let connection = SolanaClient::new(rpc_url, CommitmentConfig::confirmed());
+        // WalletD Solana client
+        // let rpc_url = String::from("https://api.devnet.solana.com");
+        // let connection = SolanaClient::new(rpc_url, CommitmentConfig::confirmed());
 
-    // Working with regular Solana client
-    // let rpc_url = String::from("https://api.devnet.solana.com");
-    // let connection = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
+        // Working with regular Solana client
+        // let rpc_url = String::from("https://api.devnet.solana.com");
+        // let connection = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
         let rpc_url = String::from("https://api.devnet.solana.com");
         let walletd_conn = SolanaClient::new(&rpc_url).await.unwrap();
 
@@ -273,8 +273,6 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
 // #[allow(unused)]
 // impl EthClient {
 
-//     /// Returns a block with its specified block number and transactions
-//     // TODO: Take BlockNumber as an argument
 //     pub async fn get_specified_block_with_transactions(
 //         &self,
 //         block_number: ethers::types::BlockId,
@@ -290,12 +288,6 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
 
 //         let output_block_data = block_data;
 //         Ok(output_block_data)
-//     }
-
-//     /// Returns the balance of an address as an [EthereumAmount].
-//     pub async fn balance(&self, address: Address) -> Result<EthereumAmount, Error> {
-//         let balance = self.ethers().get_balance(address, None).await.unwrap();
-//         Ok(EthereumAmount { wei: balance })
 //     }
 
 //     /// Gets a transaction given a specific tx hash.
@@ -340,16 +332,6 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
 //         }
 //     }
 
-//     /// Given a specified address, retrieves the [Ethereum balance][EthereumAmount] of that
-//     /// [address][Address].
-//     pub async fn balance_of_account(&self, address: Address) -> Result<EthereumAmount, Error> {
-//         // let balance_of_account = self.web3.eth().balance(address, None).await?;
-//         let balance_of_account: U256 = self.ethers.get_balance(address, None).await.unwrap();
-//         Ok(EthereumAmount {
-//             wei: balance_of_account,
-//         })
-//     }
-
 //     /// Given a specified smart contract (ERC20) instance, determine the
 //     /// token balance for a given address.
 //     async fn balance_of_smart_contract(
@@ -385,12 +367,6 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
 //         Ok(EthereumAmount { wei: gas_price })
 //     }
 
-//     /// Get the latest block number for the current network chain.
-//     pub async fn current_block_number(&self) -> Result<u64, Error> {
-//         let block_number: ethers::types::U64 = self.ethers.get_block_number().await.unwrap();
-//         Ok(block_number.as_u64())
-//     }
-
 //     /// Gets the latest block's data.
 //     pub async fn latest_block(&self) -> Result<Block<Transaction>, Error> {
 //         let block_data = &self
@@ -405,58 +381,6 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
 //         let output_block_data = block_data.clone();
 //         Ok(output_block_data)
 //     }
-
-//     /// Gets current chain's block using a specified block number. This requires an
-//     /// instance of web3's U64, not Rust's u64.
-//     // TODO:(#73) - when using U64,
-//     // no transaction data returned by Web3's block struct. This appears to be a bug
-//     // in Web3. This may be fixed by ethers.rs in which case we don't need block_data_from_numeric_string
-//     #[allow(non_snake_case)]
-//     async fn block_data_from_U64(&self, block_id: U64) -> Result<Block<H256>, Error> {
-//         let block_id = BlockNumber::Number(block_id);
-//         let block_data = &self
-//             .ethers()
-//             .get_block(BlockId::Number(block_id))
-//             .await
-//             .unwrap()
-//             .unwrap();
-//         let output_block_data = block_data.clone();
-//         Ok(output_block_data)
-//     }
-
-//     /// Gets current chain's latest block number by passing it a string (eg
-//     /// "80000".to_string()).
-//     async fn block_data_from_numeric_string(
-//         &self,
-//         block_id: &str,
-//     ) -> Result<ethers::types::Block<H256>, Error> {
-//         // we're using a string because U64 is a web3 type
-//         let block_number = block_id.parse::<U64>().unwrap();
-//         let blockid = BlockNumber::Number(block_number);
-//         let block_data = &self.ethers().get_block(blockid).await.unwrap().unwrap();
-//         let output_block_data = block_data.clone();
-//         Ok(output_block_data)
-//     }
-// }
-
-// #[async_trait]
-// impl BlockchainConnector for EthClient {
-//     type ErrorType = Error;
-//     /// Create a new instance of [EthClient] based on a given endpoint url.
-//     /// Returns an [error][Error] if the endpoint is invalid or the transport fails to connect.
-//     fn new(endpoint: &str) -> Result<Self, Error> {
-//         // TODO(#71): Update transport to support web sockets
-//         let ethers = Provider::try_from(endpoint).unwrap();
-//         Ok(Self {
-//             ethers,
-//             endpoint: endpoint.to_string(),
-//         })
-//     }
-//     /// Returns the url of the endpoint associated with the [EthClient].
-//     fn url(&self) -> &str {
-//         &self.endpoint
-//     }
-// }
 
 #[cfg(test)]
 mod tests {
