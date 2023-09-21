@@ -1,15 +1,14 @@
-use walletd_solana::solanaclient::SolanaClient;
 use solana_client::rpc_client::RpcClient;
-use solana_sdk::system_instruction;
 use solana_sdk::commitment_config::CommitmentConfig;
 use solana_sdk::native_token::LAMPORTS_PER_SOL;
-use solana_sdk::signature::{Keypair, Signer};
 use solana_sdk::pubkey::Pubkey;
+use solana_sdk::signature::{Keypair, Signer};
+use solana_sdk::system_instruction;
 use std::convert::TryFrom;
+use walletd_solana::solanaclient::SolanaClient;
 
 #[tokio::main]
 async fn main() {
-
     let rpc_url = String::from("https://api.devnet.solana.com");
     // Old style
     let connection = RpcClient::new_with_commitment(&rpc_url, CommitmentConfig::confirmed());
@@ -24,16 +23,21 @@ async fn main() {
     println!("public key: {:?}", &pubkey_result);
     let acc_info = connected_client.get_account(&pubkey_result).await.unwrap();
     println!("Account data {:?}", acc_info);
-    
+
     println!("key: {:?}", &pubkey_result);
     println!("lamports: {:?}", acc_info.lamports);
-    println!("data: {:?}", acc_info.data); 
+    println!("data: {:?}", acc_info.data);
     println!("owner: {:?}", acc_info.owner);
     println!("rent_epoch: {:?}", acc_info.rent_epoch);
     println!("executable: {:?}", acc_info.executable);
 
     // Restore an account from a 64 byte array
-    let bytes: [u8; 64] = [162, 101, 169, 19, 38, 115, 20, 31, 216, 254, 39, 215, 229, 185, 248, 68, 251, 0, 232, 164, 241, 72, 249, 89, 84, 169, 54, 223, 127, 161, 21, 23, 69, 199, 131, 221, 202, 170, 155, 110, 8, 211, 170, 217, 132, 148, 104, 122, 117, 238, 217, 1, 90, 103, 0, 46, 176, 210, 139, 14, 213, 254, 7, 120]; 
+    let bytes: [u8; 64] = [
+        162, 101, 169, 19, 38, 115, 20, 31, 216, 254, 39, 215, 229, 185, 248, 68, 251, 0, 232, 164,
+        241, 72, 249, 89, 84, 169, 54, 223, 127, 161, 21, 23, 69, 199, 131, 221, 202, 170, 155,
+        110, 8, 211, 170, 217, 132, 148, 104, 122, 117, 238, 217, 1, 90, 103, 0, 46, 176, 210, 139,
+        14, 213, 254, 7, 120,
+    ];
     let restored_keypair = Keypair::from_bytes(&bytes).unwrap();
 
     println!("From bytes: {:?}", &bytes);
@@ -51,7 +55,7 @@ async fn main() {
     println!("key: {:?}", &pubkey_result);
 
     println!("lamports: {:?}", acc_info.lamports);
-    println!("data: {:?}", acc_info.data); 
+    println!("data: {:?}", acc_info.data);
     println!("owner: {:?}", acc_info.owner);
     println!("rent_epoch: {:?}", acc_info.rent_epoch);
     println!("executable: {:?}", acc_info.executable);

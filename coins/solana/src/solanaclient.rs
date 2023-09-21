@@ -8,29 +8,30 @@ use walletd_coin_core::BlockchainConnector;
 
 use std::sync::Arc;
 
-use solana_sdk::{
-    account_info::{next_account_info, AccountInfo},
-    entrypoint,
-    entrypoint::ProgramResult,
-    message,
-    program_error::ProgramError,
-    pubkey::{Pubkey, PubkeyError},
-    account::Account,
-    address_lookup_table_account::AddressLookupTableAccount,
-    system_instruction, signature::Signature, lamports,
-};
 use solana_client::nonblocking::rpc_client::RpcClient;
-use solana_sdk::system_instruction::SystemInstruction;
+use solana_sdk::commitment_config::CommitmentConfig;
 use solana_sdk::commitment_config::*;
 use solana_sdk::native_token::LAMPORTS_PER_SOL;
 use solana_sdk::signature::{Keypair, Signer};
+use solana_sdk::system_instruction::SystemInstruction;
 use solana_sdk::transaction::Transaction;
-use solana_sdk::commitment_config::CommitmentConfig;
+use solana_sdk::{
+    account::Account,
+    account_info::{next_account_info, AccountInfo},
+    address_lookup_table_account::AddressLookupTableAccount,
+    entrypoint,
+    entrypoint::ProgramResult,
+    lamports, message,
+    program_error::ProgramError,
+    pubkey::{Pubkey, PubkeyError},
+    signature::Signature,
+    system_instruction,
+};
 
 pub struct SolanaClient {
     rpc_client: RpcClient,
-    endpoint: String, 
-    commitment_level: CommitmentConfig
+    endpoint: String,
+    commitment_level: CommitmentConfig,
 }
 
 impl SolanaClient {
@@ -39,29 +40,32 @@ impl SolanaClient {
     /// Returns an instance of SolanaClient on success.
     pub async fn new(endpoint: &str) -> Result<Self, Error> {
         let rpc_client = RpcClient::new(endpoint.to_string());
-        
+
         Ok(Self {
             rpc_client,
             endpoint: endpoint.to_string(),
-            commitment_level: CommitmentConfig::confirmed()
+            commitment_level: CommitmentConfig::confirmed(),
         })
     }
 
     /// Create a new instance of [SolanaClient] by specifying the desired block state.
     /// Commitment level is an instance of [CommitmentConfig]
-    /// Valid options for it are as follows: 
+    /// Valid options for it are as follows:
     /// CommitmentLevel::Processed
     /// CommitmentLevel::Finalized
     /// CommitmentLevel::Confirmed
     /// Returns an [error][Error] if the endpoint is invalid, the commitmentconfig is invalid or the transport fails to connect.
     /// Returns an instance of SolanaClient on success.
-    pub async fn new_with_commitment(endpoint: &str, commitment: CommitmentConfig) -> Result<Self, Error> {
+    pub async fn new_with_commitment(
+        endpoint: &str,
+        commitment: CommitmentConfig,
+    ) -> Result<Self, Error> {
         let rpc_client = RpcClient::new_with_commitment(endpoint.to_string(), commitment);
-        
+
         Ok(Self {
             rpc_client,
             endpoint: endpoint.to_string(),
-            commitment_level: commitment
+            commitment_level: commitment,
         })
     }
 
@@ -85,7 +89,7 @@ impl SolanaClient {
     pub fn commitment_level(&self) -> &CommitmentConfig {
         &self.commitment_level
     }
-    
+
     /// Get the SOL balance for a specific pubkey address in lamports
     pub async fn get_balance(&self, address: &Pubkey) -> Result<u64, Error> {
         let balance = self.rpc_client.get_balance(address).await.unwrap();
@@ -94,23 +98,29 @@ impl SolanaClient {
 
     /// Utility function that will only work on remote devnet nodes
     /// This function will request an airdrop of 1 SOL to a given address
-    pub async fn request_airdrop(&self, public_address: Pubkey) -> Result<String, solana_client::client_error::ClientError> {
+    pub async fn request_airdrop(
+        &self,
+        public_address: Pubkey,
+    ) -> Result<String, solana_client::client_error::ClientError> {
         let rpc_client = &self.rpc_client;
-        match rpc_client.request_airdrop(&public_address, 1_000_000_000).await {
+        match rpc_client
+            .request_airdrop(&public_address, 1_000_000_000)
+            .await
+        {
             Ok(sig) => loop {
                 if let Ok(confirmed) = rpc_client.confirm_transaction(&sig).await {
                     if confirmed {
                         println!("Transaction: {} Status: {}", sig, confirmed);
                         let str = format!("Transaction: {} Status: {}", sig, confirmed);
-                        return Ok(str)
+                        return Ok(str);
                     } else {
                         println!("Transaction not approved - sig: {}", sig);
                     }
                 }
             },
-            Err(err) => { 
+            Err(err) => {
                 println!("Error requesting airdrop");
-                return Result::Err(err)
+                return Result::Err(err);
             }
         };
     }
@@ -120,11 +130,15 @@ impl SolanaClient {
         let account = self.rpc_client.get_account(address).await.unwrap();
         Ok(account)
     }
-  
+
     /// Transfers SOL to a specified pubkey.
     // Needs wallet, target address, amount, and token address
-    pub async fn transfer(self, from_keypair: Keypair, to_pubkey: Pubkey, lamports: u64) -> Result<bool, Error> {
-        
+    pub async fn transfer(
+        self,
+        from_keypair: Keypair,
+        to_pubkey: Pubkey,
+        lamports: u64,
+    ) -> Result<bool, Error> {
         //let from = from_keypair;
         //let from = Keypair::new();
         let from_pubkey = Signer::pubkey(&from_keypair);
@@ -146,27 +160,33 @@ impl SolanaClient {
 
         let base_wallet_str: &String = &from_keypair.to_base58_string();
 
-        println!("from wallet: base58: {:?}" , &base_wallet_str);
-        println!("from wallet: pubkey: {:?}" , &from_pubkey);
+        println!("from wallet: base58: {:?}", &base_wallet_str);
+        println!("from wallet: pubkey: {:?}", &from_pubkey);
 
         let from = from_keypair;
         let frompubkey = Signer::pubkey(&from);
 
-        let to = Keypair::from_base58_string(
-            "yourkeypairfrombase58stringhere",
-        );
+        let to = Keypair::from_base58_string("yourkeypairfrombase58stringhere");
 
         ///Putting the transfer sol instruction into a transaction
         println!("Creating a transaction");
         let ix = system_instruction::transfer(&frompubkey, &to_pubkey, lamports);
-    
+
         //Putting the transfer sol instruction into a transaction
         println!("Attempting to get the latest blockhash");
-        let recent_blockhash = walletd_client.get_latest_blockhash().await.expect("Failed to get latest blockhash.");
-        
+        let recent_blockhash = walletd_client
+            .get_latest_blockhash()
+            .await
+            .expect("Failed to get latest blockhash.");
+
         println!("Attempting to build txn");
-        let txn = Transaction::new_signed_with_payer(&[ix], Some(&frompubkey), &[&from], recent_blockhash);
-    
+        let txn = Transaction::new_signed_with_payer(
+            &[ix],
+            Some(&frompubkey),
+            &[&from],
+            recent_blockhash,
+        );
+
         // Attempting to send the transfer sol transaction
 
         match walletd_client.send_and_confirm_transaction(&txn).await {
@@ -174,13 +194,13 @@ impl SolanaClient {
                 if let Ok(confirmed) = walletd_client.confirm_transaction(&sig).await {
                     if confirmed {
                         println!("Transaction: {} Status: {}", sig, confirmed);
-                        return Ok(true)
+                        return Ok(true);
                     }
                 }
             },
             Err(e) => {
                 println!("Error transferring Sol:, {}", e);
-                return Ok(false)
+                return Ok(false);
             }
         }
     }
@@ -193,23 +213,23 @@ impl SolanaClient {
     //         space: u64,
     //     ) -> Result<(), Error> {
     //         let rent = client.get_minimum_balance_for_rent_exemption(space.try_into()?).unwrap();
-        
+
     //         let transfer_instr = system_instruction::transfer(
     //             &payer.pubkey(),
     //             &new_account.pubkey(),
     //             rent,
     //         );
-        
+
     //         let allocate_instr = system_instruction::allocate(
     //             &new_account.pubkey(),
     //             space,
     //         );
-        
+
     //         let assign_instr = system_instruction::assign(
     //             &new_account.pubkey(),
     //             owning_program,
     //         );
-        
+
     //         let blockhash = client.get_latest_blockhash()?;
     //         let tx = Transaction::new_signed_with_payer(
     //             &[transfer_instr, allocate_instr, assign_instr],
@@ -217,9 +237,9 @@ impl SolanaClient {
     //             &[payer, new_account],
     //             blockhash,
     //         );
-        
+
     //         let _sig = client.send_and_confirm_transaction(&tx)?;
-        
+
     //         Ok(())
     //     }
 
@@ -230,7 +250,6 @@ impl SolanaClient {
     // ) -> Result<Pubkey, PubkeyError> {
 
     // }
-
 }
 
 //     /// Gets a transaction given a specific tx hash.
@@ -320,6 +339,6 @@ mod tests {
     // }
     // #[test]
     // fn get_block_height() {
-    // 
+    //
     // }
 }

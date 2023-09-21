@@ -1,4 +1,3 @@
-
 //#![deny(missing_docs)]
 #![cfg_attr(not(test), forbid(unsafe_code))]
 //pub use crate::solanaclient as SolanaClient;
@@ -7,7 +6,6 @@ use solana_sdk::entrypoint::ProgramResult;
 //use solana_sdk::bpf_loader::id as bpf_loader_id;
 
 /// An ERC20-like Token program for the Solana blockchain
-
 mod error;
 pub use error::Error;
 // pub mod instruction;
@@ -15,10 +13,9 @@ pub use error::Error;
 // pub mod processor;
 // pub mod state;
 
-
-use solana_sdk::pubkey::Pubkey;
-use solana_sdk::program_error::ProgramError;
 use solana_sdk::declare_id as solana_declare_id;
+use solana_sdk::program_error::ProgramError;
+use solana_sdk::pubkey::Pubkey;
 
 // #[cfg(not(feature = "no-entrypoint"))]
 // mod entrypoint;
@@ -26,7 +23,6 @@ use solana_sdk::declare_id as solana_declare_id;
 // Export current sdk types for downstream users building with a different sdk version
 // pub use solana_program;
 // pub mod solana_sdk;
-
 
 // TODO: move this for other modules, but use client and sdk instead of program
 // use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pubkey::Pubkey};

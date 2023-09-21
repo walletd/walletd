@@ -1,9 +1,9 @@
-use walletd_solana::solanaclient::SolanaClient;
 use solana_client::rpc_client::RpcClient;
-use solana_sdk::system_instruction;
 use solana_sdk::commitment_config::CommitmentConfig;
 use solana_sdk::native_token::LAMPORTS_PER_SOL;
 use solana_sdk::signature::{Keypair, Signer};
+use solana_sdk::system_instruction;
+use walletd_solana::solanaclient::SolanaClient;
 
 #[tokio::main]
 async fn main() {
@@ -13,13 +13,16 @@ async fn main() {
     let rpc_url = String::from("https://api.devnet.solana.com");
     let solana_client = SolanaClient::new(&rpc_url).await.unwrap();
 
-    let bytes: [u8; 64] = [162, 101, 169, 19, 38, 115, 20, 31, 216, 254, 39, 215, 229, 185, 248, 68, 251, 0, 232, 164, 241, 72, 249, 89, 84, 169, 54, 223, 127, 161, 21, 23, 69, 199, 131, 221, 202, 170, 155, 110, 8, 211, 170, 217, 132, 148, 104, 122, 117, 238, 217, 1, 90, 103, 0, 46, 176, 210, 139, 14, 213, 254, 7, 120]; 
+    let bytes: [u8; 64] = [
+        162, 101, 169, 19, 38, 115, 20, 31, 216, 254, 39, 215, 229, 185, 248, 68, 251, 0, 232, 164,
+        241, 72, 249, 89, 84, 169, 54, 223, 127, 161, 21, 23, 69, 199, 131, 221, 202, 170, 155,
+        110, 8, 211, 170, 217, 132, 148, 104, 122, 117, 238, 217, 1, 90, 103, 0, 46, 176, 210, 139,
+        14, 213, 254, 7, 120,
+    ];
     let restored_keypair = Keypair::from_bytes(&bytes).unwrap();
 
-    let restored_keypair_from_base58 = Keypair::from_base58_string(
-        "redacted for now",
-    );
-    
+    let restored_keypair_from_base58 = Keypair::from_base58_string("redacted for now");
+
     let pubkey = Signer::pubkey(&restored_keypair_from_base58);
     println!("public key: {:?}", pubkey);
     //solana_client.request_airdrop(pubkey).await.unwrap();
