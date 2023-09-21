@@ -196,10 +196,10 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
         }
     }
 
-    // pub async fn get_address_lookup_table(&self, lookup_table_address: &Pubkey) -> Result<AddressLookupTableAccount, Error> {
-    //     let lookup_table = self.rpc_client().get_account(lookup_table_address).await.unwrap();
-    //     Ok(lookup_table)
-    // }
+    pub async fn get_address_lookup_table(&self, lookup_table_address: &Pubkey) -> Result<AddressLookupTableAccount, Error> {
+        let lookup_table: AddressLookupTableAccount = self.rpc_client().get_add(lookup_table_address).await.unwrap();
+        Ok(lookup_table)
+    }
 
     // fn create_account(
     //         client: &RpcClient,
@@ -246,14 +246,6 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
     // ) -> Result<Pubkey, PubkeyError> {
 
     // }
-
-    pub fn find_program_address(
-        seeds: &[&[u8]],
-        program_id: &Pubkey
-    ) -> Result<(), Error> {
-    //) -> Result<(Pubkey, u8), PubkeyError> {
-        Ok(())
-    }
 
 }
 
@@ -332,21 +324,6 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
 //         // getting gas price
 //         let gas_price = self.ethers.get_gas_price().await.unwrap();
 //         Ok(EthereumAmount { wei: gas_price })
-//     }
-
-//     /// Gets the latest block's data.
-//     pub async fn latest_block(&self) -> Result<Block<Transaction>, Error> {
-//         let block_data = &self
-//             .ethers
-//             .get_block_with_txs(ethers::types::BlockId::Number(
-//                 ethers::types::BlockNumber::Latest,
-//             ))
-//             .await
-//             .unwrap()
-//             .unwrap();
-
-//         let output_block_data = block_data.clone();
-//         Ok(output_block_data)
 //     }
 
 #[cfg(test)]
