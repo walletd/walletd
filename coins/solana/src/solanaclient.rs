@@ -196,11 +196,6 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
         }
     }
 
-    pub async fn get_address_lookup_table(&self, lookup_table_address: &Pubkey) -> Result<AddressLookupTableAccount, Error> {
-        let lookup_table: AddressLookupTableAccount = self.rpc_client().get_add(lookup_table_address).await.unwrap();
-        Ok(lookup_table)
-    }
-
     // fn create_account(
     //         client: &RpcClient,
     //         payer: &Keypair,
