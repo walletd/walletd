@@ -139,47 +139,32 @@ impl SolanaClient {
         to_pubkey: Pubkey,
         lamports: u64,
     ) -> Result<bool, Error> {
-        //let from = from_keypair;
-        //let from = Keypair::new();
-        let from_pubkey = Signer::pubkey(&from_keypair);
+        // let from_pubkey = Signer::pubkey(&from_keypair);
+        // let lamports_to_send = 1_000_000;
 
-        //let to_pubkey = Signer::pubkey(&to);
-        let lamports_to_send = 1_000_000;
-
-        // WalletD Solana client
         // let rpc_url = String::from("https://api.devnet.solana.com");
-        // let connection = SolanaClient::new(rpc_url, CommitmentConfig::confirmed());
+        // let walletd_conn = SolanaClient::new(&rpc_url).await.unwrap();
 
-        // Working with regular Solana client
-        // let rpc_url = String::from("https://api.devnet.solana.com");
-        // let connection = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
-        let rpc_url = String::from("https://api.devnet.solana.com");
-        let walletd_conn = SolanaClient::new(&rpc_url).await.unwrap();
+        let walletd_client = self.rpc_client();
 
-        let walletd_client = walletd_conn.rpc_client();
-
-        let base_wallet_str: &String = &from_keypair.to_base58_string();
-
-        println!("from wallet: base58: {:?}", &base_wallet_str);
-        println!("from wallet: pubkey: {:?}", &from_pubkey);
+        // println!("from wallet: Keypair: {:?}", &from_keypair);
+        // println!("from wallet: pubkey: {:?}", &from_pubkey);
 
         let from = from_keypair;
         let frompubkey = Signer::pubkey(&from);
 
-        let to = Keypair::from_base58_string("yourkeypairfrombase58stringhere");
-
-        ///Putting the transfer sol instruction into a transaction
-        println!("Creating a transaction");
+        // Putting the transfer sol instruction into a transaction
+        // println!("Creating a transaction");
         let ix = system_instruction::transfer(&frompubkey, &to_pubkey, lamports);
 
-        //Putting the transfer sol instruction into a transaction
-        println!("Attempting to get the latest blockhash");
+        // Putting the transfer sol instruction into a transaction
+        // println!("Attempting to get the latest blockhash");
         let recent_blockhash = walletd_client
             .get_latest_blockhash()
             .await
             .expect("Failed to get latest blockhash.");
 
-        println!("Attempting to build txn");
+        //println!("Attempting to build txn");
         let txn = Transaction::new_signed_with_payer(
             &[ix],
             Some(&frompubkey),
