@@ -1,7 +1,7 @@
 #![allow(clippy::integer_arithmetic)]
 use crate::Error;
 use async_trait::async_trait;
-use crate::error as SolanaError;
+//use crate::error as SolanaError;
 use std::convert::TryFrom;
 
 use walletd_coin_core::BlockchainConnector;
@@ -86,14 +86,6 @@ impl SolanaClient {
         &self.commitment_level
     }
 
-    /// Returns the data for a specified block number.
-    /// One would use this method to allow for using multiple RPCs to compare data (for consensus, dev, otherwise)
-    /// Returns an [error][Error] if the block number is invalid.
-    pub async fn get_block(rpc_client: RpcClient, block_number: u64) -> Result<(), Error> {
-        let block = rpc_client.get_block(block_number).await.unwrap();
-        Ok(())
-    }
-
     // /// This fn takes a Solana storage contract and calculates the rent cost for it.
     // /// In Solana, rent is calculated based on the size in bytes of the contract.
     // /// TODO: Check this: For each byte, one lamport is used
@@ -101,6 +93,9 @@ impl SolanaClient {
     //     let rent = self.rpc_client.get_minimum_balance_for_rent_exemption(0)?;
     //     Ok(rent)
     // }
+
+
+
     // Get the SOL balance for a specific address in lamports
     pub async fn get_balance(&self, address: &Pubkey) -> Result<u64, Error> {
         let balance = self.rpc_client.get_balance(address).await.unwrap();
@@ -132,13 +127,11 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
         };
     }
 
-    pub async fn get_account_info(&self, address: &Pubkey) -> Result<Account, Error> {
+    pub async fn get_account(&self, address: &Pubkey) -> Result<Account, Error> {
         let account = self.rpc_client.get_account(address).await.unwrap();
-
         Ok(account)
     }
-
-
+  
     // TODO: complete the transfer account 
     // Needs wallet, target address, amount, and token address
     pub async fn transfer(self, from_keypair: Keypair, to_pubkey: Pubkey, lamports: u64) -> Result<bool, Error> {
@@ -203,6 +196,11 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
         }
     }
 
+    // pub async fn get_address_lookup_table(&self, lookup_table_address: &Pubkey) -> Result<AddressLookupTableAccount, Error> {
+    //     let lookup_table = self.rpc_client().get_account(lookup_table_address).await.unwrap();
+    //     Ok(lookup_table)
+    // }
+
     // fn create_account(
     //         client: &RpcClient,
     //         payer: &Keypair,
@@ -241,16 +239,6 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
     //         Ok(())
     //     }
 
-    // pub fn get_address_lookup_table(&self, lookup_table_address: &Pubkey) -> Result<AddressLookupTableAccount, Error> {
-    //     let lookup_table = self.rpc_client.get_account(lookup_table_address)?;
-    //     Ok(lookup_table)
-    // }
-
-    // pub fn get_block_height(&self) -> Result<u64, Error> {
-    //     let block_height = self.rpc_client.get_slot()?;
-    //     Ok(block_height)
-    // }
-
     // pub fn create_with_seed(
     //     base: &Pubkey,
     //     seed: &str,
@@ -268,27 +256,6 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
     }
 
 }
-
-
-// #[allow(unused)]
-// impl EthClient {
-
-//     pub async fn get_specified_block_with_transactions(
-//         &self,
-//         block_number: ethers::types::BlockId,
-//     ) -> Result<Block<Transaction>, Error> {
-//         let block_data = self
-//             .ethers()
-//             .get_block_with_txs(ethers::types::BlockId::Number(
-//                 ethers::types::BlockNumber::Latest,
-//             ))
-//             .await
-//             .unwrap()
-//             .unwrap();
-
-//         let output_block_data = block_data;
-//         Ok(output_block_data)
-//     }
 
 //     /// Gets a transaction given a specific tx hash.
 //     ///
