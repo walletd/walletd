@@ -131,6 +131,16 @@ impl SolanaClient {
         Ok(account)
     }
 
+    /// Retrieve an account's program accounts
+    pub async fn get_program_accounts(&self, address: &Pubkey) -> Result<Vec<(Pubkey, Account)>, Error> {
+        let accounts = self
+            .rpc_client
+            .get_program_accounts(address)
+            .await
+            .unwrap();
+        Ok(accounts)
+    }
+
     /// Transfers SOL to a specified pubkey.
     // Needs wallet, target address, amount, and token address
     pub async fn transfer(
