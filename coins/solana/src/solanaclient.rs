@@ -85,30 +85,18 @@ impl SolanaClient {
     pub fn commitment_level(&self) -> &CommitmentConfig {
         &self.commitment_level
     }
-
-    // /// This fn takes a Solana storage contract and calculates the rent cost for it.
-    // /// In Solana, rent is calculated based on the size in bytes of the contract.
-    // /// TODO: Check this: For each byte, one lamport is used
-    // pub fn get_rent(&self) -> Result<u64, Error> {
-    //     let rent = self.rpc_client.get_minimum_balance_for_rent_exemption(0)?;
-    //     Ok(rent)
-    // }
-
-
-
-    // Get the SOL balance for a specific address in lamports
+    
+    /// Get the SOL balance for a specific pubkey address in lamports
     pub async fn get_balance(&self, address: &Pubkey) -> Result<u64, Error> {
         let balance = self.rpc_client.get_balance(address).await.unwrap();
         Ok(balance)
     }
-/**
- * solana_rpc_client::rpc_client::RpcClient
- * pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Signature>
-pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Signature>
- */
+
+    /// Utility function that will only work on remote devnet nodes
+    /// This function will request an airdrop of 1 SOL to a given address
     pub async fn request_airdrop(&self, public_address: Pubkey) -> Result<String, solana_client::client_error::ClientError> {
         let rpc_client = &self.rpc_client;
-        match rpc_client.request_airdrop(&public_address, LAMPORTS_PER_SOL).await {
+        match rpc_client.request_airdrop(&public_address, 1_000_000_000).await {
             Ok(sig) => loop {
                 if let Ok(confirmed) = rpc_client.confirm_transaction(&sig).await {
                     if confirmed {
@@ -127,12 +115,13 @@ pub fn request_airdrop(&self, pubkey: &Pubkey, lamports: u64) -> ClientResult<Si
         };
     }
 
+    /// Retrieve account-specific details for a given pubkey
     pub async fn get_account(&self, address: &Pubkey) -> Result<Account, Error> {
         let account = self.rpc_client.get_account(address).await.unwrap();
         Ok(account)
     }
   
-    // TODO: complete the transfer account 
+    /// Transfers SOL to a specified pubkey.
     // Needs wallet, target address, amount, and token address
     pub async fn transfer(self, from_keypair: Keypair, to_pubkey: Pubkey, lamports: u64) -> Result<bool, Error> {
         
