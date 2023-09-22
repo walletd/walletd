@@ -3,3 +3,4 @@
 Cargo.lock
 **/cargo-test*.profraw
 **/*.rs.bk
+**/.idea
