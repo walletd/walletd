@@ -1,6 +1,5 @@
 #![allow(clippy::integer_arithmetic)]
 use crate::Error;
-use async_trait::async_trait;
 //use crate::error as SolanaError;
 use std::convert::TryFrom;
 
