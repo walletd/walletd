@@ -7,7 +7,7 @@ license = "MIT OR Apache-2.0"
 
 [lib]
 name = "walletd_solana"
-crate-type = ["cdylib", "lib"]
+#crate-type = ["cdylib", "lib"]
 path = "src/lib.rs"
 
 [dependencies]
