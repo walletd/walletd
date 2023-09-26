@@ -39,9 +39,9 @@ pub enum Error {
     /// Error from the walletd_hd_key crate
     #[error("Error from walletd_hd_key: {0}")]
     WalletdHDKey(#[from] walletd_hd_key::Error),
-    /// Error when trying to initialize Solana client
-    #[error("Failed to initialize Solana client")]
-    SolanaClientInit,
+    /// Error when trying to initialize EthClient
+    #[error("Failed to initialize EthClient")]
+    EthClientInit,
     /// Error related to a transaaction
     #[error("Failed to retrieve data for transaction: {0}")]
     TxResponse(String),
