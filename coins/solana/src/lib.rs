@@ -1,7 +1,7 @@
 //#![deny(missing_docs)]
 #![cfg_attr(not(test), forbid(unsafe_code))]
 //pub use crate::solanaclient as SolanaClient;
-pub mod solanaclient;
+pub mod solana_client;
 use solana_sdk::entrypoint::ProgramResult;
 //use solana_sdk::bpf_loader::id as bpf_loader_id;
 
