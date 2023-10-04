@@ -6,7 +6,7 @@ use std::fmt;
 use std::str::FromStr;
 
 use ripemd::Ripemd160;
-use zeroize::{Zeroize};
+use zeroize::Zeroize;
 
 use crate::{Error, HDPath, HDPathIndex, HDPurpose, Seed};
 

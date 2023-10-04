@@ -1,6 +1,6 @@
 use std::fmt;
 use std::str::FromStr;
-use zeroize::{Zeroize};
+use zeroize::Zeroize;
 
 /// Stores the secret value which can be used to derive a hierarchical
 /// deterministic wallet. Often associated with a mnemonic phrase.
