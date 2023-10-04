@@ -12,9 +12,6 @@ pub enum Error {
     /// Error from the walletd_hd_key crate
     #[error("walletd_hd_key error: {0}")]
     WalletdHDKey(#[from] walletd_hd_key::Error),
-    /// Error from the walletd_coin_core crate
-    #[error("walletd_coin_core error: {0}")]
-    WalletdCoinCore(#[from] walletd_coin_core::Error),
     /// FromHexError
     #[error("hex error: {0}")]
     Hex(#[from] hex::FromHexError),

@@ -5,7 +5,6 @@ members = [
     "mnemonics/core",
     "coins/bitcoin",
     "coins/ethereum",
-    "coins/core",
-    "coins/solana",
+    #"coins/solana",
     "rates",
 ]

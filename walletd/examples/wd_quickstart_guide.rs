@@ -1,46 +1,38 @@
-use walletd::prelude::*;
+use bdk::blockchain::ElectrumBlockchain;
+use bdk::electrum_client::Client;
+use bdk::keys::bip39::Mnemonic;
 use walletd_bitcoin::prelude::*;
 use walletd_ethereum::prelude::*;
-
-use bdk::keys::bip39::Mnemonic;
 
 #[tokio::main]
 async fn main() -> Result<(), walletd::Error> {
     let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
     let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
-    let seed = mnemonic.to_seed("");
-    let seed = Seed::new(seed.to_vec());
-    println!("seed_hex: {:x}", seed);
-    let master_hd_key = HDKey::new_master(seed, HDNetworkType::TestNet)?;
-    let keypair = KeyPair::builder()
-        .mnemonic_phrase(mnemonic_phrase.into())
-        .network_type(HDNetworkType::TestNet)
-        .build()?;
-    assert_eq!(keypair.to_master_key(), master_hd_key);
+
     let mut btc_wallet = BitcoinWalletBuilder::new()
-        .master_hd_key(keypair.to_master_key())
+        .mnemonic(mnemonic.clone())
+        .network_type(bdk::bitcoin::Network::Testnet)
         .build()
         .unwrap();
-    // let mut btc_wallet = keypair.derive_wallet::<BitcoinWallet>()?;
-    let btc_client = Box::new(Blockstream::new("https://blockstream.info/testnet/api")?);
-    btc_wallet.set_blockchain_client(btc_client);
-    btc_wallet.sync().await?;
+
+    let client = Client::new("ssl://electrum.blockstream.info:60002").unwrap();
+    let blockchain = ElectrumBlockchain::from(client);
+    btc_wallet.sync(&blockchain).await?;
     println!(
-        "btc_wallet balance: {} BTC",
-        btc_wallet.balance().await?.btc()
+        "btc_wallet balance: {} satoshi",
+        btc_wallet.balance().await?.confirmed
     );
-    let mut eth_wallet = EthereumWalletBuilder::new()
-        .master_hd_key(keypair.to_master_key())
+
+    let eth_wallet = EthereumWalletBuilder::new()
+        .mnemonic(mnemonic)
         .build()
         .unwrap();
-    // let mut eth_wallet = keypair.derive_wallet::<EthereumWallet>()?;
     print!("eth_wallet public address: {}", eth_wallet.public_address());
     let eth_client =
         EthClient::new("https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161")?;
-    eth_wallet.set_blockchain_client(eth_client);
     println!(
         "eth_wallet balance: {} ETH",
-        eth_wallet.balance().await?.eth()
+        eth_wallet.balance(&eth_client).await?.eth()
     );
     Ok(())
 }

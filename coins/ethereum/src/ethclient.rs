@@ -1,13 +1,10 @@
 use crate::Error;
 use crate::EthereumAmount;
 
-use async_trait::async_trait;
 use ethers::prelude::*;
 use ethers::types::Address;
 
 use std::convert::TryFrom;
-
-use walletd_coin_core::BlockchainConnector;
 
 use std::sync::Arc;
 /// A blockchain connector for Ethereum which contains a [`instance of ethers `](https://github.com/gakonst/ethers-rs) using a HTTP transport.
@@ -22,6 +19,22 @@ abigen!(ERC20, "./abi/erc20_abi.json");
 
 #[allow(unused)]
 impl EthClient {
+    /// Create a new instance of [EthClient] based on a given endpoint url.
+    /// Returns an [error][Error] if the endpoint is invalid or the transport fails to connect.
+    pub fn new(endpoint: &str) -> Result<Self, Error> {
+        // TODO(#71): Update transport to support web sockets
+        let ethers = Provider::try_from(endpoint).unwrap();
+        Ok(Self {
+            ethers,
+            endpoint: endpoint.to_string(),
+        })
+    }
+
+    /// Returns the url of the endpoint associated with the [EthClient].
+    pub fn url(&self) -> &str {
+        &self.endpoint
+    }
+
     /// Returns the ethers Provider instance.
     pub fn ethers(&self) -> Provider<Http> {
         self.ethers.clone()
@@ -65,7 +78,6 @@ impl EthClient {
     ///
     // ```no_run
     // # use walletd_ethereum::EthClient;
-    // # use walletd_coin_core::BlockchainConnector;
     // # async fn example() -> Result<(), walletd_ethereum::Error> {
     // let tx_hash =
     //     "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
@@ -115,6 +127,13 @@ impl EthClient {
         &self,
         address: ethers::types::Address,
     ) -> Result<String, Error> {
+        let client = Arc::new(self.ethers());
+        let contract_instance = ERC20::new(address, Arc::clone(&client));
+        let balance = &contract_instance.balance_of(address).call().await.unwrap();
+        Ok(balance.to_string())
+    }
+
+    async fn allowance(&self, address: ethers::types::Address) -> Result<String, Error> {
         let client = Arc::new(self.ethers());
         let contract_instance = ERC20::new(address, Arc::clone(&client));
         let balance = &contract_instance.balance_of(address).call().await.unwrap();
@@ -198,31 +217,12 @@ impl EthClient {
     }
 }
 
-#[async_trait]
-impl BlockchainConnector for EthClient {
-    type ErrorType = Error;
-    /// Create a new instance of [EthClient] based on a given endpoint url.
-    /// Returns an [error][Error] if the endpoint is invalid or the transport fails to connect.
-    fn new(endpoint: &str) -> Result<Self, Error> {
-        // TODO(#71): Update transport to support web sockets
-        let ethers = Provider::try_from(endpoint).unwrap();
-        Ok(Self {
-            ethers,
-            endpoint: endpoint.to_string(),
-        })
-    }
-    /// Returns the url of the endpoint associated with the [EthClient].
-    fn url(&self) -> &str {
-        &self.endpoint
-    }
-}
-
 #[cfg(test)]
 mod tests {
     // use hex_literal::hex;
-    use super::*;
-    use ethers::utils::Anvil;
-    use std::str::FromStr;
+    // use super::*;
+    // use ethers::utils::Anvil;
+    // use std::str::FromStr;
 
     // #[test]
     // fn create_instance_of_ethclient() {

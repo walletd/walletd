@@ -1,8 +1,6 @@
 use bdk::keys::bip39::Mnemonic;
-use walletd_ethereum::prelude::*;
-use walletd_hd_key::HDNetworkType;
-
 use ethers::prelude::*;
+use walletd_ethereum::prelude::*;
 
 const PROVIDER_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 const GOERLI_TEST_ADDRESS: &str = "0xFf7FD50BF684eb853787179cc9c784b55Ac68699";
@@ -11,8 +9,7 @@ async fn main() {
     let mnemonic_phrase: &str =
         "mandate rude write gather vivid inform leg swift usual early bamboo element";
     let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
-    let seed = mnemonic.to_seed("");
-    let seed = Seed::new(seed.to_vec());
+
     let _eth_client = EthClient::new(PROVIDER_URL).unwrap();
     let _address: H160 = GOERLI_TEST_ADDRESS.parse().unwrap();
 
@@ -23,8 +20,7 @@ async fn main() {
     println!("blockchain_client: {:?}", &blockchain_client);
 
     let wallet = EthereumWallet::builder()
-        .mnemonic_seed(seed)
-        .network_type(HDNetworkType::TestNet)
+        .mnemonic(mnemonic)
         .build()
         .unwrap();
 
