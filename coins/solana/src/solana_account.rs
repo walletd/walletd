@@ -59,18 +59,17 @@ pub struct SolanaAccount {
 // you must create two accounts, one account to store the program's code, 
 // and one to store the counter.
 impl SolanaAccount {
-    pub fn new_from_bytes(&bytes: [u8; 64]) -> Self {
+    pub fn new_from_bytes(bytes: [u8; 64]) -> Self {
         let keypair = Keypair::from_bytes(&bytes).unwrap();
         Self { keypair }
     }
 
     pub fn pubkey(&self) -> Pubkey {
-        self.pubkey
+        self.pubkey()
     }
 
-    pub async fn balance(&self, &rpc_client) -> u64 {
-        let balance = &rpc_client.get_balance(&self.pubkey()).await?;
-        println!("Balance: {}", balance);
+    pub async fn balance(&self, rpc_client: RpcClient) -> u64 {
+        let balance = rpc_client.get_balance(&self.pubkey()).await.unwrap();
         balance
     }
 }

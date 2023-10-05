@@ -2,7 +2,7 @@
 #![cfg_attr(not(test), forbid(unsafe_code))]
 //pub use crate::solanaclient as SolanaClient;
 pub mod solana_client;
-
+pub mod solana_account;
 //use solana_sdk::bpf_loader::id as bpf_loader_id;
 
 /// An ERC20-like Token program for the Solana blockchain
