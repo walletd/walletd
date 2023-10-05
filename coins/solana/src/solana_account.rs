@@ -1,28 +1,20 @@
-#![allow(clippy::integer_arithmetic)]
-use crate::Error;
-use crate::error as SolanaError;
-use std::convert::TryFrom;
+#![allow(clippy::arithmetic_side_effects)]
 
 
-use std::sync::Arc;
+
+
+
+
 
 use solana_sdk::{
-    account_info::{next_account_info, AccountInfo},
-    entrypoint,
-    entrypoint::ProgramResult,
-    message,
-    program_error::ProgramError,
-    pubkey::{Pubkey, PubkeyError},
-    account::Account,
-    address_lookup_table_account::AddressLookupTableAccount,
-    system_instruction,
+    pubkey::{Pubkey},
 };
 use solana_client::nonblocking::rpc_client::RpcClient;
-use solana_sdk::system_instruction::SystemInstruction;
-use solana_sdk::commitment_config::CommitmentConfig;
-use solana_sdk::native_token::LAMPORTS_PER_SOL;
+
+
+
 use solana_sdk::signature::{Keypair, Signer};
-use solana_sdk::transaction::Transaction;
+
 
 // The basis for all Solana wallets is the Keypair struct from the Solana SDK
 pub struct SolanaAccount {
@@ -69,8 +61,8 @@ impl SolanaAccount {
     }
 
     pub async fn balance(&self, rpc_client: RpcClient) -> u64 {
-        let balance = rpc_client.get_balance(&self.pubkey()).await.unwrap();
-        balance
+        
+        rpc_client.get_balance(&self.pubkey()).await.unwrap()
     }
 }
 
