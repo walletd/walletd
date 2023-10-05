@@ -4,7 +4,7 @@ members = [
     "key_manager/hd_key",
     "mnemonics/core",
     "coins/bitcoin",
-    #"coins/ethereum",
-    "coins/solana",
+    "coins/ethereum",
+    #"coins/solana",
     "rates",
 ]
