@@ -97,7 +97,6 @@ pub use walletd_ethereum::{EthClient, EthereumAmount, EthereumWallet};
 // pub use walletd_solana::solana_client::SolanaClient;
 // pub use walletd_solana::solana_account::SolanaAccount;
 
-
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 pub use {walletd_bitcoin, walletd_ethereum, walletd_hd_key, walletd_mnemonics_core};
 
