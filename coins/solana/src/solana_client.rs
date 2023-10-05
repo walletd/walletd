@@ -3,8 +3,6 @@ use crate::Error;
 //use crate::error as SolanaError;
 use std::convert::TryFrom;
 
-use walletd_coin_core::BlockchainConnector;
-
 use std::sync::Arc;
 
 use solana_client::nonblocking::rpc_client::RpcClient;
