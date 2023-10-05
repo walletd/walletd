@@ -1,19 +1,19 @@
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::commitment_config::CommitmentConfig;
-use solana_sdk::native_token::LAMPORTS_PER_SOL;
+
 use solana_sdk::signature::{Keypair, Signer};
-use solana_sdk::system_instruction;
-use solana_sdk::transaction::Transaction;
-use walletd_solana::solanaclient::SolanaClient;
+
+
+use walletd_solana::solana_client::SolanaClient;
 
 #[tokio::main]
 async fn main() {
     let from = Keypair::new();
-    let frompubkey = Signer::pubkey(&from);
+    let _frompubkey = Signer::pubkey(&from);
 
     let to = Keypair::new();
-    let to_pubkey = Signer::pubkey(&to);
-    let lamports_to_send = 1_000_000;
+    let _to_pubkey = Signer::pubkey(&to);
+    let _lamports_to_send = 1_000_000;
 
     // WalletD Solana client
     // let rpc_url = String::from("https://api.devnet.solana.com");
@@ -21,7 +21,7 @@ async fn main() {
 
     // Working with regular Solana client
     let rpc_url = String::from("https://api.devnet.solana.com");
-    let connection = RpcClient::new_with_commitment(&rpc_url, CommitmentConfig::confirmed());
+    let _connection = RpcClient::new_with_commitment(&rpc_url, CommitmentConfig::confirmed());
     let walletd_solana = SolanaClient::new(&rpc_url).await.unwrap();
 
     let restored_keypair_from_base58 = Keypair::from_base58_string(
@@ -35,7 +35,7 @@ async fn main() {
     println!("from wallet: pubkey: {:?}", &public_key);
 
     let from = restored_keypair_from_base58;
-    let frompubkey = Signer::pubkey(&from);
+    let _frompubkey = Signer::pubkey(&from);
 
     let to = Keypair::from_base58_string(
         "4r71U8p1NaVjS7pMnwzkwWDgcYtLJHfzQ1QqwK7dmdb3zJJuEjL2CkWMeAHoHVWJBXRwkRxFwKnmakH2sr6GXgbP",
@@ -43,11 +43,11 @@ async fn main() {
     let to_pubkey = Signer::pubkey(&to);
 
     let transfer_amount = 1_000_000;
-    let transfer_result = walletd_solana
+    let _transfer_result = walletd_solana
         .transfer(from, to_pubkey, transfer_amount)
         .await;
 
-    return ();
+    
     // From: base58: g6mLsmgPznVcEcSLDWQ9QGuhNFa96CaC6R2XCnivHNfJ2aujuC3Cy9dSVvG39XMsGkuXEn1yYfauErro9LX5FyX
     // pubkey: 44ub6mH9oZs2Fu784uruTZ94P3C23tgvLG3ZUjJBCWr1
 

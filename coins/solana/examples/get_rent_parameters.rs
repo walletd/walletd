@@ -1,4 +1,4 @@
-use walletd_solana::solanaclient::SolanaClient;
+use walletd_solana::solana_client::SolanaClient;
 
 #[tokio::main]
 async fn main() {
@@ -21,5 +21,5 @@ async fn main() {
         "Assuming a 300 byte contract, the minimum fee to be rent-exempt is: {}",
         balance
     );
-    ()
+    
 }

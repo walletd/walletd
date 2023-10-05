@@ -1,27 +1,20 @@
-#![allow(clippy::integer_arithmetic)]
+#![allow(clippy::arithmetic_side_effects)]
 use crate::Error;
 //use crate::error as SolanaError;
-use std::convert::TryFrom;
 
-use std::sync::Arc;
+
+
 
 use solana_client::nonblocking::rpc_client::RpcClient;
 use solana_sdk::commitment_config::CommitmentConfig;
-use solana_sdk::commitment_config::*;
-use solana_sdk::native_token::LAMPORTS_PER_SOL;
+
+
 use solana_sdk::signature::{Keypair, Signer};
-use solana_sdk::system_instruction::SystemInstruction;
+
 use solana_sdk::transaction::Transaction;
 use solana_sdk::{
     account::Account,
-    account_info::{next_account_info, AccountInfo},
-    address_lookup_table_account::AddressLookupTableAccount,
-    entrypoint,
-    entrypoint::ProgramResult,
-    lamports, message,
-    program_error::ProgramError,
-    pubkey::{Pubkey, PubkeyError},
-    signature::Signature,
+    pubkey::{Pubkey},
     system_instruction,
 };
 
@@ -117,9 +110,9 @@ impl SolanaClient {
             },
             Err(err) => {
                 println!("Error requesting airdrop");
-                return Result::Err(err);
+                Result::Err(err)
             }
-        };
+        }
     }
 
     /// Retrieve account-specific details for a given pubkey
@@ -192,7 +185,7 @@ impl SolanaClient {
             },
             Err(e) => {
                 println!("Error transferring Sol:, {}", e);
-                return Ok(false);
+                Ok(false)
             }
         }
     }
@@ -323,7 +316,7 @@ impl SolanaClient {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    
 
     // #[test]
     // fn create_instance_of_solanaclient() {

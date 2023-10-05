@@ -24,10 +24,10 @@ fn main() {
         63, 176, 109, 168, 89, 238, 135,
     ];
 
-    let wallet_from_bytes = Keypair::from_bytes(&secret_key).unwrap();
+    let _wallet_from_bytes = Keypair::from_bytes(&secret_key).unwrap();
 
     // Restore a wallet from a base58 string
-    let wallet_from_base58 = Keypair::from_base58_string(&base58_wallet_string);
+    let wallet_from_base58 = Keypair::from_base58_string(base58_wallet_string);
 
     // Checking if a public key has an associated ed25519 private key
     // In certain special cases (e.g. a Program Derived Address), public keys may not have a private key associated with them. You can check this by looking to see if the public key lies on the ed25519 curve. Only public keys that lie on the curve can be controlled by users with wallets.
@@ -42,5 +42,5 @@ fn main() {
         off_curve_address.is_on_curve()
     ); // Not on the ed25519 curve, therefore not suitable for users
 
-    let error_pubkey = Pubkey::from_str("testPubkey").unwrap(); // Is not a valid public key
+    let _error_pubkey = Pubkey::from_str("testPubkey").unwrap(); // Is not a valid public key
 }

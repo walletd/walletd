@@ -5,7 +5,7 @@ use solana_sdk::pubkey::Pubkey;
 use solana_sdk::signature::{Keypair, Signer};
 use solana_sdk::system_instruction;
 use std::convert::TryFrom;
-use walletd_solana::solanaclient::SolanaClient;
+use walletd_solana::solana_client::SolanaClient;
 
 #[tokio::main]
 async fn main() {

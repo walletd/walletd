@@ -2,7 +2,7 @@
 #![cfg_attr(not(test), forbid(unsafe_code))]
 //pub use crate::solanaclient as SolanaClient;
 pub mod solana_client;
-use solana_sdk::entrypoint::ProgramResult;
+
 //use solana_sdk::bpf_loader::id as bpf_loader_id;
 
 /// An ERC20-like Token program for the Solana blockchain
@@ -13,9 +13,9 @@ pub use error::Error;
 // pub mod processor;
 // pub mod state;
 
-use solana_sdk::declare_id as solana_declare_id;
-use solana_sdk::program_error::ProgramError;
-use solana_sdk::pubkey::Pubkey;
+
+
+
 
 // #[cfg(not(feature = "no-entrypoint"))]
 // mod entrypoint;
