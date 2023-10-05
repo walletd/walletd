@@ -1,17 +1,17 @@
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::commitment_config::CommitmentConfig;
-use solana_sdk::native_token::LAMPORTS_PER_SOL;
+
 use solana_sdk::pubkey::Pubkey;
 use solana_sdk::signature::{Keypair, Signer};
-use solana_sdk::system_instruction;
-use std::convert::TryFrom;
+
+
 use walletd_solana::solana_client::SolanaClient;
 
 #[tokio::main]
 async fn main() {
     let rpc_url = String::from("https://api.devnet.solana.com");
     // Old style
-    let connection = RpcClient::new_with_commitment(&rpc_url, CommitmentConfig::confirmed());
+    let _connection = RpcClient::new_with_commitment(&rpc_url, CommitmentConfig::confirmed());
     // WalletD style
     let solana_client = SolanaClient::new(&rpc_url).await.unwrap();
     let connected_client = solana_client.rpc_client();
