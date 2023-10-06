@@ -23,6 +23,7 @@ bdk = { version = "0.28.2", features = ["all-keys"] }
 walletd_mnemonics_core = { path = "../mnemonics/core", version = "0.2" }
 walletd_bitcoin = { path = "../coins/bitcoin", version = "0.2" }
 walletd_ethereum = { path = "../coins/ethereum", version = "0.2" }
+#walletd_solana = { path = "../coins/solana", version = "0.2" }
 walletd_hd_key = { path = "../key_manager/hd_key", version = "0.2" }
 
 anyhow = "1.0.68"

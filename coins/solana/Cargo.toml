@@ -1,27 +1,20 @@
 [package]
 name = "walletd_solana"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-authors = ["The WalletD Team"]
-description = "Solana walletd library"
-homepage = "https://walletd.org/"
-repository = "https://github.com/walletd/walletd"
-readme = "README.md"
-categories = ["cryptography::cryptocurrencies"]
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
 name = "walletd_solana"
+#crate-type = ["cdylib", "lib"]
 path = "src/lib.rs"
 
 [dependencies]
 
-walletd_bip39 = { path = "../../mnemonics/bip39", version = "0.1" }
-walletd_hd_key = { path = "../../key_manager/hd_key", version = "0.1" }
-
-anyhow = "1.0.68"
-base58 = { version = "0.2.0" }
-ed25519-dalek-bip32 = "0.2.0"
-hex = { version = "0.4.2" }
-solana-client = "1.14.7"
-solana-sdk = "1.14.10"
+solana-client = "1.16.8"
+solana-sdk = "1.16.8"
+#walletd_coin_core = { path = "../core/", version = "0.2" }
+#walletd_mnemonics_core = { path = "../../mnemonics/core", version = "0.2" }
+thiserror = "1.0.47"
+tokio = "1.14.1"

@@ -1,6 +1,6 @@
 use std::fmt;
 use std::str::FromStr;
-use zeroize::{Zeroize, ZeroizeOnDrop};
+use zeroize::Zeroize;
 
 /// Stores the secret value which can be used to derive a hierarchical
 /// deterministic wallet. Often associated with a mnemonic phrase.
@@ -13,7 +13,7 @@ use zeroize::{Zeroize, ZeroizeOnDrop};
 /// Can be used to derive HD wallet addresses using another library
 /// (deriving HD wallet addresses is outside the scope of the
 /// walletd_mnemonics_core crate and the BIP39 standard).
-#[derive(Debug, Clone, Eq, PartialEq, Zeroize, ZeroizeOnDrop)]
+#[derive(Debug, Clone, Eq, PartialEq, Zeroize)]
 pub struct Seed {
     bytes: Vec<u8>,
 }

@@ -24,9 +24,6 @@ pub enum Error {
     /// Converted ParseInt error
     #[error("ParseInt error: {0}")]
     ParseInt(#[from] std::num::ParseIntError),
-    // Convert web3 error
-    // #[error("web3 error: {0}")]
-    // FromWeb3(#[from] web3::Error),
     /// Error related to converting from or to a hex
     #[error("Hex error: {0}")]
     Hex(#[from] hex::FromHexError),
@@ -48,10 +45,4 @@ pub enum Error {
     /// Error due to overflow
     #[error("Overflow error: {0}")]
     Overflow(String),
-    // Error from web3 contract
-    // #[error("Error from web3 contract: {0}")]
-    // Web3Contract(#[from] web3::contract::Error),
-    // Error from web3 ethabi
-    // #[error("Error from web3 ethabi: {0}")]
-    // Web3Ethabi(#[from] web3::ethabi::Error),
 }

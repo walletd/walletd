@@ -92,8 +92,17 @@ pub use keypair::{KeyPair, KeyPairBuilder, MnemonicKeyPairType};
 pub use walletd_bitcoin::BitcoinWallet;
 
 pub use walletd_ethereum::{EthClient, EthereumAmount, EthereumWallet};
+// Due to package conflicts, solana is commented out at present
+
+// pub use walletd_solana::solana_client::SolanaClient;
+// pub use walletd_solana::solana_account::SolanaAccount;
+
 pub use walletd_hd_key::{HDKey, HDNetworkType, HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
 pub use {walletd_bitcoin, walletd_ethereum, walletd_hd_key, walletd_mnemonics_core};
+
+// Due to package conflicts, solana is commented out at present
+
+// pub use {walletd_bitcoin, walletd_solana, walletd_hd_key, walletd_mnemonics_core};
 
 mod error;
 pub use error::Error;

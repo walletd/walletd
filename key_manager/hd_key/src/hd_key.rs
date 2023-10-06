@@ -6,7 +6,7 @@ use std::fmt;
 use std::str::FromStr;
 
 use ripemd::Ripemd160;
-use zeroize::{Zeroize, ZeroizeOnDrop};
+use zeroize::Zeroize;
 
 use crate::{Error, HDPath, HDPathIndex, HDPurpose, Seed};
 
@@ -136,7 +136,7 @@ impl fmt::Display for HDNetworkType {
 /// [HDKey] also follows the purpose scheme described in BIP43: <https://github.com/bitcoin/bips/blob/master/bip-0043.mediawiki>
 /// The [HDPurpose] enum supports the following purpose types: BIP32, BIP44,
 /// BIP49, and BIP84.
-#[derive(Clone, Debug, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
+#[derive(Clone, Debug, PartialEq, Eq, Zeroize)]
 pub struct HDKey {
     /// The seed used to create the master node
     pub master_seed: Seed,
