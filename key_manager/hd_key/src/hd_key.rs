@@ -6,7 +6,6 @@ use std::fmt;
 use std::str::FromStr;
 
 use ripemd::Ripemd160;
-use zeroize::Zeroize;
 
 use crate::{Error, HDPath, HDPathIndex, HDPurpose, Seed};
 
@@ -14,19 +13,6 @@ use crate::{Error, HDPath, HDPathIndex, HDPurpose, Seed};
 /// struct to be used with [HDKey].
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExtendedPrivateKey(secp256k1::SecretKey);
-
-impl Zeroize for ExtendedPrivateKey {
-    fn zeroize(&mut self) {
-        self.0 = secp256k1::SecretKey::from_slice(&[1u8; 32])
-            .expect("Should be able to create a default ExtendedPrivateKey for zeroize");
-    }
-}
-
-impl Drop for ExtendedPrivateKey {
-    fn drop(&mut self) {
-        self.zeroize();
-    }
-}
 
 impl ExtendedPrivateKey {
     /// Creates a new [ExtendedPrivateKey] from a slice of bytes.
@@ -136,15 +122,13 @@ impl fmt::Display for HDNetworkType {
 /// [HDKey] also follows the purpose scheme described in BIP43: <https://github.com/bitcoin/bips/blob/master/bip-0043.mediawiki>
 /// The [HDPurpose] enum supports the following purpose types: BIP32, BIP44,
 /// BIP49, and BIP84.
-#[derive(Clone, Debug, PartialEq, Eq, Zeroize)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct HDKey {
     /// The seed used to create the master node
     pub master_seed: Seed,
     /// The derivation path of the HDKey
-    #[zeroize(skip)]
     pub derivation_path: HDPath,
     /// The derivation purpose associated with the HDKey
-    #[zeroize(skip)]
     pub derivation_purpose: HDPurpose,
     /// The chain code
     pub chain_code: [u8; 32],
@@ -155,12 +139,10 @@ pub struct HDKey {
     /// The extended private key
     pub extended_private_key: Option<ExtendedPrivateKey>,
     /// The extended public key
-    #[zeroize(skip)]
     pub extended_public_key: Option<ExtendedPublicKey>,
     /// The child index value
     pub child_index: u32,
     /// The network type
-    #[zeroize(skip)]
     pub network: HDNetworkType,
 }
 
