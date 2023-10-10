@@ -10,14 +10,8 @@ async fn main() {
         "mandate rude write gather vivid inform leg swift usual early bamboo element";
     let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
 
-    let _eth_client = EthClient::new(PROVIDER_URL).unwrap();
+    let provider = Provider::try_from(PROVIDER_URL).unwrap();
     let _address: H160 = GOERLI_TEST_ADDRESS.parse().unwrap();
-
-    let _eth_client = EthClient::new(PROVIDER_URL);
-
-    let blockchain_client = EthClient::new(PROVIDER_URL).unwrap();
-
-    println!("blockchain_client: {:?}", &blockchain_client);
 
     let wallet = EthereumWallet::builder()
         .mnemonic(mnemonic)
@@ -26,11 +20,7 @@ async fn main() {
 
     let from: Address = wallet.public_address().as_str().parse().unwrap();
     print!("from: {:?}", &from);
-    let balance = &blockchain_client
-        .ethers()
-        .get_balance(from, None)
-        .await
-        .unwrap();
+    let balance = EthClient::get_balance(&provider, from, None).await.unwrap();
     print!("balance: {:?}", &balance);
 
     let eth_amount: EthereumAmount = EthereumAmount::from_wei(*balance);
@@ -41,9 +31,7 @@ async fn main() {
     );
 
     // Not that we need to, but we can determine the nonce manually if we want
-    let nonce = &blockchain_client
-        .ethers()
-        .get_transaction_count(from, None)
+    let nonce = EthClient::get_transaction_count(&provider, from, None)
         .await
         .unwrap();
     print!("nonce: {:?}", &nonce);
