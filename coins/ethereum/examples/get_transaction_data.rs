@@ -12,13 +12,13 @@ async fn main() {
     // let transport = web3::transports::Http::new(PROVIDER_URL)?;
     let provider = Provider::try_from(PROVIDER_URL).unwrap();
 
-    let block_data = EthClient::get_block_with_txs(
-        &provider,
-        ethers::types::BlockId::Number(ethers::types::BlockNumber::Latest),
-    )
-    .await
-    .unwrap()
-    .unwrap();
+    let block_data = provider
+        .get_block_with_txs(ethers::types::BlockId::Number(
+            ethers::types::BlockNumber::Latest,
+        ))
+        .await
+        .unwrap()
+        .unwrap();
 
     let output_block_data = block_data.clone();
     for i in 0..10 {

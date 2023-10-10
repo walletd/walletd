@@ -19,7 +19,7 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
 
     let from: Address = wallet.public_address().as_str().parse().unwrap();
     print!("from: {:?}", &from);
-    let balance = EthClient::get_balance(provider, from, None).await.unwrap();
+    let balance = provider.get_balance(from, None).await.unwrap();
     print!("balance: {:?}", &balance);
 
     let send_amount = EthereumAmount::from_wei(10000.into());

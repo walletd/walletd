@@ -6,7 +6,6 @@ use ethers::types::Address;
 
 use std::sync::Arc;
 /// A blockchain connector for Ethereum which contains a [`instance of ethers `](https://github.com/gakonst/ethers-rs) using a HTTP transport.
-#[derive(Clone, Debug)]
 pub struct EthClient {}
 
 // Creates Rust bindings for the ERC20 ABI
@@ -52,18 +51,19 @@ impl EthClient {
     ///
     /// # Example
     ///
-    // ```no_run
-    // # use walletd_ethereum::EthClient;
-    // # async fn example() -> Result<(), walletd_ethereum::Error> {
-    // let tx_hash =
-    //     "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
-    // let infura_goerli_endpoint_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-    // let eth_client = EthClient::new(infura_goerli_endpoint_url)?;
-    // let tx = eth_client.get_transaction_data_from_tx_hash(tx_hash).await?;
-    // println!("tx data: {:?}", tx);
-    // # Ok(())
-    // # }
-    // ```
+    /// ```no_run
+    /// # use ethers::prelude::*;
+    /// use walletd_ethereum::EthClient;
+    /// async fn example() -> Result<(), walletd_ethereum::Error> {
+    /// let tx_hash =
+    ///     "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b".parse::<H256>().unwrap();
+    /// let endpoint = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
+    /// let provider = Provider::try_from(endpoint).unwrap();
+    /// let tx = EthClient::get_transaction_data_from_tx_hash(&provider, tx_hash.into()).await?;
+    /// println!("tx data: {:?}", tx);
+    /// Ok(())
+    /// }
+    /// ```
     pub async fn get_transaction_data_from_tx_hash(
         provider: &Provider<Http>,
         tx_hash: H256,
