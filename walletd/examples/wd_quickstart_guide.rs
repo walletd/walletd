@@ -2,7 +2,10 @@ use bdk::blockchain::ElectrumBlockchain;
 use bdk::electrum_client::Client;
 use bdk::keys::bip39::Mnemonic;
 use walletd_bitcoin::prelude::*;
+use walletd_ethereum::ethers::providers::Provider;
 use walletd_ethereum::prelude::*;
+
+const ETH_TESTNET_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 
 #[tokio::main]
 async fn main() -> Result<(), walletd::Error> {
@@ -28,11 +31,11 @@ async fn main() -> Result<(), walletd::Error> {
         .build()
         .unwrap();
     print!("eth_wallet public address: {}", eth_wallet.public_address());
-    let eth_client =
-        EthClient::new("https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161")?;
+    let provider = Provider::try_from(ETH_TESTNET_URL).unwrap();
+
     println!(
         "eth_wallet balance: {} ETH",
-        eth_wallet.balance(&eth_client).await?.eth()
+        eth_wallet.balance(&provider).await?.eth()
     );
     Ok(())
 }

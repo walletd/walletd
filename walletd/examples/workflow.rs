@@ -4,7 +4,9 @@ use bdk::bitcoin::Network;
 use bdk::blockchain::ElectrumBlockchain;
 use bdk::electrum_client::Client;
 use bdk::keys::bip39::Mnemonic;
-use walletd::{walletd_ethereum::EthClient, BitcoinWallet, Error, EthereumWallet};
+use walletd::{BitcoinWallet, Error, EthereumWallet};
+use walletd_ethereum::ethers::providers::Provider;
+
 const ETH_TESTNET_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 
 #[tokio::main]
@@ -27,7 +29,7 @@ async fn main() -> Result<(), Error> {
 
     // Going to switch to ETH
     // This is another way to use the builder pattern to create the blockchain client instead of using the pattern written out for the btc_blockchain_client
-    let eth_blockchain_client = EthClient::new(ETH_TESTNET_URL.into())?;
+    let provider = Provider::try_from(ETH_TESTNET_URL).unwrap();
 
     let eth_wallet = EthereumWallet::builder().mnemonic(mnemonic).build()?;
 
@@ -37,7 +39,7 @@ async fn main() -> Result<(), Error> {
         "Current BTC balance: {} satoshi",
         current_btc_balance.confirmed
     );
-    let current_eth_balance = eth_wallet.balance(&eth_blockchain_client).await?;
+    let current_eth_balance = eth_wallet.balance(&provider).await?;
     println!(
         "Current ETH balance: {} ETH ({} wei)",
         current_eth_balance.eth(),
