@@ -182,11 +182,11 @@ impl EthereumWallet {
         EthereumWalletBuilder::new()
     }
 
-    ///  Returns the blance for this Ethereum Wallet.
-    pub async fn balance(&self, blockchain_client: &EthClient) -> Result<EthereumAmount, Error> {
+    ///  Returns the balance for this Ethereum Wallet.
+    pub async fn balance(&self, provider: &Provider<Http>) -> Result<EthereumAmount, Error> {
         let address = ethers::types::Address::from_str(&self.public_address())
             .map_err(|e| (Error::FromStr(e.to_string())))?;
-        let balance = blockchain_client.balance(address).await?;
+        let balance = EthClient::balance(provider, address).await?;
         Ok(balance)
     }
 
@@ -195,16 +195,13 @@ impl EthereumWallet {
     /// This function creates and broadcasts a basic Ethereum transfer transaction to the Ethereum mempool.
     pub async fn transfer(
         &self,
-        blockchain_client: &EthClient,
+        provider: &Provider<Http>,
         send_amount: EthereumAmount,
         to_address: &str,
     ) -> Result<String, Error> {
         let private_key_bytes = self.private_key.unwrap().private_key.secret_bytes();
         // EthereumWallet stores the private key as a 32 byte array
         //let secret_bytes = private_key.to_bytes();
-
-        // Retrieve instance of blockchain connector (provider) using the private key's secret bytes
-        let provider = &blockchain_client.ethers();
 
         // Instantiate a ethers local wallet from the wallet's secret bytes
         let wallet_from_bytes = Wallet::from_bytes(&private_key_bytes).unwrap();

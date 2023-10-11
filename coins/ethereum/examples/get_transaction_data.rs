@@ -10,12 +10,9 @@ pub const PROVIDER_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea
 async fn main() {
     // Transport can be one of Http, WebSocket, Ipc
     // let transport = web3::transports::Http::new(PROVIDER_URL)?;
+    let provider = Provider::try_from(PROVIDER_URL).unwrap();
 
-    let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-    let eth_client = EthClient::new(ethclient_url).unwrap();
-
-    let block_data = eth_client
-        .ethers()
+    let block_data = provider
         .get_block_with_txs(ethers::types::BlockId::Number(
             ethers::types::BlockNumber::Latest,
         ))
@@ -30,8 +27,7 @@ async fn main() {
     // Ok(output_block_data)
 
     let tx_hash = output_block_data.transactions[0].hash;
-    let tx_data = eth_client
-        .get_transaction_data_from_tx_hash(tx_hash)
+    let tx_data = EthClient::get_transaction_data_from_tx_hash(&provider, tx_hash)
         .await
         .unwrap();
 

@@ -74,8 +74,6 @@
 //!
 //! let mut btc_wallet = BitcoinWalletBuilder::new().mnemonic(mnemonic.clone()).network_type(Network::Testnet).build().unwrap();
 //! let mut eth_wallet = EthereumWalletBuilder::new().mnemonic(mnemonic).build().unwrap();
-//! let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-//! let _eth_client = EthClient::new(ethclient_url)?;
 //!
 //! # Ok(())
 //! # }

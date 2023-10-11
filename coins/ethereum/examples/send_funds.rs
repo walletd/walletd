@@ -10,9 +10,7 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
         "mandate rude write gather vivid inform leg swift usual early bamboo element";
     let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
 
-    let blockchain_client = EthClient::new(PROVIDER_URL).unwrap();
-
-    println!("blockchain_client: {:?}", &blockchain_client);
+    let provider = Provider::try_from(PROVIDER_URL).unwrap();
 
     let wallet = EthereumWallet::builder()
         .mnemonic(mnemonic)
@@ -21,16 +19,12 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
 
     let from: Address = wallet.public_address().as_str().parse().unwrap();
     print!("from: {:?}", &from);
-    let balance = &blockchain_client
-        .ethers()
-        .get_balance(from, None)
-        .await
-        .unwrap();
+    let balance = provider.get_balance(from, None).await.unwrap();
     print!("balance: {:?}", &balance);
 
     let send_amount = EthereumAmount::from_wei(10000.into());
     let tx = wallet
-        .transfer(&blockchain_client, send_amount, GOERLI_TEST_ADDRESS)
+        .transfer(&provider, send_amount, GOERLI_TEST_ADDRESS)
         .await?;
 
     println!("tx: {:?}", &tx);

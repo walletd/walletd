@@ -41,38 +41,40 @@
 //! let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
 //! let mut ethereum_wallet = EthereumWallet::builder().mnemonic(mnemonic).build()?;
 //! let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-//! let _eth_client = EthClient::new(ethclient_url)?;
 //! # Ok(())
 //! # }
 //! ```
 //!
 //! ### Using EthClient to Access Blockchain Data
 //! The blockchain client `ethclient` can be used separately from the `ethereum_wallet` to access blockchain data such as details of a transaction given a tx hash, the current block number, or the current gas price.
-//```no_run
-//# use walletd_ethereum::prelude::*;
-//# async fn ethereum() -> Result<(), walletd_ethereum::Error> {
-//# let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-//# let eth_client = EthClient::new(ethclient_url)?;
-//let tx_hash: &str = "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
-//let tx = eth_client.get_transaction_data_from_tx_hash(tx_hash).await?;
-//let block_number = eth_client.current_block_number().await;
-//let gas_price = eth_client.gas_price().await;
-//println!("transaction data: {:?}", tx);
-//# Ok(())
-//# }
-//```
-//!
-//! ### Balance of Ethereum Wallet on Blockchain
-//! When the `ethereum_wallet` is connected to the blockchain, we can find the balance of the wallet.
 //! ```no_run
+//! # use ethers::prelude::*;
 //! # use walletd_ethereum::prelude::*;
 //! # async fn ethereum() -> Result<(), walletd_ethereum::Error> {
-//! let mnemonic_phrase = "joy tail arena mix other envelope diary achieve short nest true vocal";
+//! let tx_hash = "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b".parse::<H256>().unwrap();
+//! let endpoint = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
+//! let provider = Provider::try_from(endpoint).unwrap();
+//! let tx = EthClient::get_transaction_data_from_tx_hash(&provider, tx_hash).await?;
+//! let block_number = EthClient::current_block_number(&provider).await;
+//! let gas_price = EthClient::gas_price(&provider).await;
+//! println!("transaction data: {:?}", tx);
+//! Ok(())
+//! }
+//! ```
+//!
+//! ### Balance of Ethereum Wallet on Blockchain
+//! # When the `ethereum_wallet` is connected to the blockchain, we can find the balance of the wallet.
+//! ```no_run
+//! # use ethers::prelude::*;
+//! # use walletd_ethereum::prelude::*;
+//! # async fn ethereum() -> Result<(), walletd_ethereum::Error> {
+//! let mnemonic_phrase = "mandate rude write gather vivid inform leg swift usual early bamboo element";
+//! let address = "0xFf7FD50BF684eb853787179cc9c784b55Ac68699".parse::<Address>().unwrap();
 //! let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
 //! let ethereum_wallet = EthereumWallet::builder().mnemonic(mnemonic).build()?;
-//! # let ethclient_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-//! # let eth_client = EthClient::new(ethclient_url)?;
-//! let balance = ethereum_wallet.balance(&eth_client).await?;
+//! let endpoint = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
+//! let provider = Provider::try_from(endpoint).unwrap();
+//! let balance = EthClient::balance(&provider, address).await?;
 //! println!("ethereum wallet balance: {} ETH, ({} wei)", balance.eth(), balance.wei());
 //! # Ok(())
 //! # }

@@ -4,55 +4,27 @@ use crate::EthereumAmount;
 use ethers::prelude::*;
 use ethers::types::Address;
 
-use std::convert::TryFrom;
-
 use std::sync::Arc;
 /// A blockchain connector for Ethereum which contains a [`instance of ethers `](https://github.com/gakonst/ethers-rs) using a HTTP transport.
-#[derive(Clone, Debug)]
-pub struct EthClient {
-    ethers: Provider<Http>,
-    endpoint: String,
-}
+pub struct EthClient {}
 
 // Creates Rust bindings for the ERC20 ABI
 abigen!(ERC20, "./abi/erc20_abi.json");
 
 #[allow(unused)]
 impl EthClient {
-    /// Create a new instance of [EthClient] based on a given endpoint url.
-    /// Returns an [error][Error] if the endpoint is invalid or the transport fails to connect.
-    pub fn new(endpoint: &str) -> Result<Self, Error> {
-        // TODO(#71): Update transport to support web sockets
-        let ethers = Provider::try_from(endpoint).unwrap();
-        Ok(Self {
-            ethers,
-            endpoint: endpoint.to_string(),
-        })
-    }
-
-    /// Returns the url of the endpoint associated with the [EthClient].
-    pub fn url(&self) -> &str {
-        &self.endpoint
-    }
-
-    /// Returns the ethers Provider instance.
-    pub fn ethers(&self) -> Provider<Http> {
-        self.ethers.clone()
-    }
-
     /// Returns the chain id of the current network the ethers instance is connected to.
-    pub async fn chain_id(&self) -> U256 {
-        self.ethers().get_chainid().await.unwrap()
+    pub async fn chain_id(provider: &Provider<Http>) -> U256 {
+        provider.get_chainid().await.unwrap()
     }
 
     /// Returns a block with its specified block number and transactions
     // TODO: Take BlockNumber as an argument
     pub async fn get_specified_block_with_transactions(
-        &self,
+        provider: &Provider<Http>,
         block_number: ethers::types::BlockId,
     ) -> Result<Block<Transaction>, Error> {
-        let block_data = self
-            .ethers()
+        let block_data = provider
             .get_block_with_txs(ethers::types::BlockId::Number(
                 ethers::types::BlockNumber::Latest,
             ))
@@ -65,8 +37,11 @@ impl EthClient {
     }
 
     /// Returns the balance of an address as an [EthereumAmount].
-    pub async fn balance(&self, address: Address) -> Result<EthereumAmount, Error> {
-        let balance = self.ethers().get_balance(address, None).await.unwrap();
+    pub async fn balance(
+        provider: &Provider<Http>,
+        address: Address,
+    ) -> Result<EthereumAmount, Error> {
+        let balance = provider.get_balance(address, None).await.unwrap();
         Ok(EthereumAmount { wei: balance })
     }
 
@@ -76,26 +51,27 @@ impl EthClient {
     ///
     /// # Example
     ///
-    // ```no_run
-    // # use walletd_ethereum::EthClient;
-    // # async fn example() -> Result<(), walletd_ethereum::Error> {
-    // let tx_hash =
-    //     "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
-    // let infura_goerli_endpoint_url = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-    // let eth_client = EthClient::new(infura_goerli_endpoint_url)?;
-    // let tx = eth_client.get_transaction_data_from_tx_hash(tx_hash).await?;
-    // println!("tx data: {:?}", tx);
-    // # Ok(())
-    // # }
-    // ```
+    /// ```no_run
+    /// # use ethers::prelude::*;
+    /// use walletd_ethereum::EthClient;
+    /// async fn example() -> Result<(), walletd_ethereum::Error> {
+    /// let tx_hash =
+    ///     "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b".parse::<H256>().unwrap();
+    /// let endpoint = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
+    /// let provider = Provider::try_from(endpoint).unwrap();
+    /// let tx = EthClient::get_transaction_data_from_tx_hash(&provider, tx_hash.into()).await?;
+    /// println!("tx data: {:?}", tx);
+    /// Ok(())
+    /// }
+    /// ```
     pub async fn get_transaction_data_from_tx_hash(
-        &self,
+        provider: &Provider<Http>,
         tx_hash: H256,
     ) -> Result<ethers::types::Transaction, Error> {
         // TODO: extend to allow for other chain ids (replace network type)
         // Only runs against the remote node's default chain_id for now
         // let tx_hash ="0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
-        match self.ethers().get_transaction(tx_hash).await {
+        match provider.get_transaction(tx_hash).await {
             Ok(tx) => {
                 let transaction_data = tx.unwrap();
                 if transaction_data.block_hash.is_none() {
@@ -113,9 +89,12 @@ impl EthClient {
 
     /// Given a specified address, retrieves the [Ethereum balance][EthereumAmount] of that
     /// [address][Address].
-    pub async fn balance_of_account(&self, address: Address) -> Result<EthereumAmount, Error> {
+    pub async fn balance_of_account(
+        provider: &Provider<Http>,
+        address: Address,
+    ) -> Result<EthereumAmount, Error> {
         // let balance_of_account = self.web3.eth().balance(address, None).await?;
-        let balance_of_account: U256 = self.ethers.get_balance(address, None).await.unwrap();
+        let balance_of_account: U256 = provider.get_balance(address, None).await.unwrap();
         Ok(EthereumAmount {
             wei: balance_of_account,
         })
@@ -124,55 +103,59 @@ impl EthClient {
     /// Given a specified smart contract (ERC20) instance, determine the
     /// token balance for a given address.
     async fn balance_of_smart_contract(
-        &self,
+        provider: Arc<Provider<Http>>,
         address: ethers::types::Address,
     ) -> Result<String, Error> {
-        let client = Arc::new(self.ethers());
-        let contract_instance = ERC20::new(address, Arc::clone(&client));
+        let contract_instance = ERC20::new(address, Arc::clone(&provider));
         let balance = &contract_instance.balance_of(address).call().await.unwrap();
         Ok(balance.to_string())
     }
 
-    async fn allowance(&self, address: ethers::types::Address) -> Result<String, Error> {
-        let client = Arc::new(self.ethers());
-        let contract_instance = ERC20::new(address, Arc::clone(&client));
+    async fn allowance(
+        provider: Arc<Provider<Http>>,
+        address: ethers::types::Address,
+    ) -> Result<String, Error> {
+        let contract_instance = ERC20::new(address, Arc::clone(&provider));
         let balance = &contract_instance.balance_of(address).call().await.unwrap();
         Ok(balance.to_string())
     }
 
     /// Given a specified contract instance, determine the total supply of
     /// tokens
-    async fn total_supply(&self, address: ethers::types::Address) -> Result<U256, Error> {
-        let client = Arc::new(self.ethers());
-        let contract_instance = ERC20::new(address, Arc::clone(&client));
+    async fn total_supply(
+        provider: Arc<Provider<Http>>,
+        address: ethers::types::Address,
+    ) -> Result<U256, Error> {
+        let contract_instance = ERC20::new(address, Arc::clone(&provider));
         let total_supply = &contract_instance.total_supply().call().await.unwrap();
         Ok(*total_supply)
     }
 
-    async fn get_token_name(&self, address: ethers::types::Address) -> Result<String, Error> {
-        let client = Arc::new(self.ethers());
-        let contract_instance = ERC20::new(address, Arc::clone(&client));
+    async fn get_token_name(
+        provider: Arc<Provider<Http>>,
+        address: ethers::types::Address,
+    ) -> Result<String, Error> {
+        let contract_instance = ERC20::new(address, Arc::clone(&provider));
         let token_name = &contract_instance.name().call().await.unwrap();
         Ok(token_name.to_string())
     }
 
     /// Get the current price of gas as an [EthereumAmount].
-    pub async fn gas_price(&self) -> Result<EthereumAmount, Error> {
+    pub async fn gas_price(provider: &Provider<Http>) -> Result<EthereumAmount, Error> {
         // getting gas price
-        let gas_price = self.ethers.get_gas_price().await.unwrap();
+        let gas_price = provider.get_gas_price().await.unwrap();
         Ok(EthereumAmount { wei: gas_price })
     }
 
     /// Get the latest block number for the current network chain.
-    pub async fn current_block_number(&self) -> Result<u64, Error> {
-        let block_number: ethers::types::U64 = self.ethers.get_block_number().await.unwrap();
+    pub async fn current_block_number(provider: &Provider<Http>) -> Result<u64, Error> {
+        let block_number: ethers::types::U64 = provider.get_block_number().await.unwrap();
         Ok(block_number.as_u64())
     }
 
     /// Gets the latest block's data.
-    pub async fn latest_block(&self) -> Result<Block<Transaction>, Error> {
-        let block_data = &self
-            .ethers
+    pub async fn latest_block(provider: &Provider<Http>) -> Result<Block<Transaction>, Error> {
+        let block_data = provider
             .get_block_with_txs(ethers::types::BlockId::Number(
                 ethers::types::BlockNumber::Latest,
             ))
@@ -190,10 +173,12 @@ impl EthClient {
     // no transaction data returned by Web3's block struct. This appears to be a bug
     // in Web3. This may be fixed by ethers.rs in which case we don't need block_data_from_numeric_string
     #[allow(non_snake_case)]
-    async fn block_data_from_U64(&self, block_id: U64) -> Result<Block<H256>, Error> {
+    async fn block_data_from_U64(
+        provider: &Provider<Http>,
+        block_id: U64,
+    ) -> Result<Block<H256>, Error> {
         let block_id = BlockNumber::Number(block_id);
-        let block_data = &self
-            .ethers()
+        let block_data = provider
             .get_block(BlockId::Number(block_id))
             .await
             .unwrap()
@@ -205,13 +190,13 @@ impl EthClient {
     /// Gets current chain's latest block number by passing it a string (eg
     /// "80000".to_string()).
     async fn block_data_from_numeric_string(
-        &self,
+        provider: &Provider<Http>,
         block_id: &str,
     ) -> Result<ethers::types::Block<H256>, Error> {
         // we're using a string because U64 is a web3 type
         let block_number = block_id.parse::<U64>().unwrap();
         let blockid = BlockNumber::Number(block_number);
-        let block_data = &self.ethers().get_block(blockid).await.unwrap().unwrap();
+        let block_data = provider.get_block(blockid).await.unwrap().unwrap();
         let output_block_data = block_data.clone();
         Ok(output_block_data)
     }
