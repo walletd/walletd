@@ -187,7 +187,6 @@ impl EthClient {
 
 #[cfg(test)]
 mod tests {
-    
     use super::*;
     use ethers::utils::Anvil;
     use std::str::FromStr;
@@ -201,7 +200,6 @@ mod tests {
             .port(port)
             .mnemonic("abstract vacuum mammal awkward pudding scene penalty purchase dinner depart evoke puzzle")
             .spawn();
-        
         let _provider = Provider::try_from(url).unwrap();
         drop(anvil);
     }
