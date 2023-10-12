@@ -5,7 +5,8 @@ use ethers::prelude::*;
 use ethers::types::Address;
 
 use std::sync::Arc;
-/// A blockchain connector for Ethereum which contains a [`instance of ethers `](https://github.com/gakonst/ethers-rs) using a HTTP transport.
+
+/// A blockchain connector for Ethereum which contains a [`instance of ethers`](https://github.com/gakonst/ethers-rs) using a HTTP transport.
 pub struct EthClient {}
 
 // Creates Rust bindings for the ERC20 ABI
@@ -19,7 +20,6 @@ impl EthClient {
     }
 
     /// Returns a block with its specified block number and transactions
-    // TODO: Take BlockNumber as an argument
     pub async fn get_specified_block_with_transactions(
         provider: &Provider<Http>,
         block_number: ethers::types::BlockId,
@@ -70,7 +70,6 @@ impl EthClient {
     ) -> Result<ethers::types::Transaction, Error> {
         // TODO: extend to allow for other chain ids (replace network type)
         // Only runs against the remote node's default chain_id for now
-        // let tx_hash ="0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
         match provider.get_transaction(tx_hash).await {
             Ok(tx) => {
                 let transaction_data = tx.unwrap();
@@ -85,19 +84,6 @@ impl EthClient {
             }
             Err(error) => Err(Error::TxResponse(error.to_string())),
         }
-    }
-
-    /// Given a specified address, retrieves the [Ethereum balance][EthereumAmount] of that
-    /// [address][Address].
-    pub async fn balance_of_account(
-        provider: &Provider<Http>,
-        address: Address,
-    ) -> Result<EthereumAmount, Error> {
-        // let balance_of_account = self.web3.eth().balance(address, None).await?;
-        let balance_of_account: U256 = provider.get_balance(address, None).await.unwrap();
-        Ok(EthereumAmount {
-            wei: balance_of_account,
-        })
     }
 
     /// Given a specified smart contract (ERC20) instance, determine the
