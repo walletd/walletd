@@ -26,7 +26,7 @@ abigen!(
 
 #[tokio::main]
 //async fn main() -> Result<String, Error> {
-async fn main() -> () {
+async fn main() {
 
     // Ok("Todo".to_string())
     // // the directory we use is root-dir/examples
