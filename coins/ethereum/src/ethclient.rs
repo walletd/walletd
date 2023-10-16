@@ -5,7 +5,8 @@ use ethers::prelude::*;
 use ethers::types::Address;
 
 use std::sync::Arc;
-/// A blockchain connector for Ethereum which contains a [`instance of ethers `](https://github.com/gakonst/ethers-rs) using a HTTP transport.
+
+/// A blockchain connector for Ethereum which contains a [`instance of ethers`](https://github.com/gakonst/ethers-rs) using a HTTP transport.
 pub struct EthClient {}
 
 // Creates Rust bindings for the ERC20 ABI
@@ -19,7 +20,6 @@ impl EthClient {
     }
 
     /// Returns a block with its specified block number and transactions
-    // TODO: Take BlockNumber as an argument
     pub async fn get_specified_block_with_transactions(
         provider: &Provider<Http>,
         block_number: ethers::types::BlockId,
@@ -70,7 +70,6 @@ impl EthClient {
     ) -> Result<ethers::types::Transaction, Error> {
         // TODO: extend to allow for other chain ids (replace network type)
         // Only runs against the remote node's default chain_id for now
-        // let tx_hash ="0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b";
         match provider.get_transaction(tx_hash).await {
             Ok(tx) => {
                 let transaction_data = tx.unwrap();
@@ -85,19 +84,6 @@ impl EthClient {
             }
             Err(error) => Err(Error::TxResponse(error.to_string())),
         }
-    }
-
-    /// Given a specified address, retrieves the [Ethereum balance][EthereumAmount] of that
-    /// [address][Address].
-    pub async fn balance_of_account(
-        provider: &Provider<Http>,
-        address: Address,
-    ) -> Result<EthereumAmount, Error> {
-        // let balance_of_account = self.web3.eth().balance(address, None).await?;
-        let balance_of_account: U256 = provider.get_balance(address, None).await.unwrap();
-        Ok(EthereumAmount {
-            wei: balance_of_account,
-        })
     }
 
     /// Given a specified smart contract (ERC20) instance, determine the
@@ -169,9 +155,6 @@ impl EthClient {
 
     /// Gets current chain's block using a specified block number. This requires an
     /// instance of web3's U64, not Rust's u64.
-    // TODO:(#73) - when using U64,
-    // no transaction data returned by Web3's block struct. This appears to be a bug
-    // in Web3. This may be fixed by ethers.rs in which case we don't need block_data_from_numeric_string
     #[allow(non_snake_case)]
     async fn block_data_from_U64(
         provider: &Provider<Http>,
@@ -204,42 +187,39 @@ impl EthClient {
 
 #[cfg(test)]
 mod tests {
-    // use hex_literal::hex;
-    // use super::*;
-    // use ethers::utils::Anvil;
-    // use std::str::FromStr;
+    use super::*;
+    use ethers::utils::Anvil;
+    use std::str::FromStr;
 
-    // #[test]
-    // fn create_instance_of_ethclient() {
-    //     let port = 8545u16;
-    //     let url = format!("http://localhost:{}", port).to_string();
+    #[test]
+    fn create_instance_of_ethclient() {
+        let port = 8545u16;
+        let url = format!("http://localhost:{}", port).to_string();
 
-    //     let anvil = Anvil::new()
-    //         .port(port)
-    //         .mnemonic("abstract vacuum mammal awkward pudding scene penalty purchase dinner depart evoke puzzle")
-    //         .spawn();
+        let anvil = Anvil::new()
+            .port(port)
+            .mnemonic("abstract vacuum mammal awkward pudding scene penalty purchase dinner depart evoke puzzle")
+            .spawn();
+        let _provider = Provider::try_from(url).unwrap();
+        drop(anvil);
+    }
 
-    //     let _eth_client = EthClient::new(&url).unwrap();
-    //     drop(anvil);
-    // }
+    #[tokio::test]
+    async fn get_balance() {
+        let port = 8546u16;
+        let url = format!("http://localhost:{}", port).to_string();
 
-    // #[tokio::test]
-    // async fn get_balance() {
-    //     let port = 8545u16;
-    //     let url = format!("http://localhost:{}", port).to_string();
+        let anvil = Anvil::new()
+            .port(port)
+            .mnemonic("abstract vacuum mammal awkward pudding scene penalty purchase dinner depart evoke puzzle")
+            .spawn();
 
-    //     let anvil = Anvil::new()
-    //         .port(port)
-    //         .mnemonic("abstract vacuum mammal awkward pudding scene penalty purchase dinner depart evoke puzzle")
-    //         .spawn();
-
-    //     let eth_client = EthClient::new(&url).unwrap();
-    //     // 0x3cDB3d9e1B74692Bb1E3bb5fc81938151cA64b02 - the address of the first account using the above mnemonic
-    //     let address = Address::from_str("3cDB3d9e1B74692Bb1E3bb5fc81938151cA64b02").unwrap();
-    //     let balance: EthereumAmount = eth_client.balance_of_account(address).await.unwrap();
-    //     // Anvil's default accounts have 1000 eth
-    //     assert_eq!(balance.wei, 10000000000000000000000u128.into());
-
-    //     drop(anvil);
-    // }
+        let provider = Provider::try_from(url).unwrap();
+        // 0x3cDB3d9e1B74692Bb1E3bb5fc81938151cA64b02 - the address of the first account using the above mnemonic
+        let address = Address::from_str("3cDB3d9e1B74692Bb1E3bb5fc81938151cA64b02").unwrap();
+        let balance: EthereumAmount = EthClient::balance(&provider, address).await.unwrap();
+        // Anvil's default accounts have 1000 eth
+        assert_eq!(balance.wei, 10000000000000000000000u128.into());
+        drop(anvil);
+    }
 }

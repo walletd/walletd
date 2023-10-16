@@ -23,6 +23,7 @@ use ethers::prelude::*;
 use tiny_keccak::{Hasher, Keccak};
 
 /// Represents an EthereumPublicKey, wraps a [PublicKey] from the secp256k1 crate
+// TODO: EthereumPublicKey can likely be simplified by using a keystore and/or bdk
 #[derive(Debug, Clone)]
 pub struct EthereumPublicKey(PublicKey);
 
@@ -206,14 +207,12 @@ impl EthereumWallet {
         // Instantiate a ethers local wallet from the wallet's secret bytes
         let wallet_from_bytes = Wallet::from_bytes(&private_key_bytes).unwrap();
 
-        // 5 = goerli chain id
-
         // Link our wallet instance to our provider for signing our transactions
         let client = SignerMiddleware::new(provider, wallet_from_bytes.with_chain_id(5u64));
         let client = GasOracleMiddleware::new(client, GasNow::new());
         // Create a transaction request to send 10000 wei to the Goerli address
-        // TODO: Use gas oracle for more complex transactions where required gas is not known
-        // 21000 = basic transfer
+        // TODO: Use gas oracle for more complex transactions where required gas fee is not known
+        // 21000 = gas fee for basic transfer
         let tx = TransactionRequest::new()
             .to(to_address)
             .gas(21000)
