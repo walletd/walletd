@@ -4,13 +4,13 @@ use bdk::bitcoin::Network;
 use bdk::blockchain::ElectrumBlockchain;
 use bdk::electrum_client::Client;
 use bdk::keys::bip39::Mnemonic;
-use walletd::{BitcoinWallet, Error, EthereumWallet};
+use walletd::{BitcoinWallet, WalletdError, EthereumWallet};
 use walletd_ethereum::ethers::providers::Provider;
 
 const ETH_TESTNET_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() -> Result<(), WalletdError> {
     // case of importing from a Bip39Mnemonic, let's assume we have previous transactions associated with this mnemonic phrase in BTC and ETH
     let mnemonic_phrase = "joy tail arena mix other envelope diary achieve short nest true vocal";
     let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();

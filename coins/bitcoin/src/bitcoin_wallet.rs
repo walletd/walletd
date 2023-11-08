@@ -15,8 +15,8 @@ use walletd_hd_key::HDPurpose;
 
 /// Represents a Hierarchical Deterministic (HD) Bitcoin wallet.
 pub struct BitcoinWallet {
-    wallet: Option<Wallet<MemoryDatabase>>,
-    address_format: AddressType,
+    pub wallet: Option<Wallet<MemoryDatabase>>,
+    pub address_format: AddressType,
 }
 
 impl Default for BitcoinWallet {

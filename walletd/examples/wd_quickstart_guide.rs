@@ -8,7 +8,7 @@ use walletd_ethereum::prelude::*;
 const ETH_TESTNET_URL: &str = "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 
 #[tokio::main]
-async fn main() -> Result<(), walletd::Error> {
+async fn main() -> Result<(), walletd::WalletdError> {
     let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
     let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
 

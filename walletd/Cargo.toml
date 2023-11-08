@@ -25,7 +25,19 @@ walletd_bitcoin = { path = "../coins/bitcoin", version = "0.2" }
 walletd_ethereum = { path = "../coins/ethereum", version = "0.2" }
 #walletd_solana = { path = "../coins/solana", version = "0.2" }
 walletd_hd_key = { path = "../key_manager/hd_key", version = "0.2" }
-
+async-trait = "0.1.74"
+auto_impl = "1.1.0"
 anyhow = "1.0.68"
 hex = { version = "0.4.2" }
 thiserror = "1.0.40"
+savefile = "0.16.2"
+savefile-derive = "0.16.2"
+serde = "1.0.189"
+derivative = "2.2.0"
+
+ethers = { version = "2.0.7", features = [
+    "rustls",
+    "ws",
+    "ipc",
+    "ethers-solc",
+] }

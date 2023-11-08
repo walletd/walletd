@@ -1,8 +1,6 @@
-use crate::{HDKey, HDNetworkType};
+use crate::{HDKey, HDNetworkType, WalletdError};
 use ::walletd_mnemonics_core::Seed;
 use bdk::keys::bip39::Mnemonic;
-
-use crate::Error;
 
 /// Holds info about a mnemonic type and the associated seed and phrase as well as the network type.
 /// Enables the creation of a HD wallet from a mnemonic phrase that could be used with multiple cryptocurrencies.
@@ -98,11 +96,11 @@ impl KeyPairBuilder {
     }
 
     /// Builds the KeyPair struct, returns an error if neither the mnemonic phrase nor the mnemonic seed was specified
-    pub fn build(&mut self) -> Result<KeyPair, Error> {
+    pub fn build(&mut self) -> Result<KeyPair, WalletdError> {
         let mnemonic_phrase = match &self.mnemonic_phrase {
             None => {
                 if self.mnemonic_seed.is_none() {
-                    return Err(Error::MissingKeyPairInfo(
+                    return Err(WalletdError::MissingKeyPairInfo(
                         "Neither the mnemonic phrase nor the mnemonic seed was provided"
                             .to_string(),
                     ));
