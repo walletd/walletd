@@ -15,17 +15,6 @@ use crate::{Error, HDPath, HDPathIndex, HDPurpose, Seed};
 pub struct ExtendedPrivateKey(secp256k1::SecretKey);
 
 impl ExtendedPrivateKey {
-    /// Creates a new [ExtendedPrivateKey] from a slice of bytes.
-    pub fn from_slice(data: &[u8]) -> Result<ExtendedPrivateKey, Error> {
-        let secret_key = secp256k1::SecretKey::from_slice(data)?;
-        Ok(ExtendedPrivateKey(secret_key))
-    }
-
-    /// Returns the bytes of the [ExtendedPrivateKey].
-    pub fn to_bytes(&self) -> [u8; 32] {
-        *self.0.as_ref()
-    }
-
     /// Converts the [ExtendedPrivateKey] to an [ExtendedPublicKey].
     pub fn to_public_key(&self) -> ExtendedPublicKey {
         ExtendedPublicKey(secp256k1::PublicKey::from_secret_key(
@@ -34,10 +23,25 @@ impl ExtendedPrivateKey {
         ))
     }
 
-    /// Adds a tweak to the underlying private key.
-    pub fn add_tweak(mut self, tweak: &secp256k1::Scalar) -> Result<Self, Error> {
-        self = ExtendedPrivateKey(self.0.add_tweak(tweak)?);
-        Ok(self)
+    // Other methods...
+
+    /// Returns the bytes of the [ExtendedPrivateKey].
+    pub fn to_bytes(&self) -> [u8; 32] {
+        *self.0.as_ref()
+    }
+}
+
+impl fmt::LowerHex for ExtendedPrivateKey {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if f.alternate() {
+            f.write_str("0x")?;
+        }
+
+        for byte in &self.to_bytes() {
+            write!(f, "{:02x}", byte)?;
+        }
+
+        Ok(())
     }
 }
 
@@ -272,7 +276,7 @@ impl HDKey {
 
             private_key = ExtendedPrivateKey::from_slice(&hmac[0..32])?;
 
-            private_key = private_key.add_tweak(&secp256k1::Scalar::from(parent_private_key.0))?;
+            private_key = private_key.add_tweak(&secp256k1::SecretKey::from_slice(parent_private_key.as_ref())?)?;
 
             chain_code = [0u8; 32];
             chain_code[0..32].copy_from_slice(&hmac[32..]);
