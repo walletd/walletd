@@ -1,0 +1,22 @@
+# Ignore target directory
+/target/
+
+# Ignore Cargo build files
+**/*.rs.bk
+**/*.bk
+
+# Ignore environment variable files
+.env
+
+# Ignore IDE/editor specific files (optional)
+# For VSCode:
+.vscode/
+# For JetBrains IDEs:
+.idea/
+*.iml
+
+# Ignore MacOS specific files (optional)
+.DS_Store
+
+# Ignore any other sensitive or unnecessary files
+
