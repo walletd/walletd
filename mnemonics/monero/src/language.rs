@@ -245,7 +245,9 @@ impl WordList {
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, enum_iterator::Sequence)]
+#[derive(Default)]
 pub enum Language {
+    #[default]
     English,
     ChineseSimplified,
     Dutch,
@@ -260,11 +262,6 @@ pub enum Language {
     Spanish,
 }
 
-impl Default for Language {
-    fn default() -> Language {
-        Language::English
-    }
-}
 
 impl FromStr for Language {
     type Err = Error;

@@ -2,17 +2,13 @@ use crate::Error;
 use std::fmt;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum HDPurpose {
+    #[default]
     BIP32,
     BIP44,
     BIP49,
     BIP84,
-}
-
-impl Default for HDPurpose {
-    fn default() -> Self {
-        HDPurpose::BIP32
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -42,7 +38,7 @@ impl fmt::Display for HDPathIndex {
 pub struct HDPath(Vec<HDPathIndex>);
 
 impl HDPath {
-    pub fn from_str(s: &str) -> Result<Self, Error> {
+    pub fn parse_path(s: &str) -> Result<Self, Error> {
         let parts: Vec<&str> = s.split('/').collect();
         let mut indices = Vec::new();
         for (i, part) in parts.iter().enumerate() {

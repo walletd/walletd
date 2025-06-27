@@ -26,7 +26,7 @@ impl ExtendedPrivateKey {
     }
 
     /// Returns a reference to the underlying bytes.
-    pub fn as_ref(&self) -> &[u8] {
+    pub fn as_bytes(&self) -> &[u8] {
         self.0.as_ref()
     }
 
