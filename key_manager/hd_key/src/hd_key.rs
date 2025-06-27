@@ -140,7 +140,7 @@ impl HDKey {
             extended_public_key: Some(extended_public_key),
             depth: 0,
             parent_fingerprint: [0u8; 4],
-            derivation_path: HDPath::from_str("m")?,
+            derivation_path: HDPath::parse_path("m")?,
             network: network_type,
             child_index: 0,
             derivation_purpose: HDPurpose::default(),
@@ -160,7 +160,7 @@ impl HDKey {
     }
 
     pub fn derive(&self, derivation_path: &str) -> Result<Self, Error> {
-        let new_deriv_path = HDPath::from_str(derivation_path)?;
+        let new_deriv_path = HDPath::parse_path(derivation_path)?;
         let new_deriv_path_info = new_deriv_path.to_vec();
         let parent_deriv_path = self.derivation_path.to_vec();
         let mut private_key = self
@@ -201,12 +201,12 @@ impl HDKey {
 
             match item {
                 HDPathIndex::IndexNotHardened(num) => {
-                    child_index = *num;
+                    child_index = num;
                     mac.update(&parent_public_key.to_bytes());
                     mac.update(&num.to_be_bytes());
                 }
                 HDPathIndex::IndexHardened(num) => {
-                    let full_num = HDPathIndex::hardened_full_num(*num);
+                    let full_num = HDPathIndex::hardened_full_num(num);
                     child_index = full_num;
                     mac.update(&[0u8]);
                     mac.update(&parent_private_key.to_bytes());
@@ -223,13 +223,13 @@ impl HDKey {
             let hmac = mac.finalize().into_bytes();
             private_key = ExtendedPrivateKey::from_slice(&hmac[0..32])?;
             private_key =
-                private_key.add_tweak(&SecretKey::from_slice(parent_private_key.as_ref())?)?;
+                private_key.add_tweak(&SecretKey::from_slice(parent_private_key.as_bytes())?)?;
             chain_code = [0u8; 32];
             chain_code.copy_from_slice(&hmac[32..]);
             parent_fingerprint.copy_from_slice(&Self::hash160(&parent_public_key.to_bytes())[0..4]);
             parent_private_key = private_key.clone();
             depth += 1;
-            deriv_path.push(*item);
+            deriv_path.push(item);
         }
 
         if deriv_path.is_empty() || deriv_path.at(0)? != HDPathIndex::Master {
@@ -402,7 +402,7 @@ mod tests {
                 57, 122, 195, 32, 33, 178, 30, 10, 204, 238
             ]
         );
-        assert_eq!(keys.derivation_path, HDPath::from_str("m").unwrap());
+        assert_eq!(keys.derivation_path, HDPath::parse_path("m").unwrap());
         assert_eq!(
             keys.chain_code,
             [

@@ -1,8 +1,6 @@
 use crate::Error;
 use std::fmt;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum HDPurpose {
     #[default]
     BIP32,
