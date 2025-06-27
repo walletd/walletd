@@ -37,7 +37,7 @@ impl VoltageClient {
         let data: VoltageNodeInfo = response.json().await?;
 
         Ok(NodeInfo {
-            _user_id: "voltage".to_string(),
+            _____user_id: "voltage".to_string(),
             node_id: data.identity_pubkey,
             alias: data.alias,
             num_peers: data.num_peers,
