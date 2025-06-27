@@ -212,10 +212,12 @@ impl HDKey {
                     mac.update(&parent_private_key.to_bytes());
                     mac.update(&full_num.to_be_bytes());
                 }
-                _ => return Err(Error::Invalid(format!(
+                _ => {
+                    return Err(Error::Invalid(format!(
                     "Not handled, something is wrong with the derivation path specification {:?}",
                     item
-                ))),
+                )))
+                }
             }
 
             let hmac = mac.finalize().into_bytes();
