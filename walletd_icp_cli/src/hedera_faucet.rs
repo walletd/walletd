@@ -4,14 +4,14 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize)]
 struct FaucetRequest {
-    accountId: Option<String>,
+    account_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
 struct FaucetResponse {
-    accountId: String,
-    privateKey: String,
-    publicKey: String,
+    account_id: String,
+    private_key: String,
+    public_key: String,
     balance: u64,
 }
 
@@ -21,16 +21,16 @@ pub async fn get_testnet_account_from_faucet() -> Result<(String, String)> {
     let client = reqwest::Client::new();
     let response = client
         .post("https://testnet.hashio.io/api/v1/accounts")
-        .json(&FaucetRequest { accountId: None })
+        .json(&FaucetRequest { account_id: None })
         .send()
         .await?;
 
     if response.status().is_success() {
         let account: FaucetResponse = response.json().await?;
         println!("✅ Got new account from faucet!");
-        println!("   Account ID: {}", account.accountId);
+        println!("   Account ID: {}", account.account_id);
         println!("   Balance: {} tinybars", account.balance);
-        Ok((account.accountId, account.privateKey))
+        Ok((account.account_id, account.private_key))
     } else {
         Err(anyhow::anyhow!(
             "Faucet request failed: {}",

@@ -9,9 +9,9 @@ struct PortalAccountRequest {
 
 #[derive(Debug, Deserialize)]
 struct PortalAccountResponse {
-    accountId: String,
-    privateKey: String,
-    publicKey: String,
+    account_id: String,
+    private_key: String,
+    public_key: String,
     balance: u64,
 }
 
@@ -52,7 +52,7 @@ async fn create_via_hashio(_private_key: &str, public_key: &str) -> Result<(Stri
 
     let client = reqwest::Client::new();
     let request_body = serde_json::json!({
-        "publicKey": public_key,
+        "public_key": public_key,
         "initialBalance": 10000000000i64 // 100 HBAR in tinybars
     });
 
@@ -66,7 +66,7 @@ async fn create_via_hashio(_private_key: &str, public_key: &str) -> Result<(Stri
         Ok(response) => {
             if response.status().is_success() {
                 if let Ok(json) = response.json::<serde_json::Value>().await {
-                    if let Some(account_id) = json["accountId"].as_str() {
+                    if let Some(account_id) = json["account_id"].as_str() {
                         return Ok((account_id.to_string(), 100.0));
                     }
                 }
@@ -124,7 +124,7 @@ pub async fn fund_via_yamolky(account_id: &str, amount: f64) -> Result<String, S
     let client = reqwest::Client::new();
 
     let request_body = serde_json::json!({
-        "accountId": account_id,
+        "account_id": account_id,
         "amount": (amount * 100_000_000.0) as i64 // Convert to tinybars
     });
 

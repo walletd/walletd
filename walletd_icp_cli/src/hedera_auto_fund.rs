@@ -5,13 +5,13 @@ use tokio::time::sleep;
 
 #[derive(Debug, Serialize)]
 struct FaucetRequest {
-    accountId: String,
+    account_id: String,
     amount: u64,
 }
 
 #[derive(Debug, Deserialize)]
 struct FaucetResponse {
-    transactionId: Option<String>,
+    transaction_id: Option<String>,
     status: Option<String>,
     message: Option<String>,
 }
@@ -125,7 +125,7 @@ async fn fund_account_via_faucets(account_id: &str) -> Result<(), String> {
             .map_err(|e| format!("Client error: {}", e))?;
 
         let request = FaucetRequest {
-            accountId: account_id.to_string(),
+            account_id: account_id.to_string(),
             amount,
         };
 

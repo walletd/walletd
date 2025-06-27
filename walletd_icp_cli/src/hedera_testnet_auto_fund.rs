@@ -149,7 +149,7 @@ async fn fund_via_hedera_api(account_id: &str, amount: f64) -> Result<String, St
     let tinybars = (amount * 100_000_000.0) as i64;
 
     let request_body = serde_json::json!({
-        "accountId": account_id,
+        "account_id": account_id,
         "amount": tinybars
     });
 
@@ -167,7 +167,7 @@ async fn fund_via_hedera_api(account_id: &str, amount: f64) -> Result<String, St
             .await
             .map_err(|e| format!("Parse error: {}", e))?;
 
-        if let Some(tx_id) = result["transactionId"].as_str() {
+        if let Some(tx_id) = result["transaction_id"].as_str() {
             Ok(tx_id.to_string())
         } else {
             Ok("0.0.0@0.0".to_string()) // Default transaction ID
