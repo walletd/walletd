@@ -1,18 +1,19 @@
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
 name: Clippy
 
+on: [push, pull_request]
+
 jobs:
-  check:
-    env: 
-        RUSTFLAGS: '-D warnings'
+  clippy_check:
     name: check clippy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: run clippy
-        run: cargo clippy
+      - uses: actions/checkout@v2
+      
+      # ADD THIS - Install protoc for Hedera
+      - name: Install protoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+          
+      - name: clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings

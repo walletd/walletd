@@ -1,19 +1,21 @@
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
 name: Build docs
 
+on: [push, pull_request]
+
 jobs:
-  check:
-    env: 
-        RUSTDOCFLAGS: '-D warnings'
-          
+  check-docs:
     name: check docs
     runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: -D warnings
     steps:
-      - uses: actions/checkout@v3
-      - name: check docs build
+      - uses: actions/checkout@v2
+      
+      # ADD THIS - Install protoc for Hedera
+      - name: Install protoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+          
+      - name: check docs
         run: cargo doc --no-deps
