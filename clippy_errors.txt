@@ -1,804 +1,215 @@
- Downloading crates ...
-  Downloaded tonic v0.10.2
-   Compiling proc-macro2 v1.0.95
-   Compiling unicode-ident v1.0.18
-   Compiling libc v0.2.172
-    Checking cfg-if v1.0.0
-   Compiling serde v1.0.219
-   Compiling autocfg v1.4.0
-   Compiling version_check v0.9.5
-   Compiling typenum v1.18.0
-    Checking subtle v2.6.1
-   Compiling zerocopy v0.8.25
-   Compiling generic-array v0.14.7
-    Checking const-oid v0.9.6
-    Checking once_cell v1.21.3
-   Compiling shlex v1.3.0
-   Compiling num-traits v0.2.19
-    Checking cpufeatures v0.2.17
-   Compiling syn v1.0.109
-   Compiling quote v1.0.40
-   Compiling getrandom v0.3.3
-   Compiling jobserver v0.1.33
-   Compiling syn v2.0.101
-   Compiling cc v1.2.25
-   Compiling semver v1.0.26
-    Checking getrandom v0.2.16
-    Checking rand_core v0.6.4
-    Checking ppv-lite86 v0.2.21
-    Checking memchr v2.7.4
-    Checking rand_chacha v0.3.1
-   Compiling equivalent v1.0.2
-   Compiling hashbrown v0.15.3
-    Checking log v0.4.27
-    Checking rand v0.8.5
-    Checking itoa v1.0.15
-    Checking pin-project-lite v0.2.16
-   Compiling thiserror v1.0.69
-   Compiling lock_api v0.4.13
-   Compiling winnow v0.7.10
-   Compiling toml_write v0.1.1
-   Compiling indexmap v2.9.0
-    Checking smallvec v1.15.0
-   Compiling parking_lot_core v0.9.11
-   Compiling ahash v0.8.12
-    Checking scopeguard v1.2.0
-    Checking futures-core v0.3.31
-    Checking signal-hook-registry v1.4.5
-    Checking byteorder v1.5.0
-   Compiling rustversion v1.0.21
-    Checking lazy_static v1.5.0
-    Checking fnv v1.0.7
-    Checking socket2 v0.5.10
-    Checking mio v1.0.4
-    Checking futures-sink v0.3.31
-   Compiling ring v0.17.14
-   Compiling slab v0.4.9
-    Checking parking_lot v0.12.4
-    Checking futures-channel v0.3.31
-    Checking untrusted v0.9.0
-    Checking core-foundation-sys v0.8.7
-    Checking ryu v1.0.20
-    Checking futures-task v0.3.31
-   Compiling serde_json v1.0.140
-    Checking pin-utils v0.1.0
-    Checking percent-encoding v2.3.1
-    Checking futures-io v0.3.31
-   Compiling either v1.15.0
-    Checking tracing-core v0.1.33
-   Compiling rustix v1.0.7
-    Checking stable_deref_trait v1.2.0
-   Compiling httparse v1.10.1
-   Compiling synstructure v0.13.2
-    Checking tower-service v0.3.3
-    Checking try-lock v0.2.5
-   Compiling zeroize v1.8.1
-    Checking want v0.3.1
-    Checking errno v0.3.12
-   Compiling cfg_aliases v0.2.1
-    Checking hex v0.4.3
-    Checking num-integer v0.1.46
-   Compiling serde_derive v1.0.219
-   Compiling zeroize_derive v1.4.2
-   Compiling thiserror-impl v1.0.69
-   Compiling tokio-macros v2.5.0
-   Compiling futures-macro v0.3.31
-   Compiling tracing-attributes v0.1.28
-   Compiling displaydoc v0.2.5
-    Checking futures-util v0.3.31
-   Compiling zerofrom-derive v0.1.6
-   Compiling yoke-derive v0.8.0
-    Checking crypto-common v0.1.6
-    Checking block-buffer v0.10.4
-    Checking tracing v0.1.41
-    Checking digest v0.10.7
-    Checking sha2 v0.10.9
-    Checking hmac v0.12.1
-   Compiling zerovec-derive v0.11.1
-    Checking bs58 v0.5.1
-    Checking fastrand v2.3.0
-    Checking litemap v0.8.0
-    Checking writeable v0.6.1
-    Checking core-foundation v0.9.4
-    Checking security-framework-sys v2.14.0
-    Checking zerofrom v0.1.6
-   Compiling icu_properties_data v2.0.1
-    Checking mime v0.3.17
-   Compiling icu_normalizer_data v2.0.0
-   Compiling curve25519-dalek-derive v0.1.1
-    Checking yoke v0.8.0
-    Checking keccak v0.1.5
-    Checking sha3 v0.10.8
-    Checking block-padding v0.3.3
-   Compiling bytemuck_derive v1.9.3
-    Checking form_urlencoded v1.2.1
-    Checking inout v0.1.4
-   Compiling native-tls v0.2.14
-    Checking utf8_iter v1.0.4
-    Checking cipher v0.4.4
-   Compiling aho-corasick v1.1.3
-   Compiling regex-syntax v0.8.5
-    Checking zerovec v0.11.2
-    Checking zerotrie v0.2.2
-   Compiling borsh v1.5.7
-    Checking bytemuck v1.23.0
-    Checking ipnet v2.11.0
-   Compiling anyhow v1.0.98
-   Compiling regex-automata v0.4.9
-    Checking tinystr v0.8.1
-    Checking icu_locale_core v2.0.0
-    Checking potential_utf v0.1.2
-    Checking icu_collections v2.0.0
-    Checking base64 v0.21.7
-   Compiling async-trait v0.1.88
-    Checking crc32fast v1.4.2
-    Checking encoding_rs v0.8.35
-    Checking base64ct v1.7.3
-    Checking icu_provider v2.0.0
-    Checking bytes v1.10.1
-    Checking bitflags v2.9.1
-    Checking bincode v1.3.3
-   Compiling serde_spanned v0.6.8
-   Compiling toml_datetime v0.6.9
-    Checking tokio v1.45.1
-   Compiling toml_edit v0.22.26
-    Checking icu_normalizer v2.0.0
-   Compiling rustc_version v0.4.1
-    Checking icu_properties v2.0.1
-   Compiling curve25519-dalek v4.1.3
-    Checking http v0.2.12
-    Checking security-framework v2.11.1
-    Checking tempfile v3.20.0
-    Checking num-bigint v0.4.6
-   Compiling regex v1.11.1
-    Checking serde_urlencoded v0.7.1
-    Checking idna_adapter v1.2.1
-    Checking http-body v0.4.6
-    Checking idna v1.0.3
-    Checking solana-sanitize v2.2.1
-    Checking hashbrown v0.13.2
-    Checking solana-atomic-u64 v2.2.1
-    Checking httpdate v1.0.3
-    Checking url v2.5.4
-    Checking salsa20 v0.10.2
-   Compiling toml v0.5.11
-   Compiling proc-macro-crate v3.3.0
-    Checking pem-rfc7468 v0.7.0
-    Checking sct v0.7.1
-    Checking aes v0.8.4
-    Checking pbkdf2 v0.12.2
-    Checking der v0.7.10
-   Compiling borsh-schema-derive-internal v0.10.4
-   Compiling borsh-derive-internal v0.10.4
-    Checking bitflags v1.3.2
-    Checking scrypt v0.11.0
-    Checking cbc v0.1.2
-    Checking signature v2.2.0
-    Checking sync_wrapper v0.1.2
-    Checking rustls-webpki v0.101.7
-    Checking solana-decode-error v2.3.0
-   Compiling crunchy v0.2.3
-    Checking five8_core v0.1.2
-   Compiling rustls v0.21.12
-    Checking five8_const v0.1.4
-   Compiling proc-macro-crate v0.1.5
-    Checking ff v0.13.1
-    Checking base16ct v0.2.0
-    Checking group v0.13.0
-    Checking digest v0.9.0
-    Checking crypto-bigint v0.5.5
-    Checking alloc-no-stdlib v2.0.4
-    Checking spki v0.7.3
-    Checking alloc-stdlib v0.2.2
-    Checking rfc6979 v0.4.0
-   Compiling borsh-derive v0.10.4
-   Compiling system-configuration-sys v0.5.0
-   Compiling unicase v2.8.1
-    Checking pkcs5 v0.7.1
-    Checking adler2 v2.0.0
-   Compiling mime_guess v2.0.5
-    Checking miniz_oxide v0.8.8
-   Compiling borsh-derive v1.5.7
-    Checking borsh v0.10.4
-    Checking pkcs8 v0.10.2
-    Checking sec1 v0.7.3
-    Checking brotli-decompressor v5.0.0
-   Compiling thiserror v2.0.12
-    Checking tokio-util v0.7.15
-    Checking tokio-native-tls v0.3.1
-    Checking flate2 v1.1.1
-    Checking brotli v8.0.1
-    Checking elliptic-curve v0.13.8
-    Checking h2 v0.3.26
-   Compiling thiserror-impl v2.0.12
-    Checking webpki-roots v0.25.4
-    Checking ecdsa v0.16.9
-    Checking system-configuration v0.5.1
-    Checking rustls-pemfile v1.0.4
-    Checking opaque-debug v0.3.1
-   Compiling itertools v0.12.1
-    Checking tokio-rustls v0.24.1
-    Checking k256 v0.13.4
-    Checking block-buffer v0.9.0
-    Checking sha2 v0.9.9
-    Checking data-encoding v2.9.0
-   Compiling time-core v0.1.4
-   Compiling num-conv v0.1.0
-   Compiling pkg-config v0.3.32
-    Checking powerfmt v0.2.0
-    Checking deranged v0.4.0
-   Compiling time-macros v0.2.22
-    Checking solana-hash v2.2.1
-    Checking solana-sha256-hasher v2.2.1
-    Checking solana-pubkey v2.2.1
-    Checking serde_bytes v0.11.17
-    Checking tinyvec_macros v0.1.1
-   Compiling unicode-xid v0.2.6
-   Compiling prettyplease v0.2.33
-    Checking tinyvec v1.9.0
-    Checking arrayvec v0.7.6
-    Checking solana-instruction v2.2.1
-   Compiling glob v0.3.2
-   Compiling vcpkg v0.2.15
-    Checking solana-sdk-ids v2.2.1
-   Compiling clang-sys v1.8.1
-    Checking num_cpus v1.17.0
-   Compiling minimal-lexical v0.2.1
-   Compiling nom v7.1.3
-   Compiling libloading v0.8.8
-    Checking time v0.3.41
-   Compiling getrandom v0.1.16
-    Checking async-compression v0.4.23
-    Checking hex-conservative v0.1.2
-    Checking futures-executor v0.3.31
-   Compiling bitcoin-internals v0.2.0
-    Checking instant v0.1.13
-   Compiling bindgen v0.71.1
-    Checking hyper v0.14.32
-   Compiling paste v1.0.15
-   Compiling crossbeam-utils v0.8.21
-    Checking rand_core v0.5.1
-   Compiling cexpr v0.6.0
-   Compiling rustc-hash v2.1.1
-    Checking bitcoin_hashes v0.13.0
-    Checking futures v0.3.31
-   Compiling ring v0.16.20
-    Checking derivation-path v0.2.0
-    Checking rand_chacha v0.2.2
-    Checking solana-sysvar-id v2.2.1
-    Checking allocator-api2 v0.2.21
-    Checking untrusted v0.7.1
-    Checking spin v0.5.2
-    Checking rand v0.7.3
-    Checking unicode-normalization v0.1.22
-    Checking hashbrown v0.14.5
-   Compiling solana-sdk-macro v2.2.1
-    Checking bip39 v2.1.0
-    Checking simple_asn1 v0.6.3
-    Checking dashmap v5.5.3
-   Compiling psm v0.1.26
-    Checking hyper-tls v0.5.0
-    Checking hyper-rustls v0.24.2
-    Checking base64 v0.22.1
-    Checking reqwest v0.11.27
-   Compiling stacker v0.1.21
-   Compiling binread_derive v2.1.0
-   Compiling heck v0.5.0
-    Checking crossbeam-epoch v0.9.18
-    Checking base64 v0.13.1
-   Compiling const_format_proc_macros v0.2.34
-   Compiling candid_derive v0.6.6
-   Compiling rlp-derive v0.1.0
-   Compiling heck v0.4.1
-   Compiling parity-scale-codec v3.7.5
-   Compiling rayon-core v1.12.1
-    Checking rustc-hex v2.1.0
-    Checking crossbeam-deque v0.8.6
-   Compiling parity-scale-codec-derive v3.7.5
-    Checking rustls-pki-types v1.12.0
-   Compiling impl-trait-for-tuples v0.2.3
-    Checking iana-time-zone v0.1.63
-    Checking unicode-width v0.1.14
-    Checking typed-arena v2.0.2
-   Compiling protobuf v2.28.0
-    Checking arrayvec v0.5.2
-    Checking pretty v0.12.4
-    Checking chrono v0.4.41
-    Checking binread v2.2.0
-    Checking solana-system-interface v1.0.0
-    Checking ic_principal v0.1.1
-    Checking pbkdf2 v0.11.0
-    Checking leb128 v0.2.5
-   Compiling prometheus v0.13.4
-    Checking rayon v1.10.0
-   Compiling derive_more-impl v1.0.0
-    Checking signature v1.6.4
-    Checking ed25519 v1.5.3
-    Checking candid v0.10.14
-    Checking curve25519-dalek v3.2.0
-   Compiling serde_tokenstream v0.1.7
-    Checking password-hash v0.5.0
-   Compiling zstd-sys v2.0.15+zstd.1.5.7
-    Checking blake2 v0.10.6
-    Checking ripemd v0.1.3
-   Compiling ic-cdk-executor v0.1.0
-    Checking argon2 v0.5.3
-    Checking ed25519-dalek v1.0.1
-    Checking solana-transaction-error v2.2.1
-   Compiling scale-info-derive v2.11.6
-    Checking uuid v1.17.0
-    Checking static_assertions v1.1.0
-   Compiling tiny-keccak v2.0.2
-   Compiling wasm-bindgen-shared v0.2.100
-    Checking solana-epoch-schedule v2.2.1
-    Checking solana-clock v2.2.1
-   Compiling num_enum_derive v0.7.3
-    Checking ff v0.12.1
-   Compiling bindgen v0.65.1
-    Checking group v0.12.1
-    Checking fixed-hash v0.8.0
-    Checking backoff v0.4.0
-   Compiling libz-sys v1.1.22
-   Compiling bzip2-sys v0.1.13+1.0.8
-   Compiling lz4-sys v1.11.1+lz4-1.10.0
-   Compiling lazycell v1.3.0
-   Compiling peeking_take_while v0.1.2
-   Compiling rustc-hash v1.1.0
-   Compiling bumpalo v3.17.0
-    Checking pairing v0.22.0
-    Checking serde-big-array v0.5.1
-   Compiling feature-probe v0.1.1
-   Compiling wasm-bindgen-backend v0.2.100
-    Checking bech32 v0.9.1
-    Checking subtle-ng v2.5.0
-    Checking curve25519-dalek-ng v4.1.1
-   Compiling bv v0.11.1
-    Checking solana-signature v2.2.1
-    Checking bls12_381 v0.7.1
-    Checking ic-certification v1.3.0
-   Compiling wasm-bindgen-macro-support v0.2.100
-   Compiling serde_repr v0.1.20
-   Compiling pin-project-internal v1.1.10
-    Checking urlencoding v2.1.3
-    Checking solana-msg v2.2.1
-    Checking siphasher v1.0.1
-   Compiling wasm-bindgen v0.2.100
-    Checking half v1.8.3
-    Checking arrayref v0.3.9
-    Checking serde_cbor v0.11.2
-   Compiling wasm-bindgen-macro v0.2.100
-    Checking pin-project v1.1.10
-    Checking solana-program-error v2.2.2
-    Checking opentelemetry v0.21.0
-    Checking ic-transport-types v0.31.0
-    Checking ic-verify-bls-signature v0.1.0
-   Compiling ic-cdk-macros v0.8.4
-    Checking ed25519-consensus v2.1.0
-    Checking rlp v0.5.2
-    Checking cached v0.46.1
-    Checking pem v2.0.1
-    Checking universal-hash v0.5.1
-    Checking ordered-float v4.6.0
-    Checking rangemap v1.5.1
-    Checking ic0 v0.21.1
-    Checking ic-cdk v0.12.3
-    Checking poly1305 v0.8.0
-    Checking ic-agent v0.31.0
-    Checking opentelemetry_sdk v0.21.2
-    Checking num_enum v0.7.3
-   Compiling strum_macros v0.24.3
-    Checking chacha20 v0.9.1
-    Checking aead v0.5.2
-   Compiling blake3 v1.8.2
-   Compiling librocksdb-sys v0.11.0+8.1.1
-    Checking strum v0.24.1
-    Checking solana-program-memory v2.3.1
-    Checking solana-account-info v2.3.0
-    Checking ic-ledger-types v0.9.0
-    Checking chacha20poly1305 v0.10.1
-    Checking js-sys v0.3.77
-    Checking opentelemetry-prometheus v0.14.1
-    Checking const_format v0.2.34
-    Checking ic-utils v0.31.0
-    Checking constant_time_eq v0.3.1
-   Compiling rustls v0.23.27
-   Compiling camino v1.1.10
-    Checking byte-slice-cast v1.2.3
-    Checking solana-signer v2.2.1
-    Checking rustls-webpki v0.103.3
-    Checking solana-short-vec v2.2.1
-    Checking tower-layer v0.3.3
-   Compiling fixedbitset v0.4.2
-    Checking send_wrapper v0.4.0
-   Compiling petgraph v0.6.5
-   Compiling libsecp256k1-core v0.2.2
-    Checking gloo-timers v0.2.6
-    Checking futures-timer v3.0.3
-    Checking derive_more v1.0.0
-    Checking pem v1.1.1
-    Checking solana-slot-hashes v2.2.1
-    Checking solana-serialize-utils v2.2.1
-    Checking solana-bincode v2.2.1
-    Checking webpki-roots v0.24.0
-    Checking solana-fee-calculator v2.2.1
-    Checking sha1 v0.10.6
-    Checking utf-8 v0.7.6
-    Checking tungstenite v0.20.1
-    Checking solana-message v2.2.1
-    Checking solana-cpi v2.2.1
-    Checking impl-codec v0.6.0
-    Checking impl-rlp v0.3.0
-   Compiling open-fastrlp-derive v0.1.1
-   Compiling strum_macros v0.26.4
-    Checking scale-info v2.11.6
-    Checking solana-rent v2.2.1
-    Checking impl-serde v0.4.0
-   Compiling auto_impl v1.3.0
-    Checking tokio-tungstenite v0.20.1
-    Checking solana-stake-interface v1.2.1
-   Compiling libsecp256k1-gen-ecmult v0.2.1
-   Compiling libsecp256k1-gen-genmult v0.2.1
-    Checking solana-instructions-sysvar v2.2.2
-    Checking solana-program-entrypoint v2.3.0
-    Checking solana-slot-history v2.2.1
-    Checking uint v0.9.5
-    Checking solana-last-restart-slot v2.2.1
-    Checking solana-epoch-rewards v2.2.1
-    Checking crypto-mac v0.8.0
-    Checking same-file v1.0.6
-   Compiling bitcoin-private v0.1.0
-    Checking walkdir v2.5.0
-    Checking solana-sysvar v2.2.2
-    Checking hmac v0.8.1
-    Checking primitive-types v0.12.2
-    Checking ethbloom v0.13.0
-   Compiling libsecp256k1 v0.6.0
-   Compiling openssl-sys v0.9.109
-    Checking num-iter v0.1.45
-   Compiling secp256k1-sys v0.8.1
-    Checking option-ext v0.2.0
-    Checking dirs-sys v0.4.1
-   Compiling phf_shared v0.11.3
-    Checking solana-account v2.2.1
-    Checking hmac-drbg v0.3.0
-    Checking solana-feature-set v2.2.5
-    Checking ethereum-types v0.14.1
-    Checking tokio-stream v0.1.17
-    Checking base64 v0.12.3
-    Checking bitcoin_hashes v0.12.0
-    Checking dirs v5.0.1
-    Checking solana-precompile-error v2.2.2
-    Checking cargo-platform v0.1.9
-    Checking qstring v0.7.2
-    Checking uriparse v0.6.4
-   Compiling dirs-sys-next v0.1.2
-   Compiling openssl v0.10.73
-    Checking foreign-types-shared v0.1.1
-    Checking foreign-types v0.3.2
-   Compiling dirs-next v2.0.0
-    Checking cargo_metadata v0.18.1
-    Checking solana-derivation-path v2.2.1
-    Checking open-fastrlp v0.1.4
-    Checking ethabi v18.0.0
-    Checking secp256k1 v0.27.0
-    Checking strum v0.26.3
-    Checking http v1.3.1
-    Checking const-hex v1.14.1
-   Compiling openssl-macros v0.1.1
-    Checking ethers-core v2.0.14
-    Checking solana-seed-derivable v2.2.1
-   Compiling term v0.7.0
-    Checking ed25519-dalek-bip32 v0.2.0
-    Checking solana-seed-phrase v2.2.1
-   Compiling precomputed-hash v0.1.1
-   Compiling bit-vec v0.6.3
-   Compiling new_debug_unreachable v1.0.6
-   Compiling eyre v0.6.12
-   Compiling string_cache v0.8.9
-    Checking solana-secp256k1-program v2.2.1
-   Compiling bit-set v0.5.3
-    Checking solana-keypair v2.2.1
-   Compiling ascii-canvas v3.0.0
-    Checking http-body v1.0.1
-    Checking solana-ed25519-program v2.2.3
-   Compiling ena v0.14.3
-    Checking itertools v0.10.5
-   Compiling prost-derive v0.12.6
-   Compiling itertools v0.11.0
-   Compiling ident_case v1.0.1
-   Compiling strsim v0.11.1
-   Compiling lalrpop-util v0.20.2
-   Compiling darling_core v0.20.11
-   Compiling phf_generator v0.11.3
-   Compiling lalrpop v0.20.2
-    Checking solana-cluster-type v2.2.1
-    Checking fxhash v0.2.1
-   Compiling secp256k1-sys v0.6.1
-    Checking solana-secp256r1-program v2.2.3
-   Compiling memoffset v0.9.1
-    Checking atomic-waker v1.1.2
-    Checking solana-precompiles v2.2.2
-   Compiling zstd-safe v7.2.4
-   Compiling radium v0.7.0
-    Checking solana-time-utils v2.2.1
-    Checking solana-transaction v2.2.2
-    Checking h2 v0.4.10
-   Compiling phf_macros v0.11.3
-   Compiling darling_macro v0.20.11
-    Checking bip32 v0.5.3
-    Checking webpki-roots v1.0.0
-    Checking crossbeam-channel v0.5.15
-    Checking solana-serde-varint v2.2.1
-    Checking dunce v1.0.5
-    Checking tap v1.0.1
-   Compiling indenter v0.3.3
-   Compiling portable-atomic v1.11.1
-    Checking wyz v0.5.1
-    Checking phf v0.11.3
-    Checking hyper v1.6.0
-   Compiling darling v0.20.11
-    Checking coins-core v0.8.7
-   Compiling Inflector v0.11.4
-   Compiling toml v0.8.22
-    Checking solana-commitment-config v2.2.1
-    Checking solana-inflation v2.2.1
-    Checking bitcoin_hashes v0.11.0
-    Checking solana-reward-info v2.2.1
-   Compiling parking_lot_core v0.8.6
-    Checking funty v2.0.0
-   Compiling system-configuration-sys v0.6.0
-    Checking secp256k1 v0.24.3
-    Checking bitvec v1.0.1
-   Compiling serde_with_macros v3.12.0
-    Checking coins-bip32 v0.8.7
-    Checking zstd v0.13.3
-    Checking hashers v1.0.1
-    Checking solana-transaction-context v2.2.1
-    Checking jsonwebtoken v8.3.0
-    Checking enr v0.10.0
-    Checking tracing-futures v0.2.5
-    Checking scrypt v0.10.0
-   Compiling synstructure v0.12.6
-    Checking solana-feature-set-interface v4.0.0
-    Checking uuid v0.8.2
-    Checking webpki v0.22.4
-    Checking ctr v0.9.2
-    Checking md-5 v0.10.6
-   Compiling nix v0.29.0
-    Checking gethostname v0.2.3
-   Compiling indexmap v1.9.3
-    Checking path-slash v0.2.1
-   Compiling rustls v0.20.9
-    Checking yansi v0.5.1
-    Checking home v0.5.11
-   Compiling asn1-rs-derive v0.4.0
-    Checking coins-bip39 v0.8.7
-    Checking solana-metrics v2.2.7
-    Checking eth-keystore v0.5.0
-    Checking ethers-providers v2.0.14
-    Checking ethers-contract-abigen v2.0.14
-    Checking agave-feature-set v2.2.7
-    Checking rusticata-macros v4.1.0
-    Checking serde_with v3.12.0
-    Checking solana-account-decoder-client-types v2.2.7
-    Checking bitcoin v0.29.2
-    Checking solana-serde v2.2.1
-    Checking walletd_mnemonics_core v0.2.0 (/Users/Aslan/projects/walletd-for-github/walletd/mnemonics/core)
-   Compiling asn1-rs-impl v0.1.0
-   Compiling cfg_eval v0.1.2
-   Compiling async-stream-impl v0.3.6
-   Compiling axum-core v0.3.4
-    Checking task-local-extensions v0.1.4
-    Checking rand_core v0.9.3
-   Compiling num-bigint v0.2.6
-    Checking hashbrown v0.12.3
-   Compiling hex_lit v0.1.1
-    Checking async-stream v0.3.6
-    Checking rand_chacha v0.9.0
-    Checking reqwest-middleware v0.2.5
-    Checking solana-packet v2.2.1
-   Compiling solang-parser v0.3.3
-    Checking asn1-rs v0.5.2
-   Compiling ethers-contract-derive v2.0.14
-    Checking system-configuration v0.6.1
-    Checking solana-transaction-status-client-types v2.2.7
-    Checking parking_lot v0.11.2
-    Checking solana-version v2.2.7
-    Checking ethers-signers v2.0.14
-    Checking webpki-roots v0.22.6
-    Checking concurrent-queue v2.5.0
-    Checking jsonrpc-core v18.0.0
-    Checking solana-inline-spl v2.2.7
-    Checking safe_arch v0.7.4
-    Checking ethers-contract v2.0.14
-   Compiling axum v0.6.20
-    Checking futures-locks v0.7.1
-    Checking core-foundation v0.10.1
-    Checking fs2 v0.4.3
-   Compiling num-complex v0.2.4
-   Compiling num-rational v0.2.4
-    Checking termcolor v1.4.1
-    Checking humantime v2.2.0
-   Compiling oid-registry v0.6.1
-    Checking solana-net-utils v2.2.7
-    Checking electrum-client v0.12.1
-    Checking security-framework v3.2.0
-    Checking sled v0.34.7
-    Checking wide v0.7.32
-    Checking solana-rpc-client-api v2.2.7
-    Checking miniscript v9.2.0
-    Checking hyper-util v0.1.13
-    Checking rand v0.9.1
-    Checking tower v0.4.13
-    Checking ethers-addressbook v2.0.14
-    Checking prost v0.12.6
-    Checking solana-feature-gate-interface v2.2.1
-    Checking tokio-io-timeout v1.2.0
-    Checking solana-epoch-info v2.2.1
-   Compiling ark-serialize-derive v0.4.2
-   Compiling bdk-macros v0.6.0
-   Compiling dlopen2_derive v0.3.0
-   Compiling quinn-udp v0.5.12
-    Checking sync_wrapper v1.0.2
-    Checking ark-std v0.4.0
-    Checking unicode-width v0.2.0
-    Checking solana-measure v2.2.7
-    Checking matchit v0.7.3
-   Compiling solana-perf v2.2.7
-    Checking ark-serialize v0.4.2
-    Checking dlopen2 v0.5.0
-    Checking console v0.15.11
-    Checking tower v0.5.2
-    Checking bdk v0.28.2
-    Checking hyper-timeout v0.4.1
-    Checking fastbloom v0.9.0
-    Checking rustls-platform-verifier v0.5.3
-    Checking der-parser v8.2.0
-    Checking http-body-util v0.1.3
-    Checking solana-quic-definitions v2.2.1
-    Checking tokio-rustls v0.26.2
-    Checking solana-nonce v2.2.1
-   Compiling ark-ff-macros v0.4.2
-    Checking solana-rayon-threadlimit v2.2.7
-    Checking num-rational v0.4.2
-    Checking raw-cpuid v11.5.0
-   Compiling derivative v2.2.0
-   Compiling ark-ff-asm v0.4.2
-   Compiling quinn v0.11.8
-    Checking num-complex v0.4.6
-   Compiling secp256k1-sys v0.9.2
-    Checking generic-array v0.12.4
-   Compiling signal-hook v0.3.18
-    Checking number_prefix v0.4.0
-    Checking lru-slab v0.1.2
-   Compiling hex-literal v0.3.4
-    Checking iri-string v0.7.8
-    Checking quanta v0.12.5
-    Checking quinn-proto v0.11.12
-    Checking indicatif v0.17.11
-    Checking ark-ff v0.4.2
-    Checking digest v0.8.1
-    Checking num v0.4.3
-    Checking x509-parser v0.14.0
-    Checking tower-http v0.6.6
-    Checking hyper-rustls v0.27.6
-    Checking hyper-tls v0.6.0
-    Checking num v0.2.1
-    Checking solana-connection-cache v2.2.7
-   Compiling enum-iterator-derive v1.4.0
-    Checking as-slice v0.2.1
-    Checking spinning_top v0.3.0
-    Checking atty v0.2.14
-    Checking base58 v0.2.0
-    Checking parking v2.2.1
-    Checking event-listener v2.5.3
-    Checking no-std-compat v0.4.1
-    Checking crc-catalog v2.4.0
-   Compiling bitcoin v0.30.2
-    Checking nonzero_ext v0.3.0
-    Checking governor v0.6.3
-    Checking enum-iterator v1.5.0
-    Checking crc v3.3.0
-    Checking async-channel v1.9.0
-    Checking event-listener v5.4.0
-    Checking env_logger v0.9.3
-    Checking aligned v0.4.2
-    Checking solana-transaction-metrics-tracker v2.2.7
-    Checking percentage v0.1.0
-    Checking reqwest v0.12.19
-    Checking solana-tls-utils v2.2.7
-    Checking solana-rpc-client v2.2.7
-    Checking curve25519-dalek v2.1.3
-    Checking solana-client-traits v2.2.1
-    Checking solana-hard-forks v2.2.1
-    Checking utf8parse v0.2.2
-    Checking histogram v0.6.9
-   Compiling bitcoin v0.31.2
-    Checking secp256k1 v0.28.2
-    Checking solana-streamer v2.2.7
-    Checking anstyle-parse v0.2.6
-    Checking solana-shred-version v2.2.1
-    Checking solana-logger v2.3.1
-    Checking event-listener-strategy v0.5.4
-    Checking walletd_hd_key v0.2.0 (/Users/Aslan/projects/walletd-for-github/walletd/key_manager/hd_key)
-    Checking solana-address-lookup-table-interface v2.2.2
-    Checking solana-keccak-hasher v2.2.1
-    Checking solana-poh-config v2.2.1
-   Compiling num-derive v0.4.2
-    Checking memmap2 v0.5.10
-error: method `as_ref` can be confused for the standard trait method `std::convert::AsRef::as_ref`
-  --> key_manager/hd_key/src/hd_key.rs:29:5
+    Checking walletd_icp v0.1.0 (/Users/Aslan/projects/walletd-for-github/walletd/coins/icp)
+    Checking walletd-core v0.1.0 (/Users/Aslan/projects/walletd-for-github/walletd/crates/walletd-core)
+    Checking walletd_icp_api v0.1.0 (/Users/Aslan/projects/walletd-for-github/walletd/crates/walletd_icp_api)
+error: methods called `from_*` usually take no `self`
+  --> crates/walletd-core/src/lib.rs:11:21
    |
-29 | /     pub fn as_ref(&self) -> &[u8] {
-30 | |         self.0.as_ref()
-31 | |     }
-   | |_____^
-   |
-   = help: consider implementing the trait `std::convert::AsRef` or choosing a less ambiguous method name
-   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#should_implement_trait
-   = note: `-D clippy::should-implement-trait` implied by `-D warnings`
-   = help: to override `-D warnings` add `#[allow(clippy::should_implement_trait)]`
+11 |     fn from_address(&self) -> String;
+--
+   = note: `-D clippy::wrong-self-convention` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::wrong_self_convention)]`
 
-    Checking is-terminal v0.4.16
-error: this `impl` can be derived
-  --> key_manager/hd_key/src/hd_path.rs:12:1
-   |
-12 | / impl Default for HDPurpose {
-13 | |     fn default() -> Self {
-14 | |         HDPurpose::BIP32
-15 | |     }
-16 | | }
-   | |_^
-   |
-   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#derivable_impls
-   = note: `-D clippy::derivable-impls` implied by `-D warnings`
-   = help: to override `-D warnings` add `#[allow(clippy::derivable_impls)]`
-help: replace the manual implementation with a derive attribute and mark the default variant
-   |
-5  + #[derive(Default)]
-6  ~ pub enum HDPurpose {
-7  ~     #[default]
-8  ~     BIP32,
-   |
-
-error: method `from_str` can be confused for the standard trait method `std::str::FromStr::from_str`
-  --> key_manager/hd_key/src/hd_path.rs:45:5
-   |
-45 | /     pub fn from_str(s: &str) -> Result<Self, Error> {
-46 | |         let parts: Vec<&str> = s.split('/').collect();
-47 | |         let mut indices = Vec::new();
-48 | |         for (i, part) in parts.iter().enumerate() {
-...  |
-69 | |         Ok(HDPath(indices))
-70 | |     }
-   | |_____^
-   |
-   = help: consider implementing the trait `std::str::FromStr` or choosing a less ambiguous method name
-   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#should_implement_trait
-
-error: unnecessary closure used to substitute value for `Option::None`
-  --> key_manager/hd_key/src/hd_path.rs:81:9
-   |
-81 | /         self.0
-82 | |             .get(index)
-83 | |             .copied()
-84 | |             .ok_or_else(|| Error::IndexOutOfRange {
-85 | |                 index: index as u32,
-86 | |                 max: self.0.len() as u32,
-87 | |             })
-   | |______________^
-   |
-   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unnecessary_lazy_evaluations
-   = note: `-D clippy::unnecessary-lazy-evaluations` implied by `-D warnings`
-   = help: to override `-D warnings` add `#[allow(clippy::unnecessary_lazy_evaluations)]`
-help: use `ok_or` instead
-   |
-84 ~             .ok_or(Error::IndexOutOfRange {
-85 +                 index: index as u32,
-86 +                 max: self.0.len() as u32,
-87 +             })
-   |
-
-    Checking is_terminal_polyfill v1.70.1
-error: could not compile `walletd_hd_key` (lib) due to 4 previous errors
+error: could not compile `walletd-core` (lib) due to 1 previous error
 warning: build failed, waiting for other jobs to finish...
+error[E0425]: cannot find value `agent` in this scope
+  --> coins/icp/src/contracts/canister_client.rs:11:16
+--
+10 |     pub fn new(agent: Agent) -> Self {
+   |                ~~~~~
+
+error: methods called `from_*` usually take no `self`
+  --> crates/walletd_icp_api/src/lib.rs:34:21
+   |
+34 |     fn from_address(&self) -> String;
+--
+106 |             _user_id: user_id.to_string(),
+    |             ~~~~~~~~
+
+error: the borrowed expression implements the required traits
+   --> crates/walletd_icp_api/src/lib.rs:189:56
+    |
+189 |         let principal = Principal::self_authenticating(&public_key_bytes);
+--
+    = note: `-D clippy::needless-borrows-for-generic-args` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_borrows_for_generic_args)]`
+
+error: stripping a prefix manually
+   --> crates/walletd_icp_api/src/lib.rs:304:48
+    |
+304 |             let public_key_bytes = hex::decode(&did[8..]).ok()?;
+--
+11 |         Self { _agent }
+   |                ~~~~~~
+
+error: could not compile `walletd_icp_api` (lib) due to 3 previous errors
+error[E0560]: struct `wallet::IcpWallet` has no field named `private_key`
+  --> coins/icp/src/wallet/mod.rs:34:13
+   |
+--
+
+Some errors have detailed explanations: E0425, E0560.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `walletd_icp` (lib) due to 4 previous errors
+For more information about this error, try `rustc --explain E0560`.
+error: could not compile `walletd_bitcoin` (lib) due to 4 previous errors
+error: manually reimplementing `div_ceil`
+   --> coins/monero/src/fee_utils.rs:143:11
+    |
+143 |     fee = (fee + fee_quantization_mask - 1) / fee_quantization_mask * fee_quantization_mask;
+--
+    = note: `-D clippy::manual-div-ceil` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::manual_div_ceil)]`
+
+error: this expression creates a reference which is immediately dereferenced by the compiler
+  --> coins/monero/src/key_image.rs:36:52
+   |
+36 |         let our_public_key = PublicKey::from_slice(&public_key.as_bytes())
+--
+   = note: `-D clippy::needless-borrow` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::needless_borrow)]`
+
+error: this expression creates a reference which is immediately dereferenced by the compiler
+  --> coins/monero/src/key_image.rs:80:52
+   |
+80 |         let our_public_key = PublicKey::from_slice(&public_spend_key.as_bytes())
+--
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_borrow
+
+error: this expression creates a reference which is immediately dereferenced by the compiler
+   --> coins/monero/src/key_image.rs:133:52
+    |
+133 |         let our_public_key = PublicKey::from_slice(&public_spend_key.as_bytes())
+--
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_borrow
+
+error: this expression creates a reference which is immediately dereferenced by the compiler
+   --> coins/monero/src/monero_lws.rs:365:75
+    |
+365 |             let account_public_keys = MoneroPublicKeys::from_private_keys(&account_private_keys);
+--
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_borrow
+
+error: writing `&Vec` instead of `&[_]` involves a new object where a slice will do
+  --> coins/monero/src/monero_serialize.rs:54:14
+   |
+54 |         vec: &Vec<T>,
+--
+   = note: `-D clippy::ptr-arg` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::ptr_arg)]`
+
+error: the borrowed expression implements the required traits
+   --> coins/monero/src/rct_types.rs:493:35
+    |
+493 |             &Hash::hash_to_scalar(&y.bytes),
+--
+    = note: `-D clippy::needless-borrows-for-generic-args` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_borrows_for_generic_args)]`
+
+error: writing `&Vec` instead of `&[_]` involves a new object where a slice will do
+   --> coins/monero/src/rct_types.rs:898:12
+    |
+898 |         P: &Vec<RctKey>,
+--
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#ptr_arg
+
+error: writing `&Vec` instead of `&[_]` involves a new object where a slice will do
+   --> coins/monero/src/rct_types.rs:900:12
+    |
+900 |         C: &Vec<RctKey>,
+--
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#ptr_arg
+
+error: writing `&Vec` instead of `&[_]` involves a new object where a slice will do
+   --> coins/monero/src/rct_types.rs:902:20
+    |
+902 |         C_nonzero: &Vec<RctKey>,
+--
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#ptr_arg
+
+error: casting to the same type is unnecessary (`usize` -> `usize`)
+    --> coins/monero/src/rct_types.rs:1045:44
+     |
+1045 |         serialized.serialize_field("nbp", &(nbp as usize))?;
+--
+     = note: `-D clippy::unnecessary-cast` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::unnecessary_cast)]`
+
+error: using `clone` on type `RctKey` which implements the `Copy` trait
+    --> coins/monero/src/rct_types.rs:1135:24
+     |
+1135 |           let C_offset = self
+--
+1139 ~             .ok_or_else(|| Error::AnyhowError(anyhow!("Invalid pseudo_outs index")))?;
+     |
+
+error: writing `&Vec` instead of `&[_]` involves a new object where a slice will do
+    --> coins/monero/src/rct_types.rs:1272:16
+     |
+1272 |         in_sk: &Vec<CtKey>,
+--
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#ptr_arg
+
+error: writing `&Vec` instead of `&[_]` involves a new object where a slice will do
+    --> coins/monero/src/rct_types.rs:1273:23
+     |
+1273 |         destinations: &Vec<RctKey>,
+--
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#ptr_arg
+
+error: writing `&Vec` instead of `&[_]` involves a new object where a slice will do
+    --> coins/monero/src/rct_types.rs:1274:21
+     |
+1274 |         in_amounts: &Vec<u64>,
+--
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#ptr_arg
+
+error: writing `&Vec` instead of `&[_]` involves a new object where a slice will do
+    --> coins/monero/src/rct_types.rs:1277:19
+     |
+1277 |         mix_ring: &Vec<Vec<CtKey>>,
+--
+1382 ~             mix_ring: mix_ring.to_owned(),
+     |
+
+error: writing `&Vec` instead of `&[_]` involves a new object where a slice will do
+    --> coins/monero/src/rct_types.rs:1278:22
+     |
+1278 |         amount_keys: &Vec<RctKey>,
+--
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#ptr_arg
+
+error: writing `&Vec` instead of `&[_]` involves a new object where a slice will do
+    --> coins/monero/src/rct_types.rs:1279:18
+     |
+1279 |         indices: &Vec<u64>,
+--
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#ptr_arg
+
+error: the loop variable `i` is only used to index `out_sk`
+    --> coins/monero/src/rct_types.rs:1348:18
+     |
+1348 |         for i in 0..out_sk.len() {
+--
+1348 |         for <item> in &out_sk {
+     |             ~~~~~~    ~~~~~~~
+
+error: writing `&mut Vec` instead of `&mut [_]` involves a new object where a slice will do
+   --> coins/monero/src/transaction.rs:296:61
+    |
+296 |     pub fn absolute_output_offsets_to_relative(key_offsets: &mut Vec<u64>) {
+--
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#ptr_arg
+
+error: could not compile `walletd_monero` (lib) due to 20 previous errors

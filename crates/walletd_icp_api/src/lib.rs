@@ -31,7 +31,7 @@ impl std::error::Error for IcpWalletError {}
 
 // Custom transaction trait
 pub trait IcpTransactionTrait {
-    fn from_address(&self) -> String;
+    fn get_address(&self) -> String;
     fn to_address(&self) -> String;
     fn amount(&self) -> u64;
 }
@@ -47,7 +47,7 @@ pub struct IcpTransaction {
 }
 
 impl IcpTransactionTrait for IcpTransaction {
-    fn from_address(&self) -> String {
+    fn get_address(&self) -> String {
         self.from.to_text()
     }
     fn to_address(&self) -> String {
@@ -186,7 +186,7 @@ impl WalletDIcpApi {
         let signing_key = SigningKey::from_bytes(&seed);
         let verifying_key = signing_key.verifying_key();
         let public_key_bytes = verifying_key.to_bytes();
-        let principal = Principal::self_authenticating(&public_key_bytes);
+        let principal = Principal::self_authenticating(public_key_bytes);
 
         let wallet = IcpWallet {
             principal,
@@ -301,8 +301,8 @@ impl WalletDIcpApi {
 
     pub fn resolve_did(&self, did: &str) -> Option<Principal> {
         if did.starts_with("did:icp:") {
-            let public_key_bytes = hex::decode(&did[8..]).ok()?;
-            Some(Principal::self_authenticating(&public_key_bytes))
+            let public_key_bytes = did.strip_prefix("did:icp:").and_then(|s| hex::decode(s).ok())?;
+            Some(Principal::self_authenticating(public_key_bytes))
         } else {
             None
         }

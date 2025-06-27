@@ -11,13 +11,13 @@ pub use protocols::{ChainType, Protocol};
 
 #[derive(Debug, Clone)]
 pub struct CrossChainCoordinator {
-    active_swaps: HashMap<String, AtomicSwap>,
+    _active_swaps: HashMap<String, AtomicSwap>,
 }
 
 impl CrossChainCoordinator {
     pub fn new() -> Self {
         Self {
-            active_swaps: HashMap::new(),
+            _active_swaps: HashMap::new(),
         }
     }
 

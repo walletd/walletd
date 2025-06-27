@@ -1,6 +1,4 @@
 // Simplified multi-wallet module
-use anyhow::Result;
-use std::sync::Arc;
 
 pub struct EnterpriseWalletManager {
     // Simplified for now

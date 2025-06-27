@@ -6,7 +6,7 @@ use std::sync::Mutex;
 // Define the types that will be used across all backends
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NodeInfo {
-    pub user_id: String,
+    pub _____user_id: String,
     pub node_id: String,
     pub alias: String,
     pub num_peers: u32,
@@ -56,7 +56,7 @@ pub struct Balance {
 
 // Internal node representation
 struct LightningNode {
-    user_id: String,
+    _____user_id: String,
     node_id: String,
     channels: Vec<ChannelInfo>,
     peers: Vec<String>,
@@ -78,7 +78,7 @@ impl MockLightning {
         let node_id = format!("02{}", hex::encode(&hash[..]));
 
         let node = LightningNode {
-            user_id: user_id.to_string(),
+            ____user_id: user_id.to_string(),
             node_id: node_id.clone(),
             channels: Vec::new(),
             peers: Vec::new(),
@@ -87,7 +87,7 @@ impl MockLightning {
         self.nodes.lock().unwrap().insert(user_id.to_string(), node);
 
         Ok(NodeInfo {
-            user_id: user_id.to_string(),
+            ____user_id: user_id.to_string(),
             node_id,
             alias: format!("{}'s Lightning Node", user_id),
             num_peers: 0,
@@ -103,7 +103,7 @@ impl MockLightning {
             .ok_or_else(|| anyhow::anyhow!("Node not found"))?;
 
         Ok(NodeInfo {
-            user_id: user_id.to_string(),
+            ____user_id: user_id.to_string(),
             node_id: node.node_id.clone(),
             alias: format!("{}'s Lightning Node", user_id),
             num_peers: node.peers.len() as u32,

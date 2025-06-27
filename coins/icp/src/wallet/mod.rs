@@ -19,7 +19,7 @@ pub struct IcpWallet {
     pub account_id: String,
     pub public_key: Vec<u8>,
     #[serde(skip_serializing)]
-    private_key: Option<Vec<u8>>,
+    ____private_key: Option<Vec<u8>>,
 }
 
 impl IcpWallet {
@@ -31,7 +31,7 @@ impl IcpWallet {
             principal,
             account_id,
             public_key: vec![],
-            private_key: None,
+            __private_key: None,
         })
     }
 
@@ -40,7 +40,7 @@ impl IcpWallet {
             principal,
             account_id: Self::principal_to_account_id(&principal),
             public_key: vec![],
-            private_key: None,
+            __private_key: None,
         }
     }
 

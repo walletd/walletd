@@ -3,14 +3,14 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize)]
 struct FaucetRequest {
-    accountId: Option<String>,
+    account_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
 struct FaucetResponse {
-    accountId: String,
-    privateKey: String,
-    publicKey: String,
+    account_id: String,
+    private_key: String,
+    public_key: String,
     balance: u64,
 }
 
@@ -25,7 +25,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
     let response = client
         .post("https://testnet.hashio.io/api/v1/accounts")
-        .json(&FaucetRequest { accountId: None })
+        .json(&FaucetRequest { account_id: None })
         .send()
         .await;
 
@@ -35,9 +35,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let account: FaucetResponse = resp.json().await?;
                 println!("\n✅ SUCCESS! Got new Hedera testnet account!");
                 println!("====================================");
-                println!("Account ID: {}", account.accountId);
-                println!("Private Key: {}", account.privateKey);
-                println!("Public Key: {}", account.publicKey);
+                println!("Account ID: {}", account.account_id);
+                println!("Private Key: {}", account.private_key);
+                println!("Public Key: {}", account.public_key);
                 println!("Balance: {} tinybars", account.balance);
                 println!("====================================\n");
 
@@ -50,7 +50,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     HEDERA_NETWORK_NODES=[\"0.testnet.hedera.com:50211\"]\n\
                     HEDERA_REQUEST_TIMEOUT=30000\n\
                     HEDERA_MAX_ATTEMPTS=10\n",
-                    account.accountId, account.privateKey
+                    account.account_id, account.private_key
                 );
 
                 std::fs::write(".env.hedera", env_content)?;

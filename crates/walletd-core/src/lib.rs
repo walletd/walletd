@@ -8,7 +8,7 @@ pub enum WalletError {
 }
 
 pub trait Transaction {
-    fn from_address(&self) -> String;
+    fn get_address(&self) -> String;
     fn to_address(&self) -> String;
     fn amount(&self) -> u64;
 }

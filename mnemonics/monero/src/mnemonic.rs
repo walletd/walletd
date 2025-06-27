@@ -217,7 +217,7 @@ impl Mnemonic {
     /// Directly converts bytes to words following the algorithm in Monero's
     /// codebase Assumes that the bytes given as an argument correspond to a
     /// valid mnemonic type length
-    fn bytes_to_words(entropy_bytes: &Vec<u8>, wordlist_info: &WordList) -> Result<String, Error> {
+    fn bytes_to_words(entropy_bytes: &[u8], wordlist_info: &WordList) -> Result<String, Error> {
         let wordlist = &wordlist_info.inner();
         if entropy_bytes.len() % 4 != 0 || entropy_bytes.is_empty() {
             return Err(Error::ErrorInBytes(
@@ -449,7 +449,7 @@ impl MnemonicBuilder {
             let wordlist_info = WordList::new(language);
             let bytes_length = mnemonic_type.entropy_bits() / BITS_IN_BYTES;
             let phrase = Mnemonic::bytes_to_words(
-                &specified_seed.as_bytes()[0..bytes_length].to_vec(),
+                &specified_seed.as_bytes()[0..bytes_length],
                 &wordlist_info,
             )?;
             // Final seed will be encrypted if a passphrase is provided

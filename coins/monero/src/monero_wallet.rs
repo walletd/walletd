@@ -51,7 +51,7 @@ impl MoneroWallet {
         let extended_key = hd_keys
             .extended_private_key()
             .map_err(|_| anyhow!("Missing private key"))?;
-        entropy.update(extended_key.as_ref());
+        entropy.update(extended_key.as_bytes());
         let entropy_bytes = &entropy.finalize().into_bytes()[..32];
         let mut seed = [0u8; 32];
         seed.copy_from_slice(entropy_bytes);

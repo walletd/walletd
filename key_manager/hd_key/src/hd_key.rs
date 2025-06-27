@@ -201,12 +201,12 @@ impl HDKey {
 
             match item {
                 HDPathIndex::IndexNotHardened(num) => {
-                    child_index = num;
+                    child_index = *num;
                     mac.update(&parent_public_key.to_bytes());
                     mac.update(&num.to_be_bytes());
                 }
                 HDPathIndex::IndexHardened(num) => {
-                    let full_num = HDPathIndex::hardened_full_num(num);
+                    let full_num = HDPathIndex::hardened_full_num(*num);
                     child_index = full_num;
                     mac.update(&[0u8]);
                     mac.update(&parent_private_key.to_bytes());
@@ -229,7 +229,7 @@ impl HDKey {
             parent_fingerprint.copy_from_slice(&Self::hash160(&parent_public_key.to_bytes())[0..4]);
             parent_private_key = private_key.clone();
             depth += 1;
-            deriv_path.push(item);
+            deriv_path.push(*item);
         }
 
         if deriv_path.is_empty() || deriv_path.at(0)? != HDPathIndex::Master {
@@ -241,7 +241,7 @@ impl HDKey {
 
         let deriv_purpose_type = match deriv_path.purpose() {
             Ok(purpose) => purpose,
-            Err(_) => self.derivation_purpose.clone(),
+            Err(_) => self.derivation_purpose,
         };
 
         Ok(Self {
@@ -343,7 +343,7 @@ impl HDKey {
     fn purpose(&self) -> HDPurpose {
         match self.derivation_path.purpose() {
             Ok(purpose) => purpose,
-            Err(_) => self.derivation_purpose.clone(),
+            Err(_) => self.derivation_purpose,
         }
     }
 

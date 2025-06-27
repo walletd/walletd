@@ -1,6 +1,7 @@
 use crate::Error;
 use std::fmt;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum HDPurpose {
     #[default]
     BIP32,
@@ -75,7 +76,7 @@ impl HDPath {
         self.0
             .get(index)
             .copied()
-            .ok_or_else(|| Error::IndexOutOfRange {
+            .ok_or(Error::IndexOutOfRange {
                 index: index as u32,
                 max: self.0.len() as u32,
             })

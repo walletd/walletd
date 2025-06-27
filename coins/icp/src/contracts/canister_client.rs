@@ -3,12 +3,12 @@ use candid::Principal;
 use ic_agent::Agent;
 
 pub struct CanisterClient {
-    agent: Agent,
+    _agent: Agent,
 }
 
 impl CanisterClient {
-    pub fn new(agent: Agent) -> Self {
-        Self { agent }
+    pub fn new(_agent: Agent) -> Self {
+        Self { _agent }
     }
 
     pub async fn create_canister(&self, _cycles: u64) -> Result<Principal> {
