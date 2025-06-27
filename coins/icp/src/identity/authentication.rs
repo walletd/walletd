@@ -3,12 +3,12 @@ use anyhow::Result;
 pub struct DIDAuthentication;
 
 impl DIDAuthentication {
-   pub fn new() -> Self {
-       Self
-   }
-   
-   pub fn authenticate(&self, _did: &str, _signature: &[u8]) -> Result<bool> {
-       // Implementation placeholder
-       Ok(true)
-   }
+    pub fn new() -> Self {
+        Self
+    }
+
+    pub fn authenticate(&self, _did: &str, _signature: &[u8]) -> Result<bool> {
+        // Implementation placeholder
+        Ok(true)
+    }
 }

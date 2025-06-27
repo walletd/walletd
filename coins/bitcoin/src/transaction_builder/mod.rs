@@ -16,10 +16,10 @@ impl TransactionBuilder {
                 lock_time: bitcoin::blockdata::locktime::absolute::LockTime::ZERO,
                 input: vec![],
                 output: vec![],
-            }
+            },
         }
     }
-    
+
     pub fn build(self) -> Transaction {
         self.tx
     }

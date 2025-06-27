@@ -1,6 +1,6 @@
-use walletd_icp::IcpWallet;
 use candid::Principal;
 use walletd_hd_key::{HDKey, HDNetworkType};
+use walletd_icp::IcpWallet;
 use walletd_mnemonics_core::Seed;
 
 #[test]

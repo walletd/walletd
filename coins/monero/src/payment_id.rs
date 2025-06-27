@@ -40,7 +40,8 @@ pub enum PaymentIdStyle {
 }
 
 impl PaymentIdStyle {
-    #[allow(dead_code)]    fn hash_size(&self) -> usize {
+    #[allow(dead_code)]
+    fn hash_size(&self) -> usize {
         match self {
             PaymentIdStyle::Short => SHORT_HASH_SIZE,
             PaymentIdStyle::Long => LONG_HASH_SIZE,
@@ -113,13 +114,17 @@ impl PaymentId {
             return Err(Error::OnlyEncryptShortPaymentIds);
         }
         let derivation = KeyDerivation::generate(
-            &monero::PublicKey::from_slice(&public_key.to_bytes()).map_err(|_| Error::IncorrectDataLength {
-                expected: 32,
-                found: public_key.to_bytes().len(),
+            &monero::PublicKey::from_slice(&public_key.to_bytes()).map_err(|_| {
+                Error::IncorrectDataLength {
+                    expected: 32,
+                    found: public_key.to_bytes().len(),
+                }
             })?,
-            &monero::PrivateKey::from_slice(&secret_key.to_bytes()).map_err(|_| Error::IncorrectDataLength {
-                expected: 32,
-                found: secret_key.to_bytes().len(),
+            &monero::PrivateKey::from_slice(&secret_key.to_bytes()).map_err(|_| {
+                Error::IncorrectDataLength {
+                    expected: 32,
+                    found: secret_key.to_bytes().len(),
+                }
             })?,
         );
         let mut data = [0u8; 33];
@@ -227,13 +232,19 @@ mod tests {
         let short_payment_id = PaymentId::from(VALID_SHORT_1.to_string()).unwrap();
         let mut tx_extra = Vec::new();
         short_payment_id.add_pid_to_tx_extra(&mut tx_extra).unwrap();
-        assert_eq!(tx_extra.len(), short_payment_id.style().unwrap().hash_size() + 3);
+        assert_eq!(
+            tx_extra.len(),
+            short_payment_id.style().unwrap().hash_size() + 3
+        );
         assert_eq!(tx_extra[0], TX_EXTRA_NONCE);
 
         let long_payment_id = PaymentId::from(LONG_ID_1.to_string()).unwrap();
         let mut tx_extra = Vec::new();
         long_payment_id.add_pid_to_tx_extra(&mut tx_extra).unwrap();
-        assert_eq!(tx_extra.len(), long_payment_id.style().unwrap().hash_size() + 3);
+        assert_eq!(
+            tx_extra.len(),
+            long_payment_id.style().unwrap().hash_size() + 3
+        );
         assert_eq!(tx_extra[0], TX_EXTRA_NONCE);
     }
 }

@@ -1,5 +1,5 @@
-use walletd_icp::canister::canisters::*;
 use candid::Principal;
+use walletd_icp::canister::canisters::*;
 
 #[cfg(test)]
 mod phase2_integration_tests {

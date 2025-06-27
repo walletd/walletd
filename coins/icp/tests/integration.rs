@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use walletd_icp::{IcpWallet, IcpTransaction};
     use candid::Principal;
     use walletd_hd_key::HDNetworkType;
+    use walletd_icp::{IcpTransaction, IcpWallet};
 
     #[test]
     fn test_create_wallet() {
@@ -16,7 +16,7 @@ mod tests {
         let from = Principal::from_text("rrkah-fqaaa-aaaaa-aaaaq-cai").unwrap();
         let to = Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap();
         let amount = 1000000; // 0.01 ICP
-        
+
         let tx = IcpTransaction::new(from, to, amount, None, None).unwrap();
         assert_eq!(tx.amount, amount);
         assert_eq!(tx.from, from);

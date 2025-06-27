@@ -1,7 +1,7 @@
 use walletd_bitcoin::{
-    BitcoinWalletManager, BitcoinConfig, Network,
     lightning::LightningManager,
-    swaps::{SwapCoordinator, Chain},
+    swaps::{Chain, SwapCoordinator},
+    BitcoinConfig, BitcoinWalletManager, Network,
 };
 
 #[tokio::main]
@@ -15,7 +15,7 @@ async fn main() -> anyhow::Result<()> {
         rpc_endpoints: vec![],
     };
     let btc_manager = BitcoinWalletManager::new(btc_config).await?;
-    
+
     // Create a wallet
     let wallet = btc_manager.create_wallet("alice", None).await?;
     println!("✅ Bitcoin wallet created for Alice");
@@ -23,7 +23,7 @@ async fn main() -> anyhow::Result<()> {
 
     // Initialize Lightning
     let lightning = LightningManager::new(Network::Bitcoin).await?;
-    
+
     #[cfg(feature = "lightning")]
     {
         println!("\n⚡ Lightning Network: ENABLED");
@@ -35,7 +35,7 @@ async fn main() -> anyhow::Result<()> {
             Err(e) => println!("   Lightning setup error: {}", e),
         }
     }
-    
+
     #[cfg(not(feature = "lightning"))]
     {
         println!("\n⚡ Lightning Network: DISABLED");
@@ -49,7 +49,7 @@ async fn main() -> anyhow::Result<()> {
     // Initialize swap coordinator
     println!("\n💱 Cross-Chain Swaps:");
     let swap_coordinator = SwapCoordinator::new();
-    
+
     // Show available swap routes
     let routes = vec![
         (Chain::Bitcoin, Chain::ICP),
@@ -57,32 +57,36 @@ async fn main() -> anyhow::Result<()> {
         (Chain::Bitcoin, Chain::Solana),
         (Chain::Bitcoin, Chain::Monero),
     ];
-    
+
     println!("\nAvailable swap routes:");
     for (from, to) in routes {
-        let route = swap_coordinator.create_swap_route(from, to, 100_000).await?;
+        let route = swap_coordinator
+            .create_swap_route(from, to, 100_000)
+            .await?;
         println!("   {:?} → {:?}: {:?}", from, to, route);
     }
-    
+
     // Simulate a swap
     println!("\n🔄 Initiating BTC → ICP swap:");
-    let swap_id = swap_coordinator.initiate_btc_to_icp_swap(
-        100_000,      // 0.001 BTC
-        1_000_000,    // 0.01 ICP
-        &wallet.first_address,
-        "test-icp-principal",
-    ).await?;
+    let swap_id = swap_coordinator
+        .initiate_btc_to_icp_swap(
+            100_000,   // 0.001 BTC
+            1_000_000, // 0.01 ICP
+            &wallet.first_address,
+            "test-icp-principal",
+        )
+        .await?;
     println!("   Swap ID: {}", swap_id);
     println!("   Status: Initiated");
     println!("   From: {} sats (BTC)", 100_000);
     println!("   To: {} e8s (ICP)", 1_000_000);
-    
+
     println!("\n✅ Demo completed!");
     println!("\nFeatures demonstrated:");
     println!("• Bitcoin HD wallet creation");
     println!("• Lightning Network node (when enabled)");
     println!("• Cross-chain swap route discovery");
     println!("• BTC ↔ ICP atomic swap initiation");
-    
+
     Ok(())
 }

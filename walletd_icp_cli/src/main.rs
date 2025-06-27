@@ -215,18 +215,15 @@ async fn main() -> Result<(), anyhow::Error> {
 
             let (hbar_address, hbar_balance) = {
                 let manager = WALLET_MANAGER.read().await;
-                manager
-                    .get_hedera_wallet("user")
-                    .await
-                    .unwrap_or_else(|_| {
-                        if mode == WalletMode::Demo {
-                            ("HbarDemoWallet123".to_string(), "100.0".to_string())
-                        } else if mode == WalletMode::Testnet {
-                            ("0.0.testnet".to_string(), "10000.0".to_string())
-                        } else {
-                            ("0.0.mainnet".to_string(), "0.0".to_string())
-                        }
-                    })
+                manager.get_hedera_wallet("user").await.unwrap_or_else(|_| {
+                    if mode == WalletMode::Demo {
+                        ("HbarDemoWallet123".to_string(), "100.0".to_string())
+                    } else if mode == WalletMode::Testnet {
+                        ("0.0.testnet".to_string(), "10000.0".to_string())
+                    } else {
+                        ("0.0.mainnet".to_string(), "0.0".to_string())
+                    }
+                })
             };
             let (xmr_address, xmr_balance) = if mode == WalletMode::Demo {
                 ("MoneroDemo123".to_string(), "0.0".to_string())

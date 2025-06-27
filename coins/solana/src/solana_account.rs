@@ -1,11 +1,11 @@
 #![allow(clippy::arithmetic_side_effects)]
 
+use crate::Error;
+use solana_client::nonblocking::rpc_client::RpcClient;
 use solana_sdk::{
     pubkey::Pubkey,
     signature::{Keypair, Signer},
 };
-use solana_client::nonblocking::rpc_client::RpcClient;
-use crate::Error;
 
 /// The basis for all Solana wallets, wrapping a Keypair from the Solana SDK.
 ///
@@ -42,9 +42,8 @@ impl SolanaAccount {
     /// # Errors
     /// Returns an `Error` if the byte array cannot be converted to a valid `Keypair`.
     pub fn new_from_bytes(bytes: [u8; 64]) -> Result<Self, Error> {
-        let keypair = Keypair::from_bytes(&bytes).map_err(|e| {
-            Error::Custom(format!("Failed to create keypair from bytes: {}", e))
-        })?;
+        let keypair = Keypair::from_bytes(&bytes)
+            .map_err(|e| Error::Custom(format!("Failed to create keypair from bytes: {}", e)))?;
         Ok(Self { keypair })
     }
 

@@ -2,23 +2,27 @@ use std::process::Command;
 
 pub fn start_background_mining(address: &str) -> Result<String, String> {
     println!("\n⛏️ Starting integrated mining...");
-    
+
     // Check if monerod exists
     let monerod_path = "./monero-x86_64-apple-darwin11-v0.18.3.4/monerod";
     if !std::path::Path::new(monerod_path).exists() {
         return Err("Monero not found! Please extract monero first.".to_string());
     }
-    
+
     // Start mining in background
     match Command::new(monerod_path)
         .args(&[
             "--stagenet",
-            "--start-mining", address,
-            "--mining-threads", "2",
+            "--start-mining",
+            address,
+            "--mining-threads",
+            "2",
             "--non-interactive",
-            "--log-file", "mining.log"
+            "--log-file",
+            "mining.log",
         ])
-        .spawn() {
+        .spawn()
+    {
         Ok(_) => {
             println!("✅ Mining started successfully!");
             println!("   • Running in background");
@@ -29,15 +33,13 @@ pub fn start_background_mining(address: &str) -> Result<String, String> {
             println!("   tail -f mining.log | grep 'Found block'");
             Ok("Mining started".to_string())
         }
-        Err(e) => Err(format!("Failed to start mining: {}", e))
+        Err(e) => Err(format!("Failed to start mining: {}", e)),
     }
 }
 
 pub fn check_mining_status() -> String {
     // Check if monerod is running
-    match Command::new("pgrep")
-        .arg("monerod")
-        .output() {
+    match Command::new("pgrep").arg("monerod").output() {
         Ok(output) => {
             if output.status.success() {
                 "⛏️ Mining is active".to_string()
@@ -45,6 +47,6 @@ pub fn check_mining_status() -> String {
                 "❌ Mining not running".to_string()
             }
         }
-        Err(_) => "Unable to check mining status".to_string()
+        Err(_) => "Unable to check mining status".to_string(),
     }
 }

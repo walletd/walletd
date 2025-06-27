@@ -212,7 +212,10 @@ mod tests {
         let vec = vec![1usize, 2usize, 3usize];
         archive.serialize_vector("numbers", &vec).unwrap();
         assert_eq!(archive.json_stream, "\"numbers\": [1, 2, 3]");
-        assert_eq!(archive.data, vec![1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0]);
+        assert_eq!(
+            archive.data,
+            vec![1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        );
     }
 }
 impl SerializedArchive {

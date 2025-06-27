@@ -1,7 +1,6 @@
 use walletd_bitcoin::{
-    BitcoinWalletManager, BitcoinConfig, Network, AddressType,
-    lightning::LightningNodeManager,
-    multi_wallet::EnterpriseWalletManager,
+    lightning::LightningNodeManager, multi_wallet::EnterpriseWalletManager, AddressType,
+    BitcoinConfig, BitcoinWalletManager, Network,
 };
 
 #[tokio::main]
@@ -46,15 +45,17 @@ async fn main() -> anyhow::Result<()> {
     // Create wallets for users
     println!("1️⃣ Creating user wallets...");
     for i in 1..=5 {
-        let wallet = manager.create_wallet_with_compliance(
-            &format!("user-{:03}", i),
-            KycInfo {
-                user_id: format!("user-{:03}", i),
-                country: "US".to_string(),
-                verified: true,
-                risk_score: 10,
-            },
-        ).await?;
+        let wallet = manager
+            .create_wallet_with_compliance(
+                &format!("user-{:03}", i),
+                KycInfo {
+                    user_id: format!("user-{:03}", i),
+                    country: "US".to_string(),
+                    verified: true,
+                    risk_score: 10,
+                },
+            )
+            .await?;
         println!("   ✅ User {}: {}", i, wallet.first_address);
     }
 
@@ -69,25 +70,27 @@ async fn main() -> anyhow::Result<()> {
         },
         // ... more transactions
     ];
-    
+
     let results = manager.process_batch_transactions(batch_txs).await?;
     println!("   ✅ Processed {} transactions", results.len());
 
     // Lightning Network
     println!("\n3️⃣ Lightning Network setup...");
     let ln_manager = LightningNodeManager::new(Network::Bitcoin).await?;
-    
+
     let node = ln_manager.create_node("user-001", [0u8; 32]).await?;
     println!("   ⚡ Lightning node: {}", node.node_id);
 
     // Open channel
-    let channel = ln_manager.open_channel(OpenChannelRequest {
-        user_id: "user-001".to_string(),
-        peer_node_id: "02abc...".to_string(),
-        amount_sats: 1_000_000,
-        push_msat: Some(100_000_000),
-        user_channel_id: 1,
-    }).await?;
+    let channel = ln_manager
+        .open_channel(OpenChannelRequest {
+            user_id: "user-001".to_string(),
+            peer_node_id: "02abc...".to_string(),
+            amount_sats: 1_000_000,
+            push_msat: Some(100_000_000),
+            user_channel_id: 1,
+        })
+        .await?;
     println!("   ⚡ Channel opened: {}", channel.channel_id);
 
     // Fee optimization
@@ -95,18 +98,23 @@ async fn main() -> anyhow::Result<()> {
     let optimization = manager.optimize_fees("user-001").await?;
     match optimization.recommendation {
         FeeRecommendation::Consolidate => {
-            println!("   💰 Consolidation recommended, saves: {} sats", optimization.estimated_savings);
+            println!(
+                "   💰 Consolidation recommended, saves: {} sats",
+                optimization.estimated_savings
+            );
         }
         _ => println!("   ✅ Fees already optimized"),
     }
 
     // Hot wallet management
     println!("\n5️⃣ Hot wallet management...");
-    manager.manage_hot_wallet_balance(
-        "hot-wallet-001",
-        1_000_000_000,  // 10 BTC min
-        5_000_000_000,  // 50 BTC max
-    ).await?;
+    manager
+        .manage_hot_wallet_balance(
+            "hot-wallet-001",
+            1_000_000_000, // 10 BTC min
+            5_000_000_000, // 50 BTC max
+        )
+        .await?;
     println!("   ✅ Hot wallet balanced");
 
     println!("\n✅ All systems operational!");
@@ -118,6 +126,6 @@ async fn main() -> anyhow::Result<()> {
     println!("• Automated fee optimization");
     println!("• Hot/cold wallet management");
     println!("• Enterprise monitoring & alerting");
-    
+
     Ok(())
 }

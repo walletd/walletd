@@ -1,5 +1,5 @@
-use walletd_icp::*;
 use candid::Principal;
+use walletd_icp::*;
 
 #[test]
 fn test_wallet_basics() {

@@ -1,26 +1,26 @@
 // Re-export commonly used types
 pub use bitcoin::Network;
 
-use bitcoin::{
-    Address,
-    bip32::{Xpriv, Xpub, DerivationPath},
-};
-use bitcoin::secp256k1::{Secp256k1, All};
-use bitcoincore_rpc::{Auth, Client};
+use anyhow::Result;
 use bip39::Mnemonic;
-use serde::{Serialize, Deserialize};
+use bitcoin::secp256k1::{All, Secp256k1};
+use bitcoin::{
+    bip32::{DerivationPath, Xpriv, Xpub},
+    Address,
+};
+use bitcoincore_rpc::{Auth, Client};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use anyhow::Result;
 
+pub mod lightning; // Always expose lightning module
 pub mod multi_wallet;
-pub mod transaction_builder;
-pub mod utxo_manager;
-pub mod lightning;  // Always expose lightning module
 pub mod security;
 pub mod storage;
 pub mod swaps;
+pub mod transaction_builder;
+pub mod utxo_manager;
 
 /// Multi-user Bitcoin wallet manager
 pub struct BitcoinWalletManager {
@@ -56,17 +56,17 @@ impl BitcoinWalletManager {
     /// Create a new multi-user wallet manager
     pub async fn new(config: BitcoinConfig) -> Result<Self> {
         let secp = Arc::new(Secp256k1::new());
-        
+
         // Create RPC client pool
         let mut rpc_clients = Vec::new();
         for endpoint in &config.rpc_endpoints {
             let client = Client::new(
                 &endpoint.url,
-                Auth::UserPass(endpoint.user.clone(), endpoint.pass.clone())
+                Auth::UserPass(endpoint.user.clone(), endpoint.pass.clone()),
             )?;
             rpc_clients.push(Arc::new(client));
         }
-        
+
         Ok(Self {
             wallets: Arc::new(RwLock::new(HashMap::new())),
             secp,
@@ -74,9 +74,13 @@ impl BitcoinWalletManager {
             network: config.network,
         })
     }
-    
+
     /// Create a new wallet for a user
-    pub async fn create_wallet(&self, user_id: &str, mnemonic: Option<String>) -> Result<WalletInfo> {
+    pub async fn create_wallet(
+        &self,
+        user_id: &str,
+        mnemonic: Option<String>,
+    ) -> Result<WalletInfo> {
         let mnemonic = match mnemonic {
             Some(m) => Mnemonic::parse(&m)?,
             None => {
@@ -89,11 +93,11 @@ impl BitcoinWalletManager {
                 Mnemonic::from_entropy(&entropy)?
             }
         };
-        
+
         let seed = mnemonic.to_seed("");
         let xprv = Xpriv::new_master(self.network, &seed)?;
         let xpub = Xpub::from_priv(&self.secp, &xprv);
-        
+
         let mut wallet = UserBitcoinWallet {
             user_id: user_id.to_string(),
             xprv,
@@ -101,14 +105,14 @@ impl BitcoinWalletManager {
             addresses: HashMap::new(),
             current_index: 0,
         };
-        
+
         // Generate first address
         let first_address = wallet.derive_address(0, &self.secp, self.network)?;
-        
+
         // Store wallet
         let mut wallets = self.wallets.write().await;
         wallets.insert(user_id.to_string(), wallet);
-        
+
         Ok(WalletInfo {
             user_id: user_id.to_string(),
             mnemonic: mnemonic.to_string(),
@@ -117,13 +121,14 @@ impl BitcoinWalletManager {
             network: self.network,
         })
     }
-    
+
     /// Get balance for a user
     pub async fn get_balance(&self, user_id: &str) -> Result<Balance> {
         let wallets = self.wallets.read().await;
-        let _wallet = wallets.get(user_id)
+        let _wallet = wallets
+            .get(user_id)
             .ok_or_else(|| anyhow::anyhow!("Wallet not found"))?;
-        
+
         // In production, this would query the blockchain
         // For now, return mock data
         Ok(Balance {
@@ -132,35 +137,41 @@ impl BitcoinWalletManager {
             total: 0,
         })
     }
-    
+
     /// Get address for receiving
-    pub async fn get_receive_address(&self, user_id: &str, address_type: AddressType) -> Result<String> {
+    pub async fn get_receive_address(
+        &self,
+        user_id: &str,
+        address_type: AddressType,
+    ) -> Result<String> {
         let mut wallets = self.wallets.write().await;
-        let wallet = wallets.get_mut(user_id)
+        let wallet = wallets
+            .get_mut(user_id)
             .ok_or_else(|| anyhow::anyhow!("Wallet not found"))?;
-        
+
         let index = wallet.current_index;
         wallet.current_index += 1;
-        
+
         let address = match address_type {
-            AddressType::Legacy => {
-                wallet.derive_address_p2pkh(index, &self.secp, self.network)?
-            }
+            AddressType::Legacy => wallet.derive_address_p2pkh(index, &self.secp, self.network)?,
             AddressType::SegwitP2SH => {
                 wallet.derive_address_p2sh_wpkh(index, &self.secp, self.network)?
             }
-            AddressType::NativeSegwit => {
-                wallet.derive_address(index, &self.secp, self.network)?
-            }
+            AddressType::NativeSegwit => wallet.derive_address(index, &self.secp, self.network)?,
         };
-        
+
         wallet.addresses.insert(index, address.clone());
         Ok(address.to_string())
     }
 }
 
 impl UserBitcoinWallet {
-    fn derive_address(&mut self, index: u32, secp: &Secp256k1<All>, network: Network) -> Result<Address> {
+    fn derive_address(
+        &mut self,
+        index: u32,
+        secp: &Secp256k1<All>,
+        network: Network,
+    ) -> Result<Address> {
         let path = DerivationPath::from(vec![
             bitcoin::bip32::ChildNumber::from_hardened_idx(84)?, // BIP84
             bitcoin::bip32::ChildNumber::from_hardened_idx(0)?,  // Bitcoin
@@ -168,14 +179,19 @@ impl UserBitcoinWallet {
             bitcoin::bip32::ChildNumber::from_normal_idx(0)?,    // External
             bitcoin::bip32::ChildNumber::from_normal_idx(index)?,
         ]);
-        
+
         let child_xprv = self.xprv.derive_priv(secp, &path)?;
         let child_xpub = Xpub::from_priv(secp, &child_xprv);
-        
+
         Ok(Address::p2wpkh(&child_xpub.to_pub(), network)?)
     }
-    
-    fn derive_address_p2pkh(&mut self, index: u32, secp: &Secp256k1<All>, network: Network) -> Result<Address> {
+
+    fn derive_address_p2pkh(
+        &mut self,
+        index: u32,
+        secp: &Secp256k1<All>,
+        network: Network,
+    ) -> Result<Address> {
         let path = DerivationPath::from(vec![
             bitcoin::bip32::ChildNumber::from_hardened_idx(44)?, // BIP44
             bitcoin::bip32::ChildNumber::from_hardened_idx(0)?,
@@ -183,14 +199,19 @@ impl UserBitcoinWallet {
             bitcoin::bip32::ChildNumber::from_normal_idx(0)?,
             bitcoin::bip32::ChildNumber::from_normal_idx(index)?,
         ]);
-        
+
         let child_xprv = self.xprv.derive_priv(secp, &path)?;
         let child_xpub = Xpub::from_priv(secp, &child_xprv);
-        
+
         Ok(Address::p2pkh(&child_xpub.to_pub(), network))
     }
-    
-    fn derive_address_p2sh_wpkh(&mut self, index: u32, secp: &Secp256k1<All>, network: Network) -> Result<Address> {
+
+    fn derive_address_p2sh_wpkh(
+        &mut self,
+        index: u32,
+        secp: &Secp256k1<All>,
+        network: Network,
+    ) -> Result<Address> {
         let path = DerivationPath::from(vec![
             bitcoin::bip32::ChildNumber::from_hardened_idx(49)?, // BIP49
             bitcoin::bip32::ChildNumber::from_hardened_idx(0)?,
@@ -198,10 +219,10 @@ impl UserBitcoinWallet {
             bitcoin::bip32::ChildNumber::from_normal_idx(0)?,
             bitcoin::bip32::ChildNumber::from_normal_idx(index)?,
         ]);
-        
+
         let child_xprv = self.xprv.derive_priv(secp, &path)?;
         let child_xpub = Xpub::from_priv(secp, &child_xprv);
-        
+
         Ok(Address::p2shwpkh(&child_xpub.to_pub(), network)?)
     }
 }

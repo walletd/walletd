@@ -1,7 +1,7 @@
 use anyhow::Result;
 use std::collections::HashMap;
-use tokio::sync::RwLock;
 use std::sync::Arc;
+use tokio::sync::RwLock;
 
 /// Cross-chain atomic swap coordinator
 pub struct SwapCoordinator {
@@ -43,7 +43,7 @@ impl SwapCoordinator {
             active_swaps: Arc::new(RwLock::new(HashMap::new())),
         }
     }
-    
+
     /// Initiate a BTC -> ICP swap
     pub async fn initiate_btc_to_icp_swap(
         &self,
@@ -53,7 +53,7 @@ impl SwapCoordinator {
         _icp_principal: &str,
     ) -> Result<String> {
         let swap_id = format!("swap_{}", uuid::Uuid::new_v4());
-        
+
         let swap = AtomicSwap {
             id: swap_id.clone(),
             from_chain: Chain::Bitcoin,
@@ -62,18 +62,18 @@ impl SwapCoordinator {
             to_amount: icp_amount,
             status: SwapStatus::Initiated,
         };
-        
+
         let mut swaps = self.active_swaps.write().await;
         swaps.insert(swap_id.clone(), swap);
-        
+
         // In production, this would:
         // 1. Create HTLC on Bitcoin
         // 2. Wait for ICP deposit
         // 3. Release BTC when ICP confirmed
-        
+
         Ok(swap_id)
     }
-    
+
     /// Create a multi-chain swap route
     pub async fn create_swap_route(
         &self,
@@ -117,7 +117,7 @@ impl WalletDSwapInterface {
         if balance.confirmed < btc_amount {
             return Err(anyhow::anyhow!("Insufficient BTC balance"));
         }
-        
+
         // Determine swap route
         let _target_chain = match to_chain {
             "ICP" => Chain::ICP,
@@ -125,11 +125,12 @@ impl WalletDSwapInterface {
             "SOL" => Chain::Solana,
             _ => return Err(anyhow::anyhow!("Unsupported chain")),
         };
-        
-        let swap_id = self.swap_coordinator
+
+        let swap_id = self
+            .swap_coordinator
             .initiate_btc_to_icp_swap(btc_amount, 0, "", "")
             .await?;
-        
+
         Ok(swap_id)
     }
 }

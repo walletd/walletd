@@ -4,7 +4,6 @@ use solana_sdk::commitment_config::CommitmentConfig;
 use solana_sdk::pubkey::Pubkey;
 use solana_sdk::signature::{Keypair, Signer};
 
-
 use walletd_solana::solana_client::SolanaClient;
 
 #[tokio::main]

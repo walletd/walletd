@@ -1,26 +1,23 @@
-use bitcoin::Network;
 use anyhow::Result;
-use serde::{Serialize, Deserialize};
+use bitcoin::Network;
+use serde::{Deserialize, Serialize};
 
 pub mod mock;
 #[cfg(feature = "lightning-voltage")]
 pub mod voltage;
 
 // Re-export the common types from mock
-pub use mock::{NodeInfo, ChannelInfo, Invoice, Payment, PaymentStatus, Balance};
+pub use mock::{Balance, ChannelInfo, Invoice, NodeInfo, Payment, PaymentStatus};
 
 /// Lightning Network configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum LightningConfig {
     /// Mock implementation for development
     Mock,
-    
+
     /// Voltage Lightning Node Service
     #[cfg(feature = "lightning-voltage")]
-    Voltage {
-        api_key: String,
-        node_url: String,
-    },
+    Voltage { api_key: String, node_url: String },
 }
 
 impl Default for LightningConfig {
@@ -33,7 +30,7 @@ impl Default for LightningConfig {
         ) {
             return LightningConfig::Voltage { api_key, node_url };
         }
-        
+
         LightningConfig::Mock
     }
 }
@@ -50,16 +47,17 @@ impl LightningManager {
     pub async fn new(network: Network) -> Result<Self> {
         Self::with_config(LightningConfig::default(), network).await
     }
-    
+
     pub async fn with_config(config: LightningConfig, _network: Network) -> Result<Self> {
         #[cfg(feature = "lightning-voltage")]
         let voltage_client = match &config {
-            LightningConfig::Voltage { api_key, node_url } => {
-                Some(voltage::VoltageClient::new(api_key.clone(), node_url.clone()))
-            }
+            LightningConfig::Voltage { api_key, node_url } => Some(voltage::VoltageClient::new(
+                api_key.clone(),
+                node_url.clone(),
+            )),
             _ => None,
         };
-        
+
         Ok(Self {
             config,
             #[cfg(feature = "lightning-voltage")]
@@ -67,7 +65,7 @@ impl LightningManager {
             mock_backend: mock::MockLightning::new(),
         })
     }
-    
+
     pub async fn create_node(&self, user_id: &str, seed: [u8; 32]) -> Result<NodeInfo> {
         match &self.config {
             #[cfg(feature = "lightning-voltage")]
@@ -79,13 +77,11 @@ impl LightningManager {
                     Err(anyhow::anyhow!("Voltage client not initialized"))
                 }
             }
-            
-            LightningConfig::Mock => {
-                self.mock_backend.create_node(user_id, seed).await
-            }
+
+            LightningConfig::Mock => self.mock_backend.create_node(user_id, seed).await,
         }
     }
-    
+
     pub async fn get_node_info(&self, user_id: &str) -> Result<NodeInfo> {
         match &self.config {
             #[cfg(feature = "lightning-voltage")]
@@ -96,14 +92,17 @@ impl LightningManager {
                     Err(anyhow::anyhow!("Voltage client not initialized"))
                 }
             }
-            
-            LightningConfig::Mock => {
-                self.mock_backend.get_node_info(user_id).await
-            }
+
+            LightningConfig::Mock => self.mock_backend.get_node_info(user_id).await,
         }
     }
-    
-    pub async fn create_invoice(&self, user_id: &str, amount_msat: Option<u64>, description: String) -> Result<Invoice> {
+
+    pub async fn create_invoice(
+        &self,
+        user_id: &str,
+        amount_msat: Option<u64>,
+        description: String,
+    ) -> Result<Invoice> {
         match &self.config {
             #[cfg(feature = "lightning-voltage")]
             LightningConfig::Voltage { .. } => {
@@ -114,13 +113,15 @@ impl LightningManager {
                     Err(anyhow::anyhow!("Voltage client not initialized"))
                 }
             }
-            
+
             LightningConfig::Mock => {
-                self.mock_backend.create_invoice(user_id, amount_msat, description).await
+                self.mock_backend
+                    .create_invoice(user_id, amount_msat, description)
+                    .await
             }
         }
     }
-    
+
     pub async fn send_payment(&self, user_id: &str, bolt11: &str) -> Result<Payment> {
         match &self.config {
             #[cfg(feature = "lightning-voltage")]
@@ -131,13 +132,11 @@ impl LightningManager {
                     Err(anyhow::anyhow!("Voltage client not initialized"))
                 }
             }
-            
-            LightningConfig::Mock => {
-                self.mock_backend.pay_invoice(user_id, bolt11).await
-            }
+
+            LightningConfig::Mock => self.mock_backend.pay_invoice(user_id, bolt11).await,
         }
     }
-    
+
     pub async fn list_channels(&self, user_id: &str) -> Result<Vec<ChannelInfo>> {
         match &self.config {
             #[cfg(feature = "lightning-voltage")]
@@ -148,27 +147,32 @@ impl LightningManager {
                     Err(anyhow::anyhow!("Voltage client not initialized"))
                 }
             }
-            
-            LightningConfig::Mock => {
-                self.mock_backend.list_channels(user_id).await
-            }
+
+            LightningConfig::Mock => self.mock_backend.list_channels(user_id).await,
         }
     }
-    
-    pub async fn connect_peer(&self, user_id: &str, peer_node_id: &str, address: &str) -> Result<()> {
+
+    pub async fn connect_peer(
+        &self,
+        user_id: &str,
+        peer_node_id: &str,
+        address: &str,
+    ) -> Result<()> {
         match &self.config {
             #[cfg(feature = "lightning-voltage")]
             LightningConfig::Voltage { .. } => {
                 // Voltage handles peer connections automatically
                 Ok(())
             }
-            
+
             LightningConfig::Mock => {
-                self.mock_backend.connect_peer(user_id, peer_node_id, address).await
+                self.mock_backend
+                    .connect_peer(user_id, peer_node_id, address)
+                    .await
             }
         }
     }
-    
+
     pub async fn get_balance(&self, user_id: &str) -> Result<Balance> {
         match &self.config {
             #[cfg(feature = "lightning-voltage")]
@@ -177,14 +181,17 @@ impl LightningManager {
                 // For now, delegate to mock
                 self.mock_backend.get_balance(user_id).await
             }
-            
-            LightningConfig::Mock => {
-                self.mock_backend.get_balance(user_id).await
-            }
+
+            LightningConfig::Mock => self.mock_backend.get_balance(user_id).await,
         }
     }
-    
-    pub async fn open_channel(&self, user_id: &str, peer_node_id: &str, amount_sats: u64) -> Result<String> {
+
+    pub async fn open_channel(
+        &self,
+        user_id: &str,
+        peer_node_id: &str,
+        amount_sats: u64,
+    ) -> Result<String> {
         match &self.config {
             #[cfg(feature = "lightning-voltage")]
             LightningConfig::Voltage { .. } => {
@@ -195,9 +202,11 @@ impl LightningManager {
                     Visit your node at voltage.cloud to open channels."
                 ))
             }
-            
+
             LightningConfig::Mock => {
-                self.mock_backend.open_channel(user_id, peer_node_id, amount_sats).await
+                self.mock_backend
+                    .open_channel(user_id, peer_node_id, amount_sats)
+                    .await
             }
         }
     }

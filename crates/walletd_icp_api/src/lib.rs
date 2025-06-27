@@ -1,8 +1,8 @@
 use async_trait::async_trait;
-#[allow(unused_imports)]
-use candid::{CandidType, Principal, decode_args, encode_args};
 use candid::utils::ArgumentEncoder;
-use ed25519_dalek::{SigningKey, Signer};
+#[allow(unused_imports)]
+use candid::{decode_args, encode_args, CandidType, Principal};
+use ed25519_dalek::{Signer, SigningKey};
 use rand::{rngs::OsRng, RngCore};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -81,7 +81,10 @@ pub struct IcpWallet {
 
 impl IcpWallet {
     pub fn create_did(&self) -> String {
-        format!("did:icp:{}", hex::encode(self.signing_key.verifying_key().to_bytes()))
+        format!(
+            "did:icp:{}",
+            hex::encode(self.signing_key.verifying_key().to_bytes())
+        )
     }
 }
 
@@ -93,9 +96,24 @@ pub trait IcpWalletApi {
     async fn generate_address(&mut self) -> Result<String, IcpWalletError>;
     async fn balance(&self, address: &str) -> Result<u64, IcpWalletError>;
     async fn transfer(&mut self, from: &str, to: &str, amount: u64) -> Result<(), IcpWalletError>;
-    async fn approve(&mut self, from: &str, spender: &str, amount: u64) -> Result<u64, IcpWalletError>;
-    async fn transfer_from(&mut self, _spender: &str, from: &str, to: &str, amount: u64) -> Result<u64, IcpWalletError>;
-    async fn batch_transfer(&mut self, from: &str, transfers: Vec<(String, u64)>) -> Result<Vec<u64>, IcpWalletError>;
+    async fn approve(
+        &mut self,
+        from: &str,
+        spender: &str,
+        amount: u64,
+    ) -> Result<u64, IcpWalletError>;
+    async fn transfer_from(
+        &mut self,
+        _spender: &str,
+        from: &str,
+        to: &str,
+        amount: u64,
+    ) -> Result<u64, IcpWalletError>;
+    async fn batch_transfer(
+        &mut self,
+        from: &str,
+        transfers: Vec<(String, u64)>,
+    ) -> Result<Vec<u64>, IcpWalletError>;
     async fn transaction_history(
         &self,
         address: &str,
@@ -182,33 +200,46 @@ impl WalletDIcpApi {
     }
 
     /// Calls a method on another canister with the given arguments and returns the deserialized result.
-    pub async fn call_canister<T: CandidType + ArgumentEncoder, R: CandidType + for<'de> Deserialize<'de> + std::fmt::Debug>(
+    pub async fn call_canister<
+        T: CandidType + ArgumentEncoder,
+        R: CandidType + for<'de> Deserialize<'de> + std::fmt::Debug,
+    >(
         &self,
         _canister_id: Principal,
         method: &str,
         _args: T,
     ) -> Result<R, IcpWalletError> {
         if method.is_empty() {
-            return Err(IcpWalletError::Custom("Method name cannot be empty".to_string()));
+            return Err(IcpWalletError::Custom(
+                "Method name cannot be empty".to_string(),
+            ));
         }
         #[cfg(test)]
         {
-            if method == "icrc1_balance_of" || method == "icrc2_approve" || method == "icrc2_transfer_from" {
+            if method == "icrc1_balance_of"
+                || method == "icrc2_approve"
+                || method == "icrc2_transfer_from"
+            {
                 // Mock a response
                 let result: u64 = if method == "icrc1_balance_of" { 0 } else { 1 }; // BlockIndex for approve/transfer_from
-                let encoded = encode_args((result,)).map_err(|e| IcpWalletError::Custom(format!("Encode failed: {:?}", e)))?;
-                let (res,) = decode_args(&encoded).map_err(|e| IcpWalletError::Custom(format!("Decode failed: {:?}", e)))?;
+                let encoded = encode_args((result,))
+                    .map_err(|e| IcpWalletError::Custom(format!("Encode failed: {:?}", e)))?;
+                let (res,) = decode_args(&encoded)
+                    .map_err(|e| IcpWalletError::Custom(format!("Decode failed: {:?}", e)))?;
                 Ok(res)
             } else {
                 // Other methods return empty response
                 let result = vec![];
-                let (res,) = decode_args(&result).map_err(|e| IcpWalletError::Custom(format!("Decode failed: {:?}", e)))?;
+                let (res,) = decode_args(&result)
+                    .map_err(|e| IcpWalletError::Custom(format!("Decode failed: {:?}", e)))?;
                 Ok(res)
             }
         }
         #[cfg(not(test))]
         {
-            Err(IcpWalletError::Custom("Canister calls not supported in non-test environment".to_string()))
+            Err(IcpWalletError::Custom(
+                "Canister calls not supported in non-test environment".to_string(),
+            ))
         }
     }
 
@@ -221,15 +252,21 @@ impl WalletDIcpApi {
     ) -> Result<(), IcpWalletError> {
         // Input validation
         if to_btc_address.is_empty() {
-            return Err(IcpWalletError::Custom("Empty BTC address provided".to_string()));
+            return Err(IcpWalletError::Custom(
+                "Empty BTC address provided".to_string(),
+            ));
         }
         if amount == 0 {
-            return Err(IcpWalletError::Custom("Amount must be greater than zero".to_string()));
+            return Err(IcpWalletError::Custom(
+                "Amount must be greater than zero".to_string(),
+            ));
         }
 
         // Re-entrancy guard
         if self.locked {
-            return Err(IcpWalletError::Custom("Re-entrant call detected".to_string()));
+            return Err(IcpWalletError::Custom(
+                "Re-entrant call detected".to_string(),
+            ));
         }
         self.locked = true;
 
@@ -250,7 +287,11 @@ impl WalletDIcpApi {
             from_address: from.to_text(),
             to_address: to_btc_address.to_string(),
         };
-        std::println!("Initiating cross-chain swap: ICP {} to BTC {}", amount, to_btc_address);
+        std::println!(
+            "Initiating cross-chain swap: ICP {} to BTC {}",
+            amount,
+            to_btc_address
+        );
         wallet.balance -= amount;
         wallet.cross_chain_txs.push(tx);
 
@@ -289,8 +330,8 @@ impl IcpWalletApi for WalletDIcpApi {
     }
 
     async fn balance(&self, address: &str) -> Result<u64, IcpWalletError> {
-        let principal = Principal::from_text(address)
-            .map_err(|e| IcpWalletError::Custom(e.to_string()))?;
+        let principal =
+            Principal::from_text(address).map_err(|e| IcpWalletError::Custom(e.to_string()))?;
         self.wallets
             .get(&principal)
             .map(|w| w.balance)
@@ -300,22 +341,28 @@ impl IcpWalletApi for WalletDIcpApi {
     async fn transfer(&mut self, from: &str, to: &str, amount: u64) -> Result<(), IcpWalletError> {
         // Input validation
         if from.is_empty() || to.is_empty() {
-            return Err(IcpWalletError::Custom("Empty principal provided".to_string()));
+            return Err(IcpWalletError::Custom(
+                "Empty principal provided".to_string(),
+            ));
         }
         if amount == 0 {
-            return Err(IcpWalletError::Custom("Amount must be greater than zero".to_string()));
+            return Err(IcpWalletError::Custom(
+                "Amount must be greater than zero".to_string(),
+            ));
         }
 
         // Re-entrancy guard
         if self.locked {
-            return Err(IcpWalletError::Custom("Re-entrant call detected".to_string()));
+            return Err(IcpWalletError::Custom(
+                "Re-entrant call detected".to_string(),
+            ));
         }
         self.locked = true;
 
-        let from_principal = Principal::from_text(from)
-            .map_err(|e| IcpWalletError::Custom(e.to_string()))?;
-        let to_principal = Principal::from_text(to)
-            .map_err(|e| IcpWalletError::Custom(e.to_string()))?;
+        let from_principal =
+            Principal::from_text(from).map_err(|e| IcpWalletError::Custom(e.to_string()))?;
+        let to_principal =
+            Principal::from_text(to).map_err(|e| IcpWalletError::Custom(e.to_string()))?;
         let wallet = self
             .wallets
             .get_mut(&from_principal)
@@ -357,23 +404,34 @@ impl IcpWalletApi for WalletDIcpApi {
         Ok(())
     }
 
-    async fn approve(&mut self, from: &str, spender: &str, amount: u64) -> Result<u64, IcpWalletError> {
+    async fn approve(
+        &mut self,
+        from: &str,
+        spender: &str,
+        amount: u64,
+    ) -> Result<u64, IcpWalletError> {
         // Input validation
         if from.is_empty() || spender.is_empty() {
-            return Err(IcpWalletError::Custom("Empty principal provided".to_string()));
+            return Err(IcpWalletError::Custom(
+                "Empty principal provided".to_string(),
+            ));
         }
         if amount == 0 {
-            return Err(IcpWalletError::Custom("Amount must be greater than zero".to_string()));
+            return Err(IcpWalletError::Custom(
+                "Amount must be greater than zero".to_string(),
+            ));
         }
 
         // Re-entrancy guard
         if self.locked {
-            return Err(IcpWalletError::Custom("Re-entrant call detected".to_string()));
+            return Err(IcpWalletError::Custom(
+                "Re-entrant call detected".to_string(),
+            ));
         }
         self.locked = true;
 
-        let from_principal = Principal::from_text(from)
-            .map_err(|e| IcpWalletError::Custom(e.to_string()))?;
+        let from_principal =
+            Principal::from_text(from).map_err(|e| IcpWalletError::Custom(e.to_string()))?;
         let wallet = self
             .wallets
             .get_mut(&from_principal)
@@ -407,27 +465,39 @@ impl IcpWalletApi for WalletDIcpApi {
         Ok(result)
     }
 
-    async fn transfer_from(&mut self, _spender: &str, from: &str, to: &str, amount: u64) -> Result<u64, IcpWalletError> {
+    async fn transfer_from(
+        &mut self,
+        _spender: &str,
+        from: &str,
+        to: &str,
+        amount: u64,
+    ) -> Result<u64, IcpWalletError> {
         // Input validation
         if from.is_empty() || to.is_empty() || _spender.is_empty() {
-            return Err(IcpWalletError::Custom("Empty principal provided".to_string()));
+            return Err(IcpWalletError::Custom(
+                "Empty principal provided".to_string(),
+            ));
         }
         if amount == 0 {
-            return Err(IcpWalletError::Custom("Amount must be greater than zero".to_string()));
+            return Err(IcpWalletError::Custom(
+                "Amount must be greater than zero".to_string(),
+            ));
         }
 
         // Re-entrancy guard
         if self.locked {
-            return Err(IcpWalletError::Custom("Re-entrant call detected".to_string()));
+            return Err(IcpWalletError::Custom(
+                "Re-entrant call detected".to_string(),
+            ));
         }
         self.locked = true;
 
-        let from_principal = Principal::from_text(from)
-            .map_err(|e| IcpWalletError::Custom(e.to_string()))?;
-        let to_principal = Principal::from_text(to)
-            .map_err(|e| IcpWalletError::Custom(e.to_string()))?;
-        let _spender_principal = Principal::from_text(_spender)
-            .map_err(|e| IcpWalletError::Custom(e.to_string()))?;
+        let from_principal =
+            Principal::from_text(from).map_err(|e| IcpWalletError::Custom(e.to_string()))?;
+        let to_principal =
+            Principal::from_text(to).map_err(|e| IcpWalletError::Custom(e.to_string()))?;
+        let _spender_principal =
+            Principal::from_text(_spender).map_err(|e| IcpWalletError::Custom(e.to_string()))?;
 
         let transfer_args = TransferFromArgs {
             spender_subaccount: None,
@@ -446,7 +516,11 @@ impl IcpWalletApi for WalletDIcpApi {
         };
 
         let result: u64 = self
-            .call_canister(self.ledger_canister, "icrc2_transfer_from", (transfer_args,))
+            .call_canister(
+                self.ledger_canister,
+                "icrc2_transfer_from",
+                (transfer_args,),
+            )
             .await
             .map_err(|e| IcpWalletError::Custom(format!("Transfer from failed: {:?}", e)))?;
 
@@ -462,20 +536,28 @@ impl IcpWalletApi for WalletDIcpApi {
         Ok(result)
     }
 
-    async fn batch_transfer(&mut self, from: &str, transfers: Vec<(String, u64)>) -> Result<Vec<u64>, IcpWalletError> {
+    async fn batch_transfer(
+        &mut self,
+        from: &str,
+        transfers: Vec<(String, u64)>,
+    ) -> Result<Vec<u64>, IcpWalletError> {
         // Input validation
         if from.is_empty() || transfers.is_empty() {
-            return Err(IcpWalletError::Custom("Invalid input: empty principal or transfers".to_string()));
+            return Err(IcpWalletError::Custom(
+                "Invalid input: empty principal or transfers".to_string(),
+            ));
         }
 
         // Re-entrancy guard
         if self.locked {
-            return Err(IcpWalletError::Custom("Re-entrant call detected".to_string()));
+            return Err(IcpWalletError::Custom(
+                "Re-entrant call detected".to_string(),
+            ));
         }
         self.locked = true;
 
-        let from_principal = Principal::from_text(from)
-            .map_err(|e| IcpWalletError::Custom(e.to_string()))?;
+        let from_principal =
+            Principal::from_text(from).map_err(|e| IcpWalletError::Custom(e.to_string()))?;
 
         // Check balance before any canister calls
         let wallet = self
@@ -495,15 +577,19 @@ impl IcpWalletApi for WalletDIcpApi {
         for (to, amount) in transfers {
             if to.is_empty() {
                 self.locked = false;
-                return Err(IcpWalletError::Custom("Empty recipient principal".to_string()));
+                return Err(IcpWalletError::Custom(
+                    "Empty recipient principal".to_string(),
+                ));
             }
             if amount == 0 {
                 self.locked = false;
-                return Err(IcpWalletError::Custom("Amount must be greater than zero".to_string()));
+                return Err(IcpWalletError::Custom(
+                    "Amount must be greater than zero".to_string(),
+                ));
             }
 
-            let to_principal = Principal::from_text(&to)
-                .map_err(|e| IcpWalletError::Custom(e.to_string()))?;
+            let to_principal =
+                Principal::from_text(&to).map_err(|e| IcpWalletError::Custom(e.to_string()))?;
             valid_transfers.push((to_principal, amount));
         }
 
@@ -526,7 +612,11 @@ impl IcpWalletApi for WalletDIcpApi {
             };
 
             let result: u64 = self
-                .call_canister(self.ledger_canister, "icrc2_transfer_from", (transfer_args,))
+                .call_canister(
+                    self.ledger_canister,
+                    "icrc2_transfer_from",
+                    (transfer_args,),
+                )
                 .await
                 .map_err(|e| IcpWalletError::Custom(format!("Transfer from failed: {:?}", e)))?;
             results.push(result);
@@ -558,8 +648,8 @@ impl IcpWalletApi for WalletDIcpApi {
         &self,
         address: &str,
     ) -> Result<Vec<Box<dyn IcpTransactionTrait>>, IcpWalletError> {
-        let principal = Principal::from_text(address)
-            .map_err(|e| IcpWalletError::Custom(e.to_string()))?;
+        let principal =
+            Principal::from_text(address).map_err(|e| IcpWalletError::Custom(e.to_string()))?;
         let wallet = self
             .wallets
             .get(&principal)
@@ -612,7 +702,9 @@ mod tests {
         let walletd = WalletDIcpApi::new_test()?;
         let canister_id = Principal::from_text("uxrrr-q7777-77774-qaaaq-cai")
             .map_err(|e| IcpWalletError::Custom(e.to_string()))?;
-        let result: Result<u64, IcpWalletError> = walletd.call_canister(canister_id, "icrc1_balance_of", (canister_id,)).await;
+        let result: Result<u64, IcpWalletError> = walletd
+            .call_canister(canister_id, "icrc1_balance_of", (canister_id,))
+            .await;
         assert!(result.is_ok() || result.is_err());
         Ok(())
     }
@@ -623,11 +715,7 @@ mod tests {
         let from = walletd.generate_address().await?;
         let from_principal = Principal::from_text(&from)
             .map_err(|e| IcpWalletError::Custom(format!("Failed to parse principal: {}", e)))?;
-        walletd
-            .wallets
-            .get_mut(&from_principal)
-            .unwrap()
-            .balance = 100_000_000;
+        walletd.wallets.get_mut(&from_principal).unwrap().balance = 100_000_000;
         let result = walletd
             .swap_icp_to_btc(
                 from_principal,
@@ -697,7 +785,9 @@ mod tests {
             .map_err(|e| IcpWalletError::Custom(format!("Failed to parse principal: {}", e)))?;
         walletd.wallets.get_mut(&from_principal).unwrap().balance = 100_000_000;
         let _ = walletd.approve(&from, &spender, 50_000_000).await?;
-        let result = walletd.transfer_from(&spender, &from, &to, 25_000_000).await;
+        let result = walletd
+            .transfer_from(&spender, &from, &to, 25_000_000)
+            .await;
         assert!(result.is_ok());
         Ok(())
     }
@@ -738,10 +828,7 @@ mod tests {
             .map_err(|e| IcpWalletError::Custom(format!("Failed to parse principal: {}", e)))?;
         walletd.wallets.get_mut(&from_principal).unwrap().balance = 2_000_000;
 
-        let transfers = vec![
-            (to1.clone(), 500_000),
-            (to2.clone(), 500_000),
-        ];
+        let transfers = vec![(to1.clone(), 500_000), (to2.clone(), 500_000)];
         let result = walletd.batch_transfer(&from, transfers).await?;
         assert_eq!(result, vec![1, 1]); // Mocked block indices
 

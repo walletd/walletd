@@ -1,5 +1,5 @@
-use walletd_icp::production::*;
 use anyhow::Result;
+use walletd_icp::production::*;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -54,34 +54,38 @@ async fn main() -> Result<()> {
         },
         max_concurrent_operations: 1000,
     };
-    
+
     // Create wallet manager
     let manager = EnterpriseWalletManager::new(config).await?;
-    
+
     // Create wallets for users
     let wallet1 = manager.create_wallet("user-001", "auth-token-xxx").await?;
     println!("Created wallet: {:?}", wallet1);
-    
+
     // Execute transaction with all security checks
-    let tx_result = manager.execute_transaction(TransactionRequest {
-        user_id: "user-001".to_string(),
-        auth_token: "auth-token-xxx".to_string(),
-        to: "ryjl3-tyaaa-aaaaa-aaaba-cai".to_string(),
-        amount: 100_000_000, // 1 ICP
-        memo: Some(12345),
-        two_fa_code: Some("123456".to_string()),
-    }).await?;
-    
+    let tx_result = manager
+        .execute_transaction(TransactionRequest {
+            user_id: "user-001".to_string(),
+            auth_token: "auth-token-xxx".to_string(),
+            to: "ryjl3-tyaaa-aaaaa-aaaba-cai".to_string(),
+            amount: 100_000_000, // 1 ICP
+            memo: Some(12345),
+            two_fa_code: Some("123456".to_string()),
+        })
+        .await?;
+
     println!("Transaction completed: {:?}", tx_result);
-    
+
     // Batch operations
-    let balances = manager.batch_get_balances(vec![
-        "user-001".to_string(),
-        "user-002".to_string(),
-        "user-003".to_string(),
-    ]).await?;
-    
+    let balances = manager
+        .batch_get_balances(vec![
+            "user-001".to_string(),
+            "user-002".to_string(),
+            "user-003".to_string(),
+        ])
+        .await?;
+
     println!("Balances: {:?}", balances);
-    
+
     Ok(())
 }

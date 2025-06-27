@@ -7,8 +7,8 @@ use curve25519_dalek::scalar::Scalar;
 use thiserror::Error;
 
 use crate::{
-    keccak256, monero_private_keys, payment_id, public_key, MoneroPrivateKeys,
-    MoneroPublicKeys, Network, PaymentId, PaymentIdStyle, PublicKey,
+    keccak256, monero_private_keys, payment_id, public_key, MoneroPrivateKeys, MoneroPublicKeys,
+    Network, PaymentId, PaymentIdStyle, PublicKey,
 };
 
 /// Represents a subaddress index with the major and minor indices specified
@@ -79,12 +79,20 @@ impl AddressType {
         let network = network_from_u8(magic_byte)?;
         use AddressType::*;
         match (magic_byte, network) {
-            (18, monero::Network::Mainnet) | (24, monero::Network::Stagenet) | (53, monero::Network::Testnet) => Ok(Standard),
-            (19, monero::Network::Mainnet) | (25, monero::Network::Stagenet) | (43, monero::Network::Testnet) => {
+            (18, monero::Network::Mainnet)
+            | (24, monero::Network::Stagenet)
+            | (53, monero::Network::Testnet) => Ok(Standard),
+            (19, monero::Network::Mainnet)
+            | (25, monero::Network::Stagenet)
+            | (43, monero::Network::Testnet) => {
                 // Integrate addresses incorporate an 8 byte payment id
-                Ok(Integrated(PaymentId::from_slice(&bytes[65..73]).map_err(Error::InvalidPaymentId)?))
+                Ok(Integrated(
+                    PaymentId::from_slice(&bytes[65..73]).map_err(Error::InvalidPaymentId)?,
+                ))
             }
-            (42, monero::Network::Mainnet) | (36, monero::Network::Stagenet) | (63, monero::Network::Testnet) => {
+            (42, monero::Network::Mainnet)
+            | (36, monero::Network::Stagenet)
+            | (63, monero::Network::Testnet) => {
                 // Cannot discern the major and minor subaddress indices from the
                 // address bytes so setting them to None
                 Ok(Subaddress(None))
@@ -138,7 +146,8 @@ pub enum Error {
     AddressTypeParseError,
     /// Invalid address format
     #[error("Invalid address format")]
-    InvalidFormat,    /// Unable to parse public key
+    InvalidFormat,
+    /// Unable to parse public key
     #[error("Unable to parse public key {0}")]
     PublicKeyParseError(#[from] public_key::Error),
     /// Invalid Payment ID style for Integrated Address
@@ -416,9 +425,9 @@ mod tests {
 fn network_from_u8(byte: u8) -> Result<Network, Error> {
     match byte {
         18 | 19 | 42 => Ok(Network::Mainnet),
-        53 | 43 | 63 => Ok(Network::Testnet), 
+        53 | 43 | 63 => Ok(Network::Testnet),
         24 | 25 | 36 => Ok(Network::Stagenet),
-        _ => Err(Error::InvalidFormat)
+        _ => Err(Error::InvalidFormat),
     }
 }
 

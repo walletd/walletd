@@ -2,8 +2,8 @@ use std::fmt::{self, Display};
 use std::str::FromStr;
 
 use curve25519_dalek::scalar::Scalar;
-use thiserror::Error;
 use rand::{thread_rng, RngCore};
+use thiserror::Error;
 
 pub const KEY_LEN: usize = 32;
 
@@ -27,7 +27,8 @@ impl PrivateKey {
         let mut rng = thread_rng();
         let mut bytes = [0u8; 32];
         rng.fill_bytes(&mut bytes);
-        Self(Scalar::from_bytes_mod_order(bytes))    }
+        Self(Scalar::from_bytes_mod_order(bytes))
+    }
 
     /// Creates a private key from a byte slice.
     pub fn from_slice(data: &[u8]) -> Result<Self, Error> {
@@ -98,7 +99,10 @@ mod tests {
         let result = PrivateKey::from_slice(&data);
         assert!(matches!(
             result.unwrap_err(),
-            Error::InvalidLength { expected: 32, found: 33 }
+            Error::InvalidLength {
+                expected: 32,
+                found: 33
+            }
         ));
 
         let data = [255u8; KEY_LEN];
@@ -168,7 +172,7 @@ impl PrivateKey {
         let bytes = self.0.to_bytes();
         monero::PrivateKey::from_slice(&bytes).unwrap()
     }
-    
+
     pub fn from_monero(key: &monero::PrivateKey) -> Self {
         let bytes = key.as_bytes();
         PrivateKey(Scalar::from_bytes_mod_order(bytes.try_into().unwrap()))

@@ -8,9 +8,9 @@ pub async fn check_real_balance(address: &str) -> Result<f64> {
 
 pub async fn update_balance_display() -> Result<String> {
     // Check if mining has produced blocks
-    let log_output = std::fs::read_to_string("~/.bitmonero/stagenet/bitmonero.log")
-        .unwrap_or_default();
-        
+    let log_output =
+        std::fs::read_to_string("~/.bitmonero/stagenet/bitmonero.log").unwrap_or_default();
+
     if log_output.contains("Found block") {
         Ok("Balance: ~0.6+ XMR (mined)".to_string())
     } else {

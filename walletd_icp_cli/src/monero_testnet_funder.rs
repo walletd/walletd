@@ -12,22 +12,26 @@ impl TestnetFunder {
     pub async fn fund_user_wallet(user_address: &str) -> Result<String> {
         println!("💰 SDK Testnet Funding Service");
         println!("==============================\n");
-        
+
         // Check if we have a local wallet RPC running
         if !Self::is_wallet_rpc_available().await {
             return Self::start_funding_service(user_address).await;
         }
-        
+
         // Send funds from SDK wallet to user
         println!("📤 Sending testnet XMR...");
         println!("   From: SDK Funder");
-        println!("   To: {}...{}", &user_address[..12], &user_address[user_address.len()-12..]);
+        println!(
+            "   To: {}...{}",
+            &user_address[..12],
+            &user_address[user_address.len() - 12..]
+        );
         println!("   Amount: 5.0 XMR");
-        
+
         // In real implementation, this would use monero-wallet-rpc
         Ok("✅ Testnet funds sent! Check balance in 30 seconds.".to_string())
     }
-    
+
     async fn is_wallet_rpc_available() -> bool {
         // Check if monero-wallet-rpc is running
         reqwest::Client::new()
@@ -41,19 +45,19 @@ impl TestnetFunder {
             .await
             .is_ok()
     }
-    
+
     async fn start_funding_service(user_address: &str) -> Result<String> {
         println!("🚀 Initializing SDK funding service...\n");
-        
+
         // Option 1: Use pre-mined testnet funds
         println!("Options:");
         println!("[1] Instant Demo Funds (5 XMR)");
         println!("[2] Connect to Testnet Pool");
         println!("[3] Use Shared Test Wallet");
-        
+
         let mut input = String::new();
         std::io::stdin().read_line(&mut input)?;
-        
+
         match input.trim() {
             "1" => {
                 // Just mark as funded for demo
@@ -73,17 +77,17 @@ impl TestnetFunder {
                 println!("   You can use it for testing");
                 Ok(format!("Test wallet: {}", SDK_WALLET_ADDRESS))
             }
-            _ => Ok("Cancelled".to_string())
+            _ => Ok("Cancelled".to_string()),
         }
     }
-    
+
     async fn connect_to_auto_faucet(address: &str) -> Result<String> {
         // Some stagenet pools have auto-payout for small amounts
         println!("📡 Registering with auto-faucet service...");
-        
+
         // This could connect to a service that automatically sends small amounts
         // For example, a mining pool that auto-pays out every few minutes
-        
+
         Ok("✅ Registered! You'll receive XMR within 5 minutes.".to_string())
     }
 }
@@ -91,18 +95,18 @@ impl TestnetFunder {
 pub async fn get_instant_testnet_xmr(user_address: &str) -> Result<String> {
     println!("\n⚡ Instant Testnet XMR");
     println!("======================\n");
-    
+
     println!("[1] SDK Funder (Instant)");
-    println!("[2] Import Test Wallet"); 
+    println!("[2] Import Test Wallet");
     println!("[3] Join Mining Pool");
     println!("[4] Demo Mode (Fake balance)");
-    
+
     print!("\nSelect: ");
     std::io::Write::flush(&mut std::io::stdout()).unwrap();
-    
+
     let mut input = String::new();
     std::io::stdin().read_line(&mut input)?;
-    
+
     match input.trim() {
         "1" => TestnetFunder::fund_user_wallet(user_address).await,
         "2" => {
@@ -124,6 +128,6 @@ pub async fn get_instant_testnet_xmr(user_address: &str) -> Result<String> {
             println!("(Not real - just for UI testing)");
             Ok("Demo balance: 10 XMR".to_string())
         }
-        _ => Ok("Cancelled".to_string())
+        _ => Ok("Cancelled".to_string()),
     }
 }

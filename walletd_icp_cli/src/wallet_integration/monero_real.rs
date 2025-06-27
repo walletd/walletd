@@ -62,7 +62,7 @@ impl RealMoneroWallet {
         };
 
         println!("🔗 Connecting to {} via: {}", network, daemon_url);
-        
+
         Ok(Self {
             address: address.to_string(),
             view_key: view_key.to_string(),
@@ -82,14 +82,10 @@ impl RealMoneroWallet {
         };
 
         let client = reqwest::Client::new();
-        let response = client
-            .post(&self.daemon_url)
-            .json(&request)
-            .send()
-            .await?;
+        let response = client.post(&self.daemon_url).json(&request).send().await?;
 
         let json: JsonRpcResponse<GetInfoResult> = response.json().await?;
-        
+
         json.result.ok_or_else(|| anyhow::anyhow!("No result"))
     }
 
@@ -111,13 +107,23 @@ impl RealMoneroWallet {
         }
 
         println!("\n📤 Preparing Monero Transaction:");
-        println!("   From: {}...{}", &self.address[..12], &self.address[self.address.len()-12..]);
-        println!("   To: {}...{}", &to_address[..12], &to_address[to_address.len()-12..]);
+        println!(
+            "   From: {}...{}",
+            &self.address[..12],
+            &self.address[self.address.len() - 12..]
+        );
+        println!(
+            "   To: {}...{}",
+            &to_address[..12],
+            &to_address[to_address.len() - 12..]
+        );
         println!("   Amount: {} XMR", amount);
         println!("\n⚠️  View-only wallet - cannot send transactions");
         println!("   To send XMR, use monero-wallet-cli with spend key");
-        
-        Err(anyhow::anyhow!("View-only wallet - use monero-wallet-cli to send"))
+
+        Err(anyhow::anyhow!(
+            "View-only wallet - use monero-wallet-cli to send"
+        ))
     }
 
     fn validate_address(&self, address: &str) -> bool {

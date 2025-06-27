@@ -1,11 +1,11 @@
 use core::str;
 use std::fmt;
 
+use crate::mnemonic_type::BITS_IN_BYTES;
+use crate::{Error, Language, MnemonicType, WordList};
 use curve25519_dalek::scalar::Scalar;
 use rand::{thread_rng, Rng};
 use walletd_mnemonics_core::Seed;
-use crate::mnemonic_type::BITS_IN_BYTES;
-use crate::{Error, Language, WordList, MnemonicType};
 
 /// The primary type in this crate, most tasks require creating or using one.
 ///
@@ -115,11 +115,7 @@ impl Mnemonic {
 
     /// Generates a new mnemonic given the language, length of mnemonic, and
     /// optional passphrase
-    fn new(
-        language: Language,
-        mnemonic_type: MnemonicType,
-        passphrase: Option<&str>,
-    ) -> Self {
+    fn new(language: Language, mnemonic_type: MnemonicType, passphrase: Option<&str>) -> Self {
         let wordlist = WordList::new(language);
 
         const DEFAULT_LENGTH: usize = 32;
@@ -145,10 +141,7 @@ impl Mnemonic {
 
     /// Restores a mnemonic from a mnemonic phrase and optional passphrase,
     /// automatically detects the language
-    fn detect_language(
-        phrase: &str,
-        specified_passphrase: Option<&str>,
-    ) -> Result<Self, Error> {
+    fn detect_language(phrase: &str, specified_passphrase: Option<&str>) -> Result<Self, Error> {
         let mnemonic_type = MnemonicType::from_phrase(phrase)?;
         let language = WordList::detect_language(phrase.split(' ').collect())?;
         let seed = Mnemonic::create_seed(language, phrase, mnemonic_type, specified_passphrase)?;
@@ -437,9 +430,10 @@ impl MnemonicBuilder {
             }
         } else {
             // Use seed to recover mnemonic if phrase was not provided
-            let specified_seed = self.seed.clone().ok_or_else(|| {
-                Error::MissingInformation("seed should be present".to_owned())
-            })?;
+            let specified_seed = self
+                .seed
+                .clone()
+                .ok_or_else(|| Error::MissingInformation("seed should be present".to_owned()))?;
             let language = self.language.ok_or_else(|| {
                 Error::MissingInformation(
                     "language must be specified to recover a mnemonic from a seed".to_owned(),
@@ -459,7 +453,8 @@ impl MnemonicBuilder {
                 &wordlist_info,
             )?;
             // Final seed will be encrypted if a passphrase is provided
-            let seed = Mnemonic::create_seed(language, &phrase, mnemonic_type, specified_passphrase)?;
+            let seed =
+                Mnemonic::create_seed(language, &phrase, mnemonic_type, specified_passphrase)?;
 
             Ok(Mnemonic {
                 phrase,

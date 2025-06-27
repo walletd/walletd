@@ -1,5 +1,5 @@
 // Simplified UTXO manager
-use bitcoin::{TxOut, OutPoint};
+use bitcoin::{OutPoint, TxOut};
 use std::collections::HashMap;
 
 pub struct UtxoManager {

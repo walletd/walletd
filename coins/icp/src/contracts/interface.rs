@@ -2,7 +2,7 @@
 pub struct CanisterInterface;
 
 impl CanisterInterface {
-   pub fn new() -> Self {
-       Self
-   }
+    pub fn new() -> Self {
+        Self
+    }
 }

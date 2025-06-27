@@ -2,11 +2,11 @@ use base58::ToBase58;
 use hmac::{Hmac, Mac};
 use sha2::{Digest, Sha256, Sha512};
 type HmacSha512 = Hmac<Sha512>;
-use std::fmt;
-use ripemd::Ripemd160;
-use secp256k1::{Secp256k1, SecretKey, PublicKey};
-use walletd_mnemonics_core::Seed;
 use crate::{Error, HDPath, HDPathIndex, HDPurpose};
+use ripemd::Ripemd160;
+use secp256k1::{PublicKey, Secp256k1, SecretKey};
+use std::fmt;
+use walletd_mnemonics_core::Seed;
 
 /// A wrapper around secp256k1::SecretKey for HDKey.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -147,7 +147,11 @@ impl HDKey {
         })
     }
 
-    pub fn new(seed: Seed, network_type: HDNetworkType, derivation_path: &str) -> Result<Self, Error> {
+    pub fn new(
+        seed: Seed,
+        network_type: HDNetworkType,
+        derivation_path: &str,
+    ) -> Result<Self, Error> {
         Self::new_master(seed, network_type)?.derive(derivation_path)
     }
 
@@ -175,13 +179,15 @@ impl HDKey {
                 start_path_depth = 1;
             } else if parent_deriv_path.len() > new_deriv_path_info.len() {
                 return Err(Error::Invalid(format!(
-                    "Cannot derive {} path from {:?}", derivation_path, self.derivation_path
+                    "Cannot derive {} path from {:?}",
+                    derivation_path, self.derivation_path
                 )));
             } else {
                 for (i, item) in parent_deriv_path.iter().enumerate() {
                     if item != &new_deriv_path_info[i] {
                         return Err(Error::Invalid(format!(
-                            "Cannot derive {} path from {:?}", derivation_path, self.derivation_path
+                            "Cannot derive {} path from {:?}",
+                            derivation_path, self.derivation_path
                         )));
                     }
                 }
@@ -206,16 +212,16 @@ impl HDKey {
                     mac.update(&parent_private_key.to_bytes());
                     mac.update(&full_num.to_be_bytes());
                 }
-                _ => {
-                    return Err(Error::Invalid(format!(
-                        "Not handled, something is wrong with the derivation path specification {:?}", item
-                    )))
-                }
+                _ => return Err(Error::Invalid(format!(
+                    "Not handled, something is wrong with the derivation path specification {:?}",
+                    item
+                ))),
             }
 
             let hmac = mac.finalize().into_bytes();
             private_key = ExtendedPrivateKey::from_slice(&hmac[0..32])?;
-            private_key = private_key.add_tweak(&SecretKey::from_slice(parent_private_key.as_ref())?)?;
+            private_key =
+                private_key.add_tweak(&SecretKey::from_slice(parent_private_key.as_ref())?)?;
             chain_code = [0u8; 32];
             chain_code.copy_from_slice(&hmac[32..]);
             parent_fingerprint.copy_from_slice(&Self::hash160(&parent_public_key.to_bytes())[0..4]);
@@ -226,7 +232,8 @@ impl HDKey {
 
         if deriv_path.is_empty() || deriv_path.at(0)? != HDPathIndex::Master {
             return Err(Error::Invalid(format!(
-                "Invalid derivation path {:?}", deriv_path
+                "Invalid derivation path {:?}",
+                deriv_path
             )));
         }
 
@@ -269,8 +276,7 @@ impl HDKey {
     }
 
     pub fn extended_public_key(&self) -> Result<ExtendedPublicKey, Error> {
-        self.extended_public_key
-            .ok_or(Error::MissingPublicKey)
+        self.extended_public_key.ok_or(Error::MissingPublicKey)
     }
 
     pub fn master_seed(&self) -> Seed {

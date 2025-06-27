@@ -1,13 +1,14 @@
+use crate::monero_serialize::{DoSerialize, SerializedArchive};
 use anyhow::anyhow;
-use serde::Serialize;use curve25519_dalek::edwards::{CompressedEdwardsY, EdwardsPoint};
+use curve25519_dalek::edwards::{CompressedEdwardsY, EdwardsPoint};
 use curve25519_dalek::scalar::Scalar;
 use curve25519_dalek::traits::Identity;
+use monero::consensus::encode::{Encodable, VarInt};
 use monero::cryptonote::hash::{Hash, Hash8};
-use monero::consensus::encode::{VarInt, Encodable};
-use crate::monero_serialize::{DoSerialize, SerializedArchive};
-use tiny_keccak::{Hasher, Keccak};
 use rand::{thread_rng, RngCore};
+use serde::Serialize;
 use thiserror::Error;
+use tiny_keccak::{Hasher, Keccak};
 use zeroize::Zeroize;
 
 const BPP_MAX_MN: usize = 1024; // BULLETPROOF_PLUS_MAX_OUTPUTS * BPP_N_BITS
@@ -61,7 +62,8 @@ const INV_EIGHT: RctKey = RctKey {
     ],
 };
 
-#[allow(dead_code)]const MINUS_INV_EIGHT: RctKey = RctKey {
+#[allow(dead_code)]
+const MINUS_INV_EIGHT: RctKey = RctKey {
     bytes: [
         0x74, 0xa4, 0x19, 0x7a, 0xf0, 0x7d, 0x0b, 0xf7, 0x05, 0xc2, 0xda, 0x25, 0x2b, 0x5c, 0x0b,
         0x0d, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -184,7 +186,8 @@ impl RctKey {
         b_bytes[0..8].copy_from_slice(&amount.to_le_bytes());
         let b_scalar = Scalar::from_bytes_mod_order(b_bytes);
         let a_scalar = Scalar::from_bytes_mod_order(mask.bytes);
-        let c_point = a_scalar * G_BASEPOINT.as_point().unwrap() + b_scalar * H_BASEPOINT.as_point().unwrap();
+        let c_point =
+            a_scalar * G_BASEPOINT.as_point().unwrap() + b_scalar * H_BASEPOINT.as_point().unwrap();
         RctKey::from_point(&c_point)
     }
 
@@ -269,7 +272,10 @@ impl DoSerialize for RctSigBase {
         }
         for (i, ecdh) in self.ecdh_info.iter().enumerate() {
             let hashed_amount = Hash8::from_slice(&ecdh.amount.bytes);
-            serialized.serialize_field(&format!("ecdhInfo[{}].amount", i), &hashed_amount.as_bytes())?;
+            serialized.serialize_field(
+                &format!("ecdhInfo[{}].amount", i),
+                &hashed_amount.as_bytes(),
+            )?;
         }
         for (i, out_pk) in self.out_pk.iter().enumerate() {
             serialized.serialize_field(&format!("outPk[{}].mask", i), &out_pk.mask)?;
@@ -321,11 +327,13 @@ pub fn bulletproofs_generators(dst: &'static [u8]) -> Result<Generators, Error> 
         let mut odd = even.clone();
         let i_0 = VarInt(idx as u64);
         let mut i_0_bytes = Vec::new();
-        i_0.consensus_encode(&mut i_0_bytes).map_err(|e| Error::AnyhowError(anyhow::anyhow!(e)))?;
+        i_0.consensus_encode(&mut i_0_bytes)
+            .map_err(|e| Error::AnyhowError(anyhow::anyhow!(e)))?;
         even.extend(i_0_bytes);
         let i_1 = VarInt((idx + 1) as u64);
         let mut i_1_bytes = Vec::new();
-        i_1.consensus_encode(&mut i_1_bytes).map_err(|e| Error::AnyhowError(anyhow::anyhow!(e)))?;
+        i_1.consensus_encode(&mut i_1_bytes)
+            .map_err(|e| Error::AnyhowError(anyhow::anyhow!(e)))?;
         odd.extend(i_1_bytes);
         res.H[i / 2] = hash_to_point(keccak256(&even));
         res.G[i / 2] = hash_to_point(keccak256(&odd));
@@ -334,8 +342,7 @@ pub fn bulletproofs_generators(dst: &'static [u8]) -> Result<Generators, Error> 
 }
 
 #[allow(non_snake_case)]
-#[derive(Debug, Clone)]
-#[derive(Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct BulletproofPlus {
     pub V: Vec<RctKey>,
     pub A: RctKey,
@@ -371,7 +378,7 @@ impl Transcript {
         data.extend(update);
         let data_bytes: Vec<u8> = data.iter().flat_map(|x| x.bytes).collect();
         let hash_to_scalar = Hash::hash_to_scalar(&data_bytes);
-*self = Transcript(RctKey::from_scalar(&private_key_to_scalar(&hash_to_scalar)));
+        *self = Transcript(RctKey::from_scalar(&private_key_to_scalar(&hash_to_scalar)));
     }
 }
 
@@ -388,7 +395,9 @@ impl BulletproofPlus {
         let gamma = masks;
 
         if sv.len() != gamma.len() {
-            return Err(Error::ErrorMessage("Incompatible sizes of sv and gamma".to_string()));
+            return Err(Error::ErrorMessage(
+                "Incompatible sizes of sv and gamma".to_string(),
+            ));
         }
         if sv.is_empty() {
             return Err(Error::ErrorMessage("sv is empty".to_string()));
@@ -455,7 +464,9 @@ impl BulletproofPlus {
         aR8: &[RctKey],
     ) -> Result<Self, Error> {
         let initial_transcript = Transcript(RctKey::from_slice(
-            &hash_to_point(keccak256(b"bulletproof_plus_transcript")).compress().to_bytes(),
+            &hash_to_point(keccak256(b"bulletproof_plus_transcript"))
+                .compress()
+                .to_bytes(),
         ));
 
         let M = 1 << logM;
@@ -478,7 +489,9 @@ impl BulletproofPlus {
         if y == RctKey::zero() {
             return Self::try_again(_sv, gamma, V, logM, aL, aL8, aR, aR8);
         }
-        transcript = Transcript(RctKey::from_scalar(&private_key_to_scalar(&Hash::hash_to_scalar(&y.bytes))));
+        transcript = Transcript(RctKey::from_scalar(&private_key_to_scalar(
+            &Hash::hash_to_scalar(&y.bytes),
+        )));
         let z = transcript.0;
         if z == RctKey::zero() {
             return Self::try_again(_sv, gamma, V, logM, aL, aL8, aR, aR8);
@@ -551,22 +564,20 @@ impl BulletproofPlus {
             let (GPrime_left, GPrime_right) = GPrime.split_at(nprime);
             let (HPrime_left, HPrime_right) = HPrime.split_at(nprime);
             let cL = Self::weighted_inner_product(aprime_left, bprime_right, &y.as_scalar());
-            let vec_scalar: Vec<Scalar> = aprime_left
-                .iter()
-                .map(|a| a * y_powers[nprime])
-                .collect();
+            let vec_scalar: Vec<Scalar> =
+                aprime_left.iter().map(|a| a * y_powers[nprime]).collect();
             let cR = Self::weighted_inner_product(&vec_scalar, bprime_left, &y.as_scalar());
             let dL = {
-            let mut rng = thread_rng();
-            let mut bytes = [0u8; 32];
-            rng.fill_bytes(&mut bytes);
-            Scalar::from_bytes_mod_order(bytes)
+                let mut rng = thread_rng();
+                let mut bytes = [0u8; 32];
+                rng.fill_bytes(&mut bytes);
+                Scalar::from_bytes_mod_order(bytes)
             };
             let dR = {
-            let mut rng = thread_rng();
-            let mut bytes = [0u8; 32];
-            rng.fill_bytes(&mut bytes);
-            Scalar::from_bytes_mod_order(bytes)
+                let mut rng = thread_rng();
+                let mut bytes = [0u8; 32];
+                rng.fill_bytes(&mut bytes);
+                Scalar::from_bytes_mod_order(bytes)
             };
 
             L[round] = RctKey::from_point(&Self::compute_LR(
@@ -610,10 +621,7 @@ impl BulletproofPlus {
                 .collect();
             let ap2: Vec<Scalar> = aprime_right.iter().map(|x| x * temp).collect();
             aprime = ap1.iter().zip(ap2.iter()).map(|(a, b)| a + b).collect();
-            let bp1: Vec<Scalar> = bprime_left
-                .iter()
-                .map(|x| x * challenge_inv)
-                .collect();
+            let bp1: Vec<Scalar> = bprime_left.iter().map(|x| x * challenge_inv).collect();
             let bp2: Vec<Scalar> = bprime_right
                 .iter()
                 .map(|x| x * challenge.as_scalar())
@@ -650,13 +658,17 @@ impl BulletproofPlus {
             Scalar::from_bytes_mod_order(bytes)
         };
 
-        let mut A1_data: Vec<(Scalar, EdwardsPoint)> = vec![(Scalar::ZERO, EdwardsPoint::identity()); 4];
+        let mut A1_data: Vec<(Scalar, EdwardsPoint)> =
+            vec![(Scalar::ZERO, EdwardsPoint::identity()); 4];
         A1_data[0] = (r * INV_EIGHT.as_scalar(), GPrime[0]);
         A1_data[1] = (s * INV_EIGHT.as_scalar(), HPrime[0]);
         A1_data[2] = (d_ * INV_EIGHT.as_scalar(), hash_to_point(G_BASEPOINT.bytes));
         let mut temp = r * y.as_scalar() * bprime[0];
         temp += s * y.as_scalar() * aprime[0];
-        A1_data[3] = (temp * INV_EIGHT.as_scalar(), hash_to_point(H_BASEPOINT.bytes));
+        A1_data[3] = (
+            temp * INV_EIGHT.as_scalar(),
+            hash_to_point(H_BASEPOINT.bytes),
+        );
 
         let A1 = Self::multiexp(&A1_data);
 
@@ -712,7 +724,8 @@ impl BulletproofPlus {
         c: &Scalar,
         d: &Scalar,
     ) -> EdwardsPoint {
-        let mut multiexp_data: Vec<(Scalar, EdwardsPoint)> = vec![(Scalar::ZERO, EdwardsPoint::identity()); size * 2 + 2];
+        let mut multiexp_data: Vec<(Scalar, EdwardsPoint)> =
+            vec![(Scalar::ZERO, EdwardsPoint::identity()); size * 2 + 2];
         let inv_eight = INV_EIGHT.as_scalar();
         for i in 0..size {
             multiexp_data[i * 2] = (a[i] * y * inv_eight, g[i]);
@@ -749,7 +762,9 @@ impl BulletproofPlus {
 
     fn vector_exponent(a: &[RctKey], b: &[RctKey]) -> Result<EdwardsPoint, Error> {
         if a.len() != b.len() {
-            return Err(Error::AnyhowError(anyhow!("a and b must be the same length")));
+            return Err(Error::AnyhowError(anyhow!(
+                "a and b must be the same length"
+            )));
         }
         let generators = bulletproofs_generators(b"bulletproof_plus")?;
         let mut sum = EdwardsPoint::identity();
@@ -929,10 +944,19 @@ impl Clsag {
         mu_C_to_hash[2 * n + 3] = *C_offset;
 
         let mu_P = RctKey::from_scalar(&private_key_to_scalar(&Hash::hash_to_scalar(
-            mu_P_to_hash.iter().flat_map(|x| x.bytes).collect::<Vec<u8>>().as_slice(),
+            mu_P_to_hash
+                .iter()
+                .flat_map(|x| x.bytes)
+                .collect::<Vec<u8>>()
+                .as_slice(),
         )));
         let mu_C = RctKey::from_scalar(&private_key_to_scalar(&Hash::hash_to_scalar(
-            mu_C_to_hash.iter().flat_map(|x| x.bytes).collect::<Vec<u8>>().as_slice())));
+            mu_C_to_hash
+                .iter()
+                .flat_map(|x| x.bytes)
+                .collect::<Vec<u8>>()
+                .as_slice(),
+        )));
 
         let mut c_to_hash = vec![RctKey::default(); 2 * n + 5];
         c_to_hash[0] = RctKey::zero();
@@ -945,7 +969,11 @@ impl Clsag {
         c_to_hash[2 * n + 4] = aH;
 
         let c = RctKey::from_scalar(&private_key_to_scalar(&Hash::hash_to_scalar(
-            c_to_hash.iter().flat_map(|x| x.bytes).collect::<Vec<u8>>().as_slice(),
+            c_to_hash
+                .iter()
+                .flat_map(|x| x.bytes)
+                .collect::<Vec<u8>>()
+                .as_slice(),
         )));
 
         let mut i = (l + 1) % n;
@@ -957,11 +985,11 @@ impl Clsag {
 
         while i != l {
             sig.s[i] = RctKey::from_scalar(&{
-            let mut rng = thread_rng();
-            let mut bytes = [0u8; 32];
-            rng.fill_bytes(&mut bytes);
-            Scalar::from_bytes_mod_order(bytes)
-        });
+                let mut rng = thread_rng();
+                let mut bytes = [0u8; 32];
+                rng.fill_bytes(&mut bytes);
+                Scalar::from_bytes_mod_order(bytes)
+            });
             let c_p = mu_P.as_scalar() * c.as_scalar();
             let c_c = mu_C.as_scalar() * c.as_scalar();
 
@@ -978,7 +1006,11 @@ impl Clsag {
             c_to_hash[2 * n + 4] = RctKey::from_point(&R);
 
             let _c_new = RctKey::from_scalar(&private_key_to_scalar(&Hash::hash_to_scalar(
-                c_to_hash.iter().flat_map(|x| x.bytes).collect::<Vec<u8>>().as_slice(),
+                c_to_hash
+                    .iter()
+                    .flat_map(|x| x.bytes)
+                    .collect::<Vec<u8>>()
+                    .as_slice(),
             )));
             i = (i + 1) % n;
             if i == 0 {
@@ -1060,7 +1092,9 @@ impl RctSig {
 
         let mut key_vec: Vec<RctKey> = Vec::new();
         if base.rct_type != RCTType::BulletproofPlus {
-            return Err(Error::AnyhowError(anyhow!("Only supporting BulletproofPlus RCT type")));
+            return Err(Error::AnyhowError(anyhow!(
+                "Only supporting BulletproofPlus RCT type"
+            )));
         }
         for p in &self.p.bulletproofs_plus {
             key_vec.push(p.A);
@@ -1085,21 +1119,34 @@ impl RctSig {
     }
 
     #[allow(non_snake_case)]
-    pub fn verify_rct_clsag_simple(
-        &self,
-        message: &RctKey,
-        i: usize,
-    ) -> Result<bool, Error> {
-        let sig = self.p.CLSAGs.get(i).ok_or_else(|| Error::AnyhowError(anyhow!("Invalid CLSAG index")))?.clone();
-        let pubs = self.base.mix_ring.get(i).ok_or_else(|| Error::AnyhowError(anyhow!("Invalid mix_ring index")))?.clone();
-        let C_offset = self.base.pseudo_outs.get(i).ok_or_else(|| Error::AnyhowError(anyhow!("Invalid pseudo_outs index")))?.clone();
+    pub fn verify_rct_clsag_simple(&self, message: &RctKey, i: usize) -> Result<bool, Error> {
+        let sig = self
+            .p
+            .CLSAGs
+            .get(i)
+            .ok_or_else(|| Error::AnyhowError(anyhow!("Invalid CLSAG index")))?
+            .clone();
+        let pubs = self
+            .base
+            .mix_ring
+            .get(i)
+            .ok_or_else(|| Error::AnyhowError(anyhow!("Invalid mix_ring index")))?
+            .clone();
+        let C_offset = self
+            .base
+            .pseudo_outs
+            .get(i)
+            .ok_or_else(|| Error::AnyhowError(anyhow!("Invalid pseudo_outs index")))?
+            .clone();
         let n = pubs.len();
 
         if n < 1 {
             return Err(Error::AnyhowError(anyhow!("Empty pubs")));
         }
         if n != sig.s.len() {
-            return Err(Error::AnyhowError(anyhow!("Signature scalar vector is the wrong size")));
+            return Err(Error::AnyhowError(anyhow!(
+                "Signature scalar vector is the wrong size"
+            )));
         }
         for s in &sig.s {
             if Scalar::from_canonical_bytes(s.bytes).is_none().into() {
@@ -1138,10 +1185,18 @@ impl RctSig {
         mu_C_to_hash[2 * n + 3] = C_offset;
 
         let mu_P = RctKey::from_scalar(&private_key_to_scalar(&Hash::hash_to_scalar(
-            mu_P_to_hash.iter().flat_map(|x| x.bytes).collect::<Vec<u8>>().as_slice(),
+            mu_P_to_hash
+                .iter()
+                .flat_map(|x| x.bytes)
+                .collect::<Vec<u8>>()
+                .as_slice(),
         )));
         let mu_C = RctKey::from_scalar(&private_key_to_scalar(&Hash::hash_to_scalar(
-            mu_C_to_hash.iter().flat_map(|x| x.bytes).collect::<Vec<u8>>().as_slice(),
+            mu_C_to_hash
+                .iter()
+                .flat_map(|x| x.bytes)
+                .collect::<Vec<u8>>()
+                .as_slice(),
         )));
 
         let mut c_to_hash: Vec<RctKey> = vec![RctKey::default(); 2 * n + 5];
@@ -1166,15 +1221,18 @@ impl RctSig {
                 + c_c * (pubs[i].mask.as_point()? - C_offset.as_point()?);
 
             let hash8_p3 = hash_to_point(pubs[i].dest.bytes);
-            let R = sig.s[i].as_scalar() * hash8_p3
-                + c_p * sig.I.as_point()?
-                + c_c * D_8.as_point()?;
+            let R =
+                sig.s[i].as_scalar() * hash8_p3 + c_p * sig.I.as_point()? + c_c * D_8.as_point()?;
 
             c_to_hash[2 * n + 3] = RctKey::from_point(&L);
             c_to_hash[2 * n + 4] = RctKey::from_point(&R);
 
             let c_new = RctKey::from_scalar(&private_key_to_scalar(&Hash::hash_to_scalar(
-                c_to_hash.iter().flat_map(|x| x.bytes).collect::<Vec<u8>>().as_slice(),
+                c_to_hash
+                    .iter()
+                    .flat_map(|x| x.bytes)
+                    .collect::<Vec<u8>>()
+                    .as_slice(),
             )));
             if c_new == RctKey::zero() {
                 return Err(Error::AnyhowError(anyhow!("Bad signature hash")));
@@ -1190,7 +1248,9 @@ impl RctSig {
             return Err(Error::AnyhowError(anyhow!("Non-simple RctSig")));
         }
         if self.p.pseudo_outs.len() != self.base.mix_ring.len() {
-            return Err(Error::AnyhowError(anyhow!("Mismatched sizes of pseudoOuts and mixRing")));
+            return Err(Error::AnyhowError(anyhow!(
+                "Mismatched sizes of pseudoOuts and mixRing"
+            )));
         }
 
         let message = self.pre_mlsag_hash()?;
@@ -1224,13 +1284,19 @@ impl RctSig {
             return Err(Error::AnyhowError(anyhow!("Empty in_amounts")));
         }
         if in_amounts.len() != in_sk.len() {
-            return Err(Error::AnyhowError(anyhow!("Mismatched in_amounts and in_sk")));
+            return Err(Error::AnyhowError(anyhow!(
+                "Mismatched in_amounts and in_sk"
+            )));
         }
         if out_amounts.len() != destinations.len() {
-            return Err(Error::AnyhowError(anyhow!("Mismatched out_amounts and destinations")));
+            return Err(Error::AnyhowError(anyhow!(
+                "Mismatched out_amounts and destinations"
+            )));
         }
         if amount_keys.len() != destinations.len() {
-            return Err(Error::AnyhowError(anyhow!("Mismatched amount_keys and destinations")));
+            return Err(Error::AnyhowError(anyhow!(
+                "Mismatched amount_keys and destinations"
+            )));
         }
         if indices.len() != in_sk.len() {
             return Err(Error::AnyhowError(anyhow!("Mismatched indices and in_sk")));
@@ -1246,7 +1312,11 @@ impl RctSig {
 
         let rct_type = match rct_config.bp_version {
             0 | 4 => RCTType::BulletproofPlus,
-            _ => return Err(Error::AnyhowError(anyhow!("Unsupported bulletproof version"))),
+            _ => {
+                return Err(Error::AnyhowError(anyhow!(
+                    "Unsupported bulletproof version"
+                )))
+            }
         };
 
         let mut rct_out_pk: Vec<CtKey> = vec![CtKey::default(); destinations.len()];
@@ -1283,17 +1353,16 @@ impl RctSig {
         let mut a: Vec<RctKey> = vec![RctKey::zero(); in_amounts.len()];
         for i in 0..in_amounts.len() - 1 {
             a[i] = RctKey::from_scalar(&{
-            let mut rng = thread_rng();
-            let mut bytes = [0u8; 32];
-            rng.fill_bytes(&mut bytes);
-            Scalar::from_bytes_mod_order(bytes)
-        });
+                let mut rng = thread_rng();
+                let mut bytes = [0u8; 32];
+                rng.fill_bytes(&mut bytes);
+                Scalar::from_bytes_mod_order(bytes)
+            });
             sum_pouts = RctKey::from_scalar(&(a[i].as_scalar() + sum_pouts.as_scalar()));
             pseudo_outs[i] = RctKey::commit(in_amounts[i], &a[i]);
         }
-        a[in_amounts.len() - 1] = RctKey::from_scalar(
-            &(sum_out.as_scalar() - sum_pouts.as_scalar()),
-        );
+        a[in_amounts.len() - 1] =
+            RctKey::from_scalar(&(sum_out.as_scalar() - sum_pouts.as_scalar()));
         pseudo_outs[in_amounts.len() - 1] =
             RctKey::commit(in_amounts[in_amounts.len() - 1], &a[in_amounts.len() - 1]);
 
@@ -1343,7 +1412,8 @@ impl RctSig {
 
 #[allow(non_snake_case)]
 #[derive(Debug, Clone)]
-#[allow(dead_code)]pub struct MultiSigOut {
+#[allow(dead_code)]
+pub struct MultiSigOut {
     c: Vec<RctKey>,
     mu_p: Vec<RctKey>,
     c0: Vec<RctKey>,
@@ -1351,7 +1421,8 @@ impl RctSig {
 
 #[allow(non_snake_case)]
 #[derive(Debug, Clone, Default)]
-#[allow(dead_code)]pub struct MultiSigkLRki {
+#[allow(dead_code)]
+pub struct MultiSigkLRki {
     k: RctKey,
     L: RctKey,
     R: RctKey,

@@ -54,14 +54,15 @@ impl HDPath {
                 continue;
             }
             if part.ends_with('\'') {
-                let num: u32 = part.trim_end_matches('\'').parse().map_err(|_| {
-                    Error::Invalid(format!("Invalid hardened index: {}", part))
-                })?;
+                let num: u32 = part
+                    .trim_end_matches('\'')
+                    .parse()
+                    .map_err(|_| Error::Invalid(format!("Invalid hardened index: {}", part)))?;
                 indices.push(HDPathIndex::IndexHardened(num));
             } else {
-                let num: u32 = part.parse().map_err(|_| {
-                    Error::Invalid(format!("Invalid index: {}", part))
-                })?;
+                let num: u32 = part
+                    .parse()
+                    .map_err(|_| Error::Invalid(format!("Invalid index: {}", part)))?;
                 indices.push(HDPathIndex::IndexNotHardened(num));
             }
         }
@@ -77,12 +78,13 @@ impl HDPath {
     }
 
     pub fn at(&self, index: usize) -> Result<HDPathIndex, Error> {
-        self.0.get(index).copied().ok_or_else(|| {
-            Error::IndexOutOfRange {
+        self.0
+            .get(index)
+            .copied()
+            .ok_or_else(|| Error::IndexOutOfRange {
                 index: index as u32,
                 max: self.0.len() as u32,
-            }
-        })
+            })
     }
 
     pub fn purpose(&self) -> Result<HDPurpose, Error> {

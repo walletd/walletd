@@ -18,9 +18,9 @@ struct FaucetResponse {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("🚰 Hedera Testnet Faucet CLI");
     println!("==============================\n");
-    
+
     println!("🔄 Requesting new testnet account...");
-    
+
     // Try HashIO faucet
     let client = reqwest::Client::new();
     let response = client
@@ -28,7 +28,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .json(&FaucetRequest { accountId: None })
         .send()
         .await;
-    
+
     match response {
         Ok(resp) => {
             if resp.status().is_success() {
@@ -40,7 +40,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("Public Key: {}", account.publicKey);
                 println!("Balance: {} tinybars", account.balance);
                 println!("====================================\n");
-                
+
                 // Save to .env.hedera
                 let env_content = format!(
                     "# Hedera Testnet Configuration\n\
@@ -50,10 +50,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     HEDERA_NETWORK_NODES=[\"0.testnet.hedera.com:50211\"]\n\
                     HEDERA_REQUEST_TIMEOUT=30000\n\
                     HEDERA_MAX_ATTEMPTS=10\n",
-                    account.accountId,
-                    account.privateKey
+                    account.accountId, account.privateKey
                 );
-                
+
                 std::fs::write(".env.hedera", env_content)?;
                 println!("📝 Saved to .env.hedera");
                 println!("\n🚀 You can now run the wallet with real testnet access!");
@@ -65,6 +64,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("❌ Failed to connect to faucet: {}", e);
         }
     }
-    
+
     Ok(())
 }

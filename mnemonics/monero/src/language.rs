@@ -23,11 +23,11 @@ static RUSSIAN: &str = include_str!("langs/russian.txt");
 #[allow(dead_code)]
 static SPANISH: &str = include_str!("langs/spanish.txt");
 
+use crate::Error;
+use crc::{Crc, CRC_32_ISO_HDLC};
 use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
-use crc::{Crc, CRC_32_ISO_HDLC};
-use crate::Error;
 
 #[derive(Debug)]
 pub struct WordList {
@@ -184,7 +184,10 @@ impl WordList {
         Err(Error::InvalidPhraseLanguage(phrase.join(" ")))
     }
 
-    pub fn create_trimmed_word_list(wordlist: &str, unique_prefix_len: usize) -> HashMap<String, usize> {
+    pub fn create_trimmed_word_list(
+        wordlist: &str,
+        unique_prefix_len: usize,
+    ) -> HashMap<String, usize> {
         let wordlist2: Vec<&str> = wordlist.split_whitespace().collect();
         let mut trimmed_word_map = HashMap::new();
         for (index, word) in wordlist2.iter().enumerate() {
@@ -356,31 +359,9 @@ mod tests {
     #[test]
     fn test_detect_language() {
         let phrase = vec![
-            "buzzer",
-            "eject",
-            "zeal",
-            "algebra",
-            "adept",
-            "arrow",
-            "shipped",
-            "mobile",
-            "reorder",
-            "light",
-            "plus",
-            "rover",
-            "fawns",
-            "fight",
-            "aphid",
-            "powder",
-            "tufts",
-            "niche",
-            "plotting",
-            "acumen",
-            "equip",
-            "civilian",
-            "camp",
-            "dialect",
-            "algebra",
+            "buzzer", "eject", "zeal", "algebra", "adept", "arrow", "shipped", "mobile", "reorder",
+            "light", "plus", "rover", "fawns", "fight", "aphid", "powder", "tufts", "niche",
+            "plotting", "acumen", "equip", "civilian", "camp", "dialect", "algebra",
         ];
         assert_eq!(
             WordList::detect_language(phrase).unwrap(),

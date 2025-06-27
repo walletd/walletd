@@ -103,7 +103,10 @@ impl SolanaClient {
         if confirmed {
             Ok(format!("Transaction: {} Status: {}", sig, confirmed))
         } else {
-            Err(Error::Custom(format!("Airdrop transaction {} not confirmed", sig)))
+            Err(Error::Custom(format!(
+                "Airdrop transaction {} not confirmed",
+                sig
+            )))
         }
     }
 
@@ -124,7 +127,10 @@ impl SolanaClient {
     ///
     /// # Errors
     /// Returns an `Error` if the program accounts query fails.
-    pub async fn get_program_accounts(&self, address: &Pubkey) -> Result<Vec<(Pubkey, Account)>, Error> {
+    pub async fn get_program_accounts(
+        &self,
+        address: &Pubkey,
+    ) -> Result<Vec<(Pubkey, Account)>, Error> {
         let accounts = self
             .rpc_client
             .get_program_accounts(address)

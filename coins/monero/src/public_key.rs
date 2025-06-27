@@ -2,13 +2,16 @@ use std::fmt::{self, Display};
 use std::str::FromStr;
 
 use curve25519_dalek::{
-    traits::Identity,
     constants::ED25519_BASEPOINT_TABLE as G_BASEPOINT,
     edwards::{CompressedEdwardsY, EdwardsPoint},
+    traits::Identity,
 };
 use thiserror::Error;
 
-use crate::{monero_serialize::{DoSerialize, SerializedArchive}, private_key::{PrivateKey, KEY_LEN}};
+use crate::{
+    monero_serialize::{DoSerialize, SerializedArchive},
+    private_key::{PrivateKey, KEY_LEN},
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Hash)]
 pub struct PublicKey(pub CompressedEdwardsY);
@@ -26,7 +29,9 @@ pub enum Error {
 impl DoSerialize for PublicKey {
     fn do_serialize(&self, serialized: &mut SerializedArchive) -> Result<(), anyhow::Error> {
         serialized.data.extend_from_slice(self.as_slice());
-        serialized.json_stream.push_str(&hex::encode(self.as_slice()));
+        serialized
+            .json_stream
+            .push_str(&hex::encode(self.as_slice()));
         Ok(())
     }
 }
@@ -96,7 +101,10 @@ mod tests {
         let result = PublicKey::from_slice(&data);
         assert!(matches!(
             result.unwrap_err(),
-            Error::InvalidLength { expected: 32, found: 33 }
+            Error::InvalidLength {
+                expected: 32,
+                found: 33
+            }
         ));
     }
 
@@ -130,7 +138,8 @@ mod tests {
         let value = hex!("77916d0cd56ed1920aef6ca56d8a41bac915b68e4c46a589e0956e27a7b77404");
         let private_key = PrivateKey::from_slice(&value).unwrap();
         let public_key = PublicKey::from_private_key(&private_key);
-        let expected_pub_key = hex!("eac2cc96e0ae684388e3185d5277e51313bff98b9ad4a12dcd9205f20d37f1a3");
+        let expected_pub_key =
+            hex!("eac2cc96e0ae684388e3185d5277e51313bff98b9ad4a12dcd9205f20d37f1a3");
         assert_eq!(public_key.to_bytes(), expected_pub_key);
     }
 
@@ -187,7 +196,7 @@ impl PublicKey {
         let bytes = self.0.to_bytes();
         monero::PublicKey::from_slice(&bytes).unwrap()
     }
-    
+
     pub fn from_monero(key: &monero::PublicKey) -> Self {
         let bytes = key.as_bytes();
         PublicKey(CompressedEdwardsY::from_slice(bytes).unwrap())

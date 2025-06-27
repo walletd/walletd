@@ -21,15 +21,22 @@ impl MoneroMiner {
         }
 
         println!("⛏️  Starting integrated stagenet mining...");
-        println!("📍 Mining to: {}...{}", &self.address[..12], &self.address[self.address.len()-12..]);
-        
+        println!(
+            "📍 Mining to: {}...{}",
+            &self.address[..12],
+            &self.address[self.address.len() - 12..]
+        );
+
         let child = Command::new("./monero-x86_64-apple-darwin11-v0.18.3.4/monerod")
             .args(&[
                 "--stagenet",
-                "--start-mining", &self.address,
-                "--mining-threads", "2",
+                "--start-mining",
+                &self.address,
+                "--mining-threads",
+                "2",
                 "--detach",
-                "--log-level", "0",
+                "--log-level",
+                "0",
             ])
             .stdout(Stdio::null())
             .stderr(Stdio::null())
@@ -37,13 +44,13 @@ impl MoneroMiner {
             .map_err(|e| format!("Failed to start mining: {}", e))?;
 
         self.process = Some(child);
-        
+
         println!("✅ Mining started!");
         println!("   • Stagenet difficulty is VERY low");
         println!("   • You'll mine a block in 1-5 minutes");
         println!("   • Each block = 0.6 XMR");
         println!("   • Check balance with option [1]");
-        
+
         Ok(())
     }
 
@@ -57,21 +64,23 @@ impl MoneroMiner {
 
 pub async fn auto_get_stagenet_xmr(address: &str) -> Result<String, String> {
     println!("\n🚀 Auto-Getting Stagenet XMR...\n");
-    
+
     println!("Option 1: Quick Mining (1-5 minutes)");
     println!("[M] Start mining in background");
-    
+
     println!("\nOption 2: Faucet Request (10-20 minutes)");
     println!("[F] Request from faucet API");
-    
+
     println!("\nOption 3: Test Transaction");
     println!("[T] Receive from test wallet");
-    
+
     println!("\n[C] Cancel");
-    
+
     let mut input = String::new();
-    std::io::stdin().read_line(&mut input).map_err(|e| e.to_string())?;
-    
+    std::io::stdin()
+        .read_line(&mut input)
+        .map_err(|e| e.to_string())?;
+
     match input.trim() {
         "M" | "m" => {
             // Start background mining
@@ -87,13 +96,13 @@ pub async fn auto_get_stagenet_xmr(address: &str) -> Result<String, String> {
             // Send from test wallet
             send_test_xmr(address).await
         }
-        _ => Ok("Cancelled".to_string())
+        _ => Ok("Cancelled".to_string()),
     }
 }
 
 async fn request_from_faucet(address: &str) -> Result<String, String> {
     println!("📮 Requesting from faucet...");
-    
+
     // Implement faucet API call
     let client = reqwest::Client::new();
     let res = client
@@ -105,7 +114,7 @@ async fn request_from_faucet(address: &str) -> Result<String, String> {
         .send()
         .await
         .map_err(|e| format!("Faucet request failed: {}", e))?;
-    
+
     if res.status().is_success() {
         Ok("✅ Faucet request submitted! XMR will arrive in 10-20 minutes".to_string())
     } else {
@@ -115,11 +124,11 @@ async fn request_from_faucet(address: &str) -> Result<String, String> {
 
 async fn send_test_xmr(address: &str) -> Result<String, String> {
     println!("💸 Sending test XMR from SDK wallet...");
-    
+
     // This would use a pre-funded test wallet
     println!("   From: SDK Test Wallet");
     println!("   To: {}", address);
     println!("   Amount: 0.1 XMR");
-    
+
     Ok("✅ Test transaction sent!".to_string())
 }

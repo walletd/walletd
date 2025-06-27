@@ -51,8 +51,8 @@ impl Hash {
 
 #[cfg(test)]
 mod tests {
-    use hex_literal::hex;
     use super::*;
+    use hex_literal::hex;
 
     #[test]
     fn test_keccak256() {

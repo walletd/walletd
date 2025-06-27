@@ -14,7 +14,8 @@ use crate::{
 type HmacSha512 = Hmac<Sha512>;
 
 #[derive(Debug, Clone)]
-#[allow(dead_code)]pub struct MoneroWallet {
+#[allow(dead_code)]
+pub struct MoneroWallet {
     address_format: AddressType,
     network: monero::Network,
     public_address: Address,
@@ -47,7 +48,8 @@ impl MoneroWallet {
     pub fn from_hd_key(hd_keys: &HDKey, address_format: AddressType) -> Result<Self, Error> {
         let mut entropy = HmacSha512::new_from_slice(b"bip-entropy-from-k")
             .map_err(|e| anyhow!("HMAC error: {}", e))?;
-        let extended_key = hd_keys.extended_private_key()
+        let extended_key = hd_keys
+            .extended_private_key()
             .map_err(|_| anyhow!("Missing private key"))?;
         entropy.update(extended_key.as_ref());
         let entropy_bytes = &entropy.finalize().into_bytes()[..32];
@@ -58,21 +60,17 @@ impl MoneroWallet {
             HDNetworkType::MainNet => monero::Network::Mainnet,
             HDNetworkType::TestNet => monero::Network::Testnet,
         };
-        
+
         // For now, create a dummy address
         // For now, create dummy keys
         use crate::monero_public_keys::MoneroPublicKeys;
-        
+
         let dummy_seed = [1u8; 32];
         let private_keys = MoneroPrivateKeys::from_seed(&dummy_seed)?;
         let public_keys = MoneroPublicKeys::from_private_keys(&private_keys);
-        
-        let public_address = Address::new(
-            &network,
-            &public_keys,
-            &AddressType::Standard,
-        )?;
-        
+
+        let public_address = Address::new(&network, &public_keys, &AddressType::Standard)?;
+
         Ok(Self {
             address_format,
             private_keys,

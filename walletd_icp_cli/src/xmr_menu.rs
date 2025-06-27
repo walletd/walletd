@@ -1,33 +1,42 @@
 use crate::CliResponse;
 use std::io;
 
-pub async fn handle_xmr_menu(_wallet_api: &mut crate::WalletDIcpApi, xmr_address: &str, xmr_balance: &str) -> Result<CliResponse, String> {
+pub async fn handle_xmr_menu(
+    _wallet_api: &mut crate::WalletDIcpApi,
+    xmr_address: &str,
+    xmr_balance: &str,
+) -> Result<CliResponse, String> {
     loop {
         println!("\n========== MONERO WALLET (STAGENET) ==========");
         println!("Address: {}", xmr_address);
         println!("Balance: {}", xmr_balance);
         println!("Network: STAGENET");
         println!("============================================");
-        
+
         println!("\n[1] Check Balance");
         println!("[2] Show Full Address");
         println!("[3] Send XMR (Demo)");
         println!("[4] Get Stagenet XMR (Live Testnet)");
         println!("[5] Network Status");
-        
+
         println!("\n[B] Back to Main Menu");
         println!("[X] Exit");
-        
+
         print!("\nSelect option: ");
-        
+
         let mut input = String::new();
-        io::stdin().read_line(&mut input).map_err(|e| e.to_string())?;
-        
+        io::stdin()
+            .read_line(&mut input)
+            .map_err(|e| e.to_string())?;
+
         match input.trim() {
             "1" => {
                 println!("\n💰 Balance: {}", xmr_balance);
                 println!("Check live balance on explorer:");
-                println!("https://community.xmr.to/explorer/stagenet/tx/{}", xmr_address);
+                println!(
+                    "https://community.xmr.to/explorer/stagenet/tx/{}",
+                    xmr_address
+                );
                 wait_for_enter();
             }
             "2" => {
@@ -41,15 +50,23 @@ pub async fn handle_xmr_menu(_wallet_api: &mut crate::WalletDIcpApi, xmr_address
                 print!("Enter recipient address: ");
                 io::stdout().flush().unwrap();
                 let mut recipient = String::new();
-                io::stdin().read_line(&mut recipient).map_err(|e| e.to_string())?;
-                
+                io::stdin()
+                    .read_line(&mut recipient)
+                    .map_err(|e| e.to_string())?;
+
                 print!("Enter amount: ");
                 io::stdout().flush().unwrap();
                 let mut amount = String::new();
-                io::stdin().read_line(&mut amount).map_err(|e| e.to_string())?;
-                
+                io::stdin()
+                    .read_line(&mut amount)
+                    .map_err(|e| e.to_string())?;
+
                 println!("\n📤 Transaction Preview:");
-                println!("   To: {}...{}", &recipient[..12], &recipient[recipient.len()-12..]);
+                println!(
+                    "   To: {}...{}",
+                    &recipient[..12],
+                    &recipient[recipient.len() - 12..]
+                );
                 println!("   Amount: {} XMR", amount.trim());
                 println!("\n(Demo mode - use monero-wallet-cli for real transactions)");
                 wait_for_enter();

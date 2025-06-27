@@ -24,8 +24,7 @@ impl HederaConfig {
             .map_err(|_| WalletDError::ConfigError("OPERATOR_ID not set".to_string()))?;
         let operator_private_key = env::var("OPERATOR_PRIVATE_KEY")
             .map_err(|_| WalletDError::ConfigError("OPERATOR_PRIVATE_KEY not set".to_string()))?;
-        let hedera_network =
-            env::var("HEDERA_NETWORK").unwrap_or_else(|_| "testnet".to_string());
+        let hedera_network = env::var("HEDERA_NETWORK").unwrap_or_else(|_| "testnet".to_string());
 
         // Parse optional configurations
         let hedera_request_timeout = env::var("HEDERA_REQUEST_TIMEOUT")

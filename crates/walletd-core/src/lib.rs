@@ -15,15 +15,17 @@ pub trait Transaction {
 
 pub trait BlockchainWallet {
     fn new_wallet(&mut self) -> Result<(), WalletError>;
-    fn sync_balance(&mut self) -> impl Future<Output = Result<(), 
-WalletError>>;
+    fn sync_balance(&mut self) -> impl Future<Output = Result<(), WalletError>>;
 }
 
 pub trait CryptoWallet {
     fn generate_address(&mut self) -> Result<String, WalletError>;
     fn balance(&self, address: &str) -> Result<u64, WalletError>;
-    fn transfer(&mut self, from: &str, to: &str, amount: u64) -> impl 
-Future<Output = Result<(), WalletError>>;
-    fn transaction_history(&self, address: &str) -> Result<Vec<Box<dyn 
-Transaction>>, WalletError>;
+    fn transfer(
+        &mut self,
+        from: &str,
+        to: &str,
+        amount: u64,
+    ) -> impl Future<Output = Result<(), WalletError>>;
+    fn transaction_history(&self, address: &str) -> Result<Vec<Box<dyn Transaction>>, WalletError>;
 }
