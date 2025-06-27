@@ -1,0 +1,8 @@
+// Add to the menu display:
+println!("[T] Testnet Testing Suite");
+
+// Add to the match statement:
+"T" | "t" => {
+    use walletd_icp_cli::testnet_menu;
+    testnet_menu::handle_testnet_menu().await
+}

@@ -1,0 +1,158 @@
+use anyhow::Result;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+
+pub struct RealMoneroWallet {
+    pub address: String,
+    pub view_key: String,
+    pub spend_key: String,
+    pub network: String,
+    rpc_url: String,
+    wallet_rpc_url: String,
+}
+
+#[derive(Debug, Serialize)]
+struct RpcRequest {
+    jsonrpc: String,
+    id: String,
+    method: String,
+    params: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Deserialize)]
+struct RpcResponse<T> {
+    result: Option<T>,
+}
+
+#[derive(Debug, Deserialize)]
+struct GetHeightResult {
+    height: u64,
+}
+
+#[derive(Debug, Deserialize)]
+struct GetBalanceResult {
+    balance: u64,
+    unlocked_balance: u64,
+}
+
+impl RealMoneroWallet {
+    pub fn new(network: &str) -> Result<Self> {
+        // For now, create a wallet that connects to RPC but uses pre-generated keys
+        // In production, you'd generate real keys or load from wallet file
+        
+        let (rpc_url, wallet_rpc_url, address, view_key, spend_key) = match network {
+            "stagenet" => {
+                // Use Cake Wallet's public stagenet node
+                (
+                    "http://stagenet.xmr-node.cakewallet.com:38081/json_rpc".to_string(),
+                    "http://127.0.0.1:38083/json_rpc".to_string(), // Local wallet RPC
+                    // This is a PUBLIC stagenet address for testing - DO NOT use for mainnet!
+                    "56heRv2ANffW1Py2kBkJDy8xnWqZsSrgjLygwjua2xc8Wbksead1NK1ehaYpjQhymGK4S8NPL9eLuJ16CuEJDag8Hq3RbFS".to_string(),
+                    "7b37d8922245b07c0eb54edb5f2e382dd02581ab868d8ae2cc45a72b05e89d0f".to_string(),
+                    "mock_spend_key_stagenet".to_string(),
+                )
+            }
+            "mainnet" => {
+                return Err(anyhow::anyhow!("Mainnet not configured for safety"));
+            }
+            _ => return Err(anyhow::anyhow!("Invalid network")),
+        };
+        
+        println!("🔗 Monero {} RPC: {}", network, rpc_url);
+        println!("📍 Address: {}...{}", &address[..12], &address[address.len()-12..]);
+        
+        Ok(Self {
+            address,
+            view_key,
+            spend_key,
+            network: network.to_string(),
+            rpc_url,
+            wallet_rpc_url,
+        })
+    }
+    
+    pub async fn get_height(&self) -> Result<u64> {
+        let client = reqwest::Client::new();
+        
+        let request = RpcRequest {
+            jsonrpc: "2.0".to_string(),
+            id: "0".to_string(),
+            method: "get_height".to_string(),
+            params: None,
+        };
+        
+        let response = client
+            .post(&self.rpc_url)
+            .json(&request)
+            .send()
+            .await?;
+            
+        if response.status().is_success() {
+            let result: RpcResponse<GetHeightResult> = response.json().await?;
+            if let Some(height_result) = result.result {
+                return Ok(height_result.height);
+            }
+        }
+        
+        Err(anyhow::anyhow!("Failed to get blockchain height"))
+    }
+    
+    pub async fn get_balance(&self) -> Result<u64> {
+        // For real balance, you need monero-wallet-rpc running
+        // For now, check if we can connect to the daemon
+        match self.get_height().await {
+            Ok(height) => {
+                println!("✅ Connected to Monero {} - Height: {}", self.network, height);
+                
+                // Try to connect to wallet RPC (if running)
+                if let Ok(balance) = self.get_wallet_balance().await {
+                    return Ok(balance);
+                }
+                
+                // Return 0 if wallet RPC not available
+                println!("⚠️  Wallet RPC not available at {}", self.wallet_rpc_url);
+                println!("   Run: monero-wallet-rpc --stagenet --rpc-bind-port 38083");
+                Ok(0)
+            }
+            Err(e) => {
+                println!("❌ Cannot connect to Monero node: {}", e);
+                Ok(0)
+            }
+        }
+    }
+    
+    async fn get_wallet_balance(&self) -> Result<u64> {
+        let client = reqwest::Client::new();
+        
+        let request = RpcRequest {
+            jsonrpc: "2.0".to_string(),
+            id: "0".to_string(),
+            method: "get_balance".to_string(),
+            params: Some(serde_json::json!({"account_index": 0})),
+        };
+        
+        let response = client
+            .post(&self.wallet_rpc_url)
+            .timeout(std::time::Duration::from_secs(5))
+            .json(&request)
+            .send()
+            .await?;
+            
+        if response.status().is_success() {
+            let result: RpcResponse<GetBalanceResult> = response.json().await?;
+            if let Some(balance_result) = result.result {
+                return Ok(balance_result.unlocked_balance);
+            }
+        }
+        
+        Err(anyhow::anyhow!("Wallet RPC not available"))
+    }
+    
+    pub async fn send_xmr(&self, to: &str, amount: f64) -> Result<String> {
+        println!("📤 Sending {} XMR to {}", amount, to);
+        println!("⚠️  This requires monero-wallet-rpc running with your wallet loaded");
+        
+        // Would implement actual send via wallet RPC
+        Err(anyhow::anyhow!("Wallet RPC required for sending"))
+    }
+}

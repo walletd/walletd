@@ -140,7 +140,7 @@ pub fn calculate_fee_from_weight(
     fee_quantization_mask: u64,
 ) -> MoneroAmount {
     let mut fee = weight * base_fee;
-    fee = (fee + fee_quantization_mask - 1) / fee_quantization_mask * fee_quantization_mask;
+    fee = fee.div_ceil(fee_quantization_mask) * fee_quantization_mask;
     MoneroAmount::from_piconero(fee)
 }
 

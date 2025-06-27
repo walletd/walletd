@@ -1,7 +1,7 @@
 use std::fmt;
 
 use crate::Error;
-
+#[allow(dead_code)]
 pub const BITS_IN_BYTES: usize = 8;
 
 /// Determines the number of words that will make up the [`Mnemonic`][Mnemonic]

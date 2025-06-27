@@ -1,0 +1,8 @@
+@@ -53,6 +55,7 @@
+             principal, 
+             account_identifier,
+             network,
++            did: None,
+         }
+     }
+ 

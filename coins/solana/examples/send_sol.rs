@@ -3,7 +3,6 @@ use solana_sdk::commitment_config::CommitmentConfig;
 
 use solana_sdk::signature::{Keypair, Signer};
 
-
 use walletd_solana::solana_client::SolanaClient;
 
 #[tokio::main]
@@ -47,7 +46,6 @@ async fn main() {
         .transfer(from, to_pubkey, transfer_amount)
         .await;
 
-    
     // From: base58: g6mLsmgPznVcEcSLDWQ9QGuhNFa96CaC6R2XCnivHNfJ2aujuC3Cy9dSVvG39XMsGkuXEn1yYfauErro9LX5FyX
     // pubkey: 44ub6mH9oZs2Fu784uruTZ94P3C23tgvLG3ZUjJBCWr1
 

@@ -7,8 +7,8 @@ use curve25519_dalek::scalar::Scalar;
 use thiserror::Error;
 
 use crate::{
-    keccak256, monero_private_keys, network, payment_id, public_key, MoneroPrivateKeys,
-    MoneroPublicKeys, Network, PaymentId, PaymentIdStyle, PublicKey,
+    keccak256, monero_private_keys, payment_id, public_key, MoneroPrivateKeys, MoneroPublicKeys,
+    Network, PaymentId, PaymentIdStyle, PublicKey,
 };
 
 /// Represents a subaddress index with the major and minor indices specified
@@ -76,16 +76,23 @@ impl AddressType {
     /// monero address
     pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
         let magic_byte = bytes[0];
-        let network = network::Network::from_u8(magic_byte)?;
+        let network = network_from_u8(magic_byte)?;
         use AddressType::*;
-        use Network::*;
         match (magic_byte, network) {
-            (18, Mainnet) | (24, Stagenet) | (53, Testnet) => Ok(Standard),
-            (19, Mainnet) | (25, Stagenet) | (43, Testnet) => {
+            (18, monero::Network::Mainnet)
+            | (24, monero::Network::Stagenet)
+            | (53, monero::Network::Testnet) => Ok(Standard),
+            (19, monero::Network::Mainnet)
+            | (25, monero::Network::Stagenet)
+            | (43, monero::Network::Testnet) => {
                 // Integrate addresses incorporate an 8 byte payment id
-                Ok(Integrated(PaymentId::from_slice(&bytes[65..73])?))
+                Ok(Integrated(
+                    PaymentId::from_slice(&bytes[65..73]).map_err(Error::InvalidPaymentId)?,
+                ))
             }
-            (42, Mainnet) | (36, Stagenet) | (63, Testnet) => {
+            (42, monero::Network::Mainnet)
+            | (36, monero::Network::Stagenet)
+            | (63, monero::Network::Testnet) => {
                 // Cannot discern the major and minor subaddress indices from the
                 // address bytes so setting them to None
                 Ok(Subaddress(None))
@@ -133,11 +140,13 @@ pub enum Error {
     #[error("Invalid payment id {0}")]
     InvalidPaymentId(#[from] payment_id::Error),
     /// Unable to parse network byte
-    #[error("Unable to parse network {0}")]
-    NetworkParseError(#[from] network::Error),
-    /// Unable to parse address type
+    #[error("Unable to parse network")]
+    NetworkParseError,
     #[error("Unable to parse address type")]
     AddressTypeParseError,
+    /// Invalid address format
+    #[error("Invalid address format")]
+    InvalidFormat,
     /// Unable to parse public key
     #[error("Unable to parse public key {0}")]
     PublicKeyParseError(#[from] public_key::Error),
@@ -184,7 +193,7 @@ impl Address {
         use AddressType::*;
 
         let mut bytes = Vec::new();
-        bytes.push(self.network.as_u8(&self.format));
+        bytes.push(network_to_u8(&self.network, &self.format));
         bytes.extend_from_slice(self.public_spend_key.as_slice());
         bytes.extend_from_slice(self.public_view_key.as_slice());
 
@@ -207,7 +216,7 @@ impl Address {
     /// not correspond to a valid Monero address
     pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
         let magic_byte = bytes[0];
-        let network = network::Network::from_u8(magic_byte)?;
+        let network = network_from_u8(magic_byte)?;
         let format = AddressType::from_slice(bytes)?;
         let public_spend_key = PublicKey::from_slice(&bytes[1..33])?;
         let public_view_key = PublicKey::from_slice(&bytes[33..65])?;
@@ -410,5 +419,28 @@ mod tests {
         .unwrap();
         assert_eq!(address_from_str, address_from_keys);
         assert_eq!(address_from_keys.to_string(), address.to_string());
+    }
+}
+
+fn network_from_u8(byte: u8) -> Result<Network, Error> {
+    match byte {
+        18 | 19 | 42 => Ok(Network::Mainnet),
+        53 | 43 | 63 => Ok(Network::Testnet),
+        24 | 25 | 36 => Ok(Network::Stagenet),
+        _ => Err(Error::InvalidFormat),
+    }
+}
+
+fn network_to_u8(network: &Network, addr_type: &AddressType) -> u8 {
+    match (network, addr_type) {
+        (Network::Mainnet, AddressType::Standard) => 18,
+        (Network::Mainnet, AddressType::Integrated(_)) => 19,
+        (Network::Mainnet, AddressType::Subaddress(_)) => 42,
+        (Network::Testnet, AddressType::Standard) => 53,
+        (Network::Testnet, AddressType::Integrated(_)) => 43,
+        (Network::Testnet, AddressType::Subaddress(_)) => 63,
+        (Network::Stagenet, AddressType::Standard) => 24,
+        (Network::Stagenet, AddressType::Integrated(_)) => 25,
+        (Network::Stagenet, AddressType::Subaddress(_)) => 36,
     }
 }

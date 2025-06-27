@@ -1,0 +1,55 @@
+[package]
+name = "walletd_icp"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+authors = ["The WalletD Team"]
+description = "ICP walletd library"
+homepage = "https://walletd.org/"
+repository = "https://github.com/walletd/walletd"
+readme = "README.md"
+
+[dependencies]
+rand = { version = "0.8", features = ["std"] }
+ic-agent = { workspace = true }
+ic-utils = { workspace = true }
+candid = { workspace = true }
+ic-cdk = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+walletd_hd_key = { workspace = true }
+sha2 = { workspace = true }
+hex = { workspace = true }
+
+[dev-dependencies]
+rand = "0.8"
+tokio = { workspace = true, features = ["rt", "macros", "full"] }
+walletd_mnemonics_core = { path = "../../mnemonics/core", version = "0.2" }
+ed25519-dalek = "2.0"
+uuid = { version = "1.4", features = ["v4"] }
+async-trait = { workspace = true }
+futures = "0.3"
+[features]
+phase1 = []
+phase2 = []
+phase3 = []
+
+# Core dependencies
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Wallet dependencies
+bip39 = "2.0"
+k256 = "0.13"
+derivation-path = "0.2"
+argon2 = "0.5"
+chacha20poly1305 = "0.10"
+
+# ICP specific
+ic-ledger-types = "0.9"
+ic-utils = "0.31"
+
+# Other dependencies
+uuid = { version = "1.6", features = ["v4", "serde"] }
+async-trait = "0.1"

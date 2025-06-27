@@ -1,16 +1,19 @@
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
 name: Build
+
+on: [push, pull_request]
 
 jobs:
   check:
     name: check build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
+      
+      # ADD THIS - Install protoc for Hedera
+      - name: Install protoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+          
       - name: build
-        run: cargo build
+        run: cargo build --verbose --all-features

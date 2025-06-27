@@ -1,20 +1,22 @@
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
 name: Run all tests (including building doc tests and examples)
 
+on: [push, pull_request]
+
 jobs:
-  tests:
-    name: check tests 
+  test:
+    name: check tests
     runs-on: ubuntu-latest
     steps:
-
-      - name: foundry-toolchain
-        uses: foundry-rs/foundry-toolchain@v1.0.10
-
-      - uses: actions/checkout@v3
-      - name: Run all tests (including building doc tests and examples)
-        run: cargo test
+      - uses: actions/checkout@v2
+      
+      # ADD THIS - Install protoc for Hedera
+      - name: Install protoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+          
+      - name: test
+        run: cargo test --verbose --all-features
+        
+      - name: test docs
+        run: cargo test --doc --verbose --all-features

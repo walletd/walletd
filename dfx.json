@@ -1,0 +1,27 @@
+{
+  "canisters": {
+    "ledger": {
+      "type": "custom",
+      "wasm": "crates/walletd_icp_api/ledger/ledger.wasm",
+      "candid": "crates/walletd_icp_api/ledger/ledger.did",
+      "args": "--argument-file ledger_init_args.json"
+    },
+    "walletd_icp_api": {
+      "type": "rust",
+      "package": "walletd_icp_api",
+      "candid": "crates/walletd_icp_api/walletd_icp_api.did"
+    }
+  },
+  "defaults": {
+    "build": {
+      "packtool": "cargo"
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000",
+      "type": "ephemeral"
+    }
+  },
+  "version": 1
+}

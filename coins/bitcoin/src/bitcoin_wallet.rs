@@ -5,12 +5,11 @@ use bdk::keys::bip39::Mnemonic;
 use bdk::keys::{DerivableKey, ExtendedKey};
 use bdk::template::Bip84;
 use bdk::wallet::AddressInfo;
-
-pub use bdk::bitcoin::{AddressType, Script};
+use walletd_hd_key::slip44::Coin;
+pub use bdk::bitcoin::AddressType;
 use bdk::{bitcoin::Network, database::MemoryDatabase, wallet::AddressIndex, Wallet};
 use bdk::{Balance, KeychainKind, SignOptions, SyncOptions};
 use std::str::FromStr;
-use walletd_hd_key::slip44;
 use walletd_hd_key::HDPurpose;
 
 /// Represents a Hierarchical Deterministic (HD) Bitcoin wallet.
@@ -34,6 +33,7 @@ impl BitcoinWallet {
         let balance = self.wallet.as_ref().unwrap().get_balance().unwrap();
         Ok(balance)
     }
+
     /// Builds and sends a transaction to the blockchain.
     pub async fn transfer<B: Blockchain>(
         &self,
@@ -72,7 +72,8 @@ impl BitcoinWallet {
             .sync(blockchain, SyncOptions::default());
         Ok(())
     }
-    /// Retrieves the next recevie address of the wallet.
+
+    /// Retrieves the next receive address of the wallet.
     pub fn receive_address(&self) -> Result<String, Error> {
         let next_receive_address = self.next_address()?;
         Ok(next_receive_address.to_string())
@@ -82,8 +83,8 @@ impl BitcoinWallet {
     /// Returns an [error][Error] if the network is not supported.
     pub fn coin_type_id(&self) -> Result<u32, Error> {
         match self.network()? {
-            Network::Bitcoin => Ok(slip44::Coin::Bitcoin.id()),
-            Network::Testnet | Network::Regtest => Ok(slip44::Coin::Testnet.id()),
+            Network::Bitcoin => Ok(Coin::Bitcoin.id()),
+            Network::Testnet | Network::Regtest => Ok(Coin::Testnet.id()),
             other => Err(Error::CurrentlyNotSupported(format!(
                 "Network {} currently not supported",
                 other
@@ -205,7 +206,7 @@ impl BitcoinWalletBuilder {
         let wallet: Wallet<MemoryDatabase> = Wallet::new(
             Bip84(xprv, KeychainKind::External),
             Some(Bip84(xprv, KeychainKind::Internal)),
-            Network::Testnet,
+            self.network_type,
             MemoryDatabase::new(),
         )
         .unwrap();
@@ -236,6 +237,7 @@ impl BitcoinWalletBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
     fn test_default() -> Result<(), Error> {
         let expected_default = BitcoinWallet {

@@ -21,5 +21,4 @@ async fn main() {
         "Assuming a 300 byte contract, the minimum fee to be rent-exempt is: {}",
         balance
     );
-    
 }

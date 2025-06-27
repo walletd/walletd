@@ -1,8 +1,8 @@
 //! Monero LWS Client - Facilitates connection to a Monero Light Wallet Server
-//!
-//! This module allows for connecting to a Monero Light Wallet Server and
-//! getting Monero blockchain information from it. MyMonero is an example Monero
-//! LWS that can be connected to using this module
+use crate::monero_public_keys::MoneroPublicKeys;
+// This module allows for connecting to a Monero Light Wallet Server and
+// getting Monero blockchain information from it. MyMonero is an example Monero
+// LWS that can be connected to using this module
 
 use reqwest;
 use serde::ser::SerializeStruct;
@@ -13,7 +13,9 @@ use thiserror::Error;
 
 use crate::rct_types::RctKey;
 use crate::{
-    mix_outs, public_key, KeyDerivation, KeyImage, MixAmountAndOuts, MoneroWallet,
+    key_image::{KeyDerivation, KeyImage},
+    mix_outs::MixAmountAndOuts,
+    monero_wallet::MoneroWallet,
     PublicKey,
 };
 
@@ -35,11 +37,11 @@ pub enum Error {
     #[error("serde_json error: {0}")]
     SerdeJsonError(#[from] serde_json::Error),
     #[error("mix_outs error: {0}")]
-    MixOutsError(#[from] mix_outs::Error),
+    MixOutsError(#[from] crate::mix_outs::Error),
     #[error("hex error: {0}")]
     HexError(#[from] hex::FromHexError),
     #[error("Public key error: {0}")]
-    PublicKeyError(#[from] public_key::Error),
+    PublicKeyError(#[from] crate::public_key::Error),
     #[error("Invalid rct string length")]
     InvalidRctStringLength,
     #[error("Error from the key image module: {0}")]
@@ -124,14 +126,17 @@ impl UnspentOutput {
                     if rct_string == "coinbase" {
                         return Ok(RctKey::identity());
                     }
-                    let key_deriv =
-                        KeyDerivation::generate(tx_pub_key, &account.private_keys().view_key());
+                    let key_deriv = KeyDerivation::generate(
+                        &tx_pub_key.to_monero(),
+                        &account.private_keys().view_key().to_monero(),
+                    );
                     let derived_sec_key = key_deriv.derive_private_key(
                         self.index,
                         &account
                             .private_keys()
                             .spend_key()
-                            .expect("expecting private spend key"),
+                            .expect("expecting private spend key")
+                            .to_monero(),
                     )?;
                     return Ok(RctKey::gen_commitment_mask(&RctKey::from_slice(
                         &derived_sec_key.to_bytes(),
@@ -141,8 +146,10 @@ impl UnspentOutput {
                     if encrypted_mask == RctKey::identity() {
                         return Ok(encrypted_mask);
                     }
-                    let key_deriv =
-                        KeyDerivation::generate(tx_pub_key, &account.private_keys().view_key());
+                    let key_deriv = KeyDerivation::generate(
+                        &tx_pub_key.to_monero(),
+                        &account.private_keys().view_key().to_monero(),
+                    );
                     let decrypted_mask =
                         encrypted_mask.as_scalar() - key_deriv.hash_to_scalar(self.index);
                     return Ok(RctKey::from_slice(&decrypted_mask.to_bytes()));
@@ -355,10 +362,16 @@ impl MoneroLWSConnection {
             .expect("Expected tx_pub_key to be a valid public key");
             let out_index = output["index"].as_u64().expect("Expected out_index as u64");
 
-            let calculated_key_image =
-                KeyImage::new(&account_private_keys, &tx_public_key, out_index)?
-                    .key_image
-                    .to_vec();
+            let account_public_keys = MoneroPublicKeys::from_private_keys(&account_private_keys);
+            let calculated_key_image = KeyImage::new(
+                &account_private_keys.view_key().to_monero(),
+                &account_private_keys.spend_key().unwrap().to_monero(),
+                &account_public_keys.spend_key().unwrap().to_monero(),
+                &tx_public_key.to_monero(),
+                out_index,
+            )?
+            .key_image
+            .to_vec();
 
             // need to filter here for what is actually available to be spent (what is
             // unspent)
