@@ -2,20 +2,68 @@
 name = "walletd_bitcoin"
 version = "0.2.0"
 edition = "2021"
-license = "MIT OR Apache-2.0"
-authors = ["The WalletD Team"]
-description = "Bitcoin walletd library"
-homepage = "https://walletd.org/"
-repository = "https://github.com/walletd/walletd"
-readme = "README.md"
-categories = ["cryptography::cryptocurrencies"]
 
-[lib]
-name = "walletd_bitcoin"
-path = "src/lib.rs"
+[features]
+default = []
+lightning = []
+lightning-ldk = ["lightning", "dep:lightning", "dep:lightning-invoice", "dep:lightning-net-tokio"]
+lightning-lnd = ["lightning", "dep:tonic", "dep:prost"]
+lightning-lsp = ["lightning", "dep:reqwest"]
+lightning-voltage = ["lightning", "dep:reqwest", "dep:base64"]
+enterprise = ["dep:dashmap", "dep:prometheus", "dep:parking_lot"]
 
 [dependencies]
-walletd_hd_key = { path = "../../key_manager/hd_key", version = "0.2" }
-bdk = { version = "0.28.2" }
-thiserror = "1.0.40"
-tokio = { version = "1.0", features = ["full"] }
+# Bitcoin core
+bitcoin = { version = "0.31", features = ["serde", "rand"] }
+bitcoincore-rpc = "0.18"
+bitcoin-bech32 = "0.13"
+
+# Key management
+bip39 = "2.0"
+bip32 = "0.5"
+secp256k1 = { version = "0.28", features = ["rand", "serde"] }
+
+# Security
+ring = "0.17"
+zeroize = { version = "1.7", features = ["derive"] }
+argon2 = "0.5"
+
+# Lightning Network (optional)
+lightning = { version = "0.0.121", optional = true }
+lightning-invoice = { version = "0.29", optional = true }
+lightning-net-tokio = { version = "0.0.121", optional = true }
+
+# Storage and serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+bincode = "1.3"
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+futures = "0.3"
+async-trait = "0.1"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Enterprise features (optional)
+dashmap = { version = "5.5", optional = true }
+prometheus = { version = "0.13", optional = true }
+parking_lot = { version = "0.12", optional = true }
+
+# Optional dependencies for different backends
+tonic = { version = "0.10", optional = true }
+prost = { version = "0.12", optional = true }
+reqwest = { version = "0.11", features = ["json"], optional = true }
+base64 = { version = "0.21", optional = true }
+
+# Utils
+hex = "0.4"
+log = "0.4"
+uuid = { version = "1.6", features = ["v4"] }
+dirs = "5.0"
+
+[dev-dependencies]
+tokio-test = "0.4"
+criterion = "0.5"

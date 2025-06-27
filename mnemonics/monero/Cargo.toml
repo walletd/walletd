@@ -10,15 +10,15 @@ repository = "https://github.com/walletd/walletd"
 readme = "README.md"
 categories = ["cryptography::cryptocurrencies"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-walletd_mnemonics_core = {path = "../core", version="0.2"}
+walletd_mnemonics_core = { path = "../core", version = "0.2" }
 aligned = "0.4.1"
-crc = { version = "1.8.1" }
-curve25519-dalek = { version = "2.1.0" }
+crc = "3.0"
+curve25519-dalek = "2.1.0"
 enum-iterator = "1.2.0"
-hex = { version = "0.4.2" }
-rand = { version = "0.7" }
+hex = "0.4.2"
+rand = "0.7"
 sha3 = "0.10.6"
 thiserror = "1.0.39"
+serde = { version = "1.0.130", features = ["derive"] }
+

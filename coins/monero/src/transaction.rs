@@ -1,22 +1,19 @@
-use std::collections::HashSet;
-use std::fmt::Debug;
-use std::str::Utf8Error;
-
+use std::str::Utf8Error;use std::collections::HashSet;
+use serde::Serialize;use std::fmt::Debug;
 use curve25519_dalek::scalar::Scalar;
 use thiserror::Error;
 
 use crate::key_image::KeyDerivation;
-use crate::monero_lws::UnspentOutput;
 use crate::rct_types::{CtKey, MultiSigOut, MultiSigkLRki, RctConfig, RctKey, RctSig};
 use crate::varint::VarIntEncoding;
 use crate::{
-    keccak256, key_image, payment_id, public_key, Address, DoSerialize, KeyImage, MoneroAmount,
+    keccak256, key_image, monero_lws::UnspentOutput, payment_id, public_key, Address, DoSerialize, KeyImage, MoneroAmount,
     PaymentId, PrivateKey, PublicKey, SerializedArchive, SubaddressIndex, VarInt,
 };
 
 /// TODO(#68): Figure out what this CryptoHash is and implement it
 #[derive(Debug, Clone)]
-pub struct CryptoHash;
+#[derive(Serialize)]pub struct CryptoHash;
 
 /// A transaction that is pending to be sent to the network.
 /// Implemented in Rust based on Monero's pending_tx struct
@@ -156,7 +153,7 @@ pub struct Transaction {
 
 impl Transaction {
     pub fn validate(&self) -> Result<bool, anyhow::Error> {
-        self.rct_signatures.verify_rct_simple()
+        Ok(self.rct_signatures.verify_rct_simple()?)
     }
 }
 
@@ -183,6 +180,7 @@ impl DoSerialize for Transaction {
 
 /// Struct representing the extra field of a Monero transaction as raw bytes
 #[derive(Debug, Clone, Default)]
+#[derive(Serialize)]
 pub struct RawExtraField(pub Vec<u8>);
 
 impl DoSerialize for RawExtraField {
@@ -342,6 +340,7 @@ impl DoSerialize for TxOut {
 /// Implemented in Rust based on Monero's txout_target_v
 /// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L154)
 #[derive(Debug, Clone)]
+#[derive(Serialize)]
 pub enum TxOutTargetVariant {
     ToScript(TxOutToScript),
     ToScriptHash(TxOutToScriptHash),
@@ -386,7 +385,7 @@ impl DoSerialize for TxOutTargetVariant {
 /// Implemented in Rust based on Monero's txout_to_script
 /// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L61-70)
 #[derive(Debug, Clone)]
-pub struct TxOutToScript {
+#[derive(Serialize)]pub struct TxOutToScript {
     pub keys: Vec<PublicKey>,
     pub script: Vec<u8>,
 }
@@ -394,7 +393,7 @@ pub struct TxOutToScript {
 /// Implemented in Rust based on Monero's txout_to_script_hash
 /// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L72-75)
 #[derive(Debug, Clone)]
-pub struct TxOutToScriptHash {
+#[derive(Serialize)]pub struct TxOutToScriptHash {
     pub hash: CryptoHash,
 }
 
@@ -402,7 +401,7 @@ pub struct TxOutToScriptHash {
 /// Used if outputs <= HF_VERSION_VIEW_TAGS
 /// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L77-L83)
 #[derive(Debug, Clone)]
-pub struct TxOutToKey {
+#[derive(Serialize)]pub struct TxOutToKey {
     pub key: PublicKey,
 }
 
@@ -420,7 +419,7 @@ pub struct InputGenerationContext {
 }
 
 #[derive(Debug, Clone)]
-pub struct ViewTag(pub u8);
+#[derive(Serialize)]pub struct ViewTag(pub u8);
 
 #[derive(Debug, Clone, Default)]
 struct ViewTagBuf {
@@ -461,7 +460,7 @@ impl ViewTag {
 /// Used if outputs > HF_VERSION_VIEW_TAGS
 /// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#85-97)
 #[derive(Debug, Clone)]
-pub struct TxOutToTaggedKey {
+#[derive(Serialize)]pub struct TxOutToTaggedKey {
     pub key: PublicKey,
     pub view_tag: ViewTag,
 }

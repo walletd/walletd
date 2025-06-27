@@ -1,72 +1,67 @@
 #![allow(clippy::arithmetic_side_effects)]
 
-
-
-
-
-
-
 use solana_sdk::{
-    pubkey::{Pubkey},
+    pubkey::Pubkey,
+    signature::{Keypair, Signer},
 };
 use solana_client::nonblocking::rpc_client::RpcClient;
+use crate::Error;
 
-
-
-use solana_sdk::signature::{Keypair, Signer};
-
-
-// The basis for all Solana wallets is the Keypair struct from the Solana SDK
+/// The basis for all Solana wallets, wrapping a Keypair from the Solana SDK.
+///
+/// In Solana, everything is an account. For naming consistency, we call this a `SolanaAccount`.
+/// ### Key Concepts:
+/// - Accounts store data and have a unique address (usually a public key).
+/// - Accounts have a max size of 10MB; Program-Derived Accounts (PDAs) are limited to 10KB.
+/// - PDAs can sign on behalf of a program.
+/// - Account sizes are fixed at creation but can be adjusted using `realloc`.
+/// - Data storage is paid with rent.
+/// - Default account owner is the System Program.
+/// - Generate an account in the CLI using `solana-keygen new`.
+///
+/// ### Account Fields:
+/// - **lamports**: Number of lamports owned by the account.
+/// - **owner**: Program owner of the account.
+/// - **executable**: Whether the account can process instructions.
+/// - **data**: Raw data byte array stored by the account.
+/// - **rent_epoch**: Next epoch when rent is owed.
+///
+/// Only the account's owner can modify its data or debit lamports. Anyone can credit lamports.
+/// The owner can reassign ownership if the account's data is zeroed out.
+/// Program accounts do not store state.
+///
+/// Example: A counter program requires two accounts—one for the program code and one for the counter.
+#[allow(dead_code)]
 pub struct SolanaAccount {
-    keypair: Keypair
+    keypair: Keypair,
 }
 
-// At its core, everything in Solana is an account. For naming consistency, we'll call this a SolanaAccount
-// Documentation will explain the different nouns where necessary, and what we call them in WalletD 
-// - Accounts are used to store data
-// - Each account has a unique address
-// - Accounts have a max size of 10MB (10 Mega Bytes)
-// - PDA accounts have a max size of 10KB (10 Kilo Bytes)
-// - PDA accounts can be used to sign on behalf of a program
-// - Accounts size are fixed at creation time, but can be adjusted using realloc
-// - Account data storage is paid with rent
-// - Default account owner is the System Program
-// Generate an account in the CLI using `solana-keygen new`
-
-// Each account has an address (usually a public key) and an owner (address of a program account). The full field list an account stores is found below.
-
-// Field	Description
-// lamports	The number of lamports owned by this account
-// owner	The program owner of this account
-// executable	Whether this account can process instructions
-// data	The raw data byte array stored by this account
-// rent_epoch	The next epoch that this account will owe rent
-// 
-// Only a data account's owner can modify its data and debit lamports
-// Anyone is allowed to credit lamports to a data account
-// The owner of an account may assign a new owner if the account's data is zeroed out
-// Program accounts do not store state.
-
-// For example, if you have a counter program that lets you increment a counter, 
-// you must create two accounts, one account to store the program's code, 
-// and one to store the counter.
 impl SolanaAccount {
-    pub fn new_from_bytes(bytes: [u8; 64]) -> Self {
-        let keypair = Keypair::from_bytes(&bytes).unwrap();
-        Self { keypair }
+    /// Creates a new `SolanaAccount` from a 64-byte array.
+    ///
+    /// # Errors
+    /// Returns an `Error` if the byte array cannot be converted to a valid `Keypair`.
+    pub fn new_from_bytes(bytes: [u8; 64]) -> Result<Self, Error> {
+        let keypair = Keypair::from_bytes(&bytes).map_err(|e| {
+            Error::Custom(format!("Failed to create keypair from bytes: {}", e))
+        })?;
+        Ok(Self { keypair })
     }
 
+    /// Returns the public key associated with the account.
     pub fn pubkey(&self) -> Pubkey {
-        self.pubkey()
+        self.keypair.pubkey()
     }
 
-    pub async fn balance(&self, rpc_client: RpcClient) -> u64 {
-        
-        rpc_client.get_balance(&self.pubkey()).await.unwrap()
+    /// Retrieves the account's balance in lamports using the provided `RpcClient`.
+    ///
+    /// # Errors
+    /// Returns an `Error` if the balance query fails.
+    pub async fn balance(&self, rpc_client: RpcClient) -> Result<u64, Error> {
+        let balance = rpc_client
+            .get_balance(&self.pubkey())
+            .await
+            .map_err(|e| Error::Custom(format!("Failed to get balance: {}", e)))?;
+        Ok(balance)
     }
 }
-
-
-// pub struct SolanaAccountBuilder {
-//     keypair: Keypair
-// }.

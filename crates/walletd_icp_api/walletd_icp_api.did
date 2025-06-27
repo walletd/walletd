@@ -1,0 +1,60 @@
+type IcpWalletError = variant {
+    WalletNotFound;
+    InsufficientFunds;
+    Custom: text;
+};
+
+type IcpTransaction = record {
+    from: principal;
+    to: principal;
+    amount: nat64;
+    memo: opt nat64;
+    signature: vec nat8;
+};
+
+type CrossChainTx = record {
+    from_chain: text;
+    to_chain: text;
+    amount: nat64;
+    from_address: text;
+    to_address: text;
+};
+
+type Account = record {
+    owner: principal;
+    subaccount: opt vec nat8;
+};
+
+type ApproveArgs = record {
+    fee: opt nat;
+    memo: opt vec nat8;
+    from_subaccount: opt vec nat8;
+    created_at_time: opt nat64;
+    amount: nat;
+    expected_allowance: opt nat;
+    expires_at: opt nat64;
+    spender: Account;
+};
+
+type TransferFromArgs = record {
+    spender_subaccount: opt vec nat8;
+    from: Account;
+    to: Account;
+    amount: nat;
+    fee: opt nat;
+    memo: opt vec nat8;
+    created_at_time: opt nat64;
+};
+
+service : {
+    new_wallet: () -> () oneway;
+    sync_balance: () -> () oneway;
+    generate_address: () -> (text) query;
+    balance: (text) -> (nat64);
+    transfer: (text, text, nat64) -> () oneway;
+    approve: (text, text, nat64) -> (nat64);
+    transfer_from: (text, text, text, nat64) -> (nat64);
+    transaction_history: (text) -> (vec IcpTransaction) query;
+    swap_icp_to_btc: (principal, text, nat64) -> () oneway;
+    resolve_did: (text) -> (opt principal) query;
+}

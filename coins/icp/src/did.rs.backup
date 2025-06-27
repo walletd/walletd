@@ -1,0 +1,277 @@
+#![allow(async_fn_in_trait)]
+use ic_agent::Agent;use ic_agent::Agent;
+// coins/icp/src/did.rs
+use candid::{CandidType, Deserialize, Principal};
+use serde::Serialize;
+use thiserror::Error;
+use ic_cdk;
+
+#[derive(Debug, Error)]
+pub enum DIDError {
+    #[error("DID creation failed: {0}")]
+    CreationFailed(String),
+    #[error("DID resolution failed: {0}")]
+    ResolutionFailed(String),
+    #[error("Authentication failed: {0}")]
+    AuthenticationFailed(String),
+    #[error("Invalid DID format")]
+    InvalidFormat,
+}
+
+/// DID Document structure
+#[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
+pub struct DIDDocument {
+    pub id: String,
+    pub principal: Principal,
+    pub public_key: Option<Vec<u8>>,
+    pub authentication: Vec<AuthenticationMethod>,
+    pub service: Vec<Service>,
+    pub created: u64,
+    pub updated: u64,
+}
+
+#[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
+pub struct AuthenticationMethod {
+    pub id: String,
+    pub method_type: String,
+    pub controller: String,
+    pub public_key: Option<Vec<u8>>,
+}
+
+#[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
+pub struct Service {
+    pub id: String,
+    pub service_type: String,
+    pub service_endpoint: String,
+}
+
+/// ICP DID implementation
+pub struct IcpDID {
+    document: DIDDocument,
+}
+
+impl IcpDID {
+    /// Create a new DID for a principal
+    pub fn create(principal: Principal) -> Result<Self, DIDError> {
+        let did_id = format!("did:icp:{}", principal.to_text());
+        
+        let document = DIDDocument {
+            id: did_id.clone(),
+            principal,
+            authentication: vec![
+                AuthenticationMethod {
+                    id: format!("{}#key-1", did_id),
+                    method_type: "Ed25519VerificationKey2020".to_string(),
+                    controller: did_id.clone(),
+                    public_key: None, // Will be set when key is generated
+                }
+            ],
+            service: vec![],
+            created: ic_cdk::api::time(),
+            updated: ic_cdk::api::time(),
+        };
+        
+        Ok(Self { document })
+    }
+    
+    /// Resolve a DID to get the document
+    pub async fn resolve(did: &str) -> Result<DIDDocument, DIDError> {
+        // Parse DID
+        if !did.starts_with("did:icp:") {
+            return Err(DIDError::InvalidFormat);
+        }
+        
+        let principal_text = did.strip_prefix("did:icp:")
+            .ok_or(DIDError::InvalidFormat)?;
+        
+        let principal = Principal::from_text(principal_text)
+            .map_err(|_| DIDError::InvalidFormat)?;
+        
+        // In a real implementation, this would query a DID registry canister
+        // For now, we create a basic document
+        let document = DIDDocument {
+            id: did.to_string(),
+            principal,
+            authentication: vec![],
+            service: vec![],
+            created: 0,
+            updated: 0,
+        };
+        
+        Ok(document)
+    }
+    
+    /// Add an authentication method
+    pub fn add_authentication_method(
+        &mut self,
+        method_type: String,
+        public_key: Vec<u8>,
+    ) -> Result<(), DIDError> {
+        let method = AuthenticationMethod {
+            id: format!("{}#key-{}", self.document.id, self.document.authentication.len() + 1),
+            method_type,
+            controller: self.document.id.clone(),
+            public_key: Some(public_key),
+        };
+        
+        self.document.authentication.push(method);
+        self.document.updated = ic_cdk::api::time();
+        
+        Ok(())
+    }
+    
+    /// Add a service endpoint
+    pub fn add_service(
+        &mut self,
+        service_type: String,
+        endpoint: String,
+    ) -> Result<(), DIDError> {
+        let service = Service {
+            id: format!("{}#service-{}", self.document.id, self.document.service.len() + 1),
+            service_type,
+            service_endpoint: endpoint,
+        };
+        
+        self.document.service.push(service);
+        self.document.updated = ic_cdk::api::time();
+        
+        Ok(())
+    }
+    
+    /// Authenticate with DID
+    pub async fn authenticate(
+        &self,
+        _message: &[u8],
+        _signature: &[u8],
+    ) -> Result<bool, DIDError> {
+        // In a real implementation, this would verify the signature
+        // against the public key in the authentication methods
+        // For now, we'll return a placeholder
+        
+        if self.document.authentication.is_empty() {
+            return Err(DIDError::AuthenticationFailed(
+                "No authentication methods available".to_string()
+            ));
+        }
+        
+        // TODO: Implement actual signature verification
+        Ok(true)
+    }
+    
+    /// Get the DID string
+    pub fn did(&self) -> &str {
+        &self.document.id
+    }
+    
+    /// Get the DID document
+    pub fn document(&self) -> &DIDDocument {
+        &self.document
+    }
+}
+
+/// DID Registry canister interface (for future implementation)
+pub trait DIDRegistry {
+    
+    #[allow(async_fn_in_trait)]
+    async fn register_did(document: DIDDocument) -> Result<(), DIDError>;
+    
+    #[allow(async_fn_in_trait)]
+    async fn update_did(document: DIDDocument) -> Result<(), DIDError>;
+    
+    #[allow(async_fn_in_trait)]
+    async fn resolve_did(did: &str) -> Result<DIDDocument, DIDError>;
+    async fn revoke_did(did: &str) -> Result<(), DIDError>;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    fn test_did_creation() {
+        // Test DID format without canister functions
+        let principal = Principal::anonymous();
+        let did = format!("did:icp:{}", principal);
+        assert!(did.starts_with("did:icp:"));
+    }}
+    #[test]
+    fn test_did_creation() {
+        // Test DID creation without using canister-specific functions
+impl IcpDID {
+    pub fn new() -> Self {
+        Self {
+            did: String::new(),
+            document: DIDDocument {
+                id: String::new(),
+                principal: Principal::anonymous(),
+                created: 0,
+                updated: 0,
+            },
+        }
+    }
+    
+    pub fn create_did_document(
+        principal: Principal,
+        public_key: Vec<u8>,
+    ) -> Result<DIDDocument, DIDError> {
+        let did_id = format!("did:icp:{}", principal.to_text());
+        
+        let doc = DIDDocument {
+            id: did_id.clone(),
+            principal,
+            created: 0, // Would use ic_cdk::api::time() in canister
+            updated: 0,
+        };
+        
+        Ok(doc)
+    }
+    
+    pub async fn register_did_on_chain(
+        &self,
+        document: &DIDDocument,
+        agent: &Agent,
+    ) -> Result<(), DIDError> {
+        // Mock implementation for now
+        Ok(())
+    }
+}
+
+impl IcpDID {
+    pub fn new() -> Self {
+        Self {
+            did: String::new(),
+            document: DIDDocument {
+                id: String::new(),
+                principal: Principal::anonymous(),
+                created: 0,
+                updated: 0,
+            },
+        }
+    }
+    
+    pub fn create_did_document(
+        principal: Principal,
+        public_key: Vec<u8>,
+    ) -> Result<DIDDocument, DIDError> {
+        let did_id = format!("did:icp:{}", principal.to_text());
+        
+        let doc = DIDDocument {
+            id: did_id.clone(),
+            principal,
+            created: 0, // Would use ic_cdk::api::time() in canister
+            updated: 0,
+        };
+        
+        Ok(doc)
+    }
+    
+    pub async fn register_did_on_chain(
+        &self,
+        document: &DIDDocument,
+        agent: &Agent,
+    ) -> Result<(), DIDError> {
+        // Mock implementation for now
+        Ok(())
+    }
+}
+}

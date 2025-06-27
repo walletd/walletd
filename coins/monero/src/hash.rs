@@ -4,8 +4,6 @@ use tiny_keccak::{Hasher, Keccak};
 const HASH_BYTES: usize = 32;
 const HASH_8: usize = 8;
 
-pub struct Hash8(pub [u8; 8]);
-
 /// Computes the Keccak256 hash of the input byte slice
 pub fn keccak256(input: &[u8]) -> [u8; HASH_BYTES] {
     let mut hasher = Keccak::v256();
@@ -14,6 +12,8 @@ pub fn keccak256(input: &[u8]) -> [u8; HASH_BYTES] {
     hasher.finalize(&mut output);
     output
 }
+
+pub struct Hash8(pub [u8; 8]);
 
 impl Hash8 {
     /// Hashes with the keccak256 and returns the first 8 bytes as the Hash8
@@ -52,7 +52,6 @@ impl Hash {
 #[cfg(test)]
 mod tests {
     use hex_literal::hex;
-
     use super::*;
 
     #[test]

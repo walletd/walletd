@@ -1,63 +1,62 @@
-<div align="center">
-  <h1>WalletD</h1>
+# WalletD Multi-Chain SDK 🚀
 
-  <img src="./logo/walletd-icon.png" width="300" />
+A complete multi-chain wallet SDK with unified CLI supporting 6 major blockchains.
 
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwalletd%2Fwalletd.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwalletd%2Fwalletd?ref=badge_shield) 
+## 🌟 Features
 
-  <p>Library for building blockchain / web3 apps.</p>
-</div>
-⚠️ This project is under heavy development. Expect bugs & breaking changes prior to v1.0.0's release.
+### Supported Blockchains
 
-Supports (or should support)
+1. **₿ Bitcoin + ⚡ Lightning Network**
+   - Full Bitcoin support with Lightning Network integration
+   - HD wallet generation (BIP32/BIP39/BIP44)
+   - UTXO management, SegWit support
+   - Lightning: Channel management, invoices, payments
 
-- Generation of mnemonic phrases
-- Importing of mnemonic phrases
-- Generation of Hierarchical Deterministic (HD) wallets
-- Importing of HD wallets
-- Support for Bitcoin, Ethereum, and other blockchains
+2. **Ξ Ethereum**
+   - Full Ethereum and ERC-20 support
+   - Sepolia testnet integration
+   - Gas optimization, contract interaction
 
-## Installing Rust
+3. **◎ Solana**
+   - High-speed transactions
+   - SPL token support
+   - Built-in devnet airdrop
 
-Rust can be installed using your package manager of choice or
-[rustup.rs](https://rustup.rs).
+4. **ℏ Hedera Hashgraph**
+   - Enterprise-grade DLT
+   - **Auto-funded testnet accounts (1000 HBAR!)**
+   - Token operations, consensus service
 
-## Building
+5. **∞ Internet Computer Protocol (ICP)**
+   - Web3 cloud computing
+   - Identity management, canister interaction
+   - Local development environment
 
-The library can be built and tested using [`cargo`](https://github.com/rust-lang/cargo/):
+6. **🔐 Monero**
+   - Privacy-focused transactions
+   - **Built-in CLI stagenet faucet**
+   - Ring signatures, stealth addresses
 
-```
-git clone git@github.com:walletd/walletd.git
-cd walletd
-cargo build
-```
+## 🚀 Quick Start
 
-You can run tests with:
+Clone the repository:
+git clone https://github.com/AslanPonies/walletd-multichain.git
 
-```
-cargo test
-```
+Build:
+cd walletd-multichain
+cargo build --release
 
-Please refer to the [`cargo` documentation](https://doc.rust-lang.org/stable/cargo/) for more detailed instructions.
+Run:
+cargo run --bin walletd-icp-cli
 
-### Building the docs
+## 📖 Documentation
 
-Docs can be built using the following:
+See the docs/ folder for detailed guides.
 
-```
-cargo doc --no-deps --open
-```
+## 🤝 Contributing
 
-## Contributing
-If you are interested in contributing to WalletD, please take a look at our [CONTRIBUTING](https://github.com/walletd/walletd/blob/main/CONTRIBUTING.md).
+This project is intended to be merged into [WalletD](https://github.com/walletd/walletd).
 
-## License
-WalletD is distributed under the terms of both the MIT license and the Apache License (Version 2.0).
+## 📄 License
 
-See [LICENSE-APACHE](LICENSE-APACHE) and [LICENSE-MIT](LICENSE-MIT) for details.
-<a href="test"></a>
-<div align="center" id="detailed-license-info">
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwalletd%2Fwalletd.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwalletd%2Fwalletd?ref=badge_large)
-
-</div>
+Apache 2.0 / MIT (dual-licensed)

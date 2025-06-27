@@ -16,3 +16,5 @@ path = "src/lib.rs"
 
 [dependencies]
 hex = { version = "0.4.2" }
+serde = { version = "1.0.130", features = ["derive"] }
+

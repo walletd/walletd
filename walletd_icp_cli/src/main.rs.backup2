@@ -1,0 +1,186 @@
+use walletd_icp_cli::{CliOptions, CliResponse, icp_overview, wallet_integration::WALLET_MANAGER};
+use clap::Parser;
+use walletd_icp_cli::types::WalletDIcpApi;
+
+#[tokio::main]
+async fn main() -> Result<(), anyhow::Error> {
+    use cfonts::{say, Options, Align};
+    say(Options {
+        text: String::from("WalletD+"),
+        font: cfonts::Fonts::FontBlock,
+        colors: vec![cfonts::Colors::Yellow, cfonts::Colors::Green],
+        align: Align::Center,
+        ..Options::default()
+    });
+
+    // Load config and determine mode
+    let config = walletd_icp_cli::config::WalletDConfig::load();
+    let mode = if config.demo_mode { "DEMO" } else { "REAL" };
+    
+    println!("🚀 WalletD Multi-Chain Wallet SDK");
+    println!("📌 Mode: {} MODE", mode);
+    if config.demo_mode {
+        println!("   (No real transactions will be executed)");
+        println!("   To use real mode, edit walletd_config.json");
+    }
+    println!();
+
+    // Initialize wallets
+    println!("Initializing wallets...");
+    {
+        let mut manager = WALLET_MANAGER.write().await;
+        
+        // Initialize all supported chains
+        let _ = manager.init_bitcoin().await;
+        let _ = manager.init_ethereum().await;
+        let _ = manager.init_solana().await;
+        // Add more as implemented
+    }
+    println!();
+
+    let mut wallet = WalletDIcpApi::new_test()?;
+    let _cli = CliOptions::parse();
+    
+    // Use a default user ID for this session
+    let user_id = "default_user";
+    
+    loop {
+        println!("\nSelect blockchain:");
+        println!("[1] Bitcoin (BTC)");
+        println!("[2] Ethereum (ETH)");
+        println!("[3] Solana (SOL)");
+        println!("[4] Hedera (HBAR)");
+        println!("[5] Monero (XMR)");
+        println!("[6] Internet Computer (ICP)");
+        println!("[S] Cross-Chain Swap");
+        println!("[C] Configuration");
+        println!("[T] Testnet Testing Suite");
+        println!("[X] Exit");
+        
+        print!("\nYour choice: ");
+        use std::io::{self, Write};
+        io::stdout().flush()?;
+        
+        let mut choice = String::new();
+        io::stdin().read_line(&mut choice)?;
+        
+        let continue_session = match choice.trim().to_uppercase().as_str() {
+            "1" | "BTC" => {
+                use walletd_icp_cli::btc_menu;
+                
+                let (address, balance) = {
+                    let manager = WALLET_MANAGER.read().await;
+                    manager.get_bitcoin_wallet(user_id).await
+                        .unwrap_or_else(|e| {
+                            println!("Warning: {}", e);
+                            ("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh".to_string(), "0.0".to_string())
+                        })
+                };
+                
+                btc_menu::handle_btc_menu(&mut wallet, &address, &balance).await
+            }
+            "2" | "ETH" => {
+                use walletd_icp_cli::eth_menu;
+                
+                let (address, balance) = {
+                    let manager = WALLET_MANAGER.read().await;
+                    manager.get_ethereum_wallet().await
+                        .unwrap_or_else(|e| {
+                            println!("Warning: {}", e);
+                            ("0x742d35Cc6634C0532925a3b844Bc9e7595f7e8E".to_string(), "0.0".to_string())
+                        })
+                };
+                
+                eth_menu::handle_eth_menu(&mut wallet, &address, &balance).await
+            }
+            "3" | "SOL" => {
+                use walletd_icp_cli::sol_menu;
+                sol_menu::handle_sol_menu(&mut wallet, "11111111111111111111111111111111", "10.5").await
+            }
+            "4" | "HBAR" => {
+                use walletd_icp_cli::hbar_menu;
+                hbar_menu::handle_hbar_menu(&mut wallet, "0.0.12345", "1000").await
+            }
+            "5" | "XMR" => {
+                use walletd_icp_cli::xmr_menu;
+                xmr_menu::handle_xmr_menu(&mut wallet, "4AdUndXHHZ6cfufTMvppY6JwXNoux6KhWuMq9QJTm7BqGWiSHMAEwuBCRxrpztKKMKQYPnpwbp7pqGpk4fb6MH3U8XPp2Kp", "5.0").await
+            }
+            "6" | "ICP" => {
+                let address = "ryjl3-tyaaa-aaaaa-aaaba-cai";
+                match icp_overview(&mut wallet, address).await {
+                    Ok(_) => Ok(CliResponse::Continue),
+                    Err(e) => {
+                        println!("Error: {}", e);
+                        Ok(CliResponse::Continue)
+                    }
+                }
+            }
+            "S" => {
+                use walletd_icp_cli::swap_real;
+                swap_real::handle_cross_chain_swap().await.map_err(|e| anyhow::anyhow!(e))?;
+                Ok(CliResponse::Continue)
+            }
+            "C" => {
+                handle_configuration().await.map_err(|e| anyhow::anyhow!(e))?;
+                Ok(CliResponse::Continue)
+                }
+                "T" | "t" => {
+                    use walletd_icp_cli::testnet_menu;
+                    testnet_menu::handle_testnet_menu().await
+                }
+                    testnet_menu::handle_testnet_menu().await                Ok(CliResponse::Continue)
+            }
+            "X" => Ok(CliResponse::Exit),
+            _ => {
+                println!("Invalid choice");
+                Ok(CliResponse::Continue)
+            }
+        };
+
+        match continue_session {
+            Ok(CliResponse::Continue) => continue,
+            Ok(CliResponse::Exit) => break,
+            Ok(CliResponse::Swap) => {
+                use walletd_icp_cli::swap_real;
+                swap_real::handle_cross_chain_swap().await.map_err(|e| anyhow::anyhow!(e))?;
+            }
+            Err(e) => {
+                println!("Error: {}", e);
+                break;
+            }
+        }
+    }
+
+    println!("\nThank you for using WalletD+! Goodbye!");
+    Ok(())
+}
+
+async fn handle_configuration() -> Result<(), String> {
+    use std::io::{self, Write};
+    use walletd_icp_cli::config::WalletDConfig;
+    
+    println!("\n=== Configuration ===");
+    
+    let mut config = WalletDConfig::load();
+    
+    println!("Current mode: {}", if config.demo_mode { "DEMO" } else { "REAL" });
+    
+    print!("\nSwitch to {} mode? (yes/no): ", if config.demo_mode { "REAL" } else { "DEMO" });
+    io::stdout().flush().unwrap();
+    
+    let mut answer = String::new();
+    io::stdin().read_line(&mut answer).map_err(|e| e.to_string())?;
+    
+    if answer.trim().to_lowercase() == "yes" {
+        config.demo_mode = !config.demo_mode;
+        config.save().map_err(|e| e.to_string())?;
+        
+        println!("✅ Mode switched to: {}", if config.demo_mode { "DEMO" } else { "REAL" });
+        println!("   Please restart the application for changes to take effect.");
+    }
+    
+    println!("\nConfiguration file: walletd_config.json");
+    println!("Edit this file to configure RPC endpoints and API keys.");
+    
+    Ok(())
+}

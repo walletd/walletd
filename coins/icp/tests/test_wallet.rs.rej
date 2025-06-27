@@ -1,0 +1,9 @@
+@@ -16,6 +16,6 @@
+     let seed = Seed::new(vec![0u8; 64]);
+     let hd_key = HDKey::new_master(seed, HDNetworkType::TestNet).unwrap();
+-    let wallet = IcpWallet::from_hd_key(&hd_key, 0).unwrap();
+-    assert!(wallet.is_ok());
++    let wallet_result = IcpWallet::from_hd_key(&hd_key, 0);
++    assert!(wallet_result.is_ok());
+ }
+ 

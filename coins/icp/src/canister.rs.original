@@ -1,0 +1,37 @@
+//! Canister interaction module
+
+pub mod canisters;
+
+pub use canisters::{
+   client::{CanisterClient, CanisterError},
+   icrc1::{Icrc1Client, Account, TransferArg, TransferResult},
+   types::{CanisterMethod, CanisterResponse},
+};
+
+// Re-export the trait definitions from Phase 1
+use candid::{CandidType, Deserialize, Principal};
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum LegacyCanisterError {
+   #[error("Canister call failed: {0}")]
+   CallFailed(String),
+}
+
+// Keep the Phase 1 traits for compatibility
+#[allow(async_fn_in_trait)]
+pub trait ICRC1Token {
+   async fn name(&self) -> Result<String, LegacyCanisterError>;
+   async fn symbol(&self) -> Result<String, LegacyCanisterError>;
+   async fn decimals(&self) -> Result<u8, LegacyCanisterError>;
+   async fn total_supply(&self) -> Result<u64, LegacyCanisterError>;
+   async fn balance_of(&self, owner: Principal) -> Result<u64, LegacyCanisterError>;
+   async fn transfer(&self, to: Principal, amount: u64) -> Result<bool, LegacyCanisterError>;
+}
+
+// Phase 2 exports
+pub use canisters::{
+   icrc7::{Icrc7Client, TokenId, TokenMetadata},
+   security::{SecurityValidator, SecurityError},
+   performance::{PerformanceMonitor, CallMetrics},
+};

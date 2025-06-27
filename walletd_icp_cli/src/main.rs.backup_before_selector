@@ -1,0 +1,90 @@
+use walletd_icp_cli::{CliOptions, CliResponse, icp_overview, wallet_integration::WALLET_MANAGER};
+use clap::Parser;
+use walletd_icp_cli::types::WalletDIcpApi;
+
+#[tokio::main]
+async fn main() -> Result<(), anyhow::Error> {
+    use cfonts::{say, Options, Align};
+    say(Options {
+        text: String::from("WalletD+"),
+        font: cfonts::Fonts::FontBlock,
+        colors: vec![cfonts::Colors::Yellow, cfonts::Colors::Green],
+        align: Align::Center,
+        ..Options::default()
+    });
+
+    // Load config and determine mode
+    let config = walletd_icp_cli::config::WalletDConfig::load();
+    let is_testnet = !config.demo_mode && config.bitcoin.network == "testnet";
+    
+    println!("\n    ██╗    ██╗  █████╗  ██╗      ██╗      ███████╗ ████████╗ ██████╗         ");
+    println!("    ██║    ██║ ██╔══██╗ ██║      ██║      ██╔════╝ ╚══██╔══╝ ██╔══██╗   ██╗  ");
+    println!("    ██║ █╗ ██║ ███████║ ██║      ██║      █████╗      ██║    ██║  ██║ ██████╗");
+    println!("    ██║███╗██║ ██╔══██║ ██║      ██║      ██╔══╝      ██║    ██║  ██║  ╚██╔═╝");
+    println!("    ╚███╔███╔╝ ██║  ██║ ███████╗ ███████╗ ███████╗    ██║    ██████╔╝   ╚═╝  ");
+    println!("     ╚══╝╚══╝  ╚═╝  ╚═╝ ╚══════╝ ╚══════╝ ╚══════╝    ╚═╝    ╚═════╝         \n");
+    
+    println!("🚀 WalletD Multi-Chain Wallet SDK");
+    
+    // Display the mode
+    if is_testnet {
+        println!("🧪 Mode: TESTNET MODE");
+        println!("   (Connected to test networks - use faucets for test tokens)");
+    } else if config.demo_mode {
+        println!("📌 Mode: DEMO MODE");
+        println!("   (No real transactions will be executed)");
+        println!("   To use real mode, edit walletd_config.json");
+    } else {
+        println!("⚡ Mode: REAL MODE");
+        println!("   (Connected to real networks)");
+    }
+    
+    // Initialize wallets
+    println!("\nInitializing wallets...");
+    if config.demo_mode {
+        println!("🔄 Initializing Bitcoin wallet...");
+        println!("✅ Bitcoin wallet initialized (Demo mode)");
+        println!("🔄 Initializing Ethereum wallet...");
+        println!("🔄 Initializing Solana wallet...");
+        println!("✅ Solana wallet initialized (Demo mode - not implemented)");
+    } else {
+        // Real initialization would happen here
+        println!("🔄 Connecting to networks...");
+    }
+    
+    // Main menu loop
+    loop {
+        println!("\n\n🧪 TESTNET MODE - Select an option:");
+        println!("[1] Bitcoin (Testnet BTC)");
+        println!("[2] Ethereum (Sepolia ETH)");
+        println!("[3] Solana (Devnet SOL)");
+        println!("[4] Hedera (Testnet HBAR)");
+        println!("[5] Monero (Stagenet XMR)");
+        println!("[6] Internet Computer (Local)");
+        println!("[S] Cross-Chain Swap");
+        println!("[C] Configuration");
+        println!("[T] Testnet Tools & Faucets");
+        println!("[X] Exit");
+        
+        print!("\nYour choice: ");
+        use std::io::{self, Write};
+        io::stdout().flush()?;
+        
+        let mut choice = String::new();
+        io::stdin().read_line(&mut choice)?;
+        
+        match choice.trim().to_uppercase().as_str() {
+            "X" => break,
+            "T" | "t" => {
+                use walletd_icp_cli::testnet_menu;
+                let _ = testnet_menu::handle_testnet_menu().await;
+            }
+            _ => {
+                println!("Option not implemented yet");
+            }
+        }
+    }
+    
+    println!("\nThank you for using WalletD+! Goodbye!");
+    Ok(())
+}

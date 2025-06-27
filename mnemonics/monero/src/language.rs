@@ -1,34 +1,45 @@
+#[allow(dead_code)]
 static CHINESE_SIMPLIFIED: &str = include_str!("langs/chinese_simplified.txt");
+#[allow(dead_code)]
 static DUTCH: &str = include_str!("langs/dutch.txt");
+#[allow(dead_code)]
 static ENGLISH: &str = include_str!("langs/english.txt");
+#[allow(dead_code)]
 static ESPERANTO: &str = include_str!("langs/esperanto.txt");
+#[allow(dead_code)]
 static FRENCH: &str = include_str!("langs/french.txt");
+#[allow(dead_code)]
 static GERMAN: &str = include_str!("langs/german.txt");
+#[allow(dead_code)]
 static ITALIAN: &str = include_str!("langs/italian.txt");
+#[allow(dead_code)]
 static JAPANESE: &str = include_str!("langs/japanese.txt");
+#[allow(dead_code)]
 static LOJBAN: &str = include_str!("langs/lojban.txt");
+#[allow(dead_code)]
 static PORTUGUESE: &str = include_str!("langs/portuguese.txt");
+#[allow(dead_code)]
 static RUSSIAN: &str = include_str!("langs/russian.txt");
+#[allow(dead_code)]
 static SPANISH: &str = include_str!("langs/spanish.txt");
 
 use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
-
-use crc::{crc32, Ha
-use walletd_mnemonics_core::Languag
+use crc::{Crc, CRC_32_ISO_HDLC};
 use crate::Error;
 
 #[derive(Debug)]
 pub struct WordList {
     language: Language,
     inner: Vec<&'static str>,
+    #[allow(dead_code)]
     prefix_length: usize,
     trimmed_word_map: HashMap<String, usize>,
 }
 
+#[allow(dead_code)]
 impl WordList {
-    /// Creates a new wordlist for a specified language
     pub fn new(language: Language) -> WordList {
         match language {
             Language::English => {
@@ -142,9 +153,6 @@ impl WordList {
         }
     }
 
-    /// Gets the index of a word in a language's wordlist, returns error if word
-    /// is not found in wordlist for a language
-    #[allow(dead_code)]
     pub fn get_index(&self, word: &str) -> Result<usize, Error> {
         match self.inner.iter().position(|element| element == &word) {
             Some(index) => Ok(index),
@@ -155,8 +163,6 @@ impl WordList {
         }
     }
 
-    /// If all words in the phrase are present in a language's wordlist, the
-    /// language of the phrase is detected
     pub fn detect_language(phrase: Vec<&str>) -> Result<Language, Error> {
         let all_languages = enum_iterator::all::<Language>().collect::<Vec<_>>();
         for language in all_languages {
@@ -178,11 +184,7 @@ impl WordList {
         Err(Error::InvalidPhraseLanguage(phrase.join(" ")))
     }
 
-    /// Create a version of the wordlist with each word trimmed
-    pub fn create_trimmed_word_list(
-        wordlist: &str,
-        unique_prefix_len: usize,
-    ) -> HashMap<String, usize> {
+    pub fn create_trimmed_word_list(wordlist: &str, unique_prefix_len: usize) -> HashMap<String, usize> {
         let wordlist2: Vec<&str> = wordlist.split_whitespace().collect();
         let mut trimmed_word_map = HashMap::new();
         for (index, word) in wordlist2.iter().enumerate() {
@@ -191,7 +193,6 @@ impl WordList {
         trimmed_word_map
     }
 
-    /// Trim one word
     pub fn to_trimmed(word: &str, unique_prefix_len: usize) -> String {
         match word.chars().count() > unique_prefix_len {
             true => word.chars().take(unique_prefix_len).collect(),
@@ -199,7 +200,6 @@ impl WordList {
         }
     }
 
-    /// Get the index of the trimmed word
     pub fn trimmed_word_index(&self, word: &str) -> Result<usize, Error> {
         let trimmed_word = Self::to_trimmed(word, self.prefix_length());
         let index = self.trimmed_word_map.get(&trimmed_word);
@@ -212,50 +212,35 @@ impl WordList {
         }
     }
 
-    /// Calculate the checksum word
     pub fn checksum_word(&self, phrase: &Vec<&str>) -> String {
         let phrase_trimmed = phrase
             .iter()
-            .map(|word| WordList::to_trimmed(word, self.prefix_length))
+            .map(|word| Self::to_trimmed(word, self.prefix_length))
             .collect::<Vec<String>>();
 
-        let mut digest = crc32::Digest::new(crc32::IEEE);
-        digest.write(phrase_trimmed.concat().as_bytes());
-        phrase[(digest.sum32() % phrase.len() as u32) as usize].to_string()
+        let crc = Crc::<u32>::new(&CRC_32_ISO_HDLC);
+        let mut digest = crc.digest();
+        digest.update(phrase_trimmed.concat().as_bytes());
+        phrase[(digest.finalize() % phrase.len() as u32) as usize].to_string()
     }
 
-    /// Get inner data
     pub fn inner(&self) -> Vec<&'static str> {
         self.inner.clone()
     }
 
-    /// Get the prefix_length
     pub fn prefix_length(&self) -> usize {
         self.prefix_length
     }
 
-    /// Get the trimmed_word_map
-    #[allow(dead_code)]
     pub fn trimmed_word_map(&self) -> HashMap<String, usize> {
         self.trimmed_word_map.clone()
     }
 
-    /// Get the wordlist's language
-    #[allow(dead_code)]
     pub fn language(&self) -> Language {
         self.language
     }
 }
 
-/// The choice of language for a mnemonic phrase not only determines the words
-/// used, but also has an impact on the binary value of each word when the
-/// ['Mnemonic'][Mnemonic] is converted into a ['Seed'][Seed].
-///
-/// English is the only officially supported language, the rest are provided for
-/// convenience.
-///
-/// [Mnemonic]: ./mnemonic/struct.Mnemonic.html
-/// [Seed]: ./seed/struct.Seed.html
 #[derive(Debug, Clone, Copy, Eq, PartialEq, enum_iterator::Sequence)]
 pub enum Language {
     English,
@@ -273,25 +258,14 @@ pub enum Language {
 }
 
 impl Default for Language {
-    /// Returns the default language, English.
     fn default() -> Language {
         Language::English
-    }
-}
-
-impl LanguageExt for Language {
-    type Language = Language;
-
-    /// Returns a new Language with default language set.
-    fn new() -> Self {
-        Self::default()
     }
 }
 
 impl FromStr for Language {
     type Err = Error;
 
-    /// Converts a string to a Language.
     fn from_str(input: &str) -> Result<Language, Self::Err> {
         match input {
             "English" => Ok(Language::English),
@@ -312,7 +286,6 @@ impl FromStr for Language {
 }
 
 impl fmt::Display for Language {
-    /// Converts a Language to a string.
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Language::English => fmt.write_str("English")?,
@@ -406,7 +379,8 @@ mod tests {
             "equip",
             "civilian",
             "camp",
-            "dialect algebra",
+            "dialect",
+            "algebra",
         ];
         assert_eq!(
             WordList::detect_language(phrase).unwrap(),
@@ -420,8 +394,7 @@ mod tests {
         assert_eq!(wordlist.inner.len(), 1626);
         assert_eq!(wordlist.get_index("的").unwrap(), 0);
         assert_eq!(wordlist.get_index("貌").unwrap(), 1625);
-        assert!(wordlist.get_index("A").is_err()); // cant find a character
-                                                   // thats not in the list
+        assert!(wordlist.get_index("A").is_err());
     }
 
     #[test]

@@ -1,0 +1,18 @@
+type IcpTransaction = record {
+    from: principal;
+    to: principal;
+    amount: nat64;
+    memo: opt nat64;
+    signature: vec nat8;
+};
+
+service : {
+    "new_wallet": () -> ();
+    "sync_balance": () -> ();
+    "generate_address": () -> (text) query;
+    "balance": (text) -> (nat64) query;
+    "transfer": (text, text, nat64) -> ();
+    "transaction_history": (text) -> (vec IcpTransaction) query;
+    "create_did": () -> (text) query;
+    "resolve_did": (text) -> (opt principal) query;
+}
