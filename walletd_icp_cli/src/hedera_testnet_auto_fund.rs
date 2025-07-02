@@ -1,20 +1,8 @@
 use reqwest;
-use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use tokio::time::sleep;
 
-#[derive(Debug, Serialize)]
-struct FaucetRequest {
-    account_id: String,
-    amount: f64,
-}
 
-#[derive(Debug, Deserialize)]
-struct FaucetResponse {
-    success: bool,
-    transaction_id: Option<String>,
-    message: Option<String>,
-}
 
 pub async fn auto_fund_with_amount() -> Result<(), String> {
     use crate::wallet_integration::WALLET_MANAGER;
@@ -90,7 +78,7 @@ async fn create_and_setup_new_account() -> Result<String, String> {
 
     // Use a pre-configured account that we control
     let _operator_account = "0.0.4886969";
-    let operator_key = "302e020100300506032b65700422042091132178b72c5a4a3e10c91ce87b6197c5da35024ba370b8e9bea31276802391";
+    let _operator_key = "302e020100300506032b65700422042091132178b72c5a4a3e10c91ce87b6197c5da35024ba370b8e9bea31276802391";
 
     // Generate new keys
     let new_private_key = generate_private_key();

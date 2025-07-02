@@ -10,6 +10,7 @@ struct FaucetRequest {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct FaucetResponse {
     transaction_id: Option<String>,
     status: Option<String>,
@@ -18,6 +19,7 @@ struct FaucetResponse {
 
 #[derive(Debug, Deserialize)]
 struct AccountResponse {
+    #[allow(dead_code)]
     account: String,
     balance: BalanceInfo,
 }

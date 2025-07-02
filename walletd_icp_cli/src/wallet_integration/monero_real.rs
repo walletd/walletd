@@ -22,10 +22,12 @@ struct JsonRpcRequest {
 #[derive(Debug, Deserialize)]
 struct JsonRpcResponse<T> {
     result: Option<T>,
+    #[allow(dead_code)]
     error: Option<JsonRpcError>,
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct JsonRpcError {
     code: i32,
     message: String,
@@ -41,6 +43,7 @@ pub struct GetInfoResult {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct GetBalanceResult {
     balance: u64,
     unlocked_balance: u64,

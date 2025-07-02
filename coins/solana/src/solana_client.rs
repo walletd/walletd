@@ -7,9 +7,9 @@ use solana_sdk::{
     commitment_config::CommitmentConfig,
     pubkey::Pubkey,
     signature::{Keypair, Signer},
-    system_instruction,
     transaction::Transaction,
 };
+use solana_system_interface::instruction as system_instruction;
 
 /// A client for interacting with the Solana blockchain via an RPC endpoint.
 #[allow(dead_code)]

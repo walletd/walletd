@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-pub async fn check_real_balance(address: &str) -> Result<f64> {
+pub async fn check_real_balance(_address: &str) -> Result<f64> {
     // For now, return 0 - in production, this would query the node
     // Real implementation would use wallet RPC
     Ok(0.0)

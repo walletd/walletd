@@ -31,7 +31,7 @@ impl IcpWallet {
             principal,
             account_id,
             public_key: vec![],
-            __private_key: None,
+            ____private_key: None,
         })
     }
 
@@ -40,7 +40,7 @@ impl IcpWallet {
             principal,
             account_id: Self::principal_to_account_id(&principal),
             public_key: vec![],
-            __private_key: None,
+            ____private_key: None,
         }
     }
 

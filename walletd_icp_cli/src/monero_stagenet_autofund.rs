@@ -1,6 +1,5 @@
-use anyhow::{anyhow, Result};
-use serde_json::json;
-use std::process::{Command, Stdio};
+use anyhow::Result;
+use std::process::Command;
 use tokio::time::{sleep, Duration};
 
 pub async fn get_stagenet_xmr_automatically(user_address: &str) -> Result<String> {

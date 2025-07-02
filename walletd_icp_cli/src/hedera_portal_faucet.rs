@@ -1,26 +1,14 @@
 use reqwest;
-use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
-#[derive(Debug, Serialize)]
-struct PortalAccountRequest {
-    network: String,
-}
 
-#[derive(Debug, Deserialize)]
-struct PortalAccountResponse {
-    account_id: String,
-    private_key: String,
-    public_key: String,
-    balance: u64,
-}
 
 pub async fn create_funded_testnet_account() -> Result<(String, String, f64), String> {
     println!("\n🔄 Creating new Hedera testnet account...");
     println!("   Using Hedera Portal API...");
 
     // The Hedera Portal API endpoint for creating testnet accounts
-    let client = reqwest::Client::builder()
+    let _client = reqwest::Client::builder()
         .timeout(Duration::from_secs(30))
         .build()
         .map_err(|e| format!("Client error: {}", e))?;

@@ -20,20 +20,24 @@ struct RpcRequest {
 
 #[derive(Debug, Deserialize)]
 struct RpcResponse<T> {
+    #[allow(dead_code)]
     jsonrpc: String,
     result: Option<T>,
     error: Option<RpcError>,
+    #[allow(dead_code)]
     id: u64,
 }
 
 #[derive(Debug, Deserialize)]
 struct RpcError {
+    #[allow(dead_code)]
     code: i64,
     message: String,
 }
 
 #[derive(Debug, Deserialize)]
 struct GetBalanceResult {
+    #[allow(dead_code)]
     context: serde_json::Value,
     value: u64,
 }

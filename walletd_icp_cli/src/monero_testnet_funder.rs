@@ -5,6 +5,7 @@ const SDK_WALLET_ADDRESS: &str = "56heRv2ANffW1Py2kBkJDy8xnWqZsSrgjLygwjua2xc8Wb
 const SDK_WALLET_SEED: &str = "hefty value later extra artistic firm radar yodel talent future fungal nutshell because sanity awesome nail unjustly rage unafraid cedar delayed thumbs comb custom sanity";
 
 pub struct TestnetFunder {
+    #[allow(dead_code)]
     user_address: String,
 }
 
@@ -81,7 +82,7 @@ impl TestnetFunder {
         }
     }
 
-    async fn connect_to_auto_faucet(address: &str) -> Result<String> {
+    async fn connect_to_auto_faucet(_address: &str) -> Result<String> {
         // Some stagenet pools have auto-payout for small amounts
         println!("📡 Registering with auto-faucet service...");
 

@@ -3,10 +3,13 @@ use std::fs;
 use std::path::Path;
 
 // Pre-funded testnet wallet controlled by SDK
+#[allow(dead_code)]
 const SDK_WALLET_PATH: &str = "sdk_testnet_wallet";
+#[allow(dead_code)]
 const SDK_WALLET_ADDRESS: &str = "5B6GUo2HKDGZKsfMosytjNa6jvKtL43pcEn2oLckxEnsNHGRnw57hwedMUdvPPujRxLj1V97aWWftieudFFYWsvZPdw7Ld8";
 
 pub struct TestnetService {
+    #[allow(dead_code)]
     balance: f64,
 }
 

@@ -78,7 +78,7 @@ impl MockLightning {
         let node_id = format!("02{}", hex::encode(&hash[..]));
 
         let node = LightningNode {
-            ____user_id: user_id.to_string(),
+            _____user_id: user_id.to_string(),
             node_id: node_id.clone(),
             channels: Vec::new(),
             peers: Vec::new(),
@@ -87,7 +87,7 @@ impl MockLightning {
         self.nodes.lock().unwrap().insert(user_id.to_string(), node);
 
         Ok(NodeInfo {
-            ____user_id: user_id.to_string(),
+            _____user_id: user_id.to_string(),
             node_id,
             alias: format!("{}'s Lightning Node", user_id),
             num_peers: 0,
@@ -103,7 +103,7 @@ impl MockLightning {
             .ok_or_else(|| anyhow::anyhow!("Node not found"))?;
 
         Ok(NodeInfo {
-            ____user_id: user_id.to_string(),
+            _____user_id: user_id.to_string(),
             node_id: node.node_id.clone(),
             alias: format!("{}'s Lightning Node", user_id),
             num_peers: node.peers.len() as u32,

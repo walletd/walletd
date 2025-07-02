@@ -42,7 +42,7 @@ impl SolanaAccount {
     /// # Errors
     /// Returns an `Error` if the byte array cannot be converted to a valid `Keypair`.
     pub fn new_from_bytes(bytes: [u8; 64]) -> Result<Self, Error> {
-        let keypair = Keypair::from_bytes(&bytes)
+        let keypair = Keypair::try_from(&bytes[..])
             .map_err(|e| Error::Custom(format!("Failed to create keypair from bytes: {}", e)))?;
         Ok(Self { keypair })
     }

@@ -87,44 +87,7 @@ pub async fn handle_eth_menu(
     }
 }
 
-async fn handle_send_eth() -> Result<(), String> {
-    println!("\n=== Send ETH ===");
 
-    print!("Recipient address: ");
-    io::stdout().flush().unwrap();
-    let mut to_address = String::new();
-    io::stdin()
-        .read_line(&mut to_address)
-        .map_err(|e| e.to_string())?;
-
-    print!("Amount (ETH): ");
-    io::stdout().flush().unwrap();
-    let mut amount = String::new();
-    io::stdin()
-        .read_line(&mut amount)
-        .map_err(|e| e.to_string())?;
-
-    println!("\n📋 Transaction Preview:");
-    println!("To: {}", to_address.trim());
-    println!("Amount: {} ETH", amount.trim());
-    println!("Network Fee: ~0.003 ETH ($6.00)");
-    println!("Total: {} ETH", amount.trim());
-
-    print!("\nConfirm send? (yes/no): ");
-    io::stdout().flush().unwrap();
-    let mut confirm = String::new();
-    io::stdin()
-        .read_line(&mut confirm)
-        .map_err(|e| e.to_string())?;
-
-    if confirm.trim().to_lowercase() == "yes" {
-        println!("\n✅ Transaction sent!");
-        println!("Hash: 0x742d35Cc6634C0532925a3b844Bc9e7595f7e8E");
-        println!("View on Etherscan: https://etherscan.io/tx/0x742d...");
-    }
-
-    Ok(())
-}
 
 async fn handle_swap_tokens() -> Result<(), String> {
     println!("\n=== Swap Tokens (Uniswap) ===");
@@ -424,56 +387,4 @@ async fn handle_smart_contract() -> Result<(), String> {
     Ok(())
 }
 
-// Add at the end of the file
-async fn handle_send_ethereum_real() -> Result<(), String> {
-    use crate::eth_simple::SimpleEthManager;
 
-    println!("\n=== Send ETH (Real) ===");
-
-    print!("From address: ");
-    io::stdout().flush().unwrap();
-    let mut from = String::new();
-    io::stdin().read_line(&mut from).ok();
-
-    print!("To address: ");
-    io::stdout().flush().unwrap();
-    let mut to = String::new();
-    io::stdin().read_line(&mut to).ok();
-
-    print!("Amount (ETH): ");
-    io::stdout().flush().unwrap();
-    let mut amount = String::new();
-    io::stdin().read_line(&mut amount).ok();
-
-    let amount_f64: f64 = amount.trim().parse().unwrap_or(0.0);
-
-    match SimpleEthManager::send_eth_simple(from.trim(), to.trim(), amount_f64).await {
-        Ok(tx_hash) => {
-            println!("\n✅ Transaction sent!");
-            println!("TX Hash: {}", tx_hash);
-        }
-        Err(e) => println!("❌ Error: {}", e),
-    }
-
-    Ok(())
-}
-
-async fn handle_swap_real() -> Result<(), String> {
-    use crate::swaps::simple_swap::SimpleSwapProvider;
-    use crate::swaps::Chain;
-
-    println!("\n=== Token Swap (Real) ===");
-
-    let quote =
-        SimpleSwapProvider::get_swap_quote(&Chain::Ethereum, &Chain::Bitcoin, "ETH", "BTC", 1.0)
-            .await
-            .map_err(|e| e.to_string())?;
-
-    println!("\n📊 Swap Quote:");
-    println!("From: 1.0 ETH");
-    println!("To: {} BTC", quote.output_amount);
-    println!("Rate: 1 ETH = {} BTC", quote.exchange_rate);
-    println!("Fee: {} ETH", quote.fee);
-
-    Ok(())
-}

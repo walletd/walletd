@@ -1,6 +1,5 @@
 use std::process::{Command, Stdio};
-use std::sync::Arc;
-use tokio::sync::Mutex;
+
 
 pub struct MoneroMiner {
     process: Option<std::process::Child>,

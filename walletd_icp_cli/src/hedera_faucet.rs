@@ -11,6 +11,7 @@ struct FaucetRequest {
 struct FaucetResponse {
     account_id: String,
     private_key: String,
+    #[allow(dead_code)]
     public_key: String,
     balance: u64,
 }
