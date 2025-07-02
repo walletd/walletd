@@ -1,4 +1,4 @@
-use slip44::{Coin, Symbol};
+use std::str::FromStr;
 use walletd_hd_key::prelude::*;
 
 fn main() -> Result<(), walletd_hd_key::Error> {

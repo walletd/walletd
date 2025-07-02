@@ -109,13 +109,13 @@ impl Mnemonic {
     /// The default language is English, the default mnemonic type for the
     /// monero mnemonic is 25 words The default passphrase is None and no
     /// phrase is specified by default
-    fn builder() -> MnemonicBuilder {
+    pub fn builder() -> MnemonicBuilder {
         MnemonicBuilder::default()
     }
 
     /// Generates a new mnemonic given the language, length of mnemonic, and
     /// optional passphrase
-    fn new(language: Language, mnemonic_type: MnemonicType, passphrase: Option<&str>) -> Self {
+    pub fn new(language: Language, mnemonic_type: MnemonicType, passphrase: Option<&str>) -> Self {
         let wordlist = WordList::new(language);
 
         const DEFAULT_LENGTH: usize = 32;
@@ -139,6 +139,19 @@ impl Mnemonic {
         }
     }
 
+    /// Creates a mnemonic from a phrase with specified language and optional passphrase
+    pub fn from_phrase(language: Language, phrase: &str, passphrase: Option<&str>) -> Result<Self, Error> {
+        let mnemonic_type = MnemonicType::from_phrase(phrase)?;
+        let seed = Mnemonic::create_seed(language, phrase, mnemonic_type, passphrase)?;
+
+        Ok(Mnemonic {
+            phrase: phrase.to_string(),
+            lang: language,
+            seed,
+            mnemonic_type,
+        })
+    }
+
     /// Restores a mnemonic from a mnemonic phrase and optional passphrase,
     /// automatically detects the language
     fn detect_language(phrase: &str, specified_passphrase: Option<&str>) -> Result<Self, Error> {
@@ -156,22 +169,22 @@ impl Mnemonic {
 
     /// Returns the ['Seed'][Seed] associated with the mnemonic phrase
     /// [Seed]: ./seed/struct.Seed.html
-    fn to_seed(&self) -> Seed {
+    pub fn to_seed(&self) -> Seed {
         self.seed.clone()
     }
 
     /// Returns the language for the mnemonic
-    fn language(&self) -> Language {
+    pub fn language(&self) -> Language {
         self.lang
     }
 
     /// Returns the mnemonic phrase
-    fn phrase(&self) -> &str {
+    pub fn phrase(&self) -> &str {
         &self.phrase
     }
 
     /// Returns the mnemonic type
-    fn mnemonic_type(&self) -> MnemonicType {
+    pub fn mnemonic_type(&self) -> MnemonicType {
         self.mnemonic_type
     }
 
@@ -325,32 +338,32 @@ impl Mnemonic {
 
 #[allow(dead_code)]
 impl MnemonicBuilder {
-    fn set_seed(&mut self, seed: &Seed) -> &mut Self {
+    pub fn set_seed(&mut self, seed: &Seed) -> &mut Self {
         self.seed = Some(seed.to_owned());
         self
     }
 
-    fn set_phrase(&mut self, mnemonic_phrase: &str) -> &mut Self {
+    pub fn set_phrase(&mut self, mnemonic_phrase: &str) -> &mut Self {
         self.phrase = Some(mnemonic_phrase.to_owned());
         self
     }
 
-    fn set_language(&mut self, language: Language) -> &mut Self {
+    pub fn set_language(&mut self, language: Language) -> &mut Self {
         self.language = Some(language);
         self
     }
 
-    fn set_passphrase(&mut self, passphrase: &str) -> &mut Self {
+    pub fn set_passphrase(&mut self, passphrase: &str) -> &mut Self {
         self.passphrase = Some(passphrase.to_owned());
         self
     }
 
-    fn set_mnemonic_type(&mut self, mnemonic_type: MnemonicType) -> &mut Self {
+    pub fn set_mnemonic_type(&mut self, mnemonic_type: MnemonicType) -> &mut Self {
         self.mnemonic_type = Some(mnemonic_type);
         self
     }
 
-    fn set_detect_language(&mut self) -> &mut Self {
+    pub fn set_detect_language(&mut self) -> &mut Self {
         self.language = None;
         self
     }
@@ -382,7 +395,7 @@ impl MnemonicBuilder {
     /// passphrase, the seed will be stored as the final seed and a mnemonic
     /// phrase will be derived based on the options that were specified or
     /// are default for the language and mnemonic type.
-    fn restore(&self) -> Result<Mnemonic, Error> {
+    pub fn restore(&self) -> Result<Mnemonic, Error> {
         // Early return if neither phrase nor seed is provided
         if self.phrase.is_none() && self.seed.is_none() {
             return Err(Error::MissingInformation(
@@ -466,7 +479,7 @@ impl MnemonicBuilder {
     }
 
     /// Generates a new mnemonic struct using the specifications provided.
-    fn generate(&self) -> Result<Mnemonic, Error> {
+    pub fn generate(&self) -> Result<Mnemonic, Error> {
         let language = self.language.ok_or_else(|| {
             Error::MissingInformation(
                 "language must be specified to generate a mnemonic".to_owned(),

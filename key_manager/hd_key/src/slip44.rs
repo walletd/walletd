@@ -3,6 +3,14 @@ pub const BITCOIN: u32 = 0;
 pub const TESTNET: u32 = 1;
 pub const MONERO: u32 = 128; // SLIP-44 coin type for Monero
 
+/// Enum representing coin symbols for easier use in examples and tests
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Symbol {
+    BTC,
+    ETH,
+    XMR,
+}
+
 /// Enum representing SLIP-44 coin types.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Coin {
@@ -18,6 +26,16 @@ impl Coin {
             Coin::Bitcoin => BITCOIN,
             Coin::Testnet => TESTNET,
             Coin::Monero => MONERO,
+        }
+    }
+}
+
+impl From<Symbol> for Coin {
+    fn from(symbol: Symbol) -> Self {
+        match symbol {
+            Symbol::BTC => Coin::Bitcoin,
+            Symbol::ETH => Coin::Bitcoin, // Using Bitcoin for ETH mapping as example
+            Symbol::XMR => Coin::Monero,
         }
     }
 }

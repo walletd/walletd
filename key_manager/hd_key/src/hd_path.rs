@@ -10,6 +10,30 @@ pub enum HDPurpose {
     BIP84,
 }
 
+impl HDPurpose {
+    pub fn to_shortform_num(&self) -> u32 {
+        match self {
+            HDPurpose::BIP32 => 0,
+            HDPurpose::BIP44 => 44,
+            HDPurpose::BIP49 => 49,
+            HDPurpose::BIP84 => 84,
+        }
+    }
+
+    pub fn default_path_specify(&self, coin_type: u32, account: u32, change: u32, address: u32) -> String {
+        match self {
+            HDPurpose::BIP32 => format!("m/{}/{}/{}/{}", coin_type, account, change, address),
+            _ => format!("m/{}'/{}'/{}'/{}'/{}'", self.to_shortform_num(), coin_type, account, change, address)
+        }
+    }
+}
+
+impl fmt::Display for HDPurpose {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.to_shortform_num())
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HDPathIndex {
     Master,
@@ -36,7 +60,81 @@ impl fmt::Display for HDPathIndex {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HDPath(Vec<HDPathIndex>);
 
+pub struct HDPathBuilder {
+    indices: Vec<HDPathIndex>,
+}
+
+impl HDPathBuilder {
+    pub fn new() -> Self {
+        Self {
+            indices: vec![HDPathIndex::Master],
+        }
+    }
+
+    pub fn purpose_index(mut self, purpose: u32) -> Self {
+        self.indices.push(HDPathIndex::IndexHardened(purpose));
+        self
+    }
+
+    pub fn coin_type_index(mut self, coin_type: u32) -> Self {
+        self.indices.push(HDPathIndex::IndexHardened(coin_type));
+        self
+    }
+
+    pub fn account_index(mut self, account: u32) -> Self {
+        self.indices.push(HDPathIndex::IndexHardened(account));
+        self
+    }
+
+    pub fn change_index(mut self, change: u32) -> Self {
+        self.indices.push(HDPathIndex::IndexNotHardened(change));
+        self
+    }
+
+    pub fn address_index(mut self, address: u32) -> Self {
+        self.indices.push(HDPathIndex::IndexNotHardened(address));
+        self
+    }
+
+    pub fn hardened_address(mut self) -> Self {
+        if let Some(last_index) = self.indices.last_mut() {
+            if let HDPathIndex::IndexNotHardened(num) = last_index {
+                *last_index = HDPathIndex::IndexHardened(*num);
+            }
+        }
+        self
+    }
+
+    pub fn no_change_index(self) -> Self {
+        // No-op, just for builder pattern compatibility
+        self
+    }
+
+    pub fn no_address_index(self) -> Self {
+        // No-op, just for builder pattern compatibility
+        self
+    }
+
+    pub fn build(self) -> HDPath {
+        HDPath(self.indices)
+    }
+}
+
+impl Default for HDPathBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl HDPath {
+    pub fn builder() -> HDPathBuilder {
+        HDPathBuilder::new()
+    }
+
+    pub fn from_str(s: &str) -> Result<Self, Error> {
+        Self::parse_path(s)
+    }
+
     pub fn parse_path(s: &str) -> Result<Self, Error> {
         let parts: Vec<&str> = s.split('/').collect();
         let mut indices = Vec::new();
@@ -48,9 +146,13 @@ impl HDPath {
                 indices.push(HDPathIndex::Master);
                 continue;
             }
-            if part.ends_with('\'') {
-                let num: u32 = part
-                    .trim_end_matches('\'')
+            if part.ends_with('\'') || part.ends_with('h') {
+                let trimmed = if part.ends_with('\'') {
+                    part.trim_end_matches('\'')
+                } else {
+                    part.trim_end_matches('h')
+                };
+                let num: u32 = trimmed
                     .parse()
                     .map_err(|_| Error::Invalid(format!("Invalid hardened index: {}", part)))?;
                 indices.push(HDPathIndex::IndexHardened(num));

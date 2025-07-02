@@ -34,3 +34,32 @@ pub use self::mnemonic::{Mnemonic, MnemonicBuilder};
 pub use self::mnemonic_type::MnemonicType;
 pub use language::Language;
 pub use walletd_mnemonics_core::Seed;
+
+// Type aliases for backwards compatibility
+pub type MnemonicStyleBuilder = MnemonicBuilder;
+
+// Extension trait for additional mnemonic functionality
+pub trait MnemonicExt {
+    fn to_seed(&self) -> Seed;
+    fn phrase(&self) -> &str;
+    fn language(&self) -> Language;
+    fn mnemonic_type(&self) -> MnemonicType;
+}
+
+impl MnemonicExt for Mnemonic {
+    fn to_seed(&self) -> Seed {
+        self.to_seed()
+    }
+    
+    fn phrase(&self) -> &str {
+        self.phrase()
+    }
+    
+    fn language(&self) -> Language {
+        self.language()
+    }
+    
+    fn mnemonic_type(&self) -> MnemonicType {
+        self.mnemonic_type()
+    }
+}
