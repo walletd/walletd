@@ -73,6 +73,17 @@ impl<T: UnsignedInt> DoSerialize for VarInt<T> {
     }
 }
 
+use serde::{Serialize, Serializer};
+
+impl<T: Serialize + UnsignedInt> Serialize for VarInt<T> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.0.serialize(serializer)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -103,16 +114,5 @@ mod tests {
         let encoded_bytes_5 = varint_5.encode_to_bytes();
         let expected_bytes_5: Vec<u8> = vec![0];
         assert_eq!(encoded_bytes_5, expected_bytes_5);
-    }
-}
-
-use serde::{Serialize, Serializer};
-
-impl<T: Serialize + UnsignedInt> Serialize for VarInt<T> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        self.0.serialize(serializer)
     }
 }

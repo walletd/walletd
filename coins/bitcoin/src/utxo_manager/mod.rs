@@ -14,6 +14,12 @@ pub struct TrackedUtxo {
     pub confirmations: u32,
 }
 
+impl Default for UtxoManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl UtxoManager {
     pub fn new() -> Self {
         Self {

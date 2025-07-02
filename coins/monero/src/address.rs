@@ -106,10 +106,10 @@ impl Display for AddressType {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             AddressType::Standard => write!(f, "Standard Address"),
-            AddressType::Integrated(id) => write!(f, "Integrated Address, Payment ID: {}", id),
+            AddressType::Integrated(id) => write!(f, "Integrated Address, Payment ID: {id}"),
             AddressType::Subaddress(index) => {
                 if let Some(index) = index {
-                    write!(f, "Subaddress, {}", index)
+                    write!(f, "Subaddress, {index}")
                 } else {
                     write!(f, "Subaddress")
                 }
@@ -319,6 +319,29 @@ impl SubaddressKeys {
     }
 }
 
+fn network_from_u8(byte: u8) -> Result<Network, Error> {
+    match byte {
+        18 | 19 | 42 => Ok(Network::Mainnet),
+        53 | 43 | 63 => Ok(Network::Testnet),
+        24 | 25 | 36 => Ok(Network::Stagenet),
+        _ => Err(Error::InvalidFormat),
+    }
+}
+
+fn network_to_u8(network: &Network, addr_type: &AddressType) -> u8 {
+    match (network, addr_type) {
+        (Network::Mainnet, AddressType::Standard) => 18,
+        (Network::Mainnet, AddressType::Integrated(_)) => 19,
+        (Network::Mainnet, AddressType::Subaddress(_)) => 42,
+        (Network::Testnet, AddressType::Standard) => 53,
+        (Network::Testnet, AddressType::Integrated(_)) => 43,
+        (Network::Testnet, AddressType::Subaddress(_)) => 63,
+        (Network::Stagenet, AddressType::Standard) => 24,
+        (Network::Stagenet, AddressType::Integrated(_)) => 25,
+        (Network::Stagenet, AddressType::Subaddress(_)) => 36,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use hex_literal::hex;
@@ -419,28 +442,5 @@ mod tests {
         .unwrap();
         assert_eq!(address_from_str, address_from_keys);
         assert_eq!(address_from_keys.to_string(), address.to_string());
-    }
-}
-
-fn network_from_u8(byte: u8) -> Result<Network, Error> {
-    match byte {
-        18 | 19 | 42 => Ok(Network::Mainnet),
-        53 | 43 | 63 => Ok(Network::Testnet),
-        24 | 25 | 36 => Ok(Network::Stagenet),
-        _ => Err(Error::InvalidFormat),
-    }
-}
-
-fn network_to_u8(network: &Network, addr_type: &AddressType) -> u8 {
-    match (network, addr_type) {
-        (Network::Mainnet, AddressType::Standard) => 18,
-        (Network::Mainnet, AddressType::Integrated(_)) => 19,
-        (Network::Mainnet, AddressType::Subaddress(_)) => 42,
-        (Network::Testnet, AddressType::Standard) => 53,
-        (Network::Testnet, AddressType::Integrated(_)) => 43,
-        (Network::Testnet, AddressType::Subaddress(_)) => 63,
-        (Network::Stagenet, AddressType::Standard) => 24,
-        (Network::Stagenet, AddressType::Integrated(_)) => 25,
-        (Network::Stagenet, AddressType::Subaddress(_)) => 36,
     }
 }

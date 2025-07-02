@@ -11,8 +11,10 @@ pub use mock::{Balance, ChannelInfo, Invoice, NodeInfo, Payment, PaymentStatus};
 
 /// Lightning Network configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Default)]
 pub enum LightningConfig {
     /// Mock implementation for development
+    #[default]
     Mock,
 
     /// Voltage Lightning Node Service
@@ -20,20 +22,6 @@ pub enum LightningConfig {
     Voltage { api_key: String, node_url: String },
 }
 
-impl Default for LightningConfig {
-    fn default() -> Self {
-        // Check for Voltage credentials in environment
-        #[cfg(feature = "lightning-voltage")]
-        if let (Ok(api_key), Ok(node_url)) = (
-            std::env::var("VOLTAGE_API_KEY"),
-            std::env::var("VOLTAGE_NODE_URL"),
-        ) {
-            return LightningConfig::Voltage { api_key, node_url };
-        }
-
-        LightningConfig::Mock
-    }
-}
 
 /// Lightning Network manager
 pub struct LightningManager {

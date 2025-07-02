@@ -84,6 +84,36 @@ impl FromStr for PublicKey {
         Self::from_slice(&bytes)
     }
 }
+impl PublicKey {
+    /// Decompresses the public key to an EdwardsPoint
+    pub fn decompress(&self) -> EdwardsPoint {
+        self.0.decompress().unwrap_or_else(|| {
+            // Return identity if decompression fails
+            EdwardsPoint::identity()
+        })
+    }
+}
+
+impl serde::Serialize for PublicKey {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_bytes(self.as_slice())
+    }
+}
+
+impl PublicKey {
+    pub fn to_monero(&self) -> monero::PublicKey {
+        let bytes = self.0.to_bytes();
+        monero::PublicKey::from_slice(&bytes).unwrap()
+    }
+
+    pub fn from_monero(key: &monero::PublicKey) -> Self {
+        let bytes = key.as_bytes();
+        PublicKey(CompressedEdwardsY::from_slice(bytes).unwrap())
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -147,7 +177,7 @@ mod tests {
     fn test_display() {
         let value = [1u8; 32];
         let public_key = PublicKey(CompressedEdwardsY(value));
-        let hex_string = format!("{}", public_key);
+        let hex_string = format!("{public_key}");
         assert_eq!(hex_string, hex::encode(value));
     }
 
@@ -170,35 +200,5 @@ mod tests {
 
         let key_2 = hex!("bd85a61bae0c101d826cbed54b1290f941d26e70607a07fc6f0ad611eb8f70a6");
         assert!(PublicKey::from_slice(&key_2).is_ok());
-    }
-}
-impl PublicKey {
-    /// Decompresses the public key to an EdwardsPoint
-    pub fn decompress(&self) -> EdwardsPoint {
-        self.0.decompress().unwrap_or_else(|| {
-            // Return identity if decompression fails
-            EdwardsPoint::identity()
-        })
-    }
-}
-
-impl serde::Serialize for PublicKey {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_bytes(self.as_slice())
-    }
-}
-
-impl PublicKey {
-    pub fn to_monero(&self) -> monero::PublicKey {
-        let bytes = self.0.to_bytes();
-        monero::PublicKey::from_slice(&bytes).unwrap()
-    }
-
-    pub fn from_monero(key: &monero::PublicKey) -> Self {
-        let bytes = key.as_bytes();
-        PublicKey(CompressedEdwardsY::from_slice(bytes).unwrap())
     }
 }

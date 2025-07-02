@@ -56,7 +56,7 @@ impl fmt::LowerHex for Seed {
         }
 
         for byte in &self.bytes {
-            write!(f, "{:02x}", byte)?;
+            write!(f, "{byte:02x}")?;
         }
 
         Ok(())
@@ -70,7 +70,7 @@ impl fmt::UpperHex for Seed {
         }
 
         for byte in &self.bytes {
-            write!(f, "{:02X}", byte)?;
+            write!(f, "{byte:02X}")?;
         }
 
         Ok(())

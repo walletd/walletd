@@ -145,7 +145,7 @@ pub fn calculate_fee_from_weight(
 }
 
 pub fn calculate_fee(fee_per_kb: u64, bytes: u64) -> MoneroAmount {
-    let kb = (bytes + 1023) / 1024;
+    let kb = bytes.div_ceil(1024);
     MoneroAmount::from_piconero(kb * fee_per_kb)
 }
 

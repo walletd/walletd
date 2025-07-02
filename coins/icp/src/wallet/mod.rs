@@ -57,7 +57,7 @@ impl IcpWallet {
         let mut hasher = Sha224::new();
         hasher.update(b"\x0Aaccount-id");
         hasher.update(principal.as_slice());
-        hasher.update(&[0u8; 32]);
+        hasher.update([0u8; 32]);
         hex::encode(hasher.finalize())
     }
 

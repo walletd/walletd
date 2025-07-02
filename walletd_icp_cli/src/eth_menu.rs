@@ -87,8 +87,6 @@ pub async fn handle_eth_menu(
     }
 }
 
-
-
 async fn handle_swap_tokens() -> Result<(), String> {
     println!("\n=== Swap Tokens (Uniswap) ===");
 
@@ -386,5 +384,3 @@ async fn handle_smart_contract() -> Result<(), String> {
     io::stdin().read_line(&mut _contract).ok();
     Ok(())
 }
-
-

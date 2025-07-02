@@ -4,6 +4,12 @@ pub struct SecureKeyStore {
     encrypted_keys: Vec<u8>,
 }
 
+impl Default for SecureKeyStore {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SecureKeyStore {
     pub fn new() -> Self {
         Self {

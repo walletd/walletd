@@ -1,5 +1,5 @@
-use walletd_hd_key::slip44::{Coin, Symbol};
 use std::str::FromStr;
+use walletd_hd_key::slip44::{Coin, Symbol};
 use walletd_hd_key::{
     Error, ExtendedPrivateKey, ExtendedPublicKey, HDKey, HDNetworkType, HDPath, HDPurpose, Seed,
 };

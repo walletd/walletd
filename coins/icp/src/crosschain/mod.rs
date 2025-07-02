@@ -14,6 +14,12 @@ pub struct CrossChainCoordinator {
     _active_swaps: HashMap<String, AtomicSwap>,
 }
 
+impl Default for CrossChainCoordinator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl CrossChainCoordinator {
     pub fn new() -> Self {
         Self {

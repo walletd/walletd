@@ -208,7 +208,7 @@ impl WordList {
         let index = self.trimmed_word_map.get(&trimmed_word);
         match index {
             None => Err(Error::InvalidWord(
-                format!("trimmed_word {}", trimmed_word),
+                format!("trimmed_word {trimmed_word}"),
                 self.language.to_string(),
             )),
             Some(i) => Ok(*i),
@@ -244,8 +244,7 @@ impl WordList {
     }
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, enum_iterator::Sequence)]
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, enum_iterator::Sequence, Default)]
 pub enum Language {
     #[default]
     English,
@@ -261,7 +260,6 @@ pub enum Language {
     Russian,
     Spanish,
 }
-
 
 impl FromStr for Language {
     type Err = Error;

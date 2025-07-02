@@ -66,6 +66,12 @@ pub struct MockLightning {
     nodes: Mutex<HashMap<String, LightningNode>>,
 }
 
+impl Default for MockLightning {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MockLightning {
     pub fn new() -> Self {
         Self {
@@ -89,7 +95,7 @@ impl MockLightning {
         Ok(NodeInfo {
             _____user_id: user_id.to_string(),
             node_id,
-            alias: format!("{}'s Lightning Node", user_id),
+            alias: format!("{user_id}'s Lightning Node"),
             num_peers: 0,
             num_channels: 0,
             listening_port: 9735,
@@ -105,7 +111,7 @@ impl MockLightning {
         Ok(NodeInfo {
             _____user_id: user_id.to_string(),
             node_id: node.node_id.clone(),
-            alias: format!("{}'s Lightning Node", user_id),
+            alias: format!("{user_id}'s Lightning Node"),
             num_peers: node.peers.len() as u32,
             num_channels: node.channels.len() as u32,
             listening_port: 9735,

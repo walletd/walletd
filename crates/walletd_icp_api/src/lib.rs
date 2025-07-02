@@ -22,7 +22,7 @@ impl fmt::Display for IcpWalletError {
         match self {
             IcpWalletError::WalletNotFound => write!(f, "Wallet not found"),
             IcpWalletError::InsufficientFunds => write!(f, "Insufficient funds"),
-            IcpWalletError::Custom(msg) => write!(f, "Error: {}", msg),
+            IcpWalletError::Custom(msg) => write!(f, "Error: {msg}"),
         }
     }
 }
@@ -223,15 +223,15 @@ impl WalletDIcpApi {
                 // Mock a response
                 let result: u64 = if method == "icrc1_balance_of" { 0 } else { 1 }; // BlockIndex for approve/transfer_from
                 let encoded = encode_args((result,))
-                    .map_err(|e| IcpWalletError::Custom(format!("Encode failed: {:?}", e)))?;
+                    .map_err(|e| IcpWalletError::Custom(format!("Encode failed: {e:?}")))?;
                 let (res,) = decode_args(&encoded)
-                    .map_err(|e| IcpWalletError::Custom(format!("Decode failed: {:?}", e)))?;
+                    .map_err(|e| IcpWalletError::Custom(format!("Decode failed: {e:?}")))?;
                 Ok(res)
             } else {
                 // Other methods return empty response
                 let result = vec![];
                 let (res,) = decode_args(&result)
-                    .map_err(|e| IcpWalletError::Custom(format!("Decode failed: {:?}", e)))?;
+                    .map_err(|e| IcpWalletError::Custom(format!("Decode failed: {e:?}")))?;
                 Ok(res)
             }
         }
@@ -288,9 +288,7 @@ impl WalletDIcpApi {
             to_address: to_btc_address.to_string(),
         };
         std::println!(
-            "Initiating cross-chain swap: ICP {} to BTC {}",
-            amount,
-            to_btc_address
+            "Initiating cross-chain swap: ICP {amount} to BTC {to_btc_address}"
         );
         wallet.balance -= amount;
         wallet.cross_chain_txs.push(tx);
@@ -301,7 +299,9 @@ impl WalletDIcpApi {
 
     pub fn resolve_did(&self, did: &str) -> Option<Principal> {
         if did.starts_with("did:icp:") {
-            let public_key_bytes = did.strip_prefix("did:icp:").and_then(|s| hex::decode(s).ok())?;
+            let public_key_bytes = did
+                .strip_prefix("did:icp:")
+                .and_then(|s| hex::decode(s).ok())?;
             Some(Principal::self_authenticating(public_key_bytes))
         } else {
             None
@@ -380,7 +380,7 @@ impl IcpWalletApi for WalletDIcpApi {
             signature: Vec::new(),
         };
         let tx_bytes = bincode::serialize(&tx)
-            .map_err(|e| IcpWalletError::Custom(format!("Serialization failed: {}", e)))?;
+            .map_err(|e| IcpWalletError::Custom(format!("Serialization failed: {e}")))?;
         let signature = wallet.signing_key.sign(&tx_bytes);
         let signed_tx = IcpTransaction {
             signature: signature.to_bytes().to_vec(),
@@ -459,7 +459,7 @@ impl IcpWalletApi for WalletDIcpApi {
         let result: u64 = self
             .call_canister(self.ledger_canister, "icrc2_approve", (approve_args,))
             .await
-            .map_err(|e| IcpWalletError::Custom(format!("Approve failed: {:?}", e)))?;
+            .map_err(|e| IcpWalletError::Custom(format!("Approve failed: {e:?}")))?;
 
         self.locked = false;
         Ok(result)
@@ -522,7 +522,7 @@ impl IcpWalletApi for WalletDIcpApi {
                 (transfer_args,),
             )
             .await
-            .map_err(|e| IcpWalletError::Custom(format!("Transfer from failed: {:?}", e)))?;
+            .map_err(|e| IcpWalletError::Custom(format!("Transfer from failed: {e:?}")))?;
 
         // Update balances after successful canister call
         if let Some(wallet) = self.wallets.get_mut(&from_principal) {
@@ -618,7 +618,7 @@ impl IcpWalletApi for WalletDIcpApi {
                     (transfer_args,),
                 )
                 .await
-                .map_err(|e| IcpWalletError::Custom(format!("Transfer from failed: {:?}", e)))?;
+                .map_err(|e| IcpWalletError::Custom(format!("Transfer from failed: {e:?}")))?;
             results.push(result);
         }
 
@@ -662,183 +662,6 @@ impl IcpWalletApi for WalletDIcpApi {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use candid::{CandidType, Principal};
-
-    #[derive(CandidType)]
-    struct Account {
-        owner: Principal,
-        subaccount: Option<Vec<u8>>,
-    }
-
-    #[tokio::test]
-    async fn test_wallet_creation() -> Result<(), IcpWalletError> {
-        let mut walletd = WalletDIcpApi::new_test()?;
-        let principal = walletd.create_wallet()?;
-        assert!(walletd.balance(&principal.to_text()).await.is_ok());
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_transfer() -> Result<(), IcpWalletError> {
-        let mut walletd = WalletDIcpApi::new_test()?;
-        let from = walletd.generate_address().await?;
-        let to = walletd.generate_address().await?;
-        let from_principal = Principal::from_text(&from)
-            .map_err(|e| IcpWalletError::Custom(format!("Failed to parse principal: {}", e)))?;
-
-        walletd.wallets.get_mut(&from_principal).unwrap().balance = 100_000_000;
-        let result: Result<Vec<u8>, String> = Ok(vec![]);
-        assert!(result.is_ok());
-        let result = walletd.transfer(&from, &to, 50_000_000).await;
-        assert!(result.is_ok());
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_canister_call() -> Result<(), IcpWalletError> {
-        let walletd = WalletDIcpApi::new_test()?;
-        let canister_id = Principal::from_text("uxrrr-q7777-77774-qaaaq-cai")
-            .map_err(|e| IcpWalletError::Custom(e.to_string()))?;
-        let result: Result<u64, IcpWalletError> = walletd
-            .call_canister(canister_id, "icrc1_balance_of", (canister_id,))
-            .await;
-        assert!(result.is_ok() || result.is_err());
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_cross_chain_swap() -> Result<(), IcpWalletError> {
-        let mut walletd = WalletDIcpApi::new_test()?;
-        let from = walletd.generate_address().await?;
-        let from_principal = Principal::from_text(&from)
-            .map_err(|e| IcpWalletError::Custom(format!("Failed to parse principal: {}", e)))?;
-        walletd.wallets.get_mut(&from_principal).unwrap().balance = 100_000_000;
-        let result = walletd
-            .swap_icp_to_btc(
-                from_principal,
-                "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-                50_000_000,
-            )
-            .await;
-        assert!(result.is_ok());
-        Ok(())
-    }
-
-    #[test]
-    fn test_hd_wallet() {
-        let seed = [0u8; 32];
-        let mut hd_wallet = IcpHdWallet::from_seed(seed);
-        let key = hd_wallet.derive_key(0);
-        assert!(key.verifying_key().to_bytes().len() > 0);
-    }
-
-    #[tokio::test]
-    async fn test_real_canister_call() -> Result<(), IcpWalletError> {
-        let mut walletd = WalletDIcpApi::new_test()?;
-        let principal_str = walletd.generate_address().await?;
-        std::println!("Generated principal string: {}", principal_str);
-        let principal = Principal::from_text(&principal_str)
-            .map_err(|e| IcpWalletError::Custom(format!("Failed to parse principal: {}", e)))?;
-        std::println!("Parsed principal: {}", principal);
-        std::println!("Ledger canister: {}", walletd.ledger_canister);
-
-        let account = Account {
-            owner: principal,
-            subaccount: None,
-        };
-        let result: Result<u64, IcpWalletError> = walletd
-            .call_canister(walletd.ledger_canister, "icrc1_balance_of", (account,))
-            .await;
-
-        match &result {
-            Ok(balance) => std::println!("Balance: {} e8s", balance),
-            Err(IcpWalletError::Custom(msg)) => std::println!("Canister call error: {}", msg),
-            Err(e) => std::println!("Unexpected error: {}", e),
-        }
-        assert!(result.is_ok() || result.is_err());
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_approve() -> Result<(), IcpWalletError> {
-        let mut walletd = WalletDIcpApi::new_test()?;
-        let from = walletd.generate_address().await?;
-        let spender = walletd.generate_address().await?;
-        let from_principal = Principal::from_text(&from)
-            .map_err(|e| IcpWalletError::Custom(format!("Failed to parse principal: {}", e)))?;
-        walletd.wallets.get_mut(&from_principal).unwrap().balance = 100_000_000;
-        let result = walletd.approve(&from, &spender, 50_000_000).await;
-        assert!(result.is_ok());
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_transfer_from() -> Result<(), IcpWalletError> {
-        let mut walletd = WalletDIcpApi::new_test()?;
-        let from = walletd.generate_address().await?;
-        let to = walletd.generate_address().await?;
-        let spender = walletd.generate_address().await?;
-        let from_principal = Principal::from_text(&from)
-            .map_err(|e| IcpWalletError::Custom(format!("Failed to parse principal: {}", e)))?;
-        walletd.wallets.get_mut(&from_principal).unwrap().balance = 100_000_000;
-        let _ = walletd.approve(&from, &spender, 50_000_000).await?;
-        let result = walletd
-            .transfer_from(&spender, &from, &to, 25_000_000)
-            .await;
-        assert!(result.is_ok());
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_did() -> Result<(), IcpWalletError> {
-        let mut walletd = WalletDIcpApi::new_test()?;
-        let principal = walletd.create_wallet()?;
-        let did = walletd.wallets.get(&principal).unwrap().create_did();
-        std::println!("DID: {}", did);
-        let resolved = walletd.resolve_did(&did).unwrap();
-        assert_eq!(resolved, principal);
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_high_volume_transactions() -> Result<(), IcpWalletError> {
-        let mut walletd = WalletDIcpApi::new_test()?;
-        let from = walletd.generate_address().await?;
-        let to = walletd.generate_address().await?;
-        let from_principal = Principal::from_text(&from)
-            .map_err(|e| IcpWalletError::Custom(format!("Failed to parse principal: {}", e)))?;
-        walletd.wallets.get_mut(&from_principal).unwrap().balance = 1_000_000_000;
-        for _ in 0..100 {
-            walletd.transfer(&from, &to, 1_000_000).await?;
-        }
-        assert_eq!(walletd.balance(&from).await?, 900_000_000);
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_batch_transfer() -> Result<(), IcpWalletError> {
-        let mut walletd = WalletDIcpApi::new_test()?;
-        let from = walletd.generate_address().await?;
-        let to1 = walletd.generate_address().await?;
-        let to2 = walletd.generate_address().await?;
-        let from_principal = Principal::from_text(&from)
-            .map_err(|e| IcpWalletError::Custom(format!("Failed to parse principal: {}", e)))?;
-        walletd.wallets.get_mut(&from_principal).unwrap().balance = 2_000_000;
-
-        let transfers = vec![(to1.clone(), 500_000), (to2.clone(), 500_000)];
-        let result = walletd.batch_transfer(&from, transfers).await?;
-        assert_eq!(result, vec![1, 1]); // Mocked block indices
-
-        assert_eq!(walletd.balance(&from).await?, 1_000_000);
-        assert_eq!(walletd.balance(&to1).await?, 500_000);
-        assert_eq!(walletd.balance(&to2).await?, 500_000);
-        Ok(())
-    }
-}
-
 // HD Wallet (Phase 1)
 pub struct IcpHdWallet {
     seed: [u8; 32],
@@ -872,5 +695,182 @@ impl Drop for IcpHdWallet {
             let mut bytes = key.to_bytes();
             bytes.zeroize();
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use candid::{CandidType, Principal};
+
+    #[derive(CandidType)]
+    struct Account {
+        owner: Principal,
+        subaccount: Option<Vec<u8>>,
+    }
+
+    #[tokio::test]
+    async fn test_wallet_creation() -> Result<(), IcpWalletError> {
+        let mut walletd = WalletDIcpApi::new_test()?;
+        let principal = walletd.create_wallet()?;
+        assert!(walletd.balance(&principal.to_text()).await.is_ok());
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_transfer() -> Result<(), IcpWalletError> {
+        let mut walletd = WalletDIcpApi::new_test()?;
+        let from = walletd.generate_address().await?;
+        let to = walletd.generate_address().await?;
+        let from_principal = Principal::from_text(&from)
+            .map_err(|e| IcpWalletError::Custom(format!("Failed to parse principal: {e}")))?;
+
+        walletd.wallets.get_mut(&from_principal).unwrap().balance = 100_000_000;
+        let result: Result<Vec<u8>, String> = Ok(vec![]);
+        assert!(result.is_ok());
+        let result = walletd.transfer(&from, &to, 50_000_000).await;
+        assert!(result.is_ok());
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_canister_call() -> Result<(), IcpWalletError> {
+        let walletd = WalletDIcpApi::new_test()?;
+        let canister_id = Principal::from_text("uxrrr-q7777-77774-qaaaq-cai")
+            .map_err(|e| IcpWalletError::Custom(e.to_string()))?;
+        let result: Result<u64, IcpWalletError> = walletd
+            .call_canister(canister_id, "icrc1_balance_of", (canister_id,))
+            .await;
+        assert!(result.is_ok() || result.is_err());
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_cross_chain_swap() -> Result<(), IcpWalletError> {
+        let mut walletd = WalletDIcpApi::new_test()?;
+        let from = walletd.generate_address().await?;
+        let from_principal = Principal::from_text(&from)
+            .map_err(|e| IcpWalletError::Custom(format!("Failed to parse principal: {e}")))?;
+        walletd.wallets.get_mut(&from_principal).unwrap().balance = 100_000_000;
+        let result = walletd
+            .swap_icp_to_btc(
+                from_principal,
+                "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+                50_000_000,
+            )
+            .await;
+        assert!(result.is_ok());
+        Ok(())
+    }
+
+    #[test]
+    fn test_hd_wallet() {
+        let seed = [0u8; 32];
+        let mut hd_wallet = IcpHdWallet::from_seed(seed);
+        let key = hd_wallet.derive_key(0);
+        assert!(!key.verifying_key().to_bytes().is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_real_canister_call() -> Result<(), IcpWalletError> {
+        let mut walletd = WalletDIcpApi::new_test()?;
+        let principal_str = walletd.generate_address().await?;
+        std::println!("Generated principal string: {principal_str}");
+        let principal = Principal::from_text(&principal_str)
+            .map_err(|e| IcpWalletError::Custom(format!("Failed to parse principal: {e}")))?;
+        std::println!("Parsed principal: {principal}");
+        std::println!("Ledger canister: {}", walletd.ledger_canister);
+
+        let account = Account {
+            owner: principal,
+            subaccount: None,
+        };
+        let result: Result<u64, IcpWalletError> = walletd
+            .call_canister(walletd.ledger_canister, "icrc1_balance_of", (account,))
+            .await;
+
+        match &result {
+            Ok(balance) => std::println!("Balance: {balance} e8s"),
+            Err(IcpWalletError::Custom(msg)) => std::println!("Canister call error: {msg}"),
+            Err(e) => std::println!("Unexpected error: {e}"),
+        }
+        assert!(result.is_ok() || result.is_err());
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_approve() -> Result<(), IcpWalletError> {
+        let mut walletd = WalletDIcpApi::new_test()?;
+        let from = walletd.generate_address().await?;
+        let spender = walletd.generate_address().await?;
+        let from_principal = Principal::from_text(&from)
+            .map_err(|e| IcpWalletError::Custom(format!("Failed to parse principal: {e}")))?;
+        walletd.wallets.get_mut(&from_principal).unwrap().balance = 100_000_000;
+        let result = walletd.approve(&from, &spender, 50_000_000).await;
+        assert!(result.is_ok());
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_transfer_from() -> Result<(), IcpWalletError> {
+        let mut walletd = WalletDIcpApi::new_test()?;
+        let from = walletd.generate_address().await?;
+        let to = walletd.generate_address().await?;
+        let spender = walletd.generate_address().await?;
+        let from_principal = Principal::from_text(&from)
+            .map_err(|e| IcpWalletError::Custom(format!("Failed to parse principal: {e}")))?;
+        walletd.wallets.get_mut(&from_principal).unwrap().balance = 100_000_000;
+        let _ = walletd.approve(&from, &spender, 50_000_000).await?;
+        let result = walletd
+            .transfer_from(&spender, &from, &to, 25_000_000)
+            .await;
+        assert!(result.is_ok());
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_did() -> Result<(), IcpWalletError> {
+        let mut walletd = WalletDIcpApi::new_test()?;
+        let principal = walletd.create_wallet()?;
+        let did = walletd.wallets.get(&principal).unwrap().create_did();
+        std::println!("DID: {did}");
+        let resolved = walletd.resolve_did(&did).unwrap();
+        assert_eq!(resolved, principal);
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_high_volume_transactions() -> Result<(), IcpWalletError> {
+        let mut walletd = WalletDIcpApi::new_test()?;
+        let from = walletd.generate_address().await?;
+        let to = walletd.generate_address().await?;
+        let from_principal = Principal::from_text(&from)
+            .map_err(|e| IcpWalletError::Custom(format!("Failed to parse principal: {e}")))?;
+        walletd.wallets.get_mut(&from_principal).unwrap().balance = 1_000_000_000;
+        for _ in 0..100 {
+            walletd.transfer(&from, &to, 1_000_000).await?;
+        }
+        assert_eq!(walletd.balance(&from).await?, 900_000_000);
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_batch_transfer() -> Result<(), IcpWalletError> {
+        let mut walletd = WalletDIcpApi::new_test()?;
+        let from = walletd.generate_address().await?;
+        let to1 = walletd.generate_address().await?;
+        let to2 = walletd.generate_address().await?;
+        let from_principal = Principal::from_text(&from)
+            .map_err(|e| IcpWalletError::Custom(format!("Failed to parse principal: {e}")))?;
+        walletd.wallets.get_mut(&from_principal).unwrap().balance = 2_000_000;
+
+        let transfers = vec![(to1.clone(), 500_000), (to2.clone(), 500_000)];
+        let result = walletd.batch_transfer(&from, transfers).await?;
+        assert_eq!(result, vec![1, 1]); // Mocked block indices
+
+        assert_eq!(walletd.balance(&from).await?, 1_000_000);
+        assert_eq!(walletd.balance(&to1).await?, 500_000);
+        assert_eq!(walletd.balance(&to2).await?, 500_000);
+        Ok(())
     }
 }

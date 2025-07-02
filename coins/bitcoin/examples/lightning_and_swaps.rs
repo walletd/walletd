@@ -41,7 +41,7 @@ async fn main() -> anyhow::Result<()> {
         println!("\n⚡ Lightning Network: DISABLED");
         println!("   To enable: cargo run --example lightning_and_swaps --features lightning");
         match lightning.create_node("alice", [0u8; 32]).await {
-            Err(e) => println!("   Expected error: {}", e),
+            Err(e) => println!("   Expected error: {e}"),
             Ok(_) => println!("   Unexpected success"),
         }
     }
@@ -63,7 +63,7 @@ async fn main() -> anyhow::Result<()> {
         let route = swap_coordinator
             .create_swap_route(from, to, 100_000)
             .await?;
-        println!("   {:?} → {:?}: {:?}", from, to, route);
+        println!("   {from:?} → {to:?}: {route:?}");
     }
 
     // Simulate a swap
@@ -76,7 +76,7 @@ async fn main() -> anyhow::Result<()> {
             "test-icp-principal",
         )
         .await?;
-    println!("   Swap ID: {}", swap_id);
+    println!("   Swap ID: {swap_id}");
     println!("   Status: Initiated");
     println!("   From: {} sats (BTC)", 100_000);
     println!("   To: {} e8s (ICP)", 1_000_000);

@@ -1,8 +1,6 @@
 use reqwest;
 use std::time::Duration;
 
-
-
 pub async fn create_funded_testnet_account() -> Result<(String, String, f64), String> {
     println!("\n🔄 Creating new Hedera testnet account...");
     println!("   Using Hedera Portal API...");

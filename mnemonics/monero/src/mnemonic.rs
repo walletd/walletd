@@ -140,7 +140,11 @@ impl Mnemonic {
     }
 
     /// Creates a mnemonic from a phrase with specified language and optional passphrase
-    pub fn from_phrase(language: Language, phrase: &str, passphrase: Option<&str>) -> Result<Self, Error> {
+    pub fn from_phrase(
+        language: Language,
+        phrase: &str,
+        passphrase: Option<&str>,
+    ) -> Result<Self, Error> {
         let mnemonic_type = MnemonicType::from_phrase(phrase)?;
         let seed = Mnemonic::create_seed(language, phrase, mnemonic_type, passphrase)?;
 
@@ -301,8 +305,7 @@ impl Mnemonic {
 
             if x % n != w1 {
                 return Err(Error::ErrorInWords(format!(
-                    "Invalid mnemonic phrase {}, cannot be decoded",
-                    mnemonic_phrase
+                    "Invalid mnemonic phrase {mnemonic_phrase}, cannot be decoded"
                 )));
             }
             buffer.extend_from_slice(&u32::to_le_bytes(x as u32));
@@ -313,8 +316,7 @@ impl Mnemonic {
         let found = WordList::to_trimmed(checksum, prefix_len);
         if expected != found {
             return Err(Error::ErrorInWords(format!(
-                "The mnemonic phrase has an invalid checksum word, expected {}, found {}",
-                expected, found
+                "The mnemonic phrase has an invalid checksum word, expected {expected}, found {found}"
             )));
         }
 

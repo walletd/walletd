@@ -83,6 +83,17 @@ impl FromStr for PrivateKey {
         Self::from_slice(&bytes)
     }
 }
+impl PrivateKey {
+    pub fn to_monero(&self) -> monero::PrivateKey {
+        let bytes = self.0.to_bytes();
+        monero::PrivateKey::from_slice(&bytes).unwrap()
+    }
+
+    pub fn from_monero(key: &monero::PrivateKey) -> Self {
+        let bytes = key.as_bytes();
+        PrivateKey(Scalar::from_bytes_mod_order(bytes.try_into().unwrap()))
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -132,7 +143,7 @@ mod tests {
     fn test_display() {
         let value = [1u8; 32];
         let private_key = PrivateKey(Scalar::from_bytes_mod_order(value));
-        let s = format!("{}", private_key);
+        let s = format!("{private_key}");
         assert_eq!(s, hex::encode(value));
     }
 
@@ -165,16 +176,5 @@ mod tests {
             PrivateKey::from_slice(&bytes_3).unwrap_err(),
             Error::NotCanonicalScalar
         ));
-    }
-}
-impl PrivateKey {
-    pub fn to_monero(&self) -> monero::PrivateKey {
-        let bytes = self.0.to_bytes();
-        monero::PrivateKey::from_slice(&bytes).unwrap()
-    }
-
-    pub fn from_monero(key: &monero::PrivateKey) -> Self {
-        let bytes = key.as_bytes();
-        PrivateKey(Scalar::from_bytes_mod_order(bytes.try_into().unwrap()))
     }
 }

@@ -50,15 +50,15 @@ impl MnemonicExt for Mnemonic {
     fn to_seed(&self) -> Seed {
         self.to_seed()
     }
-    
+
     fn phrase(&self) -> &str {
         self.phrase()
     }
-    
+
     fn language(&self) -> Language {
         self.language()
     }
-    
+
     fn mnemonic_type(&self) -> MnemonicType {
         self.mnemonic_type()
     }

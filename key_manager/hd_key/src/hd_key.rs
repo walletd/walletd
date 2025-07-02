@@ -47,7 +47,7 @@ impl fmt::LowerHex for ExtendedPrivateKey {
             f.write_str("0x")?;
         }
         for byte in &self.to_bytes() {
-            write!(f, "{:02x}", byte)?;
+            write!(f, "{byte:02x}")?;
         }
         Ok(())
     }
@@ -80,7 +80,7 @@ impl fmt::LowerHex for ExtendedPublicKey {
             f.write_str("0x")?;
         }
         for byte in &self.to_bytes() {
-            write!(f, "{:02x}", byte)?;
+            write!(f, "{byte:02x}")?;
         }
         Ok(())
     }
@@ -214,8 +214,7 @@ impl HDKey {
                 }
                 _ => {
                     return Err(Error::Invalid(format!(
-                    "Not handled, something is wrong with the derivation path specification {:?}",
-                    item
+                    "Not handled, something is wrong with the derivation path specification {item:?}"
                 )))
                 }
             }
@@ -234,8 +233,7 @@ impl HDKey {
 
         if deriv_path.is_empty() || deriv_path.at(0)? != HDPathIndex::Master {
             return Err(Error::Invalid(format!(
-                "Invalid derivation path {:?}",
-                deriv_path
+                "Invalid derivation path {deriv_path:?}"
             )));
         }
 
@@ -379,7 +377,7 @@ impl HDKey {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use hex;
+    
 
     #[test]
     fn test_new() {

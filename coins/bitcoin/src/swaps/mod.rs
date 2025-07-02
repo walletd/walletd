@@ -37,6 +37,12 @@ pub enum SwapStatus {
     Failed,
 }
 
+impl Default for SwapCoordinator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SwapCoordinator {
     pub fn new() -> Self {
         Self {

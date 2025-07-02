@@ -2,8 +2,6 @@ use reqwest;
 use std::time::Duration;
 use tokio::time::sleep;
 
-
-
 pub async fn auto_fund_with_amount() -> Result<(), String> {
     use crate::wallet_integration::WALLET_MANAGER;
     use std::io::{self, Write};

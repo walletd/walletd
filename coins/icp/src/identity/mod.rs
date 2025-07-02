@@ -27,7 +27,7 @@ pub struct VerificationKey {
 
 impl DecentralizedIdentity {
     pub fn create(principal: Principal) -> Result<Self> {
-        let did = format!("did:icp:{}", principal);
+        let did = format!("did:icp:{principal}");
         let document = DIDDocument::new(&did, principal)?;
 
         Ok(Self {

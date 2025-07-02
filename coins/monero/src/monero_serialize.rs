@@ -161,8 +161,21 @@ impl DoSerialize for usize {
     /// Serializes a `usize` value into the binary data and JSON stream.
     fn do_serialize(&self, serialized: &mut SerializedArchive) -> Result<(), Error> {
         serialized.data.extend_from_slice(&self.to_le_bytes());
-        write!(serialized.json_stream, "{}", self)?;
+        write!(serialized.json_stream, "{self}")?;
         Ok(())
+    }
+}
+impl SerializedArchive {
+    pub fn serialize_vector_variant<T, V>(
+        &mut self,
+        tag: &str,
+        vec: &Vec<T>,
+        _variant: V,
+    ) -> Result<(), Error>
+    where
+        T: DoSerialize,
+    {
+        self.serialize_vector(tag, vec)
     }
 }
 
@@ -176,7 +189,7 @@ mod tests {
         assert_eq!(archive.data.len(), 0);
         assert_eq!(archive.json_stream, "");
         assert_eq!(archive.depth, 0);
-        assert_eq!(archive.object_begin, false);
+        assert!(!archive.object_begin);
     }
 
     #[test]
@@ -216,18 +229,5 @@ mod tests {
             archive.data,
             vec![1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0]
         );
-    }
-}
-impl SerializedArchive {
-    pub fn serialize_vector_variant<T, V>(
-        &mut self,
-        tag: &str,
-        vec: &Vec<T>,
-        _variant: V,
-    ) -> Result<(), Error>
-    where
-        T: DoSerialize,
-    {
-        self.serialize_vector(tag, vec)
     }
 }

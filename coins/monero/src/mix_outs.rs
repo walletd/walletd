@@ -51,7 +51,7 @@ impl MixAmountAndOuts {
         let mut mix_outs = MixAmountAndOuts {
             ..Default::default()
         };
-        println!("mix_outs from value: {:?}", value);
+        println!("mix_outs from value: {value:?}");
 
         if let Value::Object(object) = value {
             for obj_item in object {

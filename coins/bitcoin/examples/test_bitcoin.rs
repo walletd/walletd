@@ -27,17 +27,17 @@ async fn main() -> anyhow::Result<()> {
     let legacy = manager
         .get_receive_address("test-user", AddressType::Legacy)
         .await?;
-    println!("   Legacy (P2PKH): {}", legacy);
+    println!("   Legacy (P2PKH): {legacy}");
 
     let segwit_p2sh = manager
         .get_receive_address("test-user", AddressType::SegwitP2SH)
         .await?;
-    println!("   SegWit (P2SH): {}", segwit_p2sh);
+    println!("   SegWit (P2SH): {segwit_p2sh}");
 
     let native_segwit = manager
         .get_receive_address("test-user", AddressType::NativeSegwit)
         .await?;
-    println!("   Native SegWit: {}", native_segwit);
+    println!("   Native SegWit: {native_segwit}");
 
     // Check balance
     println!("\n3️⃣ Checking balance...");

@@ -27,8 +27,8 @@ impl Bitstamp {
 
     /// Returns the current BTC/USD rate from Bitstamp
     pub async fn get_rate(base: &str, quote: &str) -> Result<CryptoRate, Error> {
-        let pair = format!("{}{}", base, quote).to_lowercase();
-        let response = reqwest::get(format!("https://www.bitstamp.net/api/v2/ticker/{}/", pair))
+        let pair = format!("{base}{quote}").to_lowercase();
+        let response = reqwest::get(format!("https://www.bitstamp.net/api/v2/ticker/{pair}/"))
             .await?
             .json::<BitstampResponse>()
             .await?;
@@ -57,8 +57,7 @@ impl ExchangeRateHostCrypto {
 
     pub async fn get_rate(base: &str, quote: &str) -> Result<CryptoRate, Error> {
         let response = reqwest::get(format!(
-            "https://api.exchangerate.host/latest?base={}&symbols={}&source=crypto",
-            base, quote
+            "https://api.exchangerate.host/latest?base={base}&symbols={quote}&source=crypto"
         ))
         .await?
         .json::<ExchangeRateHostResponse>()

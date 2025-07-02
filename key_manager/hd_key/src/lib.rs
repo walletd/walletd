@@ -10,8 +10,8 @@ pub use slip44::{Coin, Symbol, BITCOIN};
 pub use walletd_mnemonics_core::Seed;
 
 pub mod prelude {
+    pub use super::Seed;
+    pub use super::{Coin, Symbol, BITCOIN};
     pub use super::{Error, ExtendedPrivateKey, ExtendedPublicKey, HDKey, HDNetworkType};
     pub use super::{HDPath, HDPathBuilder, HDPathIndex, HDPurpose};
-    pub use super::{Coin, Symbol, BITCOIN};
-    pub use super::Seed;
 }

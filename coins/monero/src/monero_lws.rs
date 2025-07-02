@@ -362,7 +362,7 @@ impl MoneroLWSConnection {
             .expect("Expected tx_pub_key to be a valid public key");
             let out_index = output["index"].as_u64().expect("Expected out_index as u64");
 
-            let account_public_keys = MoneroPublicKeys::from_private_keys(&account_private_keys);
+            let account_public_keys = MoneroPublicKeys::from_private_keys(account_private_keys);
             let calculated_key_image = KeyImage::new(
                 &account_private_keys.view_key().to_monero(),
                 &account_private_keys.spend_key().unwrap().to_monero(),

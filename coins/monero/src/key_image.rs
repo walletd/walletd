@@ -33,7 +33,7 @@ impl KeyDerivation {
     /// Generates a key derivation from a public and private key.
     pub fn generate(public_key: &MoneroPublicKey, secret_key: &MoneroPrivateKey) -> Self {
         // Convert MoneroPublicKey to our PublicKey type
-        let our_public_key = PublicKey::from_slice(&public_key.as_bytes())
+        let our_public_key = PublicKey::from_slice(public_key.as_bytes())
             .unwrap_or_else(|_| PublicKey(CompressedEdwardsY::default()));
         let point = our_public_key.decompress();
         let scalar = Scalar::from_bytes_mod_order(secret_key.to_bytes());
@@ -187,6 +187,16 @@ fn hash_to_point(data: &[u8]) -> EdwardsPoint {
     scalar * G_BASEPOINT
 }
 
+impl Serialize for KeyImage {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        // Just serialize the key_image bytes
+        self.key_image.serialize(serializer)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -269,15 +279,5 @@ mod tests {
             .derive_private_key(output_index, &base_key)
             .unwrap();
         assert_eq!(actual_derived_sec_key.as_bytes(), expected_derived_sec_key);
-    }
-}
-
-impl Serialize for KeyImage {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        // Just serialize the key_image bytes
-        self.key_image.serialize(serializer)
     }
 }

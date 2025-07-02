@@ -20,10 +20,23 @@ impl HDPurpose {
         }
     }
 
-    pub fn default_path_specify(&self, coin_type: u32, account: u32, change: u32, address: u32) -> String {
+    pub fn default_path_specify(
+        &self,
+        coin_type: u32,
+        account: u32,
+        change: u32,
+        address: u32,
+    ) -> String {
         match self {
-            HDPurpose::BIP32 => format!("m/{}/{}/{}/{}", coin_type, account, change, address),
-            _ => format!("m/{}'/{}'/{}'/{}'/{}'", self.to_shortform_num(), coin_type, account, change, address)
+            HDPurpose::BIP32 => format!("m/{coin_type}/{account}/{change}/{address}"),
+            _ => format!(
+                "m/{}'/{}'/{}'/{}'/{}'",
+                self.to_shortform_num(),
+                coin_type,
+                account,
+                change,
+                address
+            ),
         }
     }
 }
@@ -51,8 +64,8 @@ impl fmt::Display for HDPathIndex {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             HDPathIndex::Master => write!(f, "m"),
-            HDPathIndex::IndexNotHardened(num) => write!(f, "{}", num),
-            HDPathIndex::IndexHardened(num) => write!(f, "{}'", num),
+            HDPathIndex::IndexNotHardened(num) => write!(f, "{num}"),
+            HDPathIndex::IndexHardened(num) => write!(f, "{num}'"),
         }
     }
 }
@@ -154,12 +167,12 @@ impl HDPath {
                 };
                 let num: u32 = trimmed
                     .parse()
-                    .map_err(|_| Error::Invalid(format!("Invalid hardened index: {}", part)))?;
+                    .map_err(|_| Error::Invalid(format!("Invalid hardened index: {part}")))?;
                 indices.push(HDPathIndex::IndexHardened(num));
             } else {
                 let num: u32 = part
                     .parse()
-                    .map_err(|_| Error::Invalid(format!("Invalid index: {}", part)))?;
+                    .map_err(|_| Error::Invalid(format!("Invalid index: {part}")))?;
                 indices.push(HDPathIndex::IndexNotHardened(num));
             }
         }
@@ -175,13 +188,10 @@ impl HDPath {
     }
 
     pub fn at(&self, index: usize) -> Result<HDPathIndex, Error> {
-        self.0
-            .get(index)
-            .copied()
-            .ok_or(Error::IndexOutOfRange {
-                index: index as u32,
-                max: self.0.len() as u32,
-            })
+        self.0.get(index).copied().ok_or(Error::IndexOutOfRange {
+            index: index as u32,
+            max: self.0.len() as u32,
+        })
     }
 
     pub fn purpose(&self) -> Result<HDPurpose, Error> {
@@ -210,7 +220,7 @@ impl fmt::Display for HDPath {
             if i > 0 {
                 write!(f, "/")?;
             }
-            write!(f, "{}", index)?;
+            write!(f, "{index}")?;
         }
         Ok(())
     }

@@ -3,6 +3,12 @@ use anyhow::Result;
 
 pub struct DIDResolver;
 
+impl Default for DIDResolver {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DIDResolver {
     pub fn new() -> Self {
         Self

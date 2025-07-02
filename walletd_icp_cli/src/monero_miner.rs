@@ -1,6 +1,5 @@
 use std::process::{Command, Stdio};
 
-
 pub struct MoneroMiner {
     process: Option<std::process::Child>,
     address: String,

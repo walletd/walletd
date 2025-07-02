@@ -268,17 +268,17 @@ impl DoSerialize for RctSigBase {
         serialized.serialize_field("type", &(self.rct_type.value() as usize))?;
         serialized.serialize_field("txnFee", &(self.txn_fee as usize))?;
         for (i, pseudo_out) in self.pseudo_outs.iter().enumerate() {
-            serialized.serialize_field(&format!("pseudoOuts[{}]", i), pseudo_out)?;
+            serialized.serialize_field(&format!("pseudoOuts[{i}]"), pseudo_out)?;
         }
         for (i, ecdh) in self.ecdh_info.iter().enumerate() {
             let hashed_amount = Hash8::from_slice(&ecdh.amount.bytes);
             serialized.serialize_field(
-                &format!("ecdhInfo[{}].amount", i),
+                &format!("ecdhInfo[{i}].amount"),
                 &hashed_amount.as_bytes(),
             )?;
         }
         for (i, out_pk) in self.out_pk.iter().enumerate() {
-            serialized.serialize_field(&format!("outPk[{}].mask", i), &out_pk.mask)?;
+            serialized.serialize_field(&format!("outPk[{i}].mask"), &out_pk.mask)?;
         }
         Ok(())
     }
@@ -490,7 +490,7 @@ impl BulletproofPlus {
             return Self::try_again(_sv, gamma, V, logM, aL, aL8, aR, aR8);
         }
         transcript = Transcript(RctKey::from_scalar(&private_key_to_scalar(
-            &Hash::hash_to_scalar(&y.bytes),
+            &Hash::hash_to_scalar(y.bytes),
         )));
         let z = transcript.0;
         if z == RctKey::zero() {
@@ -1042,17 +1042,17 @@ pub struct RctSigPrunable {
 impl DoSerialize for RctSigPrunable {
     fn do_serialize(&self, serialized: &mut SerializedArchive) -> Result<(), anyhow::Error> {
         let nbp = self.bulletproofs_plus.len();
-        serialized.serialize_field("nbp", &(nbp as usize))?;
+        serialized.serialize_field("nbp", &{ nbp })?;
         for (i, bp) in self.bulletproofs_plus.iter().enumerate() {
-            serialized.serialize_field(&format!("bpp[{}]", i), bp)?;
+            serialized.serialize_field(&format!("bpp[{i}]"), bp)?;
         }
         for (i, clsag) in self.CLSAGs.iter().enumerate() {
-            serialized.serialize_vector(&format!("CLSAGs[{}].s", i), &clsag.s)?;
-            serialized.serialize_field(&format!("CLSAGs[{}].c1", i), &clsag.c1)?;
-            serialized.serialize_field(&format!("CLSAGs[{}].D", i), &clsag.D)?;
+            serialized.serialize_vector(&format!("CLSAGs[{i}].s"), &clsag.s)?;
+            serialized.serialize_field(&format!("CLSAGs[{i}].c1"), &clsag.c1)?;
+            serialized.serialize_field(&format!("CLSAGs[{i}].D"), &clsag.D)?;
         }
         for (i, pseudo_out) in self.pseudo_outs.iter().enumerate() {
-            serialized.serialize_field(&format!("pseudoOuts[{}]", i), pseudo_out)?;
+            serialized.serialize_field(&format!("pseudoOuts[{i}]"), pseudo_out)?;
         }
         Ok(())
     }
@@ -1132,12 +1132,11 @@ impl RctSig {
             .get(i)
             .ok_or_else(|| Error::AnyhowError(anyhow!("Invalid mix_ring index")))?
             .clone();
-        let C_offset = self
+        let C_offset = *self
             .base
             .pseudo_outs
             .get(i)
-            .ok_or_else(|| Error::AnyhowError(anyhow!("Invalid pseudo_outs index")))?
-            .clone();
+            .ok_or_else(|| Error::AnyhowError(anyhow!("Invalid pseudo_outs index")))?;
         let n = pubs.len();
 
         if n < 1 {
