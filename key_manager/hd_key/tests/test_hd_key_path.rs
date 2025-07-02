@@ -277,8 +277,7 @@ fn test_eth_bip44() -> Result<(), Error> {
 
 #[test]
 fn test_bip49_first_account() -> Result<(), Error> {
-    let mut path_builder = HDPath::builder();
-    path_builder
+    let path_builder = HDPath::builder()
         .purpose_index(HDPurpose::BIP49.to_shortform_num())
         .coin_type_index(Coin::from(Symbol::BTC).id())
         .no_change_index()
@@ -309,8 +308,7 @@ fn test_bip49_first_account() -> Result<(), Error> {
 #[test]
 
 fn test_bip49_address_one() -> Result<(), Error> {
-    let mut path_builder = HDPath::builder();
-    path_builder
+    let path_builder = HDPath::builder()
         .purpose_index(HDPurpose::BIP49.to_shortform_num())
         .coin_type_index(Coin::from(Symbol::BTC).id())
         .address_index(1);

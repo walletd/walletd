@@ -200,8 +200,8 @@ mod tests {
         let tx_pub = hex!("585d3601bc6f3b63ad041fbb5f301a6239cbc98ec2954ef827d5f81aed59cff9");
         let private_spend_key = MoneroPrivateKey::from_slice(&spend_sec).unwrap();
         let private_view_key = MoneroPrivateKey::from_slice(&view_sec).unwrap();
-        let public_spend_key = MoneroPublicKey::from_slice(spend_pub).unwrap();
-        let tx_pub_key = MoneroPublicKey::from_slice(tx_pub).unwrap();
+        let public_spend_key = MoneroPublicKey::from_slice(&spend_pub).unwrap();
+        let tx_pub_key = MoneroPublicKey::from_slice(&tx_pub).unwrap();
         let expected_key_image =
             hex!("8a90c3e855fde0a85e71c9c345a26d094a56a5070b0bba6c1e9495bd49aa0741");
         let output_index = 1;
@@ -224,7 +224,7 @@ mod tests {
             hex!("eb2bd1cf0c5e074f9dbf38ebbc99c316f54e21803048c687a3bb359f7a713b02");
         let expected_key_deriv =
             hex!("4e0bd2c41325a1b89a9f7413d4d05e0a5a4936f241dccc3c7d0c539ffe00ef67");
-        let public_key = MoneroPublicKey::from_slice(public_key_bytes).unwrap();
+        let public_key = MoneroPublicKey::from_slice(&public_key_bytes).unwrap();
         let secret_key = MoneroPrivateKey::from_slice(&secret_key_bytes).unwrap();
         let actual_key_deriv = KeyDerivation::generate(&public_key, &secret_key);
         assert_eq!(actual_key_deriv.to_bytes(), expected_key_deriv);
@@ -235,7 +235,7 @@ mod tests {
             hex!("e49f363fd5c8fc1f8645983647ca33d7ec9db2d255d94cd538a3cc83153c5f04");
         let expected_key_deriv =
             hex!("72903ec8f9919dfcec6efb5535490527b573b3d77f9890386d373c02bf368934");
-        let public_key = MoneroPublicKey::from_slice(public_key_bytes).unwrap();
+        let public_key = MoneroPublicKey::from_slice(&public_key_bytes).unwrap();
         let secret_key = MoneroPrivateKey::from_slice(&secret_key_bytes).unwrap();
         let actual_key_deriv = KeyDerivation::generate(&public_key, &secret_key);
         assert_eq!(actual_key_deriv.to_bytes(), expected_key_deriv);
@@ -249,7 +249,7 @@ mod tests {
         let expected_derived_pub_key =
             hex!("d48008aff5f27d8fcdc2a3bf814ed3505530f598075f3bf7e868fea696b109f6");
         let derivation = KeyDerivation::from_slice(&key_deriv).unwrap();
-        let base_key = MoneroPublicKey::from_slice(base).unwrap();
+        let base_key = MoneroPublicKey::from_slice(&base).unwrap();
         let actual_derived_pub_key = derivation
             .derive_public_key(output_index, &base_key)
             .unwrap();
