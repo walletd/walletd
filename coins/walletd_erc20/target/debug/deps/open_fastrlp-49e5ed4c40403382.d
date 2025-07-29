@@ -1,0 +1,10 @@
+/Users/patriziospitalieri/walletd_work/walletd_erc20/target/debug/deps/open_fastrlp-49e5ed4c40403382.d: /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/open-fastrlp-0.1.4/src/lib.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/open-fastrlp-0.1.4/src/decode.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/open-fastrlp-0.1.4/src/encode.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/open-fastrlp-0.1.4/src/types.rs
+
+/Users/patriziospitalieri/walletd_work/walletd_erc20/target/debug/deps/libopen_fastrlp-49e5ed4c40403382.rlib: /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/open-fastrlp-0.1.4/src/lib.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/open-fastrlp-0.1.4/src/decode.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/open-fastrlp-0.1.4/src/encode.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/open-fastrlp-0.1.4/src/types.rs
+
+/Users/patriziospitalieri/walletd_work/walletd_erc20/target/debug/deps/libopen_fastrlp-49e5ed4c40403382.rmeta: /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/open-fastrlp-0.1.4/src/lib.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/open-fastrlp-0.1.4/src/decode.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/open-fastrlp-0.1.4/src/encode.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/open-fastrlp-0.1.4/src/types.rs
+
+/Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/open-fastrlp-0.1.4/src/lib.rs:
+/Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/open-fastrlp-0.1.4/src/decode.rs:
+/Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/open-fastrlp-0.1.4/src/encode.rs:
+/Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/open-fastrlp-0.1.4/src/types.rs:

@@ -1,0 +1,10 @@
+/Users/patriziospitalieri/walletd_work/walletd_erc20/target/debug/deps/sha1-bdf77c525929c582.d: /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.10.6/src/lib.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.10.6/src/compress.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.10.6/src/compress/soft.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.10.6/src/compress/x86.rs
+
+/Users/patriziospitalieri/walletd_work/walletd_erc20/target/debug/deps/libsha1-bdf77c525929c582.rlib: /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.10.6/src/lib.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.10.6/src/compress.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.10.6/src/compress/soft.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.10.6/src/compress/x86.rs
+
+/Users/patriziospitalieri/walletd_work/walletd_erc20/target/debug/deps/libsha1-bdf77c525929c582.rmeta: /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.10.6/src/lib.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.10.6/src/compress.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.10.6/src/compress/soft.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.10.6/src/compress/x86.rs
+
+/Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.10.6/src/lib.rs:
+/Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.10.6/src/compress.rs:
+/Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.10.6/src/compress/soft.rs:
+/Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.10.6/src/compress/x86.rs:

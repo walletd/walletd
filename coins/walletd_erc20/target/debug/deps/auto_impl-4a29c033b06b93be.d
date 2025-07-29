@@ -1,0 +1,9 @@
+/Users/patriziospitalieri/walletd_work/walletd_erc20/target/debug/deps/auto_impl-4a29c033b06b93be.d: /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/auto_impl-1.3.0/src/lib.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/auto_impl-1.3.0/src/analyze.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/auto_impl-1.3.0/src/attr.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/auto_impl-1.3.0/src/gen.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/auto_impl-1.3.0/src/proxy.rs
+
+/Users/patriziospitalieri/walletd_work/walletd_erc20/target/debug/deps/libauto_impl-4a29c033b06b93be.dylib: /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/auto_impl-1.3.0/src/lib.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/auto_impl-1.3.0/src/analyze.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/auto_impl-1.3.0/src/attr.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/auto_impl-1.3.0/src/gen.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/auto_impl-1.3.0/src/proxy.rs
+
+/Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/auto_impl-1.3.0/src/lib.rs:
+/Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/auto_impl-1.3.0/src/analyze.rs:
+/Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/auto_impl-1.3.0/src/attr.rs:
+/Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/auto_impl-1.3.0/src/gen.rs:
+/Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/auto_impl-1.3.0/src/proxy.rs:

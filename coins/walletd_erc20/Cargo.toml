@@ -1,0 +1,35 @@
+[package]
+name = "walletd_erc20"
+version = "0.1.0"
+edition = "2021"
+
+description = "ERC‑20 token adapters for the WalletD SDK"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+# Updated ethers dependency:
+#  * Bumped to the latest 2.x patch release.
+#  * Removed the `contract` feature, which no longer exists on the `ethers`
+#    meta crate.  The default features already pull in the contract
+#    functionality, and the remaining feature flags enable abigen, providers,
+#    signers and rustls support.
+# Use the default feature set for ethers.  The meta crate re-exports
+# contract, providers and signers functionality without requiring
+# specific feature flags.  We retain `abigen` and TLS support through
+# the default features.
+ethers = { version = "2.0.14" }
+async-trait = "0.1"
+tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread"], optional = true }
+serde = { version = "1", features = ["derive"], optional = true }
+
+# Re‑export the walletd_ethereum crate so downstream consumers can
+# use a single dependency if it's available. This is optional and may be
+# omitted when integrating directly into the walletd monorepo.
+#walletd_ethereum = { path = "../ethereum", optional = true }
+
+[features]
+# Enable the `tokio` runtime for asynchronous API calls. Most of the
+# adapter functions are asynchronous and require a runtime. Consumers
+# using another runtime (e.g. async‑std) can re‑enable the appropriate
+# features on the `ethers` dependency directly.
+default = ["tokio"]

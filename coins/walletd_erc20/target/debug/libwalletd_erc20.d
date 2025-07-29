@@ -1,0 +1,1 @@
+/Users/patriziospitalieri/walletd_work/walletd_erc20/target/debug/libwalletd_erc20.rlib: /Users/patriziospitalieri/walletd_work/walletd_erc20/src/adapter.rs /Users/patriziospitalieri/walletd_work/walletd_erc20/src/lib.rs /Users/patriziospitalieri/walletd_work/walletd_erc20/src/usdc.rs

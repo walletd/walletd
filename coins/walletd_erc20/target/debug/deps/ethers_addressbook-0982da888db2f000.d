@@ -1,0 +1,9 @@
+/Users/patriziospitalieri/walletd_work/walletd_erc20/target/debug/deps/ethers_addressbook-0982da888db2f000.d: /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ethers-addressbook-2.0.14/src/lib.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ethers-addressbook-2.0.14/src/../README.md /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ethers-addressbook-2.0.14/src/./contracts/contracts.json
+
+/Users/patriziospitalieri/walletd_work/walletd_erc20/target/debug/deps/libethers_addressbook-0982da888db2f000.rlib: /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ethers-addressbook-2.0.14/src/lib.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ethers-addressbook-2.0.14/src/../README.md /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ethers-addressbook-2.0.14/src/./contracts/contracts.json
+
+/Users/patriziospitalieri/walletd_work/walletd_erc20/target/debug/deps/libethers_addressbook-0982da888db2f000.rmeta: /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ethers-addressbook-2.0.14/src/lib.rs /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ethers-addressbook-2.0.14/src/../README.md /Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ethers-addressbook-2.0.14/src/./contracts/contracts.json
+
+/Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ethers-addressbook-2.0.14/src/lib.rs:
+/Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ethers-addressbook-2.0.14/src/../README.md:
+/Users/patriziospitalieri/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ethers-addressbook-2.0.14/src/./contracts/contracts.json:
