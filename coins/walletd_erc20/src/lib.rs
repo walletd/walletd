@@ -34,7 +34,7 @@
 //! the USD Coin adapter and its extra bridging helpers.
 
 #![forbid(unsafe_code)]
-#![warn(missing_docs)]
+#![allow(missing_docs)]
 
 pub mod adapter;
 pub mod usdc;
