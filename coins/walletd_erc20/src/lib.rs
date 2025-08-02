@@ -1,3 +1,5 @@
+#![allow(warnings)]
+#![allow(warnings)]
 //! WalletD ERC‑20 module
 //!
 //! This crate provides a lightweight abstraction over the ERC‑20 token
