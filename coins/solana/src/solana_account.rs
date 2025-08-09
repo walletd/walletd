@@ -43,7 +43,7 @@ impl SolanaAccount {
     /// Returns an `Error` if the byte array cannot be converted to a valid `Keypair`.
     pub fn new_from_bytes(bytes: [u8; 64]) -> Result<Self, Error> {
         let keypair = Keypair::try_from(&bytes[..])
-            .map_err(|e| Error::Custom(format!("Failed to create keypair from bytes: {}", e)))?;
+            .map_err(|e| Error::Custom(format!("Failed to create keypair from bytes: {e}")))?;
         Ok(Self { keypair })
     }
 
@@ -60,7 +60,7 @@ impl SolanaAccount {
         let balance = rpc_client
             .get_balance(&self.pubkey())
             .await
-            .map_err(|e| Error::Custom(format!("Failed to get balance: {}", e)))?;
+            .map_err(|e| Error::Custom(format!("Failed to get balance: {e}")))?;
         Ok(balance)
     }
 }
