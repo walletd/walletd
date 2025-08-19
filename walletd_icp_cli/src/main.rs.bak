@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use walletd_icp_cli::erc20_menu;use walletd_icp_cli::mode_selector::{select_mode_at_startup, WalletMode};
+use walletd_icp_cli::mode_selector::{select_mode_at_startup, WalletMode};
 use walletd_icp_cli::types::WalletDIcpApi;
 use walletd_icp_cli::{btc_menu, eth_menu, hbar_menu, icp_menu, sol_menu, xmr_menu};
 use walletd_icp_cli::{config::WalletDConfig, wallet_integration::WALLET_MANAGER, CliResponse};
@@ -288,12 +288,17 @@ async fn main() -> Result<(), anyhow::Error> {
                 }
                 "1" => btc_menu::handle_btc_menu(&mut wallet_api, &btc_address, &btc_balance).await,
                 "2" => eth_menu::handle_eth_menu(&mut wallet_api, &eth_address, &eth_balance).await,
-                "7" => erc20_menu::handle_erc20_menu(&mut wallet_api, &eth_address, &eth_balance).await,                "3" => sol_menu::handle_sol_menu(&mut wallet_api, &sol_address, &sol_balance).await,
+                "7" => {
+                    use walletd_icp_cli::erc20_menu;
+                    erc20_menu::handle_erc20_menu(&mut wallets, mode).await.map(|_| CliResponse::Continue).map_err(|e| e.to_string())
+                }
+                "3" => sol_menu::handle_sol_menu(&mut wallet_api, &sol_address, &sol_balance).await,
                 "4" => {
                     hbar_menu::handle_hbar_menu(&mut wallet_api, &hbar_address, &hbar_balance).await
                 }
                 "5" => xmr_menu::handle_xmr_menu(&mut wallet_api, &xmr_address, &xmr_balance).await,
                 "6" => icp_menu::handle_icp_menu(&mut wallet_api, &icp_address, &icp_balance).await,
+                "7" => erc20_menu::handle_erc20_menu(&mut wallets, mode).await.map(|_| CliResponse::Continue).map_err(|e| e.to_string()),
                 _ => {
                     println!("Invalid option, please try again.");
                     Ok(CliResponse::Continue)

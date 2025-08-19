@@ -1,0 +1,33 @@
+--- a/walletd_icp_cli/src/main.rs
++++ b/walletd_icp_cli/src/main.rs
+@@ -135,6 +135,7 @@
+                     println!("[4] Hedera (Testnet)");
+                     println!("[5] Monero (Stagenet)");
+                     println!("[6] Internet Computer (Local)");
++                    println!("[7] ERC-20 Tokens (Ethereum)");
+                 }
+                 WalletMode::Mainnet => {
+                     println!("\n⚡ MAINNET MODE - Select blockchain:");
+@@ -144,6 +145,7 @@
+                     println!("[4] Hedera (HBAR) - ⚠️ Real");
+                     println!("[5] Monero (XMR) - ⚠️ Real");
+                     println!("[6] Internet Computer (ICP) - ⚠️ Real");
++                    println!("[7] ERC-20 Tokens - ⚠️ Real");
+                 }
+                 WalletMode::Demo => {
+                     println!("\n📌 DEMO MODE - Select blockchain:");
+@@ -153,6 +155,7 @@
+                     println!("[4] Hedera (Demo)");
+                     println!("[5] Monero (Demo)");
+                     println!("[6] Internet Computer (Demo)");
++                    println!("[7] ERC-20 Tokens (Demo)");
+                 }
+             }
+ 
+@@ -290,6 +293,7 @@
+                 "5" => xmr_menu::handle_xmr_menu(&mut wallet_api, &xmr_address, &xmr_balance).await,
+                 "6" => icp_menu::handle_icp_menu(&mut wallet_api, &icp_address, &icp_balance).await,
++                "7" => erc20_menu::handle_erc20_menu(&mut wallets, mode).await.map(|_| CliResponse::Continue).map_err(|e| e.to_string()),
+                 _ => {
+                     println!("Invalid option, please try again.");
+                     Ok(CliResponse::Continue)

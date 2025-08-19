@@ -105,3 +105,4 @@ pub mod testnet_menu;
 pub mod testnet_real_menu;
 pub mod xmr_menu;
 pub mod xmr_send_real;
+pub mod erc20_menu;

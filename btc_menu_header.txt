@@ -1,0 +1,20 @@
+use crate::{btc_send_real::handle_send_bitcoin_real, types::WalletDIcpApi, CliResponse};
+use std::io::{self, Write};
+
+pub async fn handle_btc_menu(
+    _wallet_api: &mut WalletDIcpApi,
+    address: &str,
+    balance: &str,
+) -> Result<CliResponse, String> {
+    loop {
+        println!("\n========== BITCOIN WALLET FEATURES ==========");
+        println!("Address: {}", address);
+        println!("Balance: {} BTC", balance);
+
+        println!("\n--- Wallet Operations ---");
+        println!("[1] Generate New Address");
+        println!("[2] Show Extended Public Key");
+        println!("[3] Check Balance");
+        println!("[4] View Transaction History");
+
+        println!("\n--- Transactions ---");
