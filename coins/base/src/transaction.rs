@@ -1,5 +1,5 @@
-use ethers::types::{U256, Address, Bytes};
-use serde::{Serialize, Deserialize};
+use ethers::types::{Address, Bytes, U256};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BaseTransaction {

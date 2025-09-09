@@ -1,6 +1,6 @@
 use anyhow::Result;
-use serde_json::{json, Value};
 use reqwest::Client;
+use serde_json::{json, Value};
 use std::time::Duration;
 
 pub struct BaseRpcClient {
@@ -14,7 +14,7 @@ impl BaseRpcClient {
             .timeout(Duration::from_secs(30))
             .build()
             .unwrap();
-        
+
         Self {
             client,
             endpoint: endpoint.to_string(),
@@ -24,7 +24,7 @@ impl BaseRpcClient {
     pub async fn call_method(&self, method: &str, params: Vec<Value>) -> Result<Value> {
         let mut retry_count = 0;
         const MAX_RETRIES: u32 = 3;
-        
+
         loop {
             let request = json!({
                 "jsonrpc": "2.0",
@@ -32,26 +32,27 @@ impl BaseRpcClient {
                 "params": params.clone(),
                 "id": 1
             });
-            
-            let response = self.client
+
+            let response = self
+                .client
                 .post(&self.endpoint)
                 .header("Content-Type", "application/json")
                 .json(&request)
                 .send()
                 .await?;
-                
+
             if response.status() == 429 && retry_count < MAX_RETRIES {
                 retry_count += 1;
                 tokio::time::sleep(Duration::from_millis(1000 * retry_count as u64)).await;
                 continue;
             }
-            
+
             let result: Value = response.json().await?;
-            
+
             if let Some(error) = result.get("error") {
                 return Err(anyhow::anyhow!("RPC Error: {:?}", error));
             }
-            
+
             return Ok(result["result"].clone());
         }
     }

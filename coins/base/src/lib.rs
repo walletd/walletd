@@ -1,14 +1,14 @@
 pub mod config;
-pub mod wallet;
+pub mod error;
 pub mod rpc;
 pub mod transaction;
-pub mod error;
+pub mod wallet;
 
 pub use config::{NetworkConfig, BASE_MAINNET, BASE_SEPOLIA};
-pub use wallet::BaseWallet;
+pub use error::BaseError;
 pub use rpc::BaseRpcClient;
 pub use transaction::BaseTransaction;
-pub use error::BaseError;
+pub use wallet::BaseWallet;
 
 #[cfg(test)]
 mod tests {

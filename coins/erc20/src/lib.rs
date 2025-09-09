@@ -1,6 +1,6 @@
-use ethers::prelude::*;
-use ethers::abi::Abi;
 use anyhow::Result;
+use ethers::abi::Abi;
+use ethers::prelude::*;
 use std::sync::Arc;
 
 // Standard ERC20 ABI for common functions
@@ -23,35 +23,41 @@ impl ERC20Token {
         let address = token_address.parse::<Address>()?;
         let abi: Abi = serde_json::from_str(ERC20_ABI)?;
         let contract = Contract::new(address, abi, Arc::new(provider));
-        
+
         // Get token info
         let decimals: u8 = contract.method("decimals", ())?.call().await?;
         let symbol: String = contract.method("symbol", ())?.call().await?;
-        
+
         Ok(Self {
             contract,
             decimals,
             symbol,
         })
     }
-    
+
     pub async fn balance_of(&self, address: &str) -> Result<U256> {
         let addr = address.parse::<Address>()?;
         let balance: U256 = self.contract.method("balanceOf", addr)?.call().await?;
         Ok(balance)
     }
-    
+
     pub fn format_balance(&self, balance: U256) -> String {
         let divisor = U256::from(10).pow(U256::from(self.decimals));
         let whole = balance / divisor;
         let remainder = balance % divisor;
-        format!("{}.{:0width$} {}", whole, remainder, self.symbol, width = self.decimals as usize)
+        format!(
+            "{}.{:0width$} {}",
+            whole,
+            remainder,
+            self.symbol,
+            width = self.decimals as usize
+        )
     }
-    
+
     pub fn symbol(&self) -> &str {
         &self.symbol
     }
-    
+
     pub fn decimals(&self) -> u8 {
         self.decimals
     }

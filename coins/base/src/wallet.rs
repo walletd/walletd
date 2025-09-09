@@ -1,6 +1,6 @@
 use anyhow::Result;
-use ethers::prelude::*;
 use bip39::Mnemonic;
+use ethers::prelude::*;
 use std::str::FromStr;
 
 pub struct BaseWallet {
@@ -22,13 +22,13 @@ impl BaseWallet {
     pub fn from_mnemonic(mnemonic: &str, chain_id: u64) -> Result<Self> {
         let mnemonic = Mnemonic::from_str(mnemonic)?;
         let _seed = mnemonic.to_seed("");
-        
+
         // Use Ethereum's derivation path for now (Base is compatible)
         let _derivation_path = "m/44'/60'/0'/0/0";
-        
+
         // This is simplified - in production, use proper HD wallet derivation
         let wallet = LocalWallet::new(&mut rand::thread_rng());
-        
+
         Ok(Self {
             wallet,
             provider: None,
@@ -71,7 +71,7 @@ impl BaseWallet {
     pub async fn send_transaction(&self, to: &str, value: U256) -> Result<String> {
         if let Some(provider) = &self.provider {
             let to_address = Address::from_str(to)?;
-            
+
             let tx = TransactionRequest::new()
                 .to(to_address)
                 .value(value)
