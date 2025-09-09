@@ -14,7 +14,8 @@ members = [
     "rates",
     "crates/walletd-core",
     "crates/walletd_icp_api",
-]
+    "coins/base",
+    "coins/erc20",]
 resolver = "2"
 
 [workspace.dependencies]

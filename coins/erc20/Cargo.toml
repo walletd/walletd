@@ -1,0 +1,12 @@
+[package]
+name = "walletd_erc20"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ethers = "2.0"
+tokio = { version = "1.35", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+hex = "0.4"
