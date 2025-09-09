@@ -51,7 +51,7 @@ impl SerializedArchive {
     pub fn serialize_vector<T: DoSerialize>(
         &mut self,
         tag: &str,
-        vec: &Vec<T>,
+        vec: &[T],
     ) -> Result<(), Error> {
         self.add_tag(tag);
         self.begin_array();
@@ -169,7 +169,7 @@ impl SerializedArchive {
     pub fn serialize_vector_variant<T, V>(
         &mut self,
         tag: &str,
-        vec: &Vec<T>,
+        vec: &[T],
         _variant: V,
     ) -> Result<(), Error>
     where

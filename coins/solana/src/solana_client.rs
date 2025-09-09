@@ -79,7 +79,7 @@ impl SolanaClient {
             .rpc_client
             .get_balance(address)
             .await
-            .map_err(|e| Error::Custom(format!("Failed to get balance: {}", e)))?;
+            .map_err(|e| Error::Custom(format!("Failed to get balance: {e}")))?;
         Ok(balance)
     }
 
@@ -92,20 +92,19 @@ impl SolanaClient {
             .rpc_client
             .request_airdrop(&public_address, 1_000_000_000)
             .await
-            .map_err(|e| Error::Custom(format!("Failed to request airdrop: {}", e)))?;
+            .map_err(|e| Error::Custom(format!("Failed to request airdrop: {e}")))?;
 
         let confirmed = self
             .rpc_client
             .confirm_transaction(&sig)
             .await
-            .map_err(|e| Error::Custom(format!("Failed to confirm airdrop: {}", e)))?;
+            .map_err(|e| Error::Custom(format!("Failed to confirm airdrop: {e}")))?;
 
         if confirmed {
-            Ok(format!("Transaction: {} Status: {}", sig, confirmed))
+            Ok(format!("Transaction: {sig} Status: {confirmed}"))
         } else {
             Err(Error::Custom(format!(
-                "Airdrop transaction {} not confirmed",
-                sig
+                "Airdrop transaction {sig} not confirmed"
             )))
         }
     }
@@ -119,7 +118,7 @@ impl SolanaClient {
             .rpc_client
             .get_account(address)
             .await
-            .map_err(|e| Error::Custom(format!("Failed to get account: {}", e)))?;
+            .map_err(|e| Error::Custom(format!("Failed to get account: {e}")))?;
         Ok(account)
     }
 
@@ -135,7 +134,7 @@ impl SolanaClient {
             .rpc_client
             .get_program_accounts(address)
             .await
-            .map_err(|e| Error::Custom(format!("Failed to get program accounts: {}", e)))?;
+            .map_err(|e| Error::Custom(format!("Failed to get program accounts: {e}")))?;
         Ok(accounts)
     }
 
@@ -156,7 +155,7 @@ impl SolanaClient {
             .rpc_client
             .get_latest_blockhash()
             .await
-            .map_err(|e| Error::Custom(format!("Failed to get latest blockhash: {}", e)))?;
+            .map_err(|e| Error::Custom(format!("Failed to get latest blockhash: {e}")))?;
 
         let txn = Transaction::new_signed_with_payer(
             &[ix],
@@ -169,19 +168,19 @@ impl SolanaClient {
             .rpc_client
             .send_and_confirm_transaction(&txn)
             .await
-            .map_err(|e| Error::Custom(format!("Failed to send transaction: {}", e)))?;
+            .map_err(|e| Error::Custom(format!("Failed to send transaction: {e}")))?;
 
         let confirmed = self
             .rpc_client
             .confirm_transaction(&sig)
             .await
-            .map_err(|e| Error::Custom(format!("Failed to confirm transaction: {}", e)))?;
+            .map_err(|e| Error::Custom(format!("Failed to confirm transaction: {e}")))?;
 
         if confirmed {
-            println!("Transaction: {} Status: {}", sig, confirmed);
+            println!("Transaction: {sig} Status: {confirmed}");
             Ok(true)
         } else {
-            println!("Transaction {} not confirmed", sig);
+            println!("Transaction {sig} not confirmed");
             Ok(false)
         }
     }

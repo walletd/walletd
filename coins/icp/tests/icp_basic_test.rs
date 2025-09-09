@@ -5,13 +5,13 @@ use walletd_icp::{HDNetworkType, IcpLedger, IcpWallet};
 fn test_icp_wallet_creation() {
     let principal = Principal::from_text("rrkah-fqaaa-aaaaa-aaaaq-cai").unwrap();
     let wallet = IcpWallet::from_principal(principal, HDNetworkType::MainNet);
-    assert_eq!(wallet.principal(), &principal);
+    assert_eq!(wallet.principal(), principal);
 }
 
 #[test]
 fn test_icp_address_generation() {
     let principal = Principal::from_text("rrkah-fqaaa-aaaaa-aaaaq-cai").unwrap();
-    let account = IcpLedger::principal_to_account(&principal);
+    let account = IcpLedger::principal_to_account(principal);
     assert_eq!(account.0.len(), 32);
 }
 
