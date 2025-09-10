@@ -5,8 +5,8 @@ use dotenvy::dotenv;
 use env_logger::Env;
 use log::{error, info};
 
-use walletd_hedera_int::core::WalletDError;
-use walletd_hedera_int::providers::hedera;
+use walletd_hedera::core::WalletDError;
+use walletd_hedera::providers::hedera;
 
 #[derive(Parser)]
 #[command(name = "Hedera CLI")]
@@ -62,7 +62,7 @@ async fn main() {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
     if let Err(e) = run_application().await {
-        error!("Application error: {}", e);
+        error!("Application error: {e}");
         std::process::exit(1);
     }
 }
@@ -72,7 +72,7 @@ async fn run_application() -> Result<(), WalletDError> {
 
     match cli.command {
         Commands::FetchAccountInfo { account_id } => {
-            info!("Fetching account info for ID: {}", account_id);
+            info!("Fetching account info for ID: {account_id}");
             hedera::fetch_account_info(account_id).await?;
         }
         Commands::CreateNewAccount => {
@@ -83,7 +83,7 @@ async fn run_application() -> Result<(), WalletDError> {
             recipient_id,
             amount,
         } => {
-            info!("Sending {} hBars to {}", amount, recipient_id);
+            info!("Sending {amount} hBars to {recipient_id}");
             hedera::send_hbars(recipient_id, amount).await?;
         }
         Commands::TransferTokens {
@@ -91,14 +91,11 @@ async fn run_application() -> Result<(), WalletDError> {
             token_id,
             amount,
         } => {
-            info!(
-                "Transferring {} tokens of ID {} to {}",
-                amount, token_id, recipient_id
-            );
+            info!("Transferring {amount} tokens of ID {token_id} to {recipient_id}");
             hedera::transfer_tokens(recipient_id, token_id, amount).await?;
         }
         Commands::DeploySmartContract { bytecode_path } => {
-            info!("Deploying smart contract from {}", bytecode_path);
+            info!("Deploying smart contract from {bytecode_path}");
             hedera::deploy_smart_contract(&bytecode_path).await?;
         }
     }

@@ -13,7 +13,6 @@ pub mod monero_real;
 pub mod solana_real;
 use bitcoin_real::RealBitcoinWallet;
 use ethereum_real::RealEthereumWallet;
-pub use walletd_hedera::wallet::RealHederaWallet;
 
 pub struct WalletManager {
     pub config: WalletDConfig,
@@ -23,7 +22,7 @@ pub struct WalletManager {
     pub eth_provider: Option<String>,
     pub solana: Option<solana_real::RealSolanaWallet>,
     pub monero: Option<monero_real::RealMoneroWallet>,
-    pub hedera: Option<RealHederaWallet>,
+    pub hedera: Option<crate::hedera_wallet_stub::RealHederaWallet>, // RealHederaWallet not implemented,
 }
 #[derive(Debug, Clone)]
 pub struct Balance {
@@ -243,7 +242,7 @@ impl WalletManager {
     //             _ => "testnet",
     //         };
     //
-    //         let mut wallet = RealHederaWallet::new(network)?;
+    //         return Err("Hedera wallet not implemented".into()); // RealHederaWallet::new(network)?;
     //
     //         println!("✅ Hedera wallet initialized ({})", network);
     //         println!("📍 Public Key: {}", wallet.public_key);
@@ -260,42 +259,13 @@ impl WalletManager {
         // ALWAYS load .env.hedera FIRST
         dotenvy::from_filename(".env.hedera").ok();
 
-        let network = match self.mode {
+        let _network = match self.mode {
             WalletMode::Testnet => "testnet",
             WalletMode::Mainnet => "mainnet",
             _ => "testnet",
         };
 
-        let mut wallet = RealHederaWallet::new(network)?;
-
-        println!("✅ Hedera wallet initialized ({network})");
-        println!("📍 Public Key: {}", wallet.public_key);
-
-        // CHECK FOR EXISTING CREDENTIALS - DO NOT CREATE SIMULATED ACCOUNTS
-        if let (Ok(operator_id), Ok(_operator_key)) = (
-            std::env::var("HEDERA_OPERATOR_ID"),
-            std::env::var("OPERATOR_PRIVATE_KEY"),
-        ) {
-            println!("✅ Found REAL testnet account: {operator_id}");
-            wallet.account_id = Some(operator_id);
-            // Don't print the private key
-        } else {
-            println!("⚠️  No Hedera account configured");
-            println!("   Using the wallet without an account");
-            // DO NOT CREATE SIMULATED ACCOUNT
-            // wallet.account_id remains None
-        }
-
-        // Initialize the Hedera client with existing account
-        if wallet.account_id.is_some() {
-            match wallet.init_with_existing_account().await {
-                Ok(_) => println!("✅ Hedera client initialized successfully"),
-                Err(e) => println!("⚠️  Failed to initialize Hedera client: {e}"),
-            }
-        }
-
-        self.hedera = Some(wallet);
-        Ok(())
+        Err(anyhow::anyhow!("Hedera wallet not implemented"))
     }
     pub async fn init_monero(&mut self) -> Result<()> {
         println!("🔄 Initializing Monero wallet...");

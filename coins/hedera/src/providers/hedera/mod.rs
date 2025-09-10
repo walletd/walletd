@@ -6,8 +6,8 @@ pub mod types;
 use crate::core::{Config, WalletDError};
 use client::HederaClient;
 use hedera::{AccountId, Hbar, TokenId};
-use rust_decimal::Decimal;
 use rust_decimal::prelude::FromPrimitive;
+use rust_decimal::Decimal;
 use std::str::FromStr;
 
 /// Fetches account information for a given account ID.
@@ -16,7 +16,7 @@ pub async fn fetch_account_info(account_id_str: String) -> Result<(), WalletDErr
     let hedera_client = HederaClient::new(&config)?;
 
     let account_id = AccountId::from_str(&account_id_str)
-        .map_err(|e| WalletDError::ConfigError(format!("Invalid Account ID: {}", e)))?;
+        .map_err(|e| WalletDError::ConfigError(format!("Invalid Account ID: {e}")))?;
 
     let account_info = hedera_client.fetch_account_info(account_id).await?;
     println!("Account ID: {}", account_info.account_id);
@@ -36,7 +36,7 @@ pub async fn create_new_account() -> Result<(), WalletDError> {
 
     // Handle the private key securely
     if let Some(private_key) = account_info.private_key {
-        println!("Private Key: {}", private_key);
+        println!("Private Key: {private_key}");
     }
 
     Ok(())
@@ -48,7 +48,7 @@ pub async fn send_hbars(recipient_id_str: String, amount: f64) -> Result<(), Wal
     let hedera_client = HederaClient::new(&config)?;
 
     let recipient_account_id = AccountId::from_str(&recipient_id_str)
-        .map_err(|e| WalletDError::ConfigError(format!("Invalid Recipient ID: {}", e)))?;
+        .map_err(|e| WalletDError::ConfigError(format!("Invalid Recipient ID: {e}")))?;
 
     let amount_decimal = Decimal::from_f64(amount).ok_or_else(|| {
         WalletDError::GeneralError("Invalid amount: cannot convert to Decimal".to_string())
@@ -58,7 +58,7 @@ pub async fn send_hbars(recipient_id_str: String, amount: f64) -> Result<(), Wal
     hedera_client
         .send_hbars(recipient_account_id, amount_hbar)
         .await?;
-    println!("Sent {} hBars to {}", amount_hbar, recipient_account_id);
+    println!("Sent {amount_hbar} hBars to {recipient_account_id}");
 
     Ok(())
 }
@@ -73,17 +73,14 @@ pub async fn transfer_tokens(
     let hedera_client = HederaClient::new(&config)?;
 
     let recipient_account_id = AccountId::from_str(&recipient_id_str)
-        .map_err(|e| WalletDError::ConfigError(format!("Invalid Recipient ID: {}", e)))?;
+        .map_err(|e| WalletDError::ConfigError(format!("Invalid Recipient ID: {e}")))?;
     let token_id = TokenId::from_str(&token_id_str)
-        .map_err(|e| WalletDError::ConfigError(format!("Invalid Token ID: {}", e)))?;
+        .map_err(|e| WalletDError::ConfigError(format!("Invalid Token ID: {e}")))?;
 
     hedera_client
         .transfer_tokens(token_id, recipient_account_id, amount)
         .await?;
-    println!(
-        "Transferred {} tokens of ID {} to {}",
-        amount, token_id, recipient_account_id
-    );
+    println!("Transferred {amount} tokens of ID {token_id} to {recipient_account_id}");
 
     Ok(())
 }
@@ -95,7 +92,7 @@ pub async fn deploy_smart_contract(bytecode_path: &str) -> Result<(), WalletDErr
 
     // Load the Solidity contract bytecode
     let bytecode = std::fs::read(bytecode_path).map_err(|e| {
-        WalletDError::TransactionError(format!("Failed to read contract bytecode: {}", e))
+        WalletDError::TransactionError(format!("Failed to read contract bytecode: {e}"))
     })?;
 
     hedera_client.deploy_smart_contract(bytecode).await?;

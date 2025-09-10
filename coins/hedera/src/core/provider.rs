@@ -10,11 +10,7 @@ pub trait BlockchainProvider {
     async fn send_transaction(&self, txn: Transaction) -> Result<(), WalletDError>;
 
     // New methods
-    async fn send_hbar(
-        &self,
-        recipient_account_id: &str,
-        amount: u64,
-    ) -> Result<(), WalletDError>;
+    async fn send_hbar(&self, recipient_account_id: &str, amount: u64) -> Result<(), WalletDError>;
     async fn transfer_tokens(
         &self,
         token_id: &str,

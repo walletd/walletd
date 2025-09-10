@@ -3,8 +3,8 @@ use super::types::AccountInfo;
 use crate::core::{Config, WalletDError};
 use hedera::{
     AccountCreateTransaction, AccountId, AccountInfoQuery, Client, ContractCreateTransaction,
-    Error as HederaError, FileCreateTransaction, Hbar, Key, PrivateKey,
-    TokenId, TransactionReceipt, TransactionResponse, TransferTransaction,
+    Error as HederaError, FileCreateTransaction, Hbar, Key, PrivateKey, TokenId,
+    TransactionReceipt, TransactionResponse, TransferTransaction,
 };
 use std::collections::HashMap;
 use std::str::FromStr;
@@ -21,9 +21,9 @@ impl HederaClient {
     pub fn new(config: &Config) -> Result<Self, WalletDError> {
         // Retrieve operator ID and private key from the configuration
         let operator_account_id = AccountId::from_str(&config.operator_id)
-            .map_err(|e| WalletDError::ConfigError(format!("Invalid operator account ID: {}", e)))?;
+            .map_err(|e| WalletDError::ConfigError(format!("Invalid operator account ID: {e}")))?;
         let operator_private_key = PrivateKey::from_str(&config.operator_private_key)
-            .map_err(|e| WalletDError::ConfigError(format!("Invalid operator private key: {}", e)))?;
+            .map_err(|e| WalletDError::ConfigError(format!("Invalid operator private key: {e}")))?;
 
         // Initialize the client for mainnet or testnet based on configuration
         let client = match config.hedera_network.as_str() {
@@ -40,12 +40,12 @@ impl HederaClient {
             let mut network = HashMap::new();
             for (address, account_id_str) in network_nodes.iter() {
                 let account_id = AccountId::from_str(account_id_str).map_err(|e| {
-                    WalletDError::ConfigError(format!("Invalid account ID in network nodes: {}", e))
+                    WalletDError::ConfigError(format!("Invalid account ID in network nodes: {e}"))
                 })?;
                 network.insert(address.clone(), account_id);
             }
             client.set_network(network).map_err(|e| {
-                WalletDError::ConfigError(format!("Failed to set custom network: {}", e))
+                WalletDError::ConfigError(format!("Failed to set custom network: {e}"))
             })?;
         }
 
@@ -72,13 +72,15 @@ impl HederaClient {
         loop {
             match transaction.get_receipt(&self.client).await {
                 Ok(receipt) => return Ok(receipt),
-                Err(HederaError::ReceiptStatus { status, transaction_id }) => {
+                Err(HederaError::ReceiptStatus {
+                    status,
+                    transaction_id,
+                }) => {
                     let txn_id_str = transaction_id
                         .map(|id| id.to_string())
                         .unwrap_or_else(|| "Unknown".to_string());
                     return Err(WalletDError::TransactionError(format!(
-                        "Transaction `{}` failed with status `{:?}`",
-                        txn_id_str, status
+                        "Transaction `{txn_id_str}` failed with status `{status:?}`"
                     )));
                 }
                 Err(_) if attempts < 5 => {
@@ -87,8 +89,7 @@ impl HederaClient {
                 }
                 Err(e) => {
                     return Err(WalletDError::TransactionError(format!(
-                        "Failed to get receipt after {} attempts: {}",
-                        attempts, e
+                        "Failed to get receipt after {attempts} attempts: {e}"
                     )));
                 }
             }
@@ -105,7 +106,7 @@ impl HederaClient {
             .execute(&self.client)
             .await
             .map_err(|e| {
-                WalletDError::TransactionError(format!("Failed to fetch account info: {}", e))
+                WalletDError::TransactionError(format!("Failed to fetch account info: {e}"))
             })?;
 
         // Extract PublicKey from info.key
@@ -135,12 +136,12 @@ impl HederaClient {
         let new_public_key = new_private_key.public_key();
 
         let transaction = AccountCreateTransaction::new()
-            .key(new_public_key.clone())
+            .key(new_public_key)
             .initial_balance(initial_balance)
             .execute(&self.client)
             .await
             .map_err(|e| {
-                WalletDError::TransactionError(format!("Failed to execute account creation: {}", e))
+                WalletDError::TransactionError(format!("Failed to execute account creation: {e}"))
             })?;
 
         let receipt = self.get_receipt_with_retry(&transaction).await?;
@@ -168,7 +169,7 @@ impl HederaClient {
             .execute(&self.client)
             .await
             .map_err(|e| {
-                WalletDError::TransactionError(format!("Failed to execute hBar transfer: {}", e))
+                WalletDError::TransactionError(format!("Failed to execute hBar transfer: {e}"))
             })?;
 
         let _receipt = self.get_receipt_with_retry(&transaction).await?;
@@ -190,7 +191,7 @@ impl HederaClient {
             .execute(&self.client)
             .await
             .map_err(|e| {
-                WalletDError::TransactionError(format!("Failed to execute token transfer: {}", e))
+                WalletDError::TransactionError(format!("Failed to execute token transfer: {e}"))
             })?;
 
         let _receipt = self.get_receipt_with_retry(&transaction).await?;
@@ -207,16 +208,13 @@ impl HederaClient {
             .execute(&self.client)
             .await
             .map_err(|e| {
-                WalletDError::TransactionError(format!(
-                    "Failed to create file for bytecode: {}",
-                    e
-                ))
+                WalletDError::TransactionError(format!("Failed to create file for bytecode: {e}"))
             })?;
 
         let file_create_receipt = self.get_receipt_with_retry(&file_create_tx).await?;
-        let bytecode_file_id = file_create_receipt.file_id.ok_or_else(|| {
-            WalletDError::TransactionError("No file ID in receipt".to_string())
-        })?;
+        let bytecode_file_id = file_create_receipt
+            .file_id
+            .ok_or_else(|| WalletDError::TransactionError("No file ID in receipt".to_string()))?;
 
         // Deploy the contract using the bytecode file ID
         let transaction = ContractCreateTransaction::new()
@@ -225,14 +223,14 @@ impl HederaClient {
             .execute(&self.client)
             .await
             .map_err(|e| {
-                WalletDError::TransactionError(format!("Failed to execute contract creation: {}", e))
+                WalletDError::TransactionError(format!("Failed to execute contract creation: {e}"))
             })?;
 
         let receipt = self.get_receipt_with_retry(&transaction).await?;
 
         match receipt.contract_id {
             Some(contract_id) => {
-                println!("Smart Contract deployed with ID: {}", contract_id);
+                println!("Smart Contract deployed with ID: {contract_id}");
                 Ok(())
             }
             None => Err(WalletDError::TransactionError(
