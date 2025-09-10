@@ -24,10 +24,7 @@ pub async fn handle_hbar_menu(
                 "DEBUG: Calling get_balance for account {:?}",
                 wallet.account_id
             );
-            let balance = match wallet.get_balance().await {
-                Ok(bal) => bal,
-                Err(_) => 0.0,
-            };
+            let balance = (wallet.get_balance().await).unwrap_or(0.0);
 
             (account, balance)
         } else {
@@ -42,8 +39,8 @@ pub async fn handle_hbar_menu(
             println!("\n⚠️  MOCK MODE - Not connected to real testnet");
         }
         println!("\n========== HEDERA WALLET (TESTNET) ==========");
-        println!("Account: {}", account_id);
-        println!("Balance: {:.8} HBAR", real_balance);
+        println!("Account: {account_id}");
+        println!("Balance: {real_balance:.8} HBAR");
         println!("============================================");
 
         println!("\n[1] View Account Info");
@@ -94,7 +91,7 @@ async fn view_info() -> Result<(), String> {
 
         if let Some(account_id) = &wallet.account_id {
             println!("\nView on HashScan:");
-            println!("https://hashscan.io/testnet/account/{}", account_id);
+            println!("https://hashscan.io/testnet/account/{account_id}");
         }
     }
 
@@ -118,20 +115,19 @@ async fn check_real_balance() -> Result<(), String> {
         );
         match wallet.get_balance().await {
             Ok(balance) => {
-                println!("✅ Balance: {} HBAR", balance);
+                println!("✅ Balance: {balance} HBAR");
 
                 // Also check via API
                 if let Some(account_id) = &wallet.account_id {
                     let url = format!(
-                        "https://testnet.mirrornode.hedera.com/api/v1/accounts/{}",
-                        account_id
+                        "https://testnet.mirrornode.hedera.com/api/v1/accounts/{account_id}"
                     );
                     println!("\n🔍 Verifying via mirror node...");
-                    println!("Check: {}", url);
+                    println!("Check: {url}");
                 }
             }
             Err(e) => {
-                println!("❌ Error: {}", e);
+                println!("❌ Error: {e}");
             }
         }
     }
@@ -161,10 +157,7 @@ async fn view_history() -> Result<(), String> {
         if let Some(account_id) = &wallet.account_id {
             println!("\n=== Transaction History ===");
             println!("View on HashScan:");
-            println!(
-                "https://hashscan.io/testnet/account/{}/transactions",
-                account_id
-            );
+            println!("https://hashscan.io/testnet/account/{account_id}/transactions");
         }
     }
 
@@ -194,11 +187,11 @@ async fn reload_wallet() -> Result<(), String> {
             // Show new balance if available
             if let Some(wallet) = &manager.hedera {
                 if let Ok(balance) = wallet.get_balance().await {
-                    println!("💰 Current balance: {} HBAR", balance);
+                    println!("💰 Current balance: {balance} HBAR");
                 }
             }
         }
-        Err(e) => println!("❌ Failed to refresh: {}", e),
+        Err(e) => println!("❌ Failed to refresh: {e}"),
     }
 
     println!("\nPress Enter to continue...");
@@ -215,7 +208,7 @@ fn open_hedera_portal() -> Result<(), String> {
     std::process::Command::new("open")
         .arg("https://portal.hedera.com/")
         .spawn()
-        .map_err(|e| format!("Failed to open browser: {}", e))?;
+        .map_err(|e| format!("Failed to open browser: {e}"))?;
 
     #[cfg(target_os = "linux")]
     std::process::Command::new("xdg-open")
@@ -264,8 +257,8 @@ async fn handle_exchange() -> Result<(), String> {
         "2" => {
             use crate::hedera_funded_wallet::create_token;
             match create_token().await {
-                Ok(token_id) => println!("✅ Token created: {}", token_id),
-                Err(e) => println!("❌ Error: {}", e),
+                Ok(token_id) => println!("✅ Token created: {token_id}"),
+                Err(e) => println!("❌ Error: {e}"),
             }
         }
         "3" => {

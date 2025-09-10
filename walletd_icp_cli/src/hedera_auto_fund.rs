@@ -42,13 +42,13 @@ pub async fn auto_fund_testnet_account() -> Result<(String, String), String> {
 
     // Try each account
     for (account_id, private_key) in test_accounts {
-        println!("\n🔍 Checking account: {}", account_id);
+        println!("\n🔍 Checking account: {account_id}");
 
         // Check current balance
         match check_account_balance(account_id).await {
             Ok(balance) => {
                 let hbar = balance as f64 / 100_000_000.0;
-                println!("💰 Current balance: {} HBAR", hbar);
+                println!("💰 Current balance: {hbar} HBAR");
 
                 if balance > 0 {
                     println!("✅ Found account with balance!");
@@ -56,7 +56,7 @@ pub async fn auto_fund_testnet_account() -> Result<(String, String), String> {
                 } else {
                     // Try to fund the account
                     println!("🚰 Attempting to fund account...");
-                    if let Ok(_) = fund_account_via_faucets(account_id).await {
+                    if fund_account_via_faucets(account_id).await.is_ok() {
                         // Wait for funding to process
                         sleep(Duration::from_secs(5)).await;
 
@@ -64,7 +64,7 @@ pub async fn auto_fund_testnet_account() -> Result<(String, String), String> {
                         if let Ok(new_balance) = check_account_balance(account_id).await {
                             if new_balance > 0 {
                                 let hbar = new_balance as f64 / 100_000_000.0;
-                                println!("✅ Account funded! New balance: {} HBAR", hbar);
+                                println!("✅ Account funded! New balance: {hbar} HBAR");
                                 return Ok((account_id.to_string(), private_key.to_string()));
                             }
                         }
@@ -72,7 +72,7 @@ pub async fn auto_fund_testnet_account() -> Result<(String, String), String> {
                 }
             }
             Err(e) => {
-                println!("❌ Error checking account: {}", e);
+                println!("❌ Error checking account: {e}");
             }
         }
     }
@@ -83,15 +83,12 @@ pub async fn auto_fund_testnet_account() -> Result<(String, String), String> {
 }
 
 async fn check_account_balance(account_id: &str) -> Result<i64, String> {
-    let url = format!(
-        "https://testnet.mirrornode.hedera.com/api/v1/accounts/{}",
-        account_id
-    );
+    let url = format!("https://testnet.mirrornode.hedera.com/api/v1/accounts/{account_id}");
 
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(10))
         .build()
-        .map_err(|e| format!("Client error: {}", e))?;
+        .map_err(|e| format!("Client error: {e}"))?;
 
     match client.get(&url).send().await {
         Ok(response) => {
@@ -104,7 +101,7 @@ async fn check_account_balance(account_id: &str) -> Result<i64, String> {
                 Err(format!("Account not found: {}", response.status()))
             }
         }
-        Err(e) => Err(format!("Network error: {}", e)),
+        Err(e) => Err(format!("Network error: {e}")),
     }
 }
 
@@ -119,12 +116,12 @@ async fn fund_account_via_faucets(account_id: &str) -> Result<(), String> {
     ];
 
     for (faucet_url, amount) in faucets {
-        println!("   🔧 Trying faucet: {}", faucet_url);
+        println!("   🔧 Trying faucet: {faucet_url}");
 
         let client = reqwest::Client::builder()
             .timeout(Duration::from_secs(30))
             .build()
-            .map_err(|e| format!("Client error: {}", e))?;
+            .map_err(|e| format!("Client error: {e}"))?;
 
         let request = FaucetRequest {
             account_id: account_id.to_string(),
@@ -141,7 +138,7 @@ async fn fund_account_via_faucets(account_id: &str) -> Result<(), String> {
                 }
             }
             Err(e) => {
-                println!("   ❌ Faucet error: {}", e);
+                println!("   ❌ Faucet error: {e}");
             }
         }
     }
@@ -170,23 +167,21 @@ pub async fn handle_auto_fund_account() -> Result<(), String> {
         Ok((account_id, private_key)) => {
             // Save credentials
             let env_content = format!(
-                "# Hedera Testnet Configuration\nHEDERA_NETWORK=testnet\nHEDERA_OPERATOR_ID={}\nOPERATOR_PRIVATE_KEY={}\n",
-                account_id,
-                private_key
+                "# Hedera Testnet Configuration\nHEDERA_NETWORK=testnet\nHEDERA_OPERATOR_ID={account_id}\nOPERATOR_PRIVATE_KEY={private_key}\n"
             );
 
             std::fs::write(".env.hedera", env_content)
-                .map_err(|e| format!("Failed to save: {}", e))?;
+                .map_err(|e| format!("Failed to save: {e}"))?;
 
             println!("\n✅ Account ready!");
-            println!("📍 Account ID: {}", account_id);
+            println!("📍 Account ID: {account_id}");
             println!("💾 Credentials saved to .env.hedera");
 
             // Reload wallet
             reload_wallet_with_new_account(&account_id, &private_key).await?;
         }
         Err(e) => {
-            println!("❌ Auto-funding failed: {}", e);
+            println!("❌ Auto-funding failed: {e}");
         }
     }
 
@@ -211,16 +206,16 @@ async fn reload_wallet_with_new_account(account_id: &str, private_key: &str) -> 
     let mut manager = WALLET_MANAGER.write().await;
     match manager.init_hedera().await {
         Ok(_) => {
-            println!("✅ Wallet reloaded with account: {}", account_id);
+            println!("✅ Wallet reloaded with account: {account_id}");
 
             // Check balance
             if let Some(wallet) = &manager.hedera {
                 if let Ok(balance) = wallet.get_balance().await {
-                    println!("💰 Balance: {} HBAR", balance);
+                    println!("💰 Balance: {balance} HBAR");
                 }
             }
             Ok(())
         }
-        Err(e) => Err(format!("Reload failed: {}", e)),
+        Err(e) => Err(format!("Reload failed: {e}")),
     }
 }

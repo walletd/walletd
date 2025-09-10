@@ -160,7 +160,7 @@ impl HDKey {
     }
 
     pub fn derive(&self, derivation_path: &str) -> Result<Self, Error> {
-        eprintln!("Deriving path: {}", derivation_path);
+        eprintln!("Deriving path: {derivation_path}");
         let new_deriv_path = HDPath::parse_path(derivation_path)?;
         let new_deriv_path_info = new_deriv_path.to_vec();
         let parent_deriv_path = self.derivation_path.to_vec();

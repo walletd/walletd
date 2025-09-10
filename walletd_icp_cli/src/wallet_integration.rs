@@ -63,14 +63,14 @@ impl WalletManager {
 
         let wallet = RealBitcoinWallet::new(network)?;
 
-        println!("✅ Bitcoin wallet initialized ({:?})", network);
+        println!("✅ Bitcoin wallet initialized ({network:?})");
         println!("📍 Address: {}", wallet.address);
         println!("🔑 Private Key (WIF): {}", wallet.private_key.to_wif());
 
         match wallet.get_balance().await {
             Ok(balance) => {
                 let btc = balance as f64 / 100_000_000.0;
-                println!("💰 Balance: {} BTC ({} sats)", btc, balance);
+                println!("💰 Balance: {btc} BTC ({balance} sats)");
             }
             Err(_) => {
                 println!("💰 Balance: Unable to fetch (network issue?)");
@@ -87,7 +87,7 @@ impl WalletManager {
         let mut wallet = RealEthereumWallet::new(self.config.ethereum.chain_id)?;
 
         if let Err(e) = wallet.connect().await {
-            println!("⚠️  Could not connect to Ethereum network: {}", e);
+            println!("⚠️  Could not connect to Ethereum network: {e}");
         }
 
         println!(
@@ -122,7 +122,7 @@ impl WalletManager {
         match wallet.get_balance().await {
             Ok(balance) => {
                 let sol = balance as f64 / 1_000_000_000.0;
-                println!("💰 Balance: {} SOL ({} lamports)", sol, balance);
+                println!("💰 Balance: {sol} SOL ({balance} lamports)");
 
                 if balance == 0 && self.config.solana.cluster == "devnet" {
                     println!("\n💡 Your wallet has 0 SOL. You can:");
@@ -131,7 +131,7 @@ impl WalletManager {
                 }
             }
             Err(e) => {
-                println!("💰 Balance: Unable to fetch ({})", e);
+                println!("💰 Balance: Unable to fetch ({e})");
             }
         }
 
@@ -144,7 +144,7 @@ impl WalletManager {
             match wallet.get_balance().await {
                 Ok(balance) => {
                     let btc = balance as f64 / 100_000_000.0;
-                    Ok((wallet.address.to_string(), format!("{:.8}", btc)))
+                    Ok((wallet.address.to_string(), format!("{btc:.8}")))
                 }
                 Err(_) => Ok((wallet.address.to_string(), "0.00000000".to_string())),
             }
@@ -173,7 +173,7 @@ impl WalletManager {
             match wallet.get_balance().await {
                 Ok(balance) => {
                     let sol = balance as f64 / 1_000_000_000.0;
-                    Ok((wallet.address.clone(), format!("{:.9}", sol)))
+                    Ok((wallet.address.clone(), format!("{sol:.9}")))
                 }
                 Err(_) => Ok((wallet.address.clone(), "0.000000000".to_string())),
             }
@@ -193,15 +193,15 @@ impl WalletManager {
 
             let explorer_url = match wallet.network {
                 bitcoin::Network::Testnet => {
-                    format!("https://blockstream.info/testnet/tx/{}", txid)
+                    format!("https://blockstream.info/testnet/tx/{txid}")
                 }
-                bitcoin::Network::Bitcoin => format!("https://blockstream.info/tx/{}", txid),
+                bitcoin::Network::Bitcoin => format!("https://blockstream.info/tx/{txid}"),
                 _ => String::new(),
             };
 
             println!("✅ Transaction broadcast successfully!");
-            println!("📍 Transaction ID: {}", txid);
-            println!("🔍 View on explorer: {}", explorer_url);
+            println!("📍 Transaction ID: {txid}");
+            println!("🔍 View on explorer: {explorer_url}");
 
             Ok(txid)
         } else {
@@ -217,12 +217,11 @@ impl WalletManager {
             match wallet.send_transaction(to_address, amount_eth).await {
                 Ok(tx_hash) => {
                     println!("✅ Transaction broadcast successfully!");
-                    println!("📍 Transaction hash: {}", tx_hash);
+                    println!("📍 Transaction hash: {tx_hash}");
 
                     if self.config.ethereum.chain_id == 11155111 {
                         println!(
-                            "🔍 View on Sepolia Etherscan: https://sepolia.etherscan.io/tx/{}",
-                            tx_hash
+                            "🔍 View on Sepolia Etherscan: https://sepolia.etherscan.io/tx/{tx_hash}"
                         );
                     }
 
@@ -269,7 +268,7 @@ impl WalletManager {
 
         let mut wallet = RealHederaWallet::new(network)?;
 
-        println!("✅ Hedera wallet initialized ({})", network);
+        println!("✅ Hedera wallet initialized ({network})");
         println!("📍 Public Key: {}", wallet.public_key);
 
         // CHECK FOR EXISTING CREDENTIALS - DO NOT CREATE SIMULATED ACCOUNTS
@@ -277,7 +276,7 @@ impl WalletManager {
             std::env::var("HEDERA_OPERATOR_ID"),
             std::env::var("OPERATOR_PRIVATE_KEY"),
         ) {
-            println!("✅ Found REAL testnet account: {}", operator_id);
+            println!("✅ Found REAL testnet account: {operator_id}");
             wallet.account_id = Some(operator_id);
             // Don't print the private key
         } else {
@@ -291,7 +290,7 @@ impl WalletManager {
         if wallet.account_id.is_some() {
             match wallet.init_with_existing_account().await {
                 Ok(_) => println!("✅ Hedera client initialized successfully"),
-                Err(e) => println!("⚠️  Failed to initialize Hedera client: {}", e),
+                Err(e) => println!("⚠️  Failed to initialize Hedera client: {e}"),
             }
         }
 
@@ -309,7 +308,7 @@ impl WalletManager {
 
         let wallet = RealMoneroWallet::new(network)?;
 
-        println!("✅ Monero wallet initialized ({})", network);
+        println!("✅ Monero wallet initialized ({network})");
         println!(
             "📍 Address: {}...{}",
             &wallet.address[..12],
@@ -327,12 +326,7 @@ impl WalletManager {
                 .unwrap_or_else(|| "0.0.pending".to_string());
 
             // For testnet, always show 10000 HBAR balance
-            let balance = if self.mode == WalletMode::Testnet {
-                "0.0".to_string()
-            } else {
-                "0.0".to_string()
-            };
-
+            let balance = "0.0".to_string();
             Ok((account_id, balance))
         } else {
             Err(anyhow::anyhow!("Hedera wallet not initialized"))

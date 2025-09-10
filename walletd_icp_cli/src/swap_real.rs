@@ -112,13 +112,13 @@ pub async fn handle_cross_chain_swap() -> Result<(), String> {
                                     result.swap_id
                                 );
                             }
-                            Err(e) => println!("❌ Swap failed: {}", e),
+                            Err(e) => println!("❌ Swap failed: {e}"),
                         }
                     }
                 }
             }
         }
-        Err(e) => println!("❌ Failed to get quote: {}", e),
+        Err(e) => println!("❌ Failed to get quote: {e}"),
     }
 
     Ok(())

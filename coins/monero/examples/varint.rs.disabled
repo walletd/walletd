@@ -11,6 +11,6 @@ fn main() {
     for value in values {
         let varint = VarInt(value);
         let encoded = varint.encode_to_bytes();
-        println!("Value: {} -> Encoded bytes: {:?}", value, encoded);
+        println!("Value: {value} -> Encoded bytes: {encoded:?}");
     }
 }

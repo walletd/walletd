@@ -293,7 +293,7 @@ pub struct TxInToKey {
 }
 
 impl TxInToKey {
-    pub fn absolute_output_offsets_to_relative(key_offsets: &mut Vec<u64>) {
+    pub fn absolute_output_offsets_to_relative(key_offsets: &mut [u64]) {
         if key_offsets.is_empty() {
             return;
         }
@@ -600,7 +600,6 @@ pub struct TransactionParameters {
 }
 
 #[cfg(test)]
-
 mod tests {
 
     use hex_literal;

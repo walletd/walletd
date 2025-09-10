@@ -9,7 +9,7 @@ async fn main() {
         .get_latest_blockhash()
         .await
         .unwrap();
-    println!("Latest blockhash: {:?}", latest_blockhash);
+    println!("Latest blockhash: {latest_blockhash:?}");
 
     let data_len = 300;
     let balance = solana_client
@@ -17,8 +17,5 @@ async fn main() {
         .get_minimum_balance_for_rent_exemption(data_len)
         .await
         .unwrap();
-    println!(
-        "Assuming a 300 byte contract, the minimum fee to be rent-exempt is: {}",
-        balance
-    );
+    println!("Assuming a 300 byte contract, the minimum fee to be rent-exempt is: {balance}");
 }

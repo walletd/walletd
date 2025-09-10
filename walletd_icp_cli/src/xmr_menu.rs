@@ -8,8 +8,8 @@ pub async fn handle_xmr_menu(
 ) -> Result<CliResponse, String> {
     loop {
         println!("\n========== MONERO WALLET (STAGENET) ==========");
-        println!("Address: {}", xmr_address);
-        println!("Balance: {}", xmr_balance);
+        println!("Address: {xmr_address}");
+        println!("Balance: {xmr_balance}");
         println!("Network: STAGENET");
         println!("============================================");
 
@@ -31,17 +31,14 @@ pub async fn handle_xmr_menu(
 
         match input.trim() {
             "1" => {
-                println!("\n💰 Balance: {}", xmr_balance);
+                println!("\n💰 Balance: {xmr_balance}");
                 println!("Check live balance on explorer:");
-                println!(
-                    "https://community.xmr.to/explorer/stagenet/tx/{}",
-                    xmr_address
-                );
+                println!("https://community.xmr.to/explorer/stagenet/tx/{xmr_address}");
                 wait_for_enter();
             }
             "2" => {
                 println!("\n📍 Your Stagenet Address:");
-                println!("{}", xmr_address);
+                println!("{xmr_address}");
                 println!("\n💡 Use this address to receive XMR");
                 wait_for_enter();
             }
@@ -73,8 +70,8 @@ pub async fn handle_xmr_menu(
             }
             "4" => {
                 match crate::monero_live_testnet::instant_testnet_loader(xmr_address).await {
-                    Ok(msg) => println!("\n{}", msg),
-                    Err(e) => println!("\n❌ {}", e),
+                    Ok(msg) => println!("\n{msg}"),
+                    Err(e) => println!("\n❌ {e}"),
                 }
                 wait_for_enter();
             }

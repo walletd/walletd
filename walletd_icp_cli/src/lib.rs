@@ -29,7 +29,7 @@ pub async fn icp_overview(
 }
 
 pub fn display_message(message: &str, icon: &str) {
-    println!("\n{} {}", icon, message);
+    println!("\n{icon} {message}");
 }
 
 pub fn display_crypto_menu(coins: &[cli_options::CoinType]) -> String {

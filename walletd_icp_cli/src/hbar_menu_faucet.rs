@@ -7,14 +7,14 @@ pub async fn handle_get_testnet_hbar() -> Result<(), String> {
     match check_real_balance().await {
         Ok(balance) => {
             println!("✅ Using account: 0.0.7654321");
-            println!("💰 Current balance: {} HBAR", balance);
+            println!("💰 Current balance: {balance} HBAR");
 
             if balance < 10.0 {
                 println!("\n⚠️  Low balance! Visit https://portal.hedera.com to refill");
             }
         }
         Err(e) => {
-            println!("❌ Error: {}", e);
+            println!("❌ Error: {e}");
             println!("\n📝 Make sure you've added your private key to .env.hedera");
         }
     }

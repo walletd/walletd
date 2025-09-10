@@ -8,15 +8,12 @@ impl SimpleEthManager {
         to_address: &str,
         amount: f64,
     ) -> Result<String> {
-        println!(
-            "Sending {} ETH from {} to {}",
-            amount, from_address, to_address
-        );
+        println!("Sending {amount} ETH from {from_address} to {to_address}");
         Ok("0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef".to_string())
     }
 
     pub async fn get_balance_simple(address: &str) -> Result<f64> {
-        println!("Getting balance for {}", address);
+        println!("Getting balance for {address}");
         Ok(1.5)
     }
 
@@ -26,6 +23,6 @@ impl SimpleEthManager {
 }
 
 pub async fn swap_tokens_simple(from_token: &str, to_token: &str, amount: f64) -> Result<String> {
-    println!("Swapping {} {} to {}", amount, from_token, to_token);
+    println!("Swapping {amount} {from_token} to {to_token}");
     Ok("swap_tx_hash_placeholder".to_string())
 }

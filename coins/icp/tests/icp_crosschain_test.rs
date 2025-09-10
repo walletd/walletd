@@ -6,14 +6,11 @@ fn test_crosschain_bridge() {
     let coordinator = CrossChainCoordinator::new();
 
     // Test basic functionality
-    assert!(
-        coordinator
-            .transfer(
-                walletd_icp::crosschain::ChainType::ICP,
-                walletd_icp::crosschain::ChainType::ICP,
-                100
-            )
-            .is_ok()
-            || true
-    ); // Allow either success or failure
+    assert!(coordinator
+        .transfer(
+            walletd_icp::crosschain::ChainType::ICP,
+            walletd_icp::crosschain::ChainType::ICP,
+            100
+        )
+        .is_ok()); // Allow either success or failure
 }

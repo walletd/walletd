@@ -9,7 +9,7 @@ pub async fn handle_send_bitcoin_real(_user_id: &str) -> Result<(), String> {
         let balance = btc_wallet
             .get_balance()
             .await
-            .map_err(|e| format!("Failed to get balance: {}", e))?;
+            .map_err(|e| format!("Failed to get balance: {e}"))?;
 
         if balance == 0 {
             println!("\n⚠️  Your wallet has 0 BTC!");
@@ -43,8 +43,8 @@ pub async fn handle_send_bitcoin_real(_user_id: &str) -> Result<(), String> {
 
         println!("\n📋 Transaction Summary:");
         println!("From: {}", btc_wallet.address);
-        println!("To: {}", to_address);
-        println!("Amount: {} BTC ({} sats)", amount, amount_sats);
+        println!("To: {to_address}");
+        println!("Amount: {amount} BTC ({amount_sats} sats)");
         println!(
             "Available: {} BTC ({} sats)",
             balance as f64 / 100_000_000.0,
@@ -77,17 +77,17 @@ pub async fn handle_send_bitcoin_real(_user_id: &str) -> Result<(), String> {
             {
                 Ok(txid) => {
                     println!("\n✅ TRANSACTION BROADCAST SUCCESSFULLY!");
-                    println!("Transaction ID: {}", txid);
+                    println!("Transaction ID: {txid}");
                     println!("\n🔍 View on Testnet Explorer:");
-                    println!("https://blockstream.info/testnet/tx/{}", txid);
+                    println!("https://blockstream.info/testnet/tx/{txid}");
                     println!("\n📊 Transaction Details:");
                     println!("- From: {}", btc_wallet.address);
-                    println!("- To: {}", to_address);
-                    println!("- Amount: {} BTC", amount);
+                    println!("- To: {to_address}");
+                    println!("- Amount: {amount} BTC");
                     println!("- Network: Bitcoin Testnet");
                 }
                 Err(e) => {
-                    println!("\n❌ Transaction failed: {}", e);
+                    println!("\n❌ Transaction failed: {e}");
                     if e.to_string().contains("No UTXOs available") {
                         println!("\n💡 Your wallet needs funding first!");
                         println!(

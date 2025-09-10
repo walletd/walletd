@@ -13,6 +13,12 @@ pub struct TestnetService {
     balance: f64,
 }
 
+impl Default for TestnetService {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TestnetService {
     pub fn new() -> Self {
         // Initialize with demo balance
@@ -27,7 +33,7 @@ impl TestnetService {
         // For immediate testing, we simulate the transfer
         println!("🔄 Processing transfer...");
         println!("   From: SDK Testnet Wallet");
-        println!("   To: {}", user_address);
+        println!("   To: {user_address}");
         println!("   Amount: 10.0 XMR");
 
         // Simulate transaction
@@ -45,7 +51,7 @@ impl TestnetService {
 
     pub async fn check_balance(address: &str) -> Result<f64> {
         // Read balance from local storage
-        let balance_file = format!(".balances/{}", address);
+        let balance_file = format!(".balances/{address}");
         if Path::new(&balance_file).exists() {
             let balance_str = fs::read_to_string(&balance_file)?;
             Ok(balance_str.parse::<f64>().unwrap_or(0.0))
@@ -71,8 +77,8 @@ impl TestnetService {
         println!("\n✅ Transaction sent!");
         println!("   From: {}...{}", &from[..12], &from[from.len() - 12..]);
         println!("   To: {}...{}", &to[..12], &to[to.len() - 12..]);
-        println!("   Amount: {} XMR", amount);
-        println!("   TX ID: {}", tx_id);
+        println!("   Amount: {amount} XMR");
+        println!("   TX ID: {tx_id}");
 
         Ok(tx_id)
     }
@@ -80,8 +86,8 @@ impl TestnetService {
 
 fn update_user_balance(address: &str, new_balance: f64) -> Result<()> {
     fs::create_dir_all(".balances")?;
-    let balance_file = format!(".balances/{}", address);
-    fs::write(&balance_file, format!("{}", new_balance))?;
+    let balance_file = format!(".balances/{address}");
+    fs::write(&balance_file, format!("{new_balance}"))?;
     Ok(())
 }
 
@@ -98,7 +104,7 @@ pub async fn instant_testnet_menu(user_address: &str) -> Result<String> {
     println!("======================\n");
 
     let current_balance = TestnetService::check_balance(user_address).await?;
-    println!("Your Balance: {} XMR\n", current_balance);
+    println!("Your Balance: {current_balance} XMR\n");
 
     println!("[1] Get 10 XMR (Instant)");
     println!("[2] Send XMR");
@@ -136,7 +142,7 @@ pub async fn instant_testnet_menu(user_address: &str) -> Result<String> {
         }
         "3" => {
             let balance = TestnetService::check_balance(user_address).await?;
-            Ok(format!("Current balance: {} XMR", balance))
+            Ok(format!("Current balance: {balance} XMR"))
         }
         "4" => Ok("Transaction history (demo):\n- Received 10 XMR from SDK Faucet".to_string()),
         _ => Ok("Back to menu".to_string()),

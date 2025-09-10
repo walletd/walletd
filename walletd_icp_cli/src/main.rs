@@ -82,32 +82,32 @@ async fn main() -> Result<(), anyhow::Error> {
             // Initialize actual wallets
             println!("🔄 Initializing Bitcoin wallet...");
             if let Err(e) = manager.init_bitcoin().await {
-                println!("⚠️  Bitcoin initialization: {}", e);
+                println!("⚠️  Bitcoin initialization: {e}");
             } else {
                 println!("✅ Bitcoin wallet initialized");
             }
 
             println!("🔄 Initializing Ethereum wallet...");
             if let Err(e) = manager.init_ethereum().await {
-                println!("⚠️  Ethereum initialization: {}", e);
+                println!("⚠️  Ethereum initialization: {e}");
             } else {
                 println!("✅ Ethereum wallet initialized");
             }
 
             println!("🔄 Initializing Solana wallet...");
             if let Err(e) = manager.init_solana().await {
-                println!("⚠️  Solana initialization: {}", e);
+                println!("⚠️  Solana initialization: {e}");
             } else {
                 println!("✅ Solana wallet initialized");
             }
             if let Err(e) = manager.init_hedera().await {
-                println!("⚠️  Hedera initialization: {}", e);
+                println!("⚠️  Hedera initialization: {e}");
             } else {
                 println!("✅ Hedera wallet initialized");
             }
 
             if let Err(e) = manager.init_monero().await {
-                println!("⚠️  Monero initialization: {}", e);
+                println!("⚠️  Monero initialization: {e}");
             } else {
                 println!("✅ Monero wallet initialized");
             }
@@ -315,13 +315,13 @@ async fn main() -> Result<(), anyhow::Error> {
                     match swap_real::handle_cross_chain_swap().await {
                         Ok(_) => continue,
                         Err(e) => {
-                            eprintln!("Swap error: {}", e);
+                            eprintln!("Swap error: {e}");
                             continue;
                         }
                     }
                 }
                 Err(e) => {
-                    eprintln!("Error: {}", e);
+                    eprintln!("Error: {e}");
                     continue;
                 }
             }

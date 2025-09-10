@@ -28,7 +28,7 @@ pub async fn get_stagenet_xmr_auto(user_address: &str) -> Result<String> {
     // Start RPC with visible output
     println!("🔄 Starting wallet service...");
     let rpc_child = Command::new("./monero-x86_64-apple-darwin11-v0.18.3.4/monero-wallet-rpc")
-        .args(&[
+        .args([
             "--stagenet",
             "--wallet-file",
             "cli_faucet_wallet",
@@ -80,7 +80,7 @@ pub async fn get_stagenet_xmr_auto(user_address: &str) -> Result<String> {
                     Ok(None) => {
                         // Still running
                         if i % 5 == 0 {
-                            println!("   Still waiting... ({}s)", i);
+                            println!("   Still waiting... ({i}s)");
                         }
                     }
                     Err(e) => return Err(anyhow::anyhow!("Failed to check RPC status: {}", e)),
@@ -128,7 +128,7 @@ async fn send_xmr_to_user(user_address: &str) -> Result<String> {
     let balance = json["result"]["unlocked_balance"].as_u64().unwrap_or(0);
     let balance_xmr = balance as f64 / 1e12;
 
-    println!("   Faucet balance: {} XMR", balance_xmr);
+    println!("   Faucet balance: {balance_xmr} XMR");
 
     if balance == 0 {
         // Kill RPC
@@ -178,12 +178,11 @@ async fn send_xmr_to_user(user_address: &str) -> Result<String> {
     if let Some(tx_hash) = tx_json["result"]["tx_hash"].as_str() {
         Ok(format!(
             "\n✅ SUCCESS! XMR sent!\n\
-            TX: {}\n\
+            TX: {tx_hash}\n\
             Amount: 0.1 XMR\n\
             \n📊 View on explorer:\n\
-            https://stagenet.xmrchain.net/tx/{}\n\
-            \n⏱️  Your XMR will arrive in 2-5 minutes!",
-            tx_hash, tx_hash
+            https://stagenet.xmrchain.net/tx/{tx_hash}\n\
+            \n⏱️  Your XMR will arrive in 2-5 minutes!"
         ))
     } else if let Some(error) = tx_json.get("error") {
         Err(anyhow::anyhow!("Transfer failed: {:?}", error))

@@ -14,7 +14,7 @@ pub async fn simple_auto_fund() -> Result<(), String> {
 
     let amount: f64 = amount_str.trim().parse().unwrap_or(100.0);
 
-    println!("\n🚀 Setting up account with {} HBAR...", amount);
+    println!("\n🚀 Setting up account with {amount} HBAR...");
 
     // Use a pre-funded testnet account
     let funded_account = "0.0.4886969";
@@ -22,11 +22,10 @@ pub async fn simple_auto_fund() -> Result<(), String> {
 
     // Save and reload
     let env_content = format!(
-        "HEDERA_NETWORK=testnet\nHEDERA_OPERATOR_ID={}\nOPERATOR_PRIVATE_KEY={}\n",
-        funded_account, funded_key
+        "HEDERA_NETWORK=testnet\nHEDERA_OPERATOR_ID={funded_account}\nOPERATOR_PRIVATE_KEY={funded_key}\n"
     );
 
-    std::fs::write(".env.hedera", env_content).map_err(|e| format!("Failed to save: {}", e))?;
+    std::fs::write(".env.hedera", env_content).map_err(|e| format!("Failed to save: {e}"))?;
 
     // Reload wallet
     dotenvy::from_filename(".env.hedera").ok();
@@ -37,11 +36,11 @@ pub async fn simple_auto_fund() -> Result<(), String> {
     manager
         .init_hedera()
         .await
-        .map_err(|e| format!("Init failed: {}", e))?;
+        .map_err(|e| format!("Init failed: {e}"))?;
 
     println!("✅ Account ready with testnet HBAR!");
-    println!("📍 Account: {}", funded_account);
-    println!("💰 You can now send up to {} HBAR", amount);
+    println!("📍 Account: {funded_account}");
+    println!("💰 You can now send up to {amount} HBAR");
 
     Ok(())
 }

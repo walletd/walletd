@@ -15,7 +15,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Example address format
     let address_format = AddressType::Standard;
-    println!("Using address format: {:?}", address_format);
+    println!("Using address format: {address_format:?}");
 
     Ok(())
 }

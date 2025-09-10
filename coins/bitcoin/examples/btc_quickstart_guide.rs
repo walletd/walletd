@@ -17,7 +17,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Create a wallet with optional mnemonic
     let wallet = manager.create_wallet("quickstart-wallet", None).await?;
-    println!("Created wallet: {:?}", wallet);
+    println!("Created wallet: {wallet:?}");
 
     Ok(())
 }

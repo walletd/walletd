@@ -21,7 +21,7 @@ async fn main() {
     let pubkey_result: Pubkey = pubstr.parse().unwrap();
     println!("public key: {:?}", &pubkey_result);
     let acc_info = connected_client.get_account(&pubkey_result).await.unwrap();
-    println!("Account data {:?}", acc_info);
+    println!("Account data {acc_info:?}");
 
     println!("key: {:?}", &pubkey_result);
     println!("lamports: {:?}", acc_info.lamports);
@@ -40,16 +40,16 @@ async fn main() {
     let restored_keypair = Keypair::try_from(bytes.as_slice()).unwrap();
 
     println!("From bytes: {:?}", &bytes);
-    println!("Restored: {:?}", restored_keypair);
+    println!("Restored: {restored_keypair:?}");
 
     let from_pubkey = Signer::pubkey(&restored_keypair);
     println!("public key: {:?}", &from_pubkey);
 
     let balance = connected_client.get_balance(&from_pubkey).await.unwrap();
-    println!("Balance: {}", balance);
+    println!("Balance: {balance}");
 
     let acc_info = connected_client.get_account(&from_pubkey).await.unwrap();
-    println!("Account data {:?}", acc_info);
+    println!("Account data {acc_info:?}");
 
     println!("key: {:?}", &pubkey_result);
 

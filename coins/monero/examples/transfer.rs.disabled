@@ -12,7 +12,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 4. Broadcasting transaction
 
     let address_format = AddressType::Standard;
-    println!("Using address format: {:?}", address_format);
+    println!("Using address format: {address_format:?}");
 
     println!("Transfer functionality requires:");
     println!("- Valid HD keys");

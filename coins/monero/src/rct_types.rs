@@ -893,11 +893,11 @@ impl Clsag {
     #[allow(clippy::too_many_arguments)]
     pub fn generate(
         message: &RctKey,
-        P: &Vec<RctKey>,
+        P: &[RctKey],
         p: &RctKey,
-        C: &Vec<RctKey>,
+        C: &[RctKey],
         z: &RctKey,
-        C_nonzero: &Vec<RctKey>,
+        C_nonzero: &[RctKey],
         C_offset: &RctKey,
         l: usize,
     ) -> Result<Self, Error> {
@@ -1266,14 +1266,14 @@ impl RctSig {
     #[allow(clippy::too_many_arguments)]
     pub fn generate_rct_simple(
         message: &RctKey,
-        in_sk: &Vec<CtKey>,
-        destinations: &Vec<RctKey>,
-        in_amounts: &Vec<u64>,
+        in_sk: &[CtKey],
+        destinations: &[RctKey],
+        in_amounts: &[u64],
         out_amounts: &Vec<u64>,
         txn_fee: u64,
-        mix_ring: &Vec<Vec<CtKey>>,
-        amount_keys: &Vec<RctKey>,
-        indices: &Vec<u64>,
+        mix_ring: &[Vec<CtKey>],
+        amount_keys: &[RctKey],
+        indices: &[u64],
         out_sk: &mut Vec<CtKey>,
         rct_config: RctConfig,
     ) -> Result<Self, Error> {
@@ -1342,7 +1342,7 @@ impl RctSig {
 
         let mut pseudo_outs: Vec<RctKey> = vec![RctKey::zero(); in_amounts.len()];
         let mut sum_out = RctKey::zero();
-        for i in 0..out_sk.len() {
+        for (i, _) in out_sk.iter().enumerate() {
             sum_out = RctKey::from_scalar(&(out_sk[i].mask.as_scalar() + sum_out.as_scalar()));
         }
 
@@ -1376,7 +1376,7 @@ impl RctSig {
             txn_fee,
             rct_type,
             message: *message,
-            mix_ring: mix_ring.clone(),
+            mix_ring: mix_ring.to_owned().clone(),
             pseudo_outs,
             ecdh_info: rct_ecdh_info,
             out_pk: rct_out_pk,

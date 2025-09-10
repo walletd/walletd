@@ -12,5 +12,5 @@ fn main() {
     println!("- Used in Monero transactions for privacy");
 
     let address_type = AddressType::Standard;
-    println!("Address type for example: {:?}", address_type);
+    println!("Address type for example: {address_type:?}");
 }

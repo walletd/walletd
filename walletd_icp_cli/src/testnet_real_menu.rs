@@ -81,27 +81,27 @@ async fn handle_bitcoin_testnet_wallet() -> Result<(), String> {
         match btc_manager.get_receive_address() {
             Ok(address) => {
                 println!("✅ Your Bitcoin testnet address:");
-                println!("📬 {}", address);
+                println!("📬 {address}");
 
                 // Check balance
                 match btc_manager.get_balance().await {
                     Ok(balance) => {
                         let btc = balance as f64 / 100_000_000.0;
-                        println!("💰 Balance: {} tBTC", btc);
+                        println!("💰 Balance: {btc} tBTC");
 
                         if balance == 0 {
                             println!("\n💧 Get free tBTC from:");
                             println!("   https://coinfaucet.eu/en/btc-testnet/");
                         }
                     }
-                    Err(e) => println!("⚠️  Balance check failed: {}", e),
+                    Err(e) => println!("⚠️  Balance check failed: {e}"),
                 }
 
                 println!("\n🔗 View on explorer:");
-                println!("   https://blockstream.info/testnet/address/{}", address);
+                println!("   https://blockstream.info/testnet/address/{address}");
             }
             Err(e) => {
-                println!("❌ Failed to generate address: {}", e);
+                println!("❌ Failed to generate address: {e}");
             }
         }
     } else {
@@ -121,14 +121,14 @@ async fn handle_ethereum_testnet_wallet() -> Result<(), String> {
     if let Some(eth_wallet) = &manager.ethereum {
         let address = eth_wallet.address;
         println!("✅ Your Ethereum Sepolia address:");
-        println!("📬 {}", address);
+        println!("📬 {address}");
 
         // Note: Balance check would require provider connection
         println!("\n💧 Get free Sepolia ETH from:");
         println!("   https://sepoliafaucet.com/");
 
         println!("\n🔗 View on explorer:");
-        println!("   https://sepolia.etherscan.io/address/{}", address);
+        println!("   https://sepolia.etherscan.io/address/{address}");
     } else {
         println!("❌ Ethereum wallet not initialized");
     }
@@ -169,8 +169,8 @@ async fn handle_generate_address() -> Result<(), String> {
             let manager = WALLET_MANAGER.read().await;
             if let Some(btc) = &manager.bitcoin {
                 match btc.get_receive_address() {
-                    Ok(addr) => println!("✅ New Bitcoin testnet address: {}", addr),
-                    Err(e) => println!("❌ Failed: {}", e),
+                    Ok(addr) => println!("✅ New Bitcoin testnet address: {addr}"),
+                    Err(e) => println!("❌ Failed: {e}"),
                 }
             }
         }
@@ -197,9 +197,9 @@ async fn handle_check_balances() -> Result<(), String> {
         match btc.get_balance().await {
             Ok(balance) => {
                 let btc_balance = balance as f64 / 100_000_000.0;
-                println!("🪙 Bitcoin: {} tBTC", btc_balance);
+                println!("🪙 Bitcoin: {btc_balance} tBTC");
             }
-            Err(e) => println!("🪙 Bitcoin: Error - {}", e),
+            Err(e) => println!("🪙 Bitcoin: Error - {e}"),
         }
     }
 

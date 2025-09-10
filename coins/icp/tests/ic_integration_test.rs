@@ -3,6 +3,7 @@ use walletd_icp::*;
 
 #[cfg(test)]
 mod ic_integration_tests {
+    type MethodMap = std::collections::HashMap<String, Box<dyn Fn(&[u8]) -> Vec<u8>>>;
     use super::*;
 
     // Mock IC environment for testing
@@ -14,7 +15,7 @@ mod ic_integration_tests {
     struct MockCanister {
         _wasm: Vec<u8>,
         _state: Vec<u8>,
-        _methods: std::collections::HashMap<String, Box<dyn Fn(&[u8]) -> Vec<u8>>>,
+        _methods: MethodMap,
     }
 
     impl MockIC {
@@ -86,18 +87,9 @@ mod ic_integration_tests {
 
         // Deploy multiple canisters
         let canisters = vec![
-            (
-                "token",
-                Principal::anonymous(),
-            ),
-            (
-                "dex",
-                Principal::anonymous(),
-            ),
-            (
-                "governance",
-                Principal::anonymous(),
-            ),
+            ("token", Principal::anonymous()),
+            ("dex", Principal::anonymous()),
+            ("governance", Principal::anonymous()),
         ];
 
         for (name, id) in canisters {

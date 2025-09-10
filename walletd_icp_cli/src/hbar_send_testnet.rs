@@ -6,15 +6,15 @@ pub async fn handle_send_hedera_testnet(from_account: &str) -> Result<()> {
     println!("\n=== Send HBAR (Testnet) ===");
 
     let balance = HederaTestnetSimulator::get_balance(from_account);
-    println!("From: {}", from_account);
-    println!("Balance: {} HBAR", balance);
+    println!("From: {from_account}");
+    println!("Balance: {balance} HBAR");
 
     if balance == 0.0 {
         println!("\n⚠️  Your balance is 0. Getting testnet HBAR...");
         HederaTestnetSimulator::create_account(from_account)?;
         println!("✅ Added 10,000 testnet HBAR to your account!");
         let new_balance = HederaTestnetSimulator::get_balance(from_account);
-        println!("New balance: {} HBAR", new_balance);
+        println!("New balance: {new_balance} HBAR");
     }
 
     print!("\nRecipient Account ID: ");
@@ -44,9 +44,9 @@ pub async fn handle_send_hedera_testnet(from_account: &str) -> Result<()> {
     }
 
     println!("\n📋 Transaction Summary:");
-    println!("From: {}", from_account);
-    println!("To: {}", to_account);
-    println!("Amount: {} HBAR", amount);
+    println!("From: {from_account}");
+    println!("To: {to_account}");
+    println!("Amount: {amount} HBAR");
     println!("Fee: 0.001 HBAR");
     println!("Total: {} HBAR", amount + 0.001);
 
@@ -64,17 +64,14 @@ pub async fn handle_send_hedera_testnet(from_account: &str) -> Result<()> {
     match HederaTestnetSimulator::transfer(from_account, to_account, amount) {
         Ok(tx_id) => {
             println!("\n✅ Transaction successful!");
-            println!("Transaction ID: {}", tx_id);
-            println!(
-                "View on HashScan: https://hashscan.io/testnet/transaction/{}",
-                tx_id
-            );
+            println!("Transaction ID: {tx_id}");
+            println!("View on HashScan: https://hashscan.io/testnet/transaction/{tx_id}");
 
             let new_balance = HederaTestnetSimulator::get_balance(from_account);
-            println!("\nNew balance: {} HBAR", new_balance);
+            println!("\nNew balance: {new_balance} HBAR");
         }
         Err(e) => {
-            println!("\n❌ Transaction failed: {}", e);
+            println!("\n❌ Transaction failed: {e}");
         }
     }
 

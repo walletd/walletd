@@ -9,16 +9,13 @@ pub async fn handle_send_solana_real() -> Result<(), String> {
         let balance_lamports = sol_wallet
             .get_balance()
             .await
-            .map_err(|e| format!("Failed to get balance: {}", e))?;
+            .map_err(|e| format!("Failed to get balance: {e}"))?;
         let balance_sol = balance_lamports as f64 / 1_000_000_000.0;
 
         println!("\n=== Send Solana ===");
         println!("Network: {} ", sol_wallet.cluster);
         println!("From: {}", sol_wallet.address);
-        println!(
-            "Balance: {} SOL ({} lamports)",
-            balance_sol, balance_lamports
-        );
+        println!("Balance: {balance_sol} SOL ({balance_lamports} lamports)");
 
         if balance_lamports == 0 {
             println!("\n⚠️  Your wallet has 0 SOL!");
@@ -43,15 +40,15 @@ pub async fn handle_send_solana_real() -> Result<(), String> {
 
         if amount_lamports + fee_lamports > balance_lamports {
             println!("\n❌ Insufficient funds!");
-            println!("You have: {} SOL", balance_sol);
-            println!("You need: {} SOL + 0.000005 SOL for fees", amount);
+            println!("You have: {balance_sol} SOL");
+            println!("You need: {amount} SOL + 0.000005 SOL for fees");
             return Ok(());
         }
 
         println!("\n📋 Transaction Summary:");
         println!("From: {}", sol_wallet.address);
-        println!("To: {}", to_address);
-        println!("Amount: {} SOL ({} lamports)", amount, amount_lamports);
+        println!("To: {to_address}");
+        println!("Amount: {amount} SOL ({amount_lamports} lamports)");
         println!("Network: {}", sol_wallet.cluster);
         println!("Fee: ~0.000005 SOL");
 
@@ -64,20 +61,19 @@ pub async fn handle_send_solana_real() -> Result<(), String> {
             match sol_wallet.send_transaction(to_address, amount).await {
                 Ok(signature) => {
                     println!("\n✅ Transaction prepared!");
-                    println!("Signature: {}", signature);
+                    println!("Signature: {signature}");
                     println!(
                         "\n⚠️  Note: Full transaction signing requires Solana SDK integration."
                     );
                     println!("Your private key and transaction details are ready for use with:");
                     println!(
-                        "- Solana CLI: solana transfer {} {} --keypair <your-keypair-file>",
-                        to_address, amount
+                        "- Solana CLI: solana transfer {to_address} {amount} --keypair <your-keypair-file>"
                     );
                     println!("- Phantom Wallet: Import your private key");
                     println!("- Solana Web3.js: Use in your own application");
                 }
                 Err(e) => {
-                    println!("\n❌ Transaction failed: {}", e);
+                    println!("\n❌ Transaction failed: {e}");
                 }
             }
         } else {
@@ -107,7 +103,7 @@ pub async fn handle_solana_airdrop() -> Result<(), String> {
         match sol_wallet.get_balance().await {
             Ok(balance) => {
                 let sol = balance as f64 / 1_000_000_000.0;
-                println!("Current balance: {} SOL", sol);
+                println!("Current balance: {sol} SOL");
             }
             Err(_) => {
                 println!("Current balance: Unknown");
@@ -125,17 +121,14 @@ pub async fn handle_solana_airdrop() -> Result<(), String> {
             return Ok(());
         }
 
-        println!("\n💧 Requesting {} SOL airdrop...", amount);
+        println!("\n💧 Requesting {amount} SOL airdrop...");
 
         match sol_wallet.request_airdrop(amount).await {
             Ok(signature) => {
                 println!("\n✅ Airdrop successful!");
-                println!("Transaction signature: {}", signature);
+                println!("Transaction signature: {signature}");
                 println!("\n🔍 View on Solana Explorer:");
-                println!(
-                    "https://explorer.solana.com/tx/{}?cluster=devnet",
-                    signature
-                );
+                println!("https://explorer.solana.com/tx/{signature}?cluster=devnet");
 
                 // Check new balance
                 println!("\n⏳ Checking new balance...");
@@ -143,11 +136,11 @@ pub async fn handle_solana_airdrop() -> Result<(), String> {
 
                 if let Ok(new_balance) = sol_wallet.get_balance().await {
                     let sol = new_balance as f64 / 1_000_000_000.0;
-                    println!("💰 New balance: {} SOL", sol);
+                    println!("💰 New balance: {sol} SOL");
                 }
             }
             Err(e) => {
-                println!("\n❌ Airdrop failed: {}", e);
+                println!("\n❌ Airdrop failed: {e}");
                 println!("\n💡 Troubleshooting tips:");
                 println!("1. Try a smaller amount (0.5 or 1 SOL)");
                 println!("2. Wait a few seconds and try again");

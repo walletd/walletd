@@ -31,7 +31,7 @@ impl HardwareWalletManager {
     }
 
     pub async fn get_address(&self, derivation_path: &str) -> Result<String> {
-        Ok(format!("hardware_wallet_address_at_{}", derivation_path))
+        Ok(format!("hardware_wallet_address_at_{derivation_path}"))
     }
 
     pub async fn sign_transaction(&self, _tx: Vec<u8>) -> Result<Vec<u8>> {

@@ -8,7 +8,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // This is a simplified example
 
     let network = Network::Testnet;
-    println!("Using network: {:?}", network);
+    println!("Using network: {network:?}");
 
     // The actual enterprise features would include:
     // - Multi-signature wallets

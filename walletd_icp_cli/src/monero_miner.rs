@@ -26,7 +26,7 @@ impl MoneroMiner {
         );
 
         let child = Command::new("./monero-x86_64-apple-darwin11-v0.18.3.4/monerod")
-            .args(&[
+            .args([
                 "--stagenet",
                 "--start-mining",
                 &self.address,
@@ -39,7 +39,7 @@ impl MoneroMiner {
             .stdout(Stdio::null())
             .stderr(Stdio::null())
             .spawn()
-            .map_err(|e| format!("Failed to start mining: {}", e))?;
+            .map_err(|e| format!("Failed to start mining: {e}"))?;
 
         self.process = Some(child);
 
@@ -111,7 +111,7 @@ async fn request_from_faucet(address: &str) -> Result<String, String> {
         }))
         .send()
         .await
-        .map_err(|e| format!("Faucet request failed: {}", e))?;
+        .map_err(|e| format!("Faucet request failed: {e}"))?;
 
     if res.status().is_success() {
         Ok("✅ Faucet request submitted! XMR will arrive in 10-20 minutes".to_string())
@@ -125,7 +125,7 @@ async fn send_test_xmr(address: &str) -> Result<String, String> {
 
     // This would use a pre-funded test wallet
     println!("   From: SDK Test Wallet");
-    println!("   To: {}", address);
+    println!("   To: {address}");
     println!("   Amount: 0.1 XMR");
 
     Ok("✅ Test transaction sent!".to_string())

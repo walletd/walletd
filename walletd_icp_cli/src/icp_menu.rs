@@ -11,8 +11,8 @@ pub async fn handle_icp_menu(
 ) -> Result<CliResponse, String> {
     loop {
         println!("\n========== ICP ADVANCED FEATURES ==========");
-        println!("Address: {}", address);
-        println!("Balance: {} e8s", balance);
+        println!("Address: {address}");
+        println!("Balance: {balance} e8s");
 
         println!("\n--- Phase 1: Core Features ---");
         println!("[1] HD Wallet Management");
@@ -94,10 +94,10 @@ async fn handle_hd_wallet() -> Result<bool, String> {
                     // Derive first key
                     match wallet.derive_key("m/44'/223'/0'/0/0") {
                         Ok(_key) => println!("✓ First key derived successfully"),
-                        Err(e) => println!("Error deriving key: {}", e),
+                        Err(e) => println!("Error deriving key: {e}"),
                     }
                 }
-                Err(e) => println!("Error creating wallet: {}", e),
+                Err(e) => println!("Error creating wallet: {e}"),
             }
         }
         "2" => {
@@ -112,7 +112,7 @@ async fn handle_hd_wallet() -> Result<bool, String> {
                 Ok(_wallet) => {
                     println!("✓ Wallet imported successfully!");
                 }
-                Err(e) => println!("Error importing wallet: {}", e),
+                Err(e) => println!("Error importing wallet: {e}"),
             }
         }
         "3" => {
@@ -163,17 +163,17 @@ async fn handle_send_transaction(from_address: &str) -> Result<bool, String> {
                         println!("Fee: {} e8s", tx.fee.unwrap_or(10_000));
                         println!("\n⚠️  Transaction ready to broadcast (in production mode)");
                     }
-                    Err(e) => println!("Error creating transaction: {}", e),
+                    Err(e) => println!("Error creating transaction: {e}"),
                 }
             }
-            Err(e) => println!("Invalid to address: {}", e),
+            Err(e) => println!("Invalid to address: {e}"),
         },
         Err(_) => {
             // Fallback for test address
             println!("Using test transaction mode");
-            println!("From: {}", from_address);
+            println!("From: {from_address}");
             println!("To: {}", to_address.trim());
-            println!("Amount: {} e8s", amount);
+            println!("Amount: {amount} e8s");
         }
     }
 
@@ -239,11 +239,11 @@ async fn handle_did_management(address: &str) -> Result<bool, String> {
             println!("✓ DID created: {}", did.did);
             println!("\nDID Document:");
             match did.to_json() {
-                Ok(json) => println!("{}", json),
-                Err(e) => println!("Error serializing DID: {}", e),
+                Ok(json) => println!("{json}"),
+                Err(e) => println!("Error serializing DID: {e}"),
             }
         }
-        Err(e) => println!("Error creating DID: {}", e),
+        Err(e) => println!("Error creating DID: {e}"),
     }
 
     Ok(true)
@@ -277,10 +277,10 @@ async fn handle_deploy_canister() -> Result<bool, String> {
                 // Mock canister ID
                 println!("\nMock Canister ID: rdmx6-jaaaa-aaaaa-aaadq-cai");
             }
-            Err(e) => println!("Error reading WASM file: {}", e),
+            Err(e) => println!("Error reading WASM file: {e}"),
         }
     } else {
-        println!("WASM file not found: {}", wasm_path);
+        println!("WASM file not found: {wasm_path}");
     }
 
     Ok(true)
@@ -313,7 +313,7 @@ async fn handle_call_canister() -> Result<bool, String> {
     // Validate canister ID
     match Principal::from_text(canister_id.trim()) {
         Ok(canister_principal) => {
-            println!("\n✓ Valid canister ID: {}", canister_principal);
+            println!("\n✓ Valid canister ID: {canister_principal}");
             println!("Method: {}", method.trim());
             println!(
                 "Args: {}",
@@ -328,7 +328,7 @@ async fn handle_call_canister() -> Result<bool, String> {
             println!("\n⚠️  In production mode, this would execute the call");
             println!("Mock response: \"Success\"");
         }
-        Err(e) => println!("Invalid canister ID: {}", e),
+        Err(e) => println!("Invalid canister ID: {e}"),
     }
 
     Ok(true)
@@ -363,9 +363,9 @@ async fn handle_query_canister() -> Result<bool, String> {
             };
 
             println!("\n✓ Query executed");
-            println!("Response: {}", response);
+            println!("Response: {response}");
         }
-        Err(e) => println!("Invalid canister ID: {}", e),
+        Err(e) => println!("Invalid canister ID: {e}"),
     }
 
     Ok(true)
@@ -457,14 +457,14 @@ async fn handle_atomic_swap(from_address: &str) -> Result<bool, String> {
     match coordinator.transfer(ChainType::ICP, target_chain, amount) {
         Ok(swap_id) => {
             println!("\n✓ Atomic swap initiated!");
-            println!("Swap ID: {}", swap_id);
-            println!("From: {} ICP", from_address);
+            println!("Swap ID: {swap_id}");
+            println!("From: {from_address} ICP");
             println!("To: {} on {:?}", recipient.trim(), target_chain);
-            println!("Amount: {} e8s", amount);
+            println!("Amount: {amount} e8s");
             println!("\nStatus: Pending");
             println!("Estimated time: 10-30 minutes");
         }
-        Err(e) => println!("Error initiating swap: {}", e),
+        Err(e) => println!("Error initiating swap: {e}"),
     }
 
     Ok(true)

@@ -75,8 +75,7 @@ impl EthClient {
                 let transaction_data = tx.unwrap();
                 if transaction_data.block_hash.is_none() {
                     Err(Error::TxResponse(format!(
-                        "Transaction with tx_hash {} not found",
-                        tx_hash
+                        "Transaction with tx_hash {tx_hash} not found"
                     )))
                 } else {
                     Ok(transaction_data)
@@ -186,6 +185,14 @@ impl EthClient {
 }
 
 #[cfg(test)]
+fn anvil_available() -> bool {
+    std::process::Command::new("anvil")
+        .arg("--version")
+        .output()
+        .is_ok()
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use ethers::utils::Anvil;
@@ -195,7 +202,7 @@ mod tests {
     #[ignore]
     fn create_instance_of_ethclient() {
         let port = 8545u16;
-        let url = format!("http://localhost:{}", port).to_string();
+        let url = format!("http://localhost:{port}").to_string();
 
         let anvil = Anvil::new()
             .port(port)
@@ -213,7 +220,7 @@ mod tests {
             return;
         }
         let port = 8546u16;
-        let url = format!("http://localhost:{}", port).to_string();
+        let url = format!("http://localhost:{port}").to_string();
 
         let anvil = Anvil::new()
             .port(port)
@@ -228,12 +235,4 @@ mod tests {
         assert_eq!(balance.wei, 10000000000000000000000u128.into());
         drop(anvil);
     }
-}
-
-#[cfg(test)]
-fn anvil_available() -> bool {
-    std::process::Command::new("anvil")
-        .arg("--version")
-        .output()
-        .is_ok()
 }
