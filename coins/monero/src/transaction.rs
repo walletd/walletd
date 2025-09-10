@@ -20,7 +20,7 @@ pub struct CryptoHash;
 
 /// A transaction that is pending to be sent to the network.
 /// Implemented in Rust based on Monero's pending_tx struct
-/// **Source** <`monero/src/wallet/wallet2.h`>(https://github.com/monero-project/monero/blob/9f5c7209a0a9c4ed3b8a0c00dda9dc885f400fed/src/wallet/wallet2.h#L630-L670)
+/// **Source** <`monero/src/wallet/wallet2.h`>(<https://github.com/monero-project/monero/blob/9f5c7209a0a9c4ed3b8a0c00dda9dc885f400fed/src/wallet/wallet2.h#L630-L670>)
 #[derive(Debug, Clone)]
 pub struct PendingTx {
     pub tx: Transaction,
@@ -39,7 +39,7 @@ pub struct PendingTx {
 }
 
 /// Implemented in Rust based on Monero's tx_construction_data struct
-/// **Source** <`monero/src/wallet/wallet2.h`>(https://github.com/monero-project/monero/blob/9f5c7209a0a9c4ed3b8a0c00dda9dc885f400fed/src/wallet/wallet2.h#L539-L552)
+/// **Source** <`monero/src/wallet/wallet2.h`>(<https://github.com/monero-project/monero/blob/9f5c7209a0a9c4ed3b8a0c00dda9dc885f400fed/src/wallet/wallet2.h#L539-L552>)
 #[derive(Debug, Clone)]
 pub struct TxConstructionData {
     pub sources: Vec<TxSourceEntry>,
@@ -62,12 +62,12 @@ pub struct TxConstructionData {
 pub struct UnlockTime(pub u64);
 
 /// Implemented in Rust based on Monero's output_entry type
-/// **Source** <`monero/src/cryptonote_core/cryptonote_tx_utils.h`>(https://github.com/monero-project/monero/blob/451ff7bd91c68cc9861711fbd45587a388df77dc/src/cryptonote_core/cryptonote_tx_utils.h#L44)
+/// **Source** <`monero/src/cryptonote_core/cryptonote_tx_utils.h`>(<https://github.com/monero-project/monero/blob/451ff7bd91c68cc9861711fbd45587a388df77dc/src/cryptonote_core/cryptonote_tx_utils.h#L44>)>
 #[derive(Clone, Default, Debug)]
 pub struct OutputEntry(pub u64, pub CtKey);
 
 /// Implemented in Rust based on Monero's cryptonote::tx_source_entry structT
-/// **Source** <`monero/src/cryptonote_core/cryptonote_tx_utils.h`>(https://github.com/monero-project/monero/blob/451ff7bd91c68cc9861711fbd45587a388df77dc/src/cryptonote_core/cryptonote_tx_utils.h#L42-L54)
+/// **Source** <`monero/src/cryptonote_core/cryptonote_tx_utils.h`>(<https://github.com/monero-project/monero/blob/451ff7bd91c68cc9861711fbd45587a388df77dc/src/cryptonote_core/cryptonote_tx_utils.h#L42-L54>)
 #[allow(non_snake_case)]
 #[derive(Clone, Default, Debug)]
 pub struct TxSourceEntry {
@@ -84,7 +84,7 @@ pub struct TxSourceEntry {
 
 /// Implemented in Rust based on Monero's cryptonote::tx_destination_entry
 /// struct
-/// **Source** <`monero/src/cryptonote_core/cryptonote_tx_utils.h`>(https://github.com/monero-project/monero/blob/451ff7bd91c68cc9861711fbd45587a388df77dc/src/cryptonote_core/cryptonote_tx_utils.h#L74-L108)
+/// **Source** <`monero/src/cryptonote_core/cryptonote_tx_utils.h`>(<https://github.com/monero-project/monero/blob/451ff7bd91c68cc9861711fbd45587a388df77dc/src/cryptonote_core/cryptonote_tx_utils.h#L74-L108>)
 #[derive(Debug, Clone)]
 pub struct TxDestinationEntry {
     pub amount: u64,
@@ -92,7 +92,7 @@ pub struct TxDestinationEntry {
 }
 
 /// Implemented in Rust based on Monero's transfer_details struct
-/// **Source** <`monero/src/wallet/wallet2.h`>(https://github.com/monero-project/monero/blob/9f5c7209a0a9c4ed3b8a0c00dda9dc885f400fed/src/wallet/wallet2.h#L326-L347)
+/// **Source** <`monero/src/wallet/wallet2.h`>(<https://github.com/monero-project/monero/blob/9f5c7209a0a9c4ed3b8a0c00dda9dc885f400fed/src/wallet/wallet2.h#L326-L347>)
 /// Is this actually needed? TODO(#68)
 pub struct TransferDetails {
     pub block_height: u64,
@@ -117,7 +117,7 @@ pub struct TransferDetails {
 }
 
 /// Implemented in Rust based on Monero's signature class
-/// **Source** <`monero/src/crypto/crypto.h`>(https://github.com/monero-project/monero/blob/ad80aa0f656fd8a9d168b0af4fc6dcf927da5d4b/src/crypto/crypto.h#L98-L101)
+/// **Source** <`monero/src/crypto/crypto.h`>(<https://github.com/monero-project/monero/blob/ad80aa0f656fd8a9d168b0af4fc6dcf927da5d4b/src/crypto/crypto.h#L98-L101>)
 #[derive(Clone, Debug)]
 pub struct Signature {
     pub c: Scalar,
@@ -125,7 +125,7 @@ pub struct Signature {
 }
 
 /// Implemented in Rust based on Monero's cryptonote::multisig_sig struct
-/// **Source** <`monero/src/wallet/wallet2.h`> https://github.com/monero-project/monero/blob/9f5c7209a0a9c4ed3b8a0c00dda9dc885f400fed/src/wallet/wallet2.h#L601-L628)
+/// **Source** <`monero/src/wallet/wallet2.h`> <https://github.com/monero-project/monero/blob/9f5c7209a0a9c4ed3b8a0c00dda9dc885f400fed/src/wallet/wallet2.h#L601-L628>
 #[allow(non_snake_case)]
 #[derive(Debug, Clone)]
 pub struct MultiSigSignature {
@@ -142,7 +142,7 @@ pub struct MultiSigSignature {
 
 /// Struct representing a Monero transaction
 /// Implemented in Rust based on Monero's cryptonote::transaction struct
-/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L204-L450)
+/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(<https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L204-L450>)
 #[derive(Clone, Debug)]
 pub struct Transaction {
     pub prefix: TransactionPrefix,
@@ -203,7 +203,7 @@ impl DoSerialize for RawExtraField {
 /// Struct containing transaction prefix info including version, unlock time,
 /// inputs and outuputs and extra Implemented in Rust based on Monero's
 /// cryptonote::transaction_prefix struct
-/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L170-L202)
+/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(<https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L170-L202>)
 #[derive(Debug, Clone)]
 pub struct TransactionPrefix {
     pub version: usize,
@@ -237,7 +237,7 @@ impl DoSerialize for TransactionPrefix {
 }
 
 /// Implemented in Rust based on Monero's txin_v
-/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L152)
+/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(<https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L152>)>
 pub enum TxInVariant {
     TxInGen,
     TxInToScript,
@@ -261,13 +261,13 @@ impl Variant for TxInVariant {
 }
 
 /// Implemented in Rust based on Monero's txin_gen
-/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L101-L108)
+/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(<https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L101-L108>)
 pub struct TxInGen {
     pub height: usize,
 }
 
 /// Implemented in Rust based on Monero's txin_to_script
-/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L110-L121)
+/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(<https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L110-L121>)
 pub struct TxInToScript {
     pub prev: CryptoHash,
     pub prev_out: usize,
@@ -275,7 +275,7 @@ pub struct TxInToScript {
 }
 
 /// Implemented in Rust based on Monero's txin_to_script_hash
-/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L123-L136)
+/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(<https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L123-L136>)
 pub struct TxInToScriptHash {
     pub prev: CryptoHash,
     pub prevout: usize,
@@ -284,7 +284,7 @@ pub struct TxInToScriptHash {
 }
 
 /// Implemented in Rust based on Monero's txin_to_key
-/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L138-L149)
+/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(<https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L138-L149>)
 #[derive(Debug, Clone)]
 pub struct TxInToKey {
     pub amount: u64,
@@ -322,7 +322,7 @@ impl DoSerialize for TxInToKey {
 }
 
 /// Implemented in Rust based on Monero's tx_out struct
-/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L157-168)
+/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(<https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L157-168>)>
 #[derive(Debug, Clone)]
 pub struct TxOut {
     pub amount: u64,
@@ -340,7 +340,7 @@ impl DoSerialize for TxOut {
     }
 }
 /// Implemented in Rust based on Monero's txout_target_v
-/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L154)
+/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(<https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L154>)>
 #[derive(Debug, Clone, Serialize)]
 pub enum TxOutTargetVariant {
     ToScript(TxOutToScript),
@@ -384,7 +384,7 @@ impl DoSerialize for TxOutTargetVariant {
 }
 
 /// Implemented in Rust based on Monero's txout_to_script
-/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L61-70)
+/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(<https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L61-70>)>
 #[derive(Debug, Clone, Serialize)]
 pub struct TxOutToScript {
     pub keys: Vec<PublicKey>,
@@ -392,7 +392,7 @@ pub struct TxOutToScript {
 }
 
 /// Implemented in Rust based on Monero's txout_to_script_hash
-/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L72-75)
+/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(<https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L72-75>)>
 #[derive(Debug, Clone, Serialize)]
 pub struct TxOutToScriptHash {
     pub hash: CryptoHash,
@@ -400,7 +400,7 @@ pub struct TxOutToScriptHash {
 
 /// Implemented in Rust based on Monero's txout_to_key
 /// Used if outputs <= HF_VERSION_VIEW_TAGS
-/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L77-L83)
+/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(<https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#L77-L83>)
 #[derive(Debug, Clone, Serialize)]
 pub struct TxOutToKey {
     pub key: PublicKey,
@@ -459,7 +459,7 @@ impl ViewTag {
 
 /// Implemented in Rust based on Monero's txout_to_key
 /// Used if outputs > HF_VERSION_VIEW_TAGS
-/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#85-97)
+/// **Source** <`monero/src/cryptonote_basic/cryptonote_basic.h`>(<https://github.com/monero-project/monero/blob/ea87b30f8907ee11252433811e7a7d0c46758cca/src/cryptonote_basic/cryptonote_basic.h#85-97>)
 #[derive(Debug, Clone, Serialize)]
 pub struct TxOutToTaggedKey {
     pub key: PublicKey,
@@ -496,7 +496,7 @@ pub enum Priority {
 /// with the details of the pending transaction (PendingTx struct) Implemented
 /// in Rust based on aspects of both Monero's PendingTransaction struct as well
 /// as Monero's PendingTransactionImpl class
-/// **Source for PendingTransactionImpl class** <`monero/src/wallet/api/pending_transaction.h`>(https://github.com/monero-project/monero/blob/9a124f681119855949f6406ecd69c2ad91da9770/src/wallet/api/pending_transaction.h#L41-L72)
+/// **Source for PendingTransactionImpl class** <`monero/src/wallet/api/pending_transaction.h`>(<https://github.com/monero-project/monero/blob/9a124f681119855949f6406ecd69c2ad91da9770/src/wallet/api/pending_transaction.h#L41-L72>)
 #[derive(Debug, Clone)]
 pub struct PendingTransaction {
     pub status: Status,
@@ -519,7 +519,7 @@ pub struct SendTransaction {
 }
 
 /// Based on Monero's get_outs_entry typedef
-/// **Source** <`monero/src/wallet/wallet2.h`>(https://github.com/monero-project/monero/blob/75d80d431a9586996c559cb39f3eabebad3da60a/src/wallet/wallet2.h#L792)
+/// **Source** <`monero/src/wallet/wallet2.h`>(<https://github.com/monero-project/monero/blob/75d80d431a9586996c559cb39f3eabebad3da60a/src/wallet/wallet2.h#L792>)>
 pub struct GetOutsEntry(pub u64, pub PublicKey, pub RctKey);
 
 /// Error type for the transaction module
