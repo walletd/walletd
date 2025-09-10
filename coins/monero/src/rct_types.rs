@@ -272,10 +272,8 @@ impl DoSerialize for RctSigBase {
         }
         for (i, ecdh) in self.ecdh_info.iter().enumerate() {
             let hashed_amount = Hash8::from_slice(&ecdh.amount.bytes);
-            serialized.serialize_field(
-                &format!("ecdhInfo[{i}].amount"),
-                &hashed_amount.as_bytes(),
-            )?;
+            serialized
+                .serialize_field(&format!("ecdhInfo[{i}].amount"), &hashed_amount.as_bytes())?;
         }
         for (i, out_pk) in self.out_pk.iter().enumerate() {
             serialized.serialize_field(&format!("outPk[{i}].mask"), &out_pk.mask)?;

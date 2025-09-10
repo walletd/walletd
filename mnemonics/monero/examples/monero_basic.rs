@@ -1,6 +1,4 @@
-use walletd_monero_mnemonic::{
-    Language, Mnemonic, MnemonicExt, MnemonicStyleBuilder, MnemonicType,
-};
+use walletd_monero_mnemonic::{Language, Mnemonic, MnemonicType};
 
 fn main() -> () {
     // example of how to generate a mnemonic phrase using the builder pattern

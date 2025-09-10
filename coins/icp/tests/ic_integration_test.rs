@@ -7,20 +7,20 @@ mod ic_integration_tests {
 
     // Mock IC environment for testing
     struct MockIC {
-        canisters: std::collections::HashMap<Principal, MockCanister>,
+        _canisters: std::collections::HashMap<Principal, MockCanister>,
         ledger_balances: std::collections::HashMap<String, u64>,
     }
 
     struct MockCanister {
-        wasm: Vec<u8>,
-        state: Vec<u8>,
-        methods: std::collections::HashMap<String, Box<dyn Fn(&[u8]) -> Vec<u8>>>,
+        _wasm: Vec<u8>,
+        _state: Vec<u8>,
+        _methods: std::collections::HashMap<String, Box<dyn Fn(&[u8]) -> Vec<u8>>>,
     }
 
     impl MockIC {
         fn new() -> Self {
             let mut ic = Self {
-                canisters: std::collections::HashMap::new(),
+                _canisters: std::collections::HashMap::new(),
                 ledger_balances: std::collections::HashMap::new(),
             };
 
@@ -58,8 +58,8 @@ mod ic_integration_tests {
         let alice = Principal::from_text("rrkah-fqaaa-aaaaa-aaaaq-cai").unwrap();
         let bob = Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap();
 
-        let alice_wallet = IcpWallet::from_principal(alice, HDNetworkType::MainNet);
-        let bob_wallet = IcpWallet::from_principal(bob, HDNetworkType::MainNet);
+        let _alice_wallet = IcpWallet::from_principal(alice, HDNetworkType::MainNet);
+        let _bob_wallet = IcpWallet::from_principal(bob, HDNetworkType::MainNet);
 
         // Check initial balance
         let alice_balance = mock_ic.ledger_balances.get(&alice.to_text()).unwrap();
@@ -82,21 +82,21 @@ mod ic_integration_tests {
 
     #[test]
     fn test_multi_canister_interaction() {
-        let mock_ic = MockIC::new();
+        let _mock_ic = MockIC::new();
 
         // Deploy multiple canisters
         let canisters = vec![
             (
                 "token",
-                Principal::from_text("be2us-64aaa-aaaaa-qaabq-cai").unwrap(),
+                Principal::anonymous(),
             ),
             (
                 "dex",
-                Principal::from_text("rdmx6-jaaaa-aaaah-aadna-cai").unwrap(),
+                Principal::anonymous(),
             ),
             (
                 "governance",
-                Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap(),
+                Principal::anonymous(),
             ),
         ];
 

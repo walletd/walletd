@@ -287,9 +287,7 @@ impl WalletDIcpApi {
             from_address: from.to_text(),
             to_address: to_btc_address.to_string(),
         };
-        std::println!(
-            "Initiating cross-chain swap: ICP {amount} to BTC {to_btc_address}"
-        );
+        std::println!("Initiating cross-chain swap: ICP {amount} to BTC {to_btc_address}");
         wallet.balance -= amount;
         wallet.cross_chain_txs.push(tx);
 

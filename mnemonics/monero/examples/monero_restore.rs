@@ -1,4 +1,4 @@
-use walletd_monero_mnemonic::{Language, Mnemonic, MnemonicExt};
+use walletd_monero_mnemonic::{Language, Mnemonic};
 
 fn main() {
     // Restore a mnemonic struct from a phrase using the builder pattern

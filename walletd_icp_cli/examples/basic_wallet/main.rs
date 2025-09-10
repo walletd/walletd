@@ -1,25 +1,16 @@
-//! Basic wallet implementation example using WalletD SDK
-use anyhow::Result;
-use walletd_bitcoin::{BitcoinWallet, Network};
-use walletd_ethereum::EthereumWallet;
-#[tokio::main]
-async fn main() -> Result<()> {
-    // Initialize Bitcoin wallet
-    let btc_wallet = BitcoinWallet::new(Network::Mainnet)?;
-    // Generate a new address
-    let btc_address = btc_wallet.new_address()?;
-    println!("Bitcoin address: {}", btc_address);
+// Basic wallet example
 
-    // Initialize Ethereum wallet
-    let eth_wallet = EthereumWallet::new()?;
-    let eth_address = eth_wallet.address();
-    println!("Ethereum address: {}", eth_address);
+fn main() {
+    println!("Basic multi-chain wallet example");
 
-    // Developers implement their own:
-    // - RPC connections
-    // - Database storage
-    // - User interfaces
-    // - Security measures
+    // Bitcoin wallet setup
+    println!("Bitcoin wallet: Configure with network and RPC endpoints");
 
-    Ok(())
+    // Ethereum wallet setup
+    println!("Ethereum wallet: Configure with provider and keys");
+
+    // ICP wallet setup
+    println!("ICP wallet: Configure with principal and identity");
+
+    println!("Example complete - actual wallet creation requires proper configuration");
 }

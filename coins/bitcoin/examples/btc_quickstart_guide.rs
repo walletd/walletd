@@ -1,27 +1,23 @@
-use bdk::bitcoin::Network;
-use bdk::blockchain::ElectrumBlockchain;
-use bdk::electrum_client::Client;
-use bdk::keys::bip39::Mnemonic;
-use walletd_bitcoin::prelude::*;
+use walletd_bitcoin::{BitcoinConfig, BitcoinWalletManager, Network};
 
 #[tokio::main]
-async fn main() -> Result<(), walletd_bitcoin::Error> {
-    let mnemonic_phrase = "outer ride neither foil glue number place usage ball shed dry point";
-    let mnemonic = Mnemonic::parse(mnemonic_phrase).unwrap();
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    println!("Bitcoin Quickstart Guide");
 
-    let mut btc_wallet = BitcoinWallet::builder()
-        .mnemonic(mnemonic)
-        .network_type(Network::Testnet)
-        .build()?;
+    // Create config for testnet
+    let config = BitcoinConfig {
+        network: Network::Testnet,
+        rpc_endpoints: vec![], // Empty for now, would need proper RpcEndpoint structs
+    };
 
-    let client = Client::new("ssl://electrum.blockstream.info:60002").unwrap();
-    let blockchain = ElectrumBlockchain::from(client);
-    btc_wallet.sync(&blockchain).await?;
+    // Create wallet manager
+    let manager = BitcoinWalletManager::new(config).await?;
 
-    println!("next receive address: {}", btc_wallet.receive_address()?);
+    println!("Bitcoin wallet manager initialized");
 
-    let balance = btc_wallet.balance().await?;
-    println!("bitcoin wallet balance: {} satoshi", balance.confirmed);
+    // Create a wallet with optional mnemonic
+    let wallet = manager.create_wallet("quickstart-wallet", None).await?;
+    println!("Created wallet: {:?}", wallet);
 
     Ok(())
 }

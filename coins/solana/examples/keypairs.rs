@@ -24,7 +24,7 @@ fn main() {
         63, 176, 109, 168, 89, 238, 135,
     ];
 
-    let _wallet_from_bytes = Keypair::from_bytes(&secret_key).unwrap();
+    let _wallet_from_bytes = Keypair::try_from(secret_key.as_slice()).unwrap();
 
     // Restore a wallet from a base58 string
     let wallet_from_base58 = Keypair::from_base58_string(base58_wallet_string);

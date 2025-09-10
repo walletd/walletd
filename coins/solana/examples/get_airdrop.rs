@@ -19,7 +19,7 @@ async fn main() {
         110, 8, 211, 170, 217, 132, 148, 104, 122, 117, 238, 217, 1, 90, 103, 0, 46, 176, 210, 139,
         14, 213, 254, 7, 120,
     ];
-    let _restored_keypair = Keypair::from_bytes(&bytes).unwrap();
+    let _restored_keypair = Keypair::try_from(bytes.as_slice()).unwrap();
 
     let restored_keypair_from_base58 = Keypair::from_base58_string("redacted for now");
 
