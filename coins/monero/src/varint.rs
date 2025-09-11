@@ -117,13 +117,3 @@ mod tests {
     }
 }
 
-use serde::{Serialize, Serializer};
-
-impl<T: Serialize + UnsignedInt> Serialize for VarInt<T> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        self.0.serialize(serializer)
-    }
-}

@@ -9,7 +9,7 @@ path = "src/main.rs"
 
 [dependencies]
 walletd_base = { path = "../coins/base" }
-walletd_erc20 = { path = "../coins/erc20" }
+walletd_erc20 = { path = "../coins/walletd_erc20" }
 dotenvy = "0.15"
 ed25519-dalek = "1.0"
 sha2 = "0.10"
