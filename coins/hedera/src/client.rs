@@ -43,7 +43,7 @@ impl HederaClient {
         let new_public_key = new_private_key.public_key();
 
         let transaction = AccountCreateTransaction::new()
-            .key(new_public_key.clone())
+            .key(new_public_key)
             .initial_balance(initial_balance)
             .execute(&self.client)
             .await

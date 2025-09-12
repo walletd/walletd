@@ -54,7 +54,7 @@ async fn get_account_from_pool() -> Result<(), String> {
                     pool.report_balance(&account.account_id, actual_balance)
                         .await;
 
-                    println!("💰 Actual balance: {} HBAR", actual_balance);
+                    println!("💰 Actual balance: {actual_balance} HBAR");
 
                     if actual_balance < 10.0 {
                         println!("⚠️  Low balance! Consider adding more accounts to pool");
@@ -81,7 +81,7 @@ async fn check_pool_status() -> Result<(), String> {
     let pool = ACCOUNT_POOL.read().await;
     let status = pool.get_pool_status().await;
 
-    println!("\n📊 {}", status);
+    println!("\n📊 {status}");
 
     println!("\nPress Enter to continue...");
     let mut _input = String::new();
@@ -157,11 +157,10 @@ async fn check_all_balances() -> Result<(), String> {
 async fn save_and_reload(account_id: &str, private_key: &str) -> Result<(), String> {
     // Save credentials
     let env_content = format!(
-        "HEDERA_NETWORK=testnet\nHEDERA_OPERATOR_ID={}\nOPERATOR_PRIVATE_KEY={}\n",
-        account_id, private_key
+        "HEDERA_NETWORK=testnet\nHEDERA_OPERATOR_ID={account_id}\nOPERATOR_PRIVATE_KEY={private_key}\n"
     );
 
-    std::fs::write(".env.hedera", env_content).map_err(|e| format!("Failed to save: {}", e))?;
+    std::fs::write(".env.hedera", env_content).map_err(|e| format!("Failed to save: {e}"))?;
 
     // Reload
     dotenvy::from_filename(".env.hedera").ok();
@@ -172,7 +171,7 @@ async fn save_and_reload(account_id: &str, private_key: &str) -> Result<(), Stri
     manager
         .init_hedera()
         .await
-        .map_err(|e| format!("Init failed: {}", e))?;
+        .map_err(|e| format!("Init failed: {e}"))?;
 
     Ok(())
 }

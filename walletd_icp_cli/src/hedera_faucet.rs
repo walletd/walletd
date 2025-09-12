@@ -41,7 +41,7 @@ pub async fn get_testnet_account_from_faucet() -> Result<(String, String)> {
 }
 
 pub async fn fund_existing_account(account_id: &str) -> Result<()> {
-    println!("🔄 Requesting funds for account {}...", account_id);
+    println!("🔄 Requesting funds for account {account_id}...");
 
     // Most Hedera faucets create new accounts, not fund existing ones
     // So we'll need to use the testnet portal or other methods

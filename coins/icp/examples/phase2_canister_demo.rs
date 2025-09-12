@@ -16,7 +16,7 @@ async fn main() {
     let canister_id = Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap();
     // let client = CanisterClient::new(agent, canister_id);
 
-    println!("   ✓ Client created for canister: {}", canister_id);
+    println!("   ✓ Client created for canister: {canister_id}");
 
     println!("\n2. ICRC-1 Token Operations");
     // let token = Icrc1Client::new(client);
@@ -30,8 +30,8 @@ async fn main() {
     let from = Principal::from_text("xkbqi-2qaaa-aaaah-qbpqp-cai").unwrap();
     let to = Principal::from_text("rrkah-fqaaa-aaaaa-aaaaq-cai").unwrap();
 
-    println!("   From: {}", from);
-    println!("   To: {}", to);
+    println!("   From: {from}");
+    println!("   To: {to}");
     println!("   Amount: 1,000,000 (with 8 decimals = 0.01 tokens)");
 
     println!("\n✅ Phase 2 canister interaction ready!");

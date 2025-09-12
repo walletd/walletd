@@ -37,19 +37,16 @@ pub async fn auto_fund_with_amount() -> Result<(), String> {
         .parse()
         .map_err(|_| "Invalid amount. Please enter a number between 1 and 10000".to_string())?;
 
-    if amount < 1.0 || amount > 10000.0 {
+    if !(1.0..=10000.0).contains(&amount) {
         return Err("Amount must be between 1 and 10000 HBAR".to_string());
     }
 
-    println!(
-        "\n🚀 Funding account {} with {} HBAR...",
-        account_id, amount
-    );
+    println!("\n🚀 Funding account {account_id} with {amount} HBAR...");
 
     // Fund the account
     match fund_account_with_amount(&account_id, amount).await {
         Ok(tx_id) => {
-            println!("✅ Success! Transaction ID: {}", tx_id);
+            println!("✅ Success! Transaction ID: {tx_id}");
             println!("⏳ Waiting for confirmation...");
 
             // Wait for transaction to process
@@ -59,12 +56,12 @@ pub async fn auto_fund_with_amount() -> Result<(), String> {
             let manager = WALLET_MANAGER.read().await;
             if let Some(wallet) = &manager.hedera {
                 if let Ok(balance) = wallet.get_balance().await {
-                    println!("\n💰 New balance: {} HBAR", balance);
+                    println!("\n💰 New balance: {balance} HBAR");
                 }
             }
         }
         Err(e) => {
-            println!("❌ Funding failed: {}", e);
+            println!("❌ Funding failed: {e}");
         }
     }
 
@@ -84,11 +81,10 @@ async fn create_and_setup_new_account() -> Result<String, String> {
 
     // Save credentials
     let env_content = format!(
-        "HEDERA_NETWORK=testnet\nHEDERA_OPERATOR_ID={}\nOPERATOR_PRIVATE_KEY={}\n",
-        new_account_id, new_private_key
+        "HEDERA_NETWORK=testnet\nHEDERA_OPERATOR_ID={new_account_id}\nOPERATOR_PRIVATE_KEY={new_private_key}\n"
     );
 
-    std::fs::write(".env.hedera", env_content).map_err(|e| format!("Failed to save: {}", e))?;
+    std::fs::write(".env.hedera", env_content).map_err(|e| format!("Failed to save: {e}"))?;
 
     // Reload wallet
     dotenvy::from_filename(".env.hedera").ok();
@@ -99,7 +95,7 @@ async fn create_and_setup_new_account() -> Result<String, String> {
     manager
         .init_hedera()
         .await
-        .map_err(|e| format!("Init failed: {}", e))?;
+        .map_err(|e| format!("Init failed: {e}"))?;
 
     Ok(new_account_id)
 }
@@ -129,7 +125,7 @@ async fn fund_via_hedera_api(account_id: &str, amount: f64) -> Result<String, St
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(30))
         .build()
-        .map_err(|e| format!("Client error: {}", e))?;
+        .map_err(|e| format!("Client error: {e}"))?;
 
     // Convert HBAR to tinybars
     let tinybars = (amount * 100_000_000.0) as i64;
@@ -145,13 +141,13 @@ async fn fund_via_hedera_api(account_id: &str, amount: f64) -> Result<String, St
         .header("Content-Type", "application/json")
         .send()
         .await
-        .map_err(|e| format!("Request failed: {}", e))?;
+        .map_err(|e| format!("Request failed: {e}"))?;
 
     if response.status().is_success() {
         let result: serde_json::Value = response
             .json()
             .await
-            .map_err(|e| format!("Parse error: {}", e))?;
+            .map_err(|e| format!("Parse error: {e}"))?;
 
         if let Some(tx_id) = result["transaction_id"].as_str() {
             Ok(tx_id.to_string())
@@ -187,7 +183,7 @@ async fn fund_via_community_faucet(account_id: &str, amount: f64) -> Result<Stri
                 Err("Faucet request failed".to_string())
             }
         }
-        Err(e) => Err(format!("Network error: {}", e)),
+        Err(e) => Err(format!("Network error: {e}")),
     }
 }
 
@@ -206,7 +202,7 @@ async fn fund_via_direct_transfer(account_id: &str, amount: f64) -> Result<Strin
     manager
         .init_hedera()
         .await
-        .map_err(|e| format!("Init failed: {}", e))?;
+        .map_err(|e| format!("Init failed: {e}"))?;
 
     if let Some(wallet) = &manager.hedera {
         // Send HBAR
@@ -216,7 +212,7 @@ async fn fund_via_direct_transfer(account_id: &str, amount: f64) -> Result<Strin
                 dotenvy::from_filename(".env.hedera").ok();
                 Ok(tx_id)
             }
-            Err(e) => Err(format!("Transfer failed: {}", e)),
+            Err(e) => Err(format!("Transfer failed: {e}")),
         }
     } else {
         Err("Wallet not initialized".to_string())
@@ -226,9 +222,9 @@ async fn fund_via_direct_transfer(account_id: &str, amount: f64) -> Result<Strin
 fn generate_private_key() -> String {
     // Generate a valid Hedera private key format
     let random_bytes: Vec<u8> = (0..32).map(|_| rand::random::<u8>()).collect();
-    let hex_key: String = random_bytes.iter().map(|b| format!("{:02x}", b)).collect();
+    let hex_key: String = random_bytes.iter().map(|b| format!("{b:02x}")).collect();
 
-    format!("302e020100300506032b6570042204{}", hex_key)
+    format!("302e020100300506032b6570042204{hex_key}")
 }
 
 fn generate_account_number() -> u64 {

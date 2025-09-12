@@ -31,5 +31,5 @@ async fn main() {
         .await
         .unwrap();
 
-    println!("tx_data: {:?}", tx_data);
+    println!("tx_data: {tx_data:?}");
 }

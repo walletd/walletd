@@ -53,10 +53,7 @@ impl SimpleSwapProvider {
         amount: f64,
         recipient: &str,
     ) -> Result<SwapResult> {
-        println!(
-            "Executing swap: {} {} -> {} to {}",
-            amount, from_chain, to_chain, recipient
-        );
+        println!("Executing swap: {amount} {from_chain} -> {to_chain} to {recipient}");
 
         Ok(SwapResult {
             swap_id: uuid::Uuid::new_v4().to_string(),

@@ -36,15 +36,15 @@ impl RealHederaWallet {
 
                         // If we have an account ID, validate it exists
                         if let Some(account_id) = &self.account_id {
-                            println!("✅ Initialized client for account: {}", account_id);
+                            println!("✅ Initialized client for account: {account_id}");
 
                             // Try to get balance to verify account works
                             match self.get_balance().await {
                                 Ok(balance) => {
-                                    println!("💰 Account balance: {} HBAR", balance);
+                                    println!("💰 Account balance: {balance} HBAR");
                                 }
                                 Err(e) => {
-                                    println!("⚠️  Could not verify balance: {}", e);
+                                    println!("⚠️  Could not verify balance: {e}");
                                 }
                             }
                         }

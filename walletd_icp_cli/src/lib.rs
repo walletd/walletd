@@ -29,7 +29,7 @@ pub async fn icp_overview(
 }
 
 pub fn display_message(message: &str, icon: &str) {
-    println!("\n{} {}", icon, message);
+    println!("\n{icon} {message}");
 }
 
 pub fn display_crypto_menu(coins: &[cli_options::CoinType]) -> String {
@@ -85,6 +85,7 @@ pub mod hedera_simple_fund;
 pub mod hedera_testnet_accounts;
 pub mod hedera_testnet_auto_fund;
 pub mod hedera_testnet_simulator;
+pub mod hedera_wallet_stub;
 pub mod hedera_working_faucet;
 pub mod icp_menu;
 pub mod mining_helper;

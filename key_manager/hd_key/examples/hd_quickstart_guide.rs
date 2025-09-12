@@ -25,7 +25,7 @@ fn main() -> Result<(), walletd_hd_key::Error> {
     let default_deriv_path = HDPath::builder().build().to_string();
     // without specifying the purpose the default derivation path is "m
     assert_eq!(default_deriv_path, "m");
-    println!("default derivation path: {}", default_deriv_path);
+    println!("default derivation path: {default_deriv_path}");
 
     let account_deriv_path = HDPath::builder()
         .purpose_index(HDPurpose::BIP44.to_shortform_num())
@@ -36,7 +36,7 @@ fn main() -> Result<(), walletd_hd_key::Error> {
         .build()
         .to_string();
 
-    println!("account derivation path: {}", account_deriv_path);
+    println!("account derivation path: {account_deriv_path}");
 
     assert_eq!(&account_deriv_path, "m/44'/60'/0'");
     let eth_first_account_key = master_hd_key.derive(&account_deriv_path)?;
@@ -88,7 +88,7 @@ fn main() -> Result<(), walletd_hd_key::Error> {
         &custom_key_path,
     )?;
     assert_eq!(derived_key, custom_key);
-    println!("derived_key: {:?}", derived_key);
+    println!("derived_key: {derived_key:?}");
     println!("derived_key depth: {}", derived_key.depth());
     println!("derived_key wif: {}", derived_key.to_wif()?);
     // Can display the extended public key and extended private key using the serialized string format

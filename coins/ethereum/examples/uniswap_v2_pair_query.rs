@@ -52,5 +52,5 @@ async fn main() {
 
     let balance = instance.balance_of(address).call().await.unwrap();
 
-    println!("balance: {:?}", balance);
+    println!("balance: {balance:?}");
 }

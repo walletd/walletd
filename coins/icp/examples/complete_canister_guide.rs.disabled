@@ -1,0 +1,22 @@
+use walletd_icp::{CanisterClient, HDNetworkType, IcpWallet};
+use ic_agent::{Agent, identity::BasicIdentity};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    println!("ICP Canister Guide Example");
+    
+    // Create agent
+    let identity = BasicIdentity::from_pem(vec![]).unwrap();
+    let agent = Agent::builder()
+        .with_url("https://ic0.app")
+        .with_identity(identity)
+        .build()?;
+    
+    // Create canister client
+    let client = CanisterClient::new(agent);
+    
+    println!("Canister client created");
+    println!("Network: {:?}", HDNetworkType::MainNet);
+    
+    Ok(())
+}

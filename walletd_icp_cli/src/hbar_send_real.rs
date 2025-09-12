@@ -37,7 +37,7 @@ pub async fn handle_send_hedera_real() -> Result<(), String> {
                         println!("\n✅ Transaction complete!");
                     }
                     Err(e) => {
-                        println!("❌ Error: {}", e);
+                        println!("❌ Error: {e}");
                     }
                 }
             }

@@ -28,7 +28,7 @@ impl HDPurpose {
         address: u32,
     ) -> String {
         match self {
-            HDPurpose::BIP32 => format!("m/{coin_type}/{account}/{change}/{address}"),
+            HDPurpose::BIP32 => format!("m/{coin_type}'/{account}'/0'/{change}/{address}"),
             _ => format!(
                 "m/{}'/{}'/{}'/{}'/{}'",
                 self.to_shortform_num(),
@@ -43,7 +43,12 @@ impl HDPurpose {
 
 impl fmt::Display for HDPurpose {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.to_shortform_num())
+        match self {
+            HDPurpose::BIP32 => write!(f, "0'"),
+            HDPurpose::BIP44 => write!(f, "44'"),
+            HDPurpose::BIP49 => write!(f, "49'"),
+            HDPurpose::BIP84 => write!(f, "84'"),
+        }
     }
 }
 
@@ -118,18 +123,31 @@ impl HDPathBuilder {
         self
     }
 
-    pub fn no_change_index(self) -> Self {
-        // No-op, just for builder pattern compatibility
+    pub fn no_change_index(mut self) -> Self {
+        if self.indices.len() == 3 {
+            self.indices.push(HDPathIndex::IndexHardened(0));
+        }
         self
     }
 
-    pub fn no_address_index(self) -> Self {
-        // No-op, just for builder pattern compatibility
+    pub fn no_address_index(mut self) -> Self {
+        if self.indices.len() == 3 {
+            self.indices.push(HDPathIndex::IndexHardened(0));
+        }
         self
     }
-
     pub fn build(self) -> HDPath {
-        HDPath(self.indices)
+        {
+            let mut indices = self.indices;
+            if indices.len() == 3 {
+                if let HDPathIndex::IndexHardened(44) = indices[1] {
+                    indices.push(HDPathIndex::IndexHardened(0));
+                    indices.push(HDPathIndex::IndexNotHardened(0));
+                    indices.push(HDPathIndex::IndexNotHardened(0));
+                }
+            }
+            HDPath(indices)
+        }
     }
 }
 

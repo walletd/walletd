@@ -116,3 +116,4 @@ mod tests {
         assert_eq!(encoded_bytes_5, expected_bytes_5);
     }
 }
+

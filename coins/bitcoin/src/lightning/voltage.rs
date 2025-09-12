@@ -22,7 +22,7 @@ impl VoltageClient {
     pub async fn get_node_info(&self) -> Result<NodeInfo> {
         let response = self
             .client
-            .get(&format!("{}/v1/getinfo", self.node_url))
+            .get(format!("{}/v1/getinfo", self.node_url))
             .header("Grpc-Metadata-macaroon", &self.api_key)
             .send()
             .await?;
@@ -55,7 +55,7 @@ impl VoltageClient {
 
         let response = self
             .client
-            .post(&format!("{}/v1/invoices", self.node_url))
+            .post(format!("{}/v1/invoices", self.node_url))
             .header("Grpc-Metadata-macaroon", &self.api_key)
             .json(&request)
             .send()
@@ -85,7 +85,7 @@ impl VoltageClient {
 
         let response = self
             .client
-            .post(&format!("{}/v2/router/send", self.node_url))
+            .post(format!("{}/v2/router/send", self.node_url))
             .header("Grpc-Metadata-macaroon", &self.api_key)
             .json(&request)
             .send()
@@ -118,7 +118,7 @@ impl VoltageClient {
     pub async fn list_channels(&self) -> Result<Vec<ChannelInfo>> {
         let response = self
             .client
-            .get(&format!("{}/v1/channels", self.node_url))
+            .get(format!("{}/v1/channels", self.node_url))
             .header("Grpc-Metadata-macaroon", &self.api_key)
             .send()
             .await?;

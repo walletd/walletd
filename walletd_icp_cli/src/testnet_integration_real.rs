@@ -29,7 +29,7 @@ pub mod bitcoin_testnet {
                     .await
                 {
                     Ok(address) => {
-                        println!("\n📬 Your REAL testnet address: {}", address);
+                        println!("\n📬 Your REAL testnet address: {address}");
                         println!("💧 Send testnet BTC to this address from:");
                         println!("   https://coinfaucet.eu/en/btc-testnet/");
 
@@ -41,14 +41,14 @@ pub mod bitcoin_testnet {
                                     balance.confirmed as f64 / 100_000_000.0
                                 );
                             }
-                            Err(e) => println!("❌ Balance check failed: {}", e),
+                            Err(e) => println!("❌ Balance check failed: {e}"),
                         }
                     }
-                    Err(e) => println!("❌ Address generation failed: {}", e),
+                    Err(e) => println!("❌ Address generation failed: {e}"),
                 }
             }
             Err(e) => {
-                println!("❌ Failed to connect to Bitcoin testnet: {}", e);
+                println!("❌ Failed to connect to Bitcoin testnet: {e}");
                 println!("\n📝 For real testnet connection, configure RPC endpoints");
             }
         }
@@ -70,7 +70,7 @@ pub mod ethereum_testnet {
         let address = wallet.address();
 
         println!("✅ Wallet created!");
-        println!("📬 Your REAL Sepolia address: {}", address);
+        println!("📬 Your REAL Sepolia address: {address}");
         println!("\n💧 Get free Sepolia ETH from:");
         println!("   https://sepoliafaucet.com/");
 

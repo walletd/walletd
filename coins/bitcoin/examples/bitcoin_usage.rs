@@ -1,40 +1,30 @@
-use walletd_bitcoin::{AddressType, BitcoinConfig, BitcoinWalletManager, Network, SendRequest};
+use walletd_bitcoin::{BitcoinConfig, BitcoinWalletManager, Network};
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
-    // Initialize for multiple users
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Create config
     let config = BitcoinConfig {
-        network: Network::Bitcoin,
-        rpc_endpoints: vec![],
+        network: Network::Testnet,
+        rpc_endpoints: vec![], // Empty for now, would need proper RpcEndpoint structs
     };
 
+    // Create wallet manager
     let manager = BitcoinWalletManager::new(config).await?;
 
-    // Create wallets for multiple users
-    let wallet1 = manager.create_wallet("user-001", None).await?;
-    println!("User 1 wallet: {}", wallet1.first_address);
+    // Create a new wallet with optional mnemonic
+    let wallet_info = manager.create_wallet("user-001", None).await?;
+    println!("Created wallet: {wallet_info:?}");
 
-    let wallet2 = manager.create_wallet("user-002", None).await?;
-    println!("User 2 wallet: {}", wallet2.first_address);
+    // Get balance
+    let balance = manager.get_balance("user-001").await?;
+    println!("Balance: {balance:?}");
 
-    // Get balances
-    let balance1 = manager.get_balance("user-001").await?;
-    println!("User 1 balance: {} sats", balance1.total);
+    // Create another wallet
+    let wallet_info2 = manager.create_wallet("user-002", None).await?;
+    println!("Created second wallet: {wallet_info2:?}");
 
-    // Create multisig
-    let multisig = manager
-        .create_multisig(vec!["user-001".to_string(), "user-002".to_string()], 2)
-        .await?;
-    println!("2-of-2 multisig: {}", multisig.address);
-
-    // Batch operations
-    let balances = manager
-        .batch_get_balances(vec!["user-001".to_string(), "user-002".to_string()])
-        .await?;
-
-    for (user, balance) in balances {
-        println!("{}: {} sats", user, balance.total);
-    }
+    let balance2 = manager.get_balance("user-002").await?;
+    println!("Second wallet balance: {balance2:?}");
 
     Ok(())
 }

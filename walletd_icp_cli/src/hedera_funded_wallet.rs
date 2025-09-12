@@ -25,7 +25,7 @@ async fn reload_funded_account() -> Result<(), String> {
     manager
         .init_hedera()
         .await
-        .map_err(|e| format!("Init failed: {}", e))?;
+        .map_err(|e| format!("Init failed: {e}"))?;
 
     Ok(())
 }
@@ -38,7 +38,7 @@ pub async fn check_real_balance() -> Result<f64, String> {
     if let Some(wallet) = &manager.hedera {
         match wallet.get_balance().await {
             Ok(balance) => Ok(balance),
-            Err(e) => Err(format!("Failed to get balance: {}", e)),
+            Err(e) => Err(format!("Failed to get balance: {e}")),
         }
     } else {
         Err("Wallet not initialized".to_string())
@@ -51,22 +51,16 @@ pub async fn send_hbar_transaction(to: &str, amount: f64) -> Result<String, Stri
     let manager = WALLET_MANAGER.read().await;
 
     if let Some(wallet) = &manager.hedera {
-        println!(
-            "📤 Sending {} HBAR from {} to {}",
-            amount, FUNDED_ACCOUNT, to
-        );
+        println!("📤 Sending {amount} HBAR from {FUNDED_ACCOUNT} to {to}");
 
         match wallet.send_hbar(to, amount).await {
             Ok(tx_id) => {
                 println!("✅ Transaction successful!");
-                println!("🔗 Transaction ID: {}", tx_id);
-                println!(
-                    "🌐 View on HashScan: https://hashscan.io/testnet/transaction/{}",
-                    tx_id
-                );
+                println!("🔗 Transaction ID: {tx_id}");
+                println!("🌐 View on HashScan: https://hashscan.io/testnet/transaction/{tx_id}");
                 Ok(tx_id)
             }
-            Err(e) => Err(format!("Transaction failed: {}", e)),
+            Err(e) => Err(format!("Transaction failed: {e}")),
         }
     } else {
         Err("Wallet not initialized".to_string())

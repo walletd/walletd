@@ -84,7 +84,7 @@ impl LowerHex for EthereumPublicKey {
         }
 
         for byte in &self.to_bytes() {
-            write!(f, "{:02x}", byte)?;
+            write!(f, "{byte:02x}")?;
         }
 
         Ok(())
