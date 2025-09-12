@@ -28,7 +28,7 @@ impl HDPurpose {
         address: u32,
     ) -> String {
         match self {
-            HDPurpose::BIP32 => format!("m/{}'/{}'/0'/{}/{}", coin_type, account, change, address),
+            HDPurpose::BIP32 => format!("m/{coin_type}'/{account}'/0'/{change}/{address}"),
             _ => format!(
                 "m/{}'/{}'/{}'/{}'/{}'",
                 self.to_shortform_num(),

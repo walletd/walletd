@@ -8,8 +8,8 @@ pub async fn handle_erc20_menu<T>(
 ) -> Result<CliResponse, String> {
     loop {
         println!("\n========== ERC-20 TOKEN MENU ==========");
-        println!("Ethereum Address: {}", eth_address);
-        println!("ETH Balance: {}", eth_balance);
+        println!("Ethereum Address: {eth_address}");
+        println!("ETH Balance: {eth_balance}");
         
         println!("\n[1] Check Token Balance");
         println!("[2] List Popular Tokens");

@@ -53,7 +53,7 @@ impl SerializedArchive {
         tag: &str,
         vec: &[T],
     ) -> Result<(), Error> {
-        self.json_stream.push_str(&format!("\"{}\": ", tag));
+        self.json_stream.push_str(&format!("\"{tag}\": "));
         self.begin_array();
         for (i, item) in vec.iter().enumerate() {
             item.do_serialize(self)?;
