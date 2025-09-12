@@ -129,7 +129,7 @@ impl RealSolanaWallet {
         if let Ok(rpc_response) = serde_json::from_str::<RpcResponse<String>>(&response_text) {
             if let Some(signature) = rpc_response.result {
                 println!("✅ Airdrop transaction submitted!");
-                println!("Signature: {}", signature);
+                println!("Signature: {signature}");
 
                 // Wait for confirmation
                 println!("⏳ Waiting for confirmation...");
@@ -153,10 +153,7 @@ impl RealSolanaWallet {
         // Create a simple transfer instruction
         let _lamports = (sol_amount * 1_000_000_000.0) as u64;
 
-        println!(
-            "📡 Creating transaction to send {} SOL to {}",
-            sol_amount, to_address
-        );
+        println!("📡 Creating transaction to send {sol_amount} SOL to {to_address}");
         println!("⚠️  Note: This implementation cannot sign real transactions");
         println!("   For real transfers, use:");
         println!("   1. Phantom Wallet - Import the private key");

@@ -124,7 +124,7 @@ impl AccountPool {
         {
             account.is_active = false;
             account.estimated_balance = 0.0;
-            println!("⚠️  Account {} marked as depleted", account_id);
+            println!("⚠️  Account {account_id} marked as depleted");
             self.save_state();
         }
     }
@@ -160,9 +160,6 @@ impl AccountPool {
             .map(|a| a.estimated_balance)
             .sum();
 
-        format!(
-            "Pool Status: {} active accounts, ~{:.2} HBAR total",
-            active_accounts, total_balance
-        )
+        format!("Pool Status: {active_accounts} active accounts, ~{total_balance:.2} HBAR total")
     }
 }

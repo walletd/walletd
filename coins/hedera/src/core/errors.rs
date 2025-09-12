@@ -14,7 +14,7 @@ pub enum WalletDError {
     IoError(#[from] std::io::Error),
 
     #[error("Hedera SDK error: {0}")]
-    HederaError(#[from] hedera::Error),
+    HederaError(#[from] Box<hedera::Error>),
 
     #[error("General error: {0}")]
     GeneralError(String),

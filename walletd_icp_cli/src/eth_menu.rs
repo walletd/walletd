@@ -9,8 +9,8 @@ pub async fn handle_eth_menu(
 ) -> Result<CliResponse, String> {
     loop {
         println!("\n========== ETHEREUM WALLET FEATURES ==========");
-        println!("Current Address: {}", address);
-        println!("Balance: {} ETH", balance);
+        println!("Current Address: {address}");
+        println!("Balance: {balance} ETH");
 
         println!("\n--- Wallet Operations ---");
         println!("[1] View Address Details");
@@ -296,13 +296,10 @@ async fn handle_connect_dapp() -> Result<(), String> {
 // Include all the other handler functions from before...
 async fn handle_view_address(address: &str) -> Result<(), String> {
     println!("\n=== Address Details ===");
-    println!("Address: {}", address);
+    println!("Address: {address}");
     println!("Type: Externally Owned Account (EOA)");
     println!("Network: Ethereum Mainnet");
-    println!(
-        "\nView on Etherscan: https://etherscan.io/address/{}",
-        address
-    );
+    println!("\nView on Etherscan: https://etherscan.io/address/{address}");
     Ok(())
 }
 

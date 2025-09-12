@@ -138,9 +138,9 @@ impl UnspentOutput {
                             .expect("expecting private spend key")
                             .to_monero(),
                     )?;
-                    return Ok(RctKey::gen_commitment_mask(&RctKey::from_slice(
+                    Ok(RctKey::gen_commitment_mask(&RctKey::from_slice(
                         &derived_sec_key.to_bytes(),
-                    )));
+                    )))
                 } else if rct_string.len() == 128 {
                     let encrypted_mask = RctKey::from_slice(&hex::decode(&rct_string[64..128])?);
                     if encrypted_mask == RctKey::identity() {
@@ -152,9 +152,9 @@ impl UnspentOutput {
                     );
                     let decrypted_mask =
                         encrypted_mask.as_scalar() - key_deriv.hash_to_scalar(self.index);
-                    return Ok(RctKey::from_slice(&decrypted_mask.to_bytes()));
+                    Ok(RctKey::from_slice(&decrypted_mask.to_bytes()))
                 } else {
-                    return Err(Error::InvalidRctStringLength);
+                    Err(Error::InvalidRctStringLength)
                 }
             }
         }
@@ -176,12 +176,12 @@ impl MoneroLWSConnection {
         if status.is_client_error() && status.is_server_error() {
             Err(Error::ErrorClientSideAndServerSide(content))
         } else if status.is_client_error() {
-            return Err(Error::ClientSideError(content));
+            Err(Error::ClientSideError(content))
         } else if status.is_server_error() {
-            return Err(Error::ServerSideError(content));
+            Err(Error::ServerSideError(content))
         } else {
             let content_json = serde_json::from_str(content.as_str())?;
-            return Ok(content_json);
+            Ok(content_json)
         }
     }
 

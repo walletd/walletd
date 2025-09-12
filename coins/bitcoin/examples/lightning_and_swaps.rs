@@ -32,7 +32,7 @@ async fn main() -> anyhow::Result<()> {
                 println!("   Node ID: {}", node.node_id);
                 println!("   Port: {}", node.listening_port);
             }
-            Err(e) => println!("   Lightning setup error: {}", e),
+            Err(e) => println!("   Lightning setup error: {e}"),
         }
     }
 

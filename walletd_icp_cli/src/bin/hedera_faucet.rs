@@ -1,4 +1,3 @@
-use reqwest;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize)]
@@ -61,7 +60,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
         Err(e) => {
-            println!("❌ Failed to connect to faucet: {}", e);
+            println!("❌ Failed to connect to faucet: {e}");
         }
     }
 

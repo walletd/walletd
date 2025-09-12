@@ -10,8 +10,7 @@ pub mod voltage;
 pub use mock::{Balance, ChannelInfo, Invoice, NodeInfo, Payment, PaymentStatus};
 
 /// Lightning Network configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[derive(Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub enum LightningConfig {
     /// Mock implementation for development
     #[default]
@@ -21,7 +20,6 @@ pub enum LightningConfig {
     #[cfg(feature = "lightning-voltage")]
     Voltage { api_key: String, node_url: String },
 }
-
 
 /// Lightning Network manager
 pub struct LightningManager {

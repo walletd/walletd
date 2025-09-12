@@ -29,7 +29,7 @@ pub async fn icp_overview(
 }
 
 pub fn display_message(message: &str, icon: &str) {
-    println!("\n{} {}", icon, message);
+    println!("\n{icon} {message}");
 }
 
 pub fn display_crypto_menu(coins: &[cli_options::CoinType]) -> String {
@@ -70,6 +70,7 @@ pub fn get_mock_data(coin: &str) -> (String, String) {
         _ => ("unknown".to_string(), "0".to_string()),
     }
 }
+pub mod erc20_menu;
 pub mod hbar_menu_faucet;
 pub mod hbar_send_real;
 pub mod hbar_send_testnet;
@@ -85,6 +86,7 @@ pub mod hedera_simple_fund;
 pub mod hedera_testnet_accounts;
 pub mod hedera_testnet_auto_fund;
 pub mod hedera_testnet_simulator;
+pub mod hedera_wallet_stub;
 pub mod hedera_working_faucet;
 pub mod icp_menu;
 pub mod mining_helper;
@@ -105,4 +107,3 @@ pub mod testnet_menu;
 pub mod testnet_real_menu;
 pub mod xmr_menu;
 pub mod xmr_send_real;
-pub mod erc20_menu;

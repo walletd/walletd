@@ -15,6 +15,7 @@ pub enum Symbol {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Coin {
     Bitcoin,
+    Ethereum,
     Testnet,
     Monero,
 }
@@ -26,6 +27,7 @@ impl Coin {
             Coin::Bitcoin => BITCOIN,
             Coin::Testnet => TESTNET,
             Coin::Monero => MONERO,
+            Coin::Ethereum => 60,
         }
     }
 }
@@ -34,7 +36,7 @@ impl From<Symbol> for Coin {
     fn from(symbol: Symbol) -> Self {
         match symbol {
             Symbol::BTC => Coin::Bitcoin,
-            Symbol::ETH => Coin::Bitcoin, // Using Bitcoin for ETH mapping as example
+            Symbol::ETH => Coin::Ethereum, // Using Bitcoin for ETH mapping as example
             Symbol::XMR => Coin::Monero,
         }
     }

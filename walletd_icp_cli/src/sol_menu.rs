@@ -8,8 +8,8 @@ pub async fn handle_sol_menu(
 ) -> Result<CliResponse, String> {
     loop {
         println!("\n========== SOLANA WALLET FEATURES ==========");
-        println!("Address: {}", address);
-        println!("Balance: {} SOL", balance);
+        println!("Address: {address}");
+        println!("Balance: {balance} SOL");
 
         println!("\n--- Wallet Operations ---");
         println!("[1] View Account Info");
@@ -53,10 +53,10 @@ pub async fn handle_sol_menu(
                     match sol_wallet.get_balance().await {
                         Ok(balance) => {
                             let sol = balance as f64 / 1_000_000_000.0;
-                            println!("Current balance: {} SOL ({} lamports)", sol, balance);
+                            println!("Current balance: {sol} SOL ({balance} lamports)");
                         }
                         Err(e) => {
-                            println!("Error checking balance: {}", e);
+                            println!("Error checking balance: {e}");
                         }
                     }
                 } else {
@@ -66,13 +66,13 @@ pub async fn handle_sol_menu(
             "3" => {
                 // Use the real airdrop handler
                 if let Err(e) = crate::sol_send_real::handle_solana_airdrop().await {
-                    println!("Error: {}", e);
+                    println!("Error: {e}");
                 }
             }
             "4" => {
                 // Use the real send handler
                 if let Err(e) = crate::sol_send_real::handle_send_solana_real().await {
-                    println!("Error: {}", e);
+                    println!("Error: {e}");
                 }
             }
             "5" => {

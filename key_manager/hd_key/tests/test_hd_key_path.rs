@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use walletd_hd_key::slip44::{Coin, Symbol};
 use walletd_hd_key::{
     Error, ExtendedPrivateKey, ExtendedPublicKey, HDKey, HDNetworkType, HDPath, HDPurpose, Seed,
@@ -311,6 +310,8 @@ fn test_bip49_address_one() -> Result<(), Error> {
     let path_builder = HDPath::builder()
         .purpose_index(HDPurpose::BIP49.to_shortform_num())
         .coin_type_index(Coin::from(Symbol::BTC).id())
+        .account_index(0)
+        .change_index(0)
         .address_index(1);
 
     let derived = HDKey::new(

@@ -8,10 +8,7 @@ impl SimpleBtcManager {
         to_address: &str,
         amount_btc: f64,
     ) -> Result<String> {
-        println!(
-            "Sending {} BTC from {} to {}",
-            amount_btc, from_address, to_address
-        );
+        println!("Sending {amount_btc} BTC from {from_address} to {to_address}");
         Ok("mock_btc_txid_1234567890abcdef".to_string())
     }
 
@@ -31,12 +28,12 @@ pub mod lightning_simple {
     use super::*;
 
     pub async fn create_invoice_simple(amount_sats: u64, description: String) -> Result<String> {
-        println!("Creating invoice for {} sats: {}", amount_sats, description);
+        println!("Creating invoice for {amount_sats} sats: {description}");
         Ok("lnbc10n1pjkxwpp5...".to_string())
     }
 
     pub async fn pay_invoice_simple(bolt11: &str) -> Result<String> {
-        println!("Paying invoice: {}", bolt11);
+        println!("Paying invoice: {bolt11}");
         Ok("payment_hash_123".to_string())
     }
 }

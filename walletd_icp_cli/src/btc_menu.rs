@@ -8,8 +8,8 @@ pub async fn handle_btc_menu(
 ) -> Result<CliResponse, String> {
     loop {
         println!("\n========== BITCOIN WALLET FEATURES ==========");
-        println!("Address: {}", address);
-        println!("Balance: {} BTC", balance);
+        println!("Address: {address}");
+        println!("Balance: {balance} BTC");
 
         println!("\n--- Wallet Operations ---");
         println!("[1] Generate New Address");
@@ -57,13 +57,10 @@ pub async fn handle_btc_menu(
                     match btc.get_balance().await {
                         Ok(balance_sats) => {
                             let balance_btc = balance_sats as f64 / 100_000_000.0;
-                            println!(
-                                "Current balance: {} BTC ({} sats)",
-                                balance_btc, balance_sats
-                            );
+                            println!("Current balance: {balance_btc} BTC ({balance_sats} sats)");
                         }
                         Err(e) => {
-                            println!("Error checking balance: {}", e);
+                            println!("Error checking balance: {e}");
                         }
                     }
                 } else {
@@ -76,7 +73,7 @@ pub async fn handle_btc_menu(
             "5" => {
                 // CALL THE REAL SEND FUNCTION
                 if let Err(e) = handle_send_bitcoin_real("user").await {
-                    println!("Error: {}", e);
+                    println!("Error: {e}");
                 }
             }
             "6" => {

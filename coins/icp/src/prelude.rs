@@ -1,7 +1,5 @@
 // Re-export commonly used types
 pub use crate::{
-    IcpWallet, IcpWalletError, Transaction, TransactionBuilder,
-    Principal, Agent, AgentError,
-    CanisterClient, DecentralizedIdentity,
-    AtomicSwap, ChainType, CrossChainCoordinator,
+    Agent, AgentError, AtomicSwap, CanisterClient, ChainType, CrossChainCoordinator,
+    DecentralizedIdentity, IcpWallet, IcpWalletError, Principal, Transaction, TransactionBuilder,
 };

@@ -33,14 +33,14 @@ async fn create_new_funded_account() -> Result<(), String> {
     match create_funded_testnet_account().await {
         Ok((account_id, private_key, balance)) => {
             println!("\n✅ New account created!");
-            println!("📍 Account ID: {}", account_id);
-            println!("💰 Balance: {} HBAR", balance);
+            println!("📍 Account ID: {account_id}");
+            println!("💰 Balance: {balance} HBAR");
 
             // Save and reload
             save_and_reload(&account_id, &private_key).await?;
         }
         Err(e) => {
-            println!("❌ Failed to create account: {}", e);
+            println!("❌ Failed to create account: {e}");
         }
     }
 
@@ -77,7 +77,7 @@ async fn fund_existing_account() -> Result<(), String> {
         // Try Yamolky faucet
         match fund_via_yamolky(&account_id, amount).await {
             Ok(msg) => {
-                println!("✅ {}", msg);
+                println!("✅ {msg}");
 
                 // Wait for funding to process
                 println!("⏳ Waiting for transaction...");
@@ -87,12 +87,12 @@ async fn fund_existing_account() -> Result<(), String> {
                 let manager = WALLET_MANAGER.read().await;
                 if let Some(wallet) = &manager.hedera {
                     if let Ok(balance) = wallet.get_balance().await {
-                        println!("💰 New balance: {} HBAR", balance);
+                        println!("💰 New balance: {balance} HBAR");
                     }
                 }
             }
             Err(e) => {
-                println!("❌ Funding failed: {}", e);
+                println!("❌ Funding failed: {e}");
                 println!("\n💡 Try option 1 to create a new funded account instead");
             }
         }
@@ -112,16 +112,14 @@ async fn use_instant_funded_account() -> Result<(), String> {
     println!("\n🎯 Using pre-funded testnet account...");
 
     // These accounts are pre-created with 100 HBAR each
-    let funded_accounts = vec![
-        ("0.0.4920123", "302e020100300506032b65700422042091132178b72c5a4a3e10c91ce87b6197c5da35024ba370b8e9bea31276802391"),
+    let funded_accounts = [("0.0.4920123", "302e020100300506032b65700422042091132178b72c5a4a3e10c91ce87b6197c5da35024ba370b8e9bea31276802391"),
         ("0.0.4920124", "302e020100300506032b657004220420a2243289c83d5b4a3e20d92cf88c7208d6eb46035ca481c9dffe42387913502"),
-        ("0.0.4920125", "302e020100300506032b657004220420b3354398d94e6c5b4f31ea3dg99d8319e7fc57146db592daeggf53498a24613"),
-    ];
+        ("0.0.4920125", "302e020100300506032b657004220420b3354398d94e6c5b4f31ea3dg99d8319e7fc57146db592daeggf53498a24613")];
 
     // Select a random account
     let (account_id, private_key) = &funded_accounts[0];
 
-    println!("📍 Account: {}", account_id);
+    println!("📍 Account: {account_id}");
     println!("💰 Balance: ~100 HBAR");
 
     save_and_reload(account_id, private_key).await?;
@@ -137,11 +135,10 @@ async fn use_instant_funded_account() -> Result<(), String> {
 async fn save_and_reload(account_id: &str, private_key: &str) -> Result<(), String> {
     // Save credentials
     let env_content = format!(
-        "HEDERA_NETWORK=testnet\nHEDERA_OPERATOR_ID={}\nOPERATOR_PRIVATE_KEY={}\n",
-        account_id, private_key
+        "HEDERA_NETWORK=testnet\nHEDERA_OPERATOR_ID={account_id}\nOPERATOR_PRIVATE_KEY={private_key}\n"
     );
 
-    std::fs::write(".env.hedera", env_content).map_err(|e| format!("Failed to save: {}", e))?;
+    std::fs::write(".env.hedera", env_content).map_err(|e| format!("Failed to save: {e}"))?;
 
     // Reload environment
     dotenvy::from_filename(".env.hedera").ok();
@@ -155,7 +152,7 @@ async fn save_and_reload(account_id: &str, private_key: &str) -> Result<(), Stri
             println!("✅ Wallet reloaded with funded account!");
         }
         Err(e) => {
-            println!("⚠️  Reload warning: {}", e);
+            println!("⚠️  Reload warning: {e}");
         }
     }
 
