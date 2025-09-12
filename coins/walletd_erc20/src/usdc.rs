@@ -14,9 +14,9 @@ use std::sync::Arc;
 use ethers::contract::abigen;
 use ethers::contract::ContractError;
 use ethers::middleware::SignerMiddleware;
-use ethers::providers::{Provider, Http};
+use ethers::providers::{Http, Provider};
 use ethers::signers::Signer;
-use ethers::types::{Address, U256, H256};
+use ethers::types::{Address, H256, U256};
 
 use crate::adapter::Erc20Adapter;
 
@@ -40,7 +40,9 @@ pub struct UsdcAdapter;
 #[async_trait::async_trait]
 impl Erc20Adapter for UsdcAdapter {
     fn contract_address(&self) -> Address {
-        USDC_MAINNET_ADDRESS.parse().expect("invalid USDC address literal")
+        USDC_MAINNET_ADDRESS
+            .parse()
+            .expect("invalid USDC address literal")
     }
 
     fn decimals(&self) -> u8 {

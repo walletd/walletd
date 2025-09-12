@@ -70,6 +70,7 @@ pub fn get_mock_data(coin: &str) -> (String, String) {
         _ => ("unknown".to_string(), "0".to_string()),
     }
 }
+pub mod erc20_menu;
 pub mod hbar_menu_faucet;
 pub mod hbar_send_real;
 pub mod hbar_send_testnet;
@@ -106,4 +107,3 @@ pub mod testnet_menu;
 pub mod testnet_real_menu;
 pub mod xmr_menu;
 pub mod xmr_send_real;
-pub mod erc20_menu;
