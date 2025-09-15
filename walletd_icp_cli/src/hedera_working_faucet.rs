@@ -15,7 +15,7 @@ pub async fn get_testnet_hbar_working() -> Result<(), String> {
 
     let amount: f64 = amount_str.trim().parse().unwrap_or(10.0);
 
-    println!("\n🚀 Getting you {} HBAR...", amount);
+    println!("\n🚀 Getting you {amount} HBAR...");
 
     // Create a new testnet account via portal API
     println!("\n📱 Creating funded account via Hedera Portal API...");
@@ -26,11 +26,10 @@ pub async fn get_testnet_hbar_working() -> Result<(), String> {
 
     // Save credentials
     let env_content = format!(
-        "HEDERA_NETWORK=testnet\nHEDERA_OPERATOR_ID={}\nOPERATOR_PRIVATE_KEY={}\n",
-        funded_account, funded_key
+        "HEDERA_NETWORK=testnet\nHEDERA_OPERATOR_ID={funded_account}\nOPERATOR_PRIVATE_KEY={funded_key}\n"
     );
 
-    std::fs::write(".env.hedera", env_content).map_err(|e| format!("Failed to save: {}", e))?;
+    std::fs::write(".env.hedera", env_content).map_err(|e| format!("Failed to save: {e}"))?;
 
     // Reload wallet
     dotenvy::from_filename(".env.hedera").ok();
@@ -41,18 +40,18 @@ pub async fn get_testnet_hbar_working() -> Result<(), String> {
     manager
         .init_hedera()
         .await
-        .map_err(|e| format!("Init failed: {}", e))?;
+        .map_err(|e| format!("Init failed: {e}"))?;
 
     println!("\n✅ Success! Account ready with testnet HBAR");
-    println!("📍 Account: {}", funded_account);
+    println!("📍 Account: {funded_account}");
     println!("💰 You have access to testnet HBAR");
     println!("\n🔍 Verify on HashScan:");
-    println!("   https://hashscan.io/testnet/account/{}", funded_account);
+    println!("   https://hashscan.io/testnet/account/{funded_account}");
 
     // Check actual balance
     if let Some(wallet) = &manager.hedera {
         if let Ok(balance) = wallet.get_balance().await {
-            println!("\n💰 Actual balance: {} HBAR", balance);
+            println!("\n💰 Actual balance: {balance} HBAR");
         }
     }
 

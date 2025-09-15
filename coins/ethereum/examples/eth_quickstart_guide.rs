@@ -30,7 +30,7 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
 
     let public_address = ethereum_wallet.public_address();
 
-    println!("ethereum wallet public address: {}", public_address);
+    println!("ethereum wallet public address: {public_address}");
 
     let provider = Provider::try_from(PROVIDER_URL).unwrap();
     let tx_hash = "0xe4216d69bf935587b82243e68189de7ade0aa5b6f70dd0de8636b8d643431c0b"
@@ -40,9 +40,9 @@ async fn main() -> Result<(), walletd_ethereum::Error> {
     let block_number = EthClient::current_block_number(&provider).await;
     let gas_price = EthClient::gas_price(&provider).await;
 
-    println!("Block number: {:#?}", block_number);
-    println!("Gas price: {:#?}", gas_price);
-    println!("transaction data: {:?}", tx);
+    println!("Block number: {block_number:#?}");
+    println!("Gas price: {gas_price:#?}");
+    println!("transaction data: {tx:?}");
     let balance = ethereum_wallet.balance(&provider).await?;
     println!(
         "ethereum wallet balance: {} ETH, ({} wei)",

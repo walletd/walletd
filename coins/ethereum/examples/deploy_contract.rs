@@ -77,12 +77,12 @@ async fn main() -> Result<(), Error> {
         .await
         .unwrap();
 
-    println!("contract: {:?}", contract);
+    println!("contract: {contract:?}");
     //let contract = contract.unwrap();
 
     // 7. get the contract's address
     let addr = contract.address();
-    println!("Contract address: {}", addr);
+    println!("Contract address: {addr}");
 
     // 8. instantiate the contract
     let contract = SimpleContract::new(addr, client.clone());

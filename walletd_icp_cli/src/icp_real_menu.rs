@@ -15,8 +15,8 @@ pub async fn handle_icp_menu(
 ) -> Result<CliResponse, String> {
     loop {
         println!("\n========== ICP WALLET FEATURES ==========");
-        println!("Address: {}", address);
-        println!("Balance: {} ICP", balance);
+        println!("Address: {address}");
+        println!("Balance: {balance} ICP");
 
         println!("\n--- Core Wallet ---");
         println!("[1] Check Balance");
@@ -85,15 +85,15 @@ async fn handle_check_balance(address: &str) -> Result<(), String> {
 
     let network = IcpNetwork::new("https://ic0.app")
         .await
-        .map_err(|e| format!("Failed to connect: {}", e))?;
+        .map_err(|e| format!("Failed to connect: {e}"))?;
 
     match network.get_balance(address).await {
         Ok(balance) => {
             let icp = balance as f64 / 100_000_000.0;
-            println!("Balance: {} ICP", icp);
-            println!("E8s: {}", balance);
+            println!("Balance: {icp} ICP");
+            println!("E8s: {balance}");
         }
-        Err(e) => println!("Error: {}", e),
+        Err(e) => println!("Error: {e}"),
     }
 
     println!("\nPress Enter to continue...");
@@ -122,7 +122,7 @@ async fn handle_send_icp() -> Result<(), String> {
 
     println!("\n📋 Transaction Preview:");
     println!("To: {}", to.trim());
-    println!("Amount: {} ICP", amount_f64);
+    println!("Amount: {amount_f64} ICP");
     println!("Fee: 0.0001 ICP");
 
     print!("\nConfirm? (yes/no): ");
@@ -172,10 +172,10 @@ async fn handle_did_management() -> Result<(), String> {
         Ok(identity) => {
             println!("✅ DID Created!");
             println!("DID: {}", identity.did);
-            println!("Principal: {}", principal);
+            println!("Principal: {principal}");
             println!("\nDID Document stored on-chain");
         }
-        Err(e) => println!("Error creating DID: {}", e),
+        Err(e) => println!("Error creating DID: {e}"),
     }
 
     println!("\nPress Enter to continue...");
@@ -240,7 +240,7 @@ async fn handle_deploy_canister() -> Result<(), String> {
         Principal::from_text("xkbqi-2qaaa-aaaah-qbpqq-cai").map_err(|e| e.to_string())?;
 
     println!("✅ Canister deployed!");
-    println!("Canister ID: {}", canister_id);
+    println!("Canister ID: {canister_id}");
     println!("Status: Running");
 
     println!("\nPress Enter to continue...");
@@ -424,11 +424,11 @@ async fn handle_atomic_swaps() -> Result<(), String> {
     match coordinator.transfer(ChainType::ICP, ChainType::BTC, 100_000_000) {
         Ok(swap_id) => {
             println!("\n✅ Atomic swap initiated!");
-            println!("Swap ID: {}", swap_id);
+            println!("Swap ID: {swap_id}");
             println!("Status: Waiting for counterparty");
             println!("Expires: 24 hours");
         }
-        Err(e) => println!("Error: {}", e),
+        Err(e) => println!("Error: {e}"),
     }
 
     println!("\nPress Enter to continue...");

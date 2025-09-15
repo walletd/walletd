@@ -68,7 +68,7 @@ impl IcpNetwork {
 
     pub async fn get_canister_status(&self, canister_id: Principal) -> Result<String> {
         // Simplified status check
-        Ok(format!("Canister {} is running", canister_id))
+        Ok(format!("Canister {canister_id} is running"))
     }
 
     fn create_identity() -> Result<BasicIdentity> {

@@ -76,7 +76,7 @@ impl TestnetFunder {
                 println!("📥 Importing shared test wallet...");
                 println!("   This wallet has pre-mined XMR");
                 println!("   You can use it for testing");
-                Ok(format!("Test wallet: {}", SDK_WALLET_ADDRESS))
+                Ok(format!("Test wallet: {SDK_WALLET_ADDRESS}"))
             }
             _ => Ok("Cancelled".to_string()),
         }
@@ -112,15 +112,15 @@ pub async fn get_instant_testnet_xmr(user_address: &str) -> Result<String> {
         "1" => TestnetFunder::fund_user_wallet(user_address).await,
         "2" => {
             println!("\n📥 Test Wallet Import:");
-            println!("Address: {}", SDK_WALLET_ADDRESS);
-            println!("Seed: {}", SDK_WALLET_SEED);
+            println!("Address: {SDK_WALLET_ADDRESS}");
+            println!("Seed: {SDK_WALLET_SEED}");
             println!("\nThis wallet has testnet XMR you can use!");
             Ok("Import this in monero-wallet-cli".to_string())
         }
         "3" => {
             println!("\n⛏️ Auto-Mining Pool:");
             println!("Run this for automatic payouts every few minutes:");
-            println!("./xmrig -o stagenet.pool.com:3333 -u {} -p x", user_address);
+            println!("./xmrig -o stagenet.pool.com:3333 -u {user_address} -p x");
             Ok("Pool mining gives quick XMR".to_string())
         }
         "4" => {

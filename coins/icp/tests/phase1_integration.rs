@@ -23,7 +23,7 @@ async fn test_full_transaction_flow() {
     assert_eq!(tx.from, principal);
     assert_eq!(tx.to, to);
     assert_eq!(tx.amount, 100_000_000);
-    assert_eq!(tx.memo, 12345);
+    assert_eq!(tx.memo, Some(12345));
 }
 
 #[test]
@@ -34,7 +34,7 @@ fn test_wallet_creation_with_known_principal() {
 
     // Verify wallet was created successfully
     assert!(!wallet.address().is_empty());
-    assert_eq!(*wallet.principal(), principal);
+    assert_eq!(wallet.principal(), principal);
 }
 
 #[test]

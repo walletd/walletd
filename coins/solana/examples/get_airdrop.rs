@@ -19,19 +19,19 @@ async fn main() {
         110, 8, 211, 170, 217, 132, 148, 104, 122, 117, 238, 217, 1, 90, 103, 0, 46, 176, 210, 139,
         14, 213, 254, 7, 120,
     ];
-    let _restored_keypair = Keypair::from_bytes(&bytes).unwrap();
+    let _restored_keypair = Keypair::try_from(bytes.as_slice()).unwrap();
 
     let restored_keypair_from_base58 = Keypair::from_base58_string("redacted for now");
 
     let pubkey = Signer::pubkey(&restored_keypair_from_base58);
-    println!("public key: {:?}", pubkey);
+    println!("public key: {pubkey:?}");
     //solana_client.request_airdrop(pubkey).await.unwrap();
     // 1_000_000_000
     match connection.request_airdrop(&pubkey, 1_000_000_000) {
         Ok(sig) => loop {
             if let Ok(confirmed) = connection.confirm_transaction(&sig) {
                 if confirmed {
-                    println!("Transaction: {} Status: {}", sig, confirmed);
+                    println!("Transaction: {sig} Status: {confirmed}");
                     break;
                 }
             }

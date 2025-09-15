@@ -8,13 +8,13 @@ pub async fn handle_send_monero_real() -> Result<(), String> {
         let balance = xmr_wallet
             .get_balance()
             .await
-            .map_err(|e| format!("Failed to get balance: {}", e))?;
+            .map_err(|e| format!("Failed to get balance: {e}"))?;
         let balance_xmr = balance as f64 / 1_000_000_000_000.0;
 
         println!("\n=== Send Monero ===");
         println!("Network: {}", xmr_wallet.network);
         println!("From: {}", xmr_wallet.address);
-        println!("Balance: {} XMR", balance_xmr);
+        println!("Balance: {balance_xmr} XMR");
 
         if balance == 0 {
             println!("\n⚠️  Your wallet has 0 XMR!");
@@ -39,8 +39,8 @@ pub async fn handle_send_monero_real() -> Result<(), String> {
 
         println!("\n📋 Transaction Summary:");
         println!("From: {}", xmr_wallet.address);
-        println!("To: {}", to_address);
-        println!("Amount: {} XMR", amount);
+        println!("To: {to_address}");
+        println!("Amount: {amount} XMR");
         println!("Network: {}", xmr_wallet.network);
         println!("Ring Size: 11 (default)");
 
@@ -53,7 +53,7 @@ pub async fn handle_send_monero_real() -> Result<(), String> {
             match xmr_wallet.send_transaction(to_address, amount).await {
                 Ok(_) => {}
                 Err(e) => {
-                    println!("\n{}", e);
+                    println!("\n{e}");
                 }
             }
         } else {

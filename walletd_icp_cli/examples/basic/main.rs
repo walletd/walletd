@@ -1,1 +1,3 @@
-fn main() { println!("WalletD ICP"); }
+fn main() {
+    println!("WalletD ICP");
+}

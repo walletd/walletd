@@ -11,7 +11,7 @@ pub fn start_background_mining(address: &str) -> Result<String, String> {
 
     // Start mining in background
     match Command::new(monerod_path)
-        .args(&[
+        .args([
             "--stagenet",
             "--start-mining",
             address,
@@ -33,7 +33,7 @@ pub fn start_background_mining(address: &str) -> Result<String, String> {
             println!("   tail -f mining.log | grep 'Found block'");
             Ok("Mining started".to_string())
         }
-        Err(e) => Err(format!("Failed to start mining: {}", e)),
+        Err(e) => Err(format!("Failed to start mining: {e}")),
     }
 }
 

@@ -64,7 +64,7 @@ impl RealMoneroWallet {
             _ => return Err(anyhow::anyhow!("Invalid network: {}", network)),
         };
 
-        println!("🔗 Connecting to {} via: {}", network, daemon_url);
+        println!("🔗 Connecting to {network} via: {daemon_url}");
 
         Ok(Self {
             address: address.to_string(),
@@ -120,7 +120,7 @@ impl RealMoneroWallet {
             &to_address[..12],
             &to_address[to_address.len() - 12..]
         );
-        println!("   Amount: {} XMR", amount);
+        println!("   Amount: {amount} XMR");
         println!("\n⚠️  View-only wallet - cannot send transactions");
         println!("   To send XMR, use monero-wallet-cli with spend key");
 

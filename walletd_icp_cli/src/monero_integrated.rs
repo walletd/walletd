@@ -33,7 +33,7 @@ impl IntegratedMoneroManager {
 
         // Start fresh with mining
         let child = Command::new(monerod_path)
-            .args(&[
+            .args([
                 "--stagenet",
                 "--no-igd",
                 "--hide-my-port",
@@ -51,7 +51,7 @@ impl IntegratedMoneroManager {
                 "--prune-blockchain",
             ])
             .spawn()
-            .map_err(|e| format!("Failed to start mining: {}", e))?;
+            .map_err(|e| format!("Failed to start mining: {e}"))?;
 
         self.monerod_process = Some(child);
 
@@ -101,9 +101,9 @@ impl IntegratedMoneroManager {
                 Ok("Faucet opened in browser!".to_string())
             }
             Err(e) => {
-                println!("❌ Couldn't open browser: {}", e);
+                println!("❌ Couldn't open browser: {e}");
                 println!("\nManual steps:");
-                println!("1. Go to: {}", url);
+                println!("1. Go to: {url}");
                 println!("2. Paste: {}", self.address);
                 Ok("Please visit faucet manually".to_string())
             }

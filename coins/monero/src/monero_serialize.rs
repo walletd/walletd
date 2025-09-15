@@ -48,12 +48,8 @@ impl SerializedArchive {
 
     /// Serializes a vector of items that implement `DoSerialize`.
     /// Adds a tag and formats the vector as a JSON array.
-    pub fn serialize_vector<T: DoSerialize>(
-        &mut self,
-        tag: &str,
-        vec: &[T],
-    ) -> Result<(), Error> {
-        self.add_tag(tag);
+    pub fn serialize_vector<T: DoSerialize>(&mut self, tag: &str, vec: &[T]) -> Result<(), Error> {
+        self.json_stream.push_str(&format!("\"{tag}\": "));
         self.begin_array();
         for (i, item) in vec.iter().enumerate() {
             item.do_serialize(self)?;
@@ -72,11 +68,14 @@ impl SerializedArchive {
         field_name: &str,
         field_value: &T,
     ) -> Result<(), Error> {
-        self.add_tag(field_name);
         let mut map = Map::new();
         map.insert(field_name.to_string(), serde_json::to_value(field_value)?);
-        let json_str = serde_json::to_string(&map)?;
-        self.json_stream.push_str(&json_str[1..json_str.len() - 1]); // Remove braces
+        let _json_str = serde_json::to_string(&map)?;
+        self.json_stream.push_str(&format!(
+            "\"{}\": {}",
+            field_name,
+            serde_json::to_string(field_value)?
+        )); // Remove braces
         Ok(())
     }
 
