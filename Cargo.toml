@@ -14,7 +14,7 @@ members = [
     "rates",
     "crates/walletd-core",
     "crates/walletd_icp_api",
-    "coins/base",
+    "coins/base", "walletd-prasaga-avio",
 ]
 resolver = "2"
 

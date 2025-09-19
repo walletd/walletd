@@ -2,7 +2,9 @@ use std::collections::BTreeMap;
 use walletd_icp_cli::erc20_menu;
 use walletd_icp_cli::mode_selector::{select_mode_at_startup, WalletMode};
 use walletd_icp_cli::types::WalletDIcpApi;
-use walletd_icp_cli::{btc_menu, eth_menu, hbar_menu, icp_menu, sol_menu, xmr_menu};
+use walletd_icp_cli::{
+    base_menu, btc_menu, eth_menu, hbar_menu, icp_menu, prasaga_menu, sol_menu, xmr_menu,
+};
 use walletd_icp_cli::{config::WalletDConfig, wallet_integration::WALLET_MANAGER, CliResponse};
 
 #[tokio::main]
@@ -138,12 +140,16 @@ async fn main() -> Result<(), anyhow::Error> {
                     println!("[5] Monero (Stagenet)");
                     println!("[6] Internet Computer (Local)");
                     println!("[7] ERC-20 Tokens (Ethereum)");
+                    println!("[8] Base (Layer 2 - Testnet)");
+                    println!("[9] Prasaga Avio (Testnet)");
                 }
                 WalletMode::Mainnet => {
                     println!("\n⚡ MAINNET MODE - Select blockchain:");
                     println!("[1] Bitcoin (BTC) - ⚠️ Real");
                     println!("[2] Ethereum (ETH) - ⚠️ Real");
                     println!("[7] ERC-20 Tokens - ⚠️ Real");
+                    println!("[8] Base (ETH L2) - ⚠️ Real");
+                    println!("[9] Prasaga Avio (SAGA) - ⚠️ Real");
                     println!("[3] Solana (SOL) - ⚠️ Real");
                     println!("[4] Hedera (HBAR) - ⚠️ Real");
                     println!("[5] Monero (XMR) - ⚠️ Real");
@@ -288,6 +294,15 @@ async fn main() -> Result<(), anyhow::Error> {
                 "2" => eth_menu::handle_eth_menu(&mut wallet_api, &eth_address, &eth_balance).await,
                 "7" => {
                     erc20_menu::handle_erc20_menu(&mut wallet_api, &eth_address, &eth_balance).await
+                }
+                "8" => {
+                    println!("\n🔷 Connecting to Base L2...");
+                    base_menu::handle_base_menu(&mut wallet_api, "base_address", "0 ETH").await
+                }
+                "9" => {
+                    println!("\n🚀 Connecting to Prasaga Avio blockchain...");
+                    prasaga_menu::handle_prasaga_menu(&mut wallet_api, "avio_address", "0 SAGA")
+                        .await
                 }
                 "3" => sol_menu::handle_sol_menu(&mut wallet_api, &sol_address, &sol_balance).await,
                 "4" => {

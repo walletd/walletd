@@ -1,0 +1,33 @@
+{
+  "bitcoin": {
+    "network": "testnet",
+    "rpc_url": "http://localhost:18332",
+    "rpc_user": null,
+    "rpc_password": null,
+    "electrum_url": "ssl://electrum.blockstream.info:60002"
+  },
+  "ethereum": {
+    "chain_id": 11155111,
+    "rpc_url": "https://eth-goerli.g.alchemy.com/v2/demo",
+    "etherscan_api_key": null
+  },
+  "solana": {
+    "cluster": "devnet",
+    "rpc_url": "https://api.devnet.solana.com"
+  },
+  "monero": {
+    "network": "stagenet",
+    "daemon_url": "http://localhost:28081",
+    "wallet_rpc_url": null
+  },
+  "hedera": {
+    "network": "testnet",
+    "operator_id": "0.0.0",
+    "operator_key": ""
+  },
+  "icp": {
+    "network": "local",
+    "identity_path": null
+  },
+  "demo_mode": false
+}

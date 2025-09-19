@@ -29,5 +29,11 @@
     "network": "local",
     "identity_path": null
   },
+  "prasaga": {
+    "network": "testnet",
+    "rpc_url": "https://testnet.prasaga.com",
+    "chain_id": 9000,
+    "explorer_url": "https://sagascan.prasaga.com"
+  },
   "demo_mode": false
 }
