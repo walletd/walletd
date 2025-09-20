@@ -1,0 +1,22 @@
+[chains.prasaga]
+name = "Prasaga Avio"
+enabled = true
+default_network = "testnet"
+
+[chains.prasaga.networks.mainnet]
+chain_id = 1
+rpc_url = "https://api.prasaga.com"
+explorer = "https://sagascan.prasaga.com"
+native_token = "SAGA"
+
+[chains.prasaga.networks.testnet]
+chain_id = 9000
+rpc_url = "https://testnet-api.prasaga.com"
+explorer = "https://testnet.sagascan.prasaga.com"
+native_token = "tSAGA"
+faucet = "https://faucet.prasaga.com"
+
+[chains.prasaga.networks.mocknet]
+chain_id = 31337
+rpc_url = "http://localhost:8545"
+native_token = "mSAGA"

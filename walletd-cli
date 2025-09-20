@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# WalletD Multi-Chain CLI
+# Supports: Bitcoin, Ethereum, Solana, Monero, Hedera, ICP, Prasaga
+
+WALLETD_DIR="$(dirname "$0")"
+
+case "$1" in
+    prasaga)
+        shift
+        exec "$WALLETD_DIR/walletd-prasaga-avio/target/release/walletd_prasaga" "$@"
+        ;;
+    icp)
+        shift
+        cd "$WALLETD_DIR/walletd_icp_cli"
+        cargo run -- "$@"
+        ;;
+    config)
+        cat "$WALLETD_DIR/walletd_config.json"
+        ;;
+    help|--help|"")
+        echo "WalletD Multi-Chain CLI"
+        echo "======================="
+        echo ""
+        echo "Usage: walletd-cli <chain> <command> [options]"
+        echo ""
+        echo "Chains:"
+        echo "  prasaga    - Prasaga Avio blockchain"
+        echo "  icp        - Internet Computer"
+        echo ""
+        echo "Prasaga Commands:"
+        echo "  walletd-cli prasaga address              - Generate new address"
+        echo "  walletd-cli prasaga balance <address>    - Check balance"
+        echo "  walletd-cli prasaga transfer <from> <to> <amount> - Transfer"
+        ;;
+    *)
+        echo "Unknown chain: $1"
+        echo "Run 'walletd-cli help' for usage"
+        exit 1
+        ;;
+esac

@@ -1,0 +1,13 @@
+{
+  "networks": {
+    "testnet": {
+      "rpc_url": "TBD",
+      "chain_id": 9000,
+      "explorer": "https://sagascan.prasaga.com"
+    },
+    "mainnet": {
+      "rpc_url": "TBD",
+      "chain_id": 1
+    }
+  }
+}
