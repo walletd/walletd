@@ -236,7 +236,7 @@ impl Mnemonic {
     /// valid mnemonic type length
     fn bytes_to_words(entropy_bytes: &[u8], wordlist_info: &WordList) -> Result<String, Error> {
         let wordlist = &wordlist_info.inner();
-        if entropy_bytes.len() % 4 != 0 || entropy_bytes.is_empty() {
+        if !entropy_bytes.len().is_multiple_of(4) || entropy_bytes.is_empty() {
             return Err(Error::ErrorInBytes(
                 "Length of secret_bytes must be greater than 0 and divisible by 4".into(),
             ));
