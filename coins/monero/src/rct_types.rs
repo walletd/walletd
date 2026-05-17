@@ -701,7 +701,7 @@ impl BulletproofPlus {
     }
 
     fn hadamard_fold(v: &mut Vec<EdwardsPoint>, a: Scalar, b: Scalar) {
-        assert!(v.len() % 2 == 0, "Vector size should be even");
+        assert!(v.len().is_multiple_of(2), "Vector size should be even");
         let sz = v.len() / 2;
         let mut res = vec![EdwardsPoint::identity(); sz];
         for n in 0..sz {

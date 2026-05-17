@@ -186,7 +186,7 @@ impl EthereumWallet {
     ///  Returns the balance for this Ethereum Wallet.
     pub async fn balance(&self, provider: &Provider<Http>) -> Result<EthereumAmount, Error> {
         let address = ethers::types::Address::from_str(&self.public_address())
-            .map_err(|e| (Error::FromStr(e.to_string())))?;
+            .map_err(|e| Error::FromStr(e.to_string()))?;
         let balance = EthClient::balance(provider, address).await?;
         Ok(balance)
     }
